@@ -99,7 +99,7 @@ export default function Basic3DScene() {
           
           {/* Seção Final após o scroll 3D */}
           <div className="py-1 flex items-center justify-center p-8">
-             <div className="max-w-4xl w-full bg-black/40 backdrop-blur-3xl border border-white/10 p-12 rounded-[3rem] text-white shadow-2xl">
+             <div className="max-w-4xl w-full bg-white/5 backdrop-blur-xl border border-white/20 p-12 rounded-[3rem] text-white shadow-2xl">
                 <h2 className="text-5xl font-black mb-8 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Pronto para o Próximo Nível?</h2>
                 <div className="grid md:grid-cols-2 gap-12">
                    <div className="space-y-6">
