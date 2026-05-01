@@ -222,6 +222,22 @@ function ScrollingCard({
   )
 }
 
+function Navbar({ progressRef }: { progressRef: React.RefObject<HTMLDivElement | null> }) {
+  return (
+    <nav className="fixed top-0 left-0 w-full z-50 bg-white/5 backdrop-blur-xl border-b border-white/20 pointer-events-auto">
+       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+         <div className="text-white font-black text-3xl tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">AG47</div>
+         <div className="hidden md:flex items-center gap-8 text-white/80 font-bold text-xs tracking-[0.2em] uppercase">
+            <a href="#" className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Sites</a>
+            <a href="#" className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">APPs</a>
+            <button className="bg-white text-black px-6 py-2 rounded-full hover:scale-105 hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)]">Lançar</button>
+         </div>
+       </div>
+       <div className="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-[0_0_15px_rgba(59,130,246,0.8)] transition-all duration-100 ease-out" ref={progressRef} style={{ width: '0%' }} />
+    </nav>
+  )
+}
+
 export default function Basic3DScene() {
   const scrollOffsetRaw = usePageScroll()
   const lerpedScroll = useRef(0)
@@ -261,7 +277,7 @@ export default function Basic3DScene() {
        </div>
 
        <div className="fixed inset-0 pointer-events-none z-30">
-          <div className="absolute top-0 left-0 h-1 bg-blue-500" ref={progressRef} />
+          <Navbar progressRef={progressRef} />
           
           {/* Card 1: Websites */}
           <ScrollingCard 
