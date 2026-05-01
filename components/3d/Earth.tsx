@@ -17,7 +17,7 @@ export function Earth({ lerpedScroll }: { lerpedScroll: React.MutableRefObject<n
   })
   
   return (
-    <group scale={0.73}>
+    <group scale={0.81}>
       {/* Luz central para dar o efeito de sol iluminando de dentro/perto */}
       <pointLight position={[0, 0, 2]} intensity={2.5} color="#ffd8a8" distance={10} />
       
