@@ -95,7 +95,7 @@ export default function Basic3DScene() {
 
        {/* Corpo de rolagem para disparar o scroll (Invisível) */}
        <div className="relative z-20">
-          <div className="h-[800vh]" />
+          <div className="h-[600vh]" />
           
           {/* Seção Final após o scroll 3D */}
           <div className="min-h-screen flex items-center justify-center p-8">
