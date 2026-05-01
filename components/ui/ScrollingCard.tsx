@@ -25,7 +25,7 @@ export function ScrollingCard({
     <div 
       ref={innerRef}
       style={{ animation: 'cardPulse 4s infinite alternate ease-in-out' }}
-      className="absolute top-1/2 left-1/2 w-[95%] max-w-[850px] min-h-[400px] bg-white/5 backdrop-blur-xl border-2 rounded-[3.5rem] overflow-hidden shadow-2xl z-50 flex flex-col md:flex-row opacity-0 pointer-events-none"
+      className="absolute top-1/2 left-1/2 w-[95%] max-w-[850px] min-h-[400px] bg-white/5 backdrop-blur-xl border-2 rounded-3xl overflow-hidden shadow-2xl z-50 flex flex-col md:flex-row opacity-0 pointer-events-none"
     >
       <style>{`
         @keyframes cardPulse {
