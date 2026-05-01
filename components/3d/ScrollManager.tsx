@@ -56,11 +56,11 @@ export function ScrollManager({
       ref.current.style.pointerEvents = op > 0.8 ? 'auto' : 'none'
     }
 
-    // Card 1: Websites (15% - 48%)
-    animateCard(cardRef1, 0.15, 0.48, 0.23, 0.40)
+    // Card 1: Websites (25% - 58%)
+    animateCard(cardRef1, 0.25, 0.58, 0.33, 0.50)
     
-    // Card 2: SaaS (48% - 81%)
-    animateCard(cardRef2, 0.48, 0.81, 0.56, 0.73)
+    // Card 2: SaaS (58% - 91%)
+    animateCard(cardRef2, 0.58, 0.91, 0.66, 0.83)
   })
   return null
 }

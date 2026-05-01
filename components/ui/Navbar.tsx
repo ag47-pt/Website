@@ -19,8 +19,8 @@ export function Navbar({ progressRef }: { progressRef: React.RefObject<HTMLDivEl
            AG47
          </div>
          <div className="hidden md:flex items-center gap-8 text-white/80 font-bold text-xs tracking-[0.2em] uppercase">
-            <a href="#" onClick={(e) => scrollToPercent(e, 0.315)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Sites</a>
-            <a href="#" onClick={(e) => scrollToPercent(e, 0.645)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">APPs</a>
+            <a href="#" onClick={(e) => scrollToPercent(e, 0.415)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Sites</a>
+            <a href="#" onClick={(e) => scrollToPercent(e, 0.745)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">APPs</a>
             <button onClick={(e) => scrollToPercent(e, 1)} className="bg-white text-black px-6 py-2 rounded-full hover:scale-105 hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)]">Lançar</button>
          </div>
        </div>
