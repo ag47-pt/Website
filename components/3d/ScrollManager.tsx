@@ -23,8 +23,8 @@ export function ScrollManager({
     lerpedScroll.current += (scrollOffsetRaw - lerpedScroll.current) * lerpFactor
     const cur = lerpedScroll.current
     
-    // Atualiza Barra de Progresso (começa em 5% para a bolinha flamejante ficar visível)
-    if (progressRef.current) progressRef.current.style.width = `${5 + (cur * 95)}%`
+    // Atualiza Barra de Progresso (começa em 18% para a bolinha flamejante ficar visível)
+    if (progressRef.current) progressRef.current.style.width = `${18 + (cur * 82)}%`
     
     // Atualiza Texto de Introdução
     if (introRef.current) {
