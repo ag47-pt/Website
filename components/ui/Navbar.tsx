@@ -10,7 +10,7 @@ export function Navbar({ progressRef }: { progressRef: React.RefObject<HTMLDivEl
   }
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white/5 backdrop-blur-xl border-b border-white/20 pointer-events-auto">
+    <nav className="fixed top-0 left-0 w-full z-[100] bg-white/5 backdrop-blur-xl border-b border-white/20 pointer-events-auto">
        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
          <div 
            className="text-white font-black text-3xl tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent cursor-pointer"
