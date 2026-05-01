@@ -103,7 +103,7 @@ export default function Basic3DScene() {
                 <h2 className="text-5xl font-black mb-8 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Pronto para o Próximo Nível?</h2>
                 <div className="grid md:grid-cols-2 gap-12">
                    <div className="space-y-6">
-                      <p className="text-lg opacity-80 leading-relaxed font-light">Combinamos a potência do **Three.js** com a leveza do **WebP** para criar interfaces que não apenas impressionam, mas também performam.</p>
+                      <p className="text-lg opacity-90 leading-relaxed font-light bg-black/30 p-5 rounded-2xl backdrop-blur-md">Combinamos a potência do **Three.js** com a leveza do **WebP** para criar interfaces que não apenas impressionam, mas também performam.</p>
                       <div className="flex flex-wrap gap-3">
                          <span className="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-[10px] font-mono text-blue-300 uppercase tracking-widest">Hi-Fi 3D</span>
                          <span className="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-[10px] font-mono text-purple-300 uppercase tracking-widest">Optimized</span>
