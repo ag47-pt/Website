@@ -5,7 +5,7 @@ import * as THREE from 'three'
 
 export function Earth({ lerpedScroll }: { lerpedScroll: React.MutableRefObject<number> }) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const earthTexture = useTexture('/imgs/mapa-mundi-real.png')
+  const earthTexture = useTexture('/imgs/mapamundi.webp')
   
   useFrame((state) => {
     if (!meshRef.current) return
