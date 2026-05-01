@@ -19,8 +19,8 @@ export const servicesData = {
     desc: (
       <>
         <span className="font-bold text-white">🤣 Quem manda <span className="text-yellow-400 font-black">AQUI</span> é seu cliente! </span><br/>
-        <b>💭 Filosofia de solução e foco no </b> <span className="text-blue-400 font-black">SEU PÚBLICO</span>.<br/> 
-        🧬 É como escrever código com o <span className="text-purple-400 font-black">DNA da SUA EMPRESA</span>. <br/>🫵🏻 Dando <span className="text-pink-400 font-black">FORMA</span> ao que você quer e precisa !!!<br/>
+        <b>💭 Filosofia de solução e foco no </b> <span className="text-blue-400 font-black">SEU PÚBLICO</span><br/> 
+        🧬 É como escrever código com o <span className="text-purple-400 font-black">DNA da SUA EMPRESA</span><br/>🫵🏻 Dando <span className="text-pink-400 font-black">FORMA</span> ao que quer e da <span className="text-red-400 font-black">FORMA</span> que precisar<br/>
         <span className="font-medium text-white italic">🚀 Isso catapulta <span className="text-green-400 font-black">SEU NEGÓCIO</span> para o espaço </span>
       </>
     )
@@ -35,9 +35,11 @@ export const servicesData = {
     badge: "Inovação",
     desc: (
       <>
-        <span className="font-bold text-white">Sua ideia em escala global! 🌎</span><br/><br/>
-        Desenvolvemos arquiteturas robustas e escaláveis para o seu modelo de negócio <span className="text-blue-400 font-black">RECORRENTE</span>. Do MVP à plataforma final, código limpo com <span className="text-purple-400 font-black">FOCO EM ROI</span>.<br/><br/>
-        <span className="font-medium text-white italic">Construa o futuro do seu ecossistema digital ⚡</span>
+        <span className="font-bold text-white">🌎 Sua ideia em <span className="text-yellow-400 font-black">ESCALA GLOBAL</span>! </span><br/>
+        <b>🏗️ Arquiteturas robustas e escaláveis para o modelo </b> <span className="text-blue-400 font-black">RECORRENTE</span><br/>
+        💻 Do MVP à plataforma final com <span className="text-purple-400 font-black">CÓDIGO LIMPO</span><br/>
+        🎯 Todas as decisões técnicas com <span className="text-pink-400 font-black">FOCO EM ROI</span><br/>
+        <span className="font-medium text-white italic">⚡ Construa o futuro do seu <span className="text-green-400 font-black">ECOSSISTEMA DIGITAL</span></span>
       </>
     )
   }
