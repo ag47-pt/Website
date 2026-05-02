@@ -44,6 +44,8 @@ export default function Basic3DScene() {
   const introRef = useRef<HTMLDivElement>(null)
   const cardRef1 = useRef<HTMLDivElement>(null)
   const cardRef2 = useRef<HTMLDivElement>(null)
+  const cardRef3 = useRef<HTMLDivElement>(null)
+  const cardRef4 = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
 
   return (
@@ -56,7 +58,7 @@ export default function Basic3DScene() {
 
        {/* Camada 3D */}
        <div className="fixed inset-0 w-full h-full pointer-events-none z-10">
-          <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ alpha: true }}>
+          <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }} gl={{ alpha: true }}>
              <ambientLight intensity={0.5} />
              <pointLight position={[10, 10, 10]} intensity={1.5} />
              <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} intensity={2} />
@@ -68,6 +70,8 @@ export default function Basic3DScene() {
                   introRef={introRef}
                   cardRef1={cardRef1}
                   cardRef2={cardRef2}
+                  cardRef3={cardRef3}
+                  cardRef4={cardRef4}
                   indicatorRef={indicatorRef}
                 />
                 <Earth lerpedScroll={lerpedScroll} texturePath={earthTexturePath} />
@@ -84,17 +88,42 @@ export default function Basic3DScene() {
           {/* Card 1: Websites */}
           <ScrollingCard 
             innerRef={cardRef1}
+            nextScrollTarget={0.45}
             {...servicesData.websites}
           />
 
           {/* Card 2: SaaS */}
           <ScrollingCard 
             innerRef={cardRef2}
+            nextScrollTarget={0.65}
             {...servicesData.saas}
           />
 
-          <div ref={introRef} className="h-full flex items-center justify-center">
-             <div className="text-center text-white px-4">
+          {/* Card 3: Social Media */}
+          <ScrollingCard 
+            innerRef={cardRef3}
+            nextScrollTarget={0.85}
+            {...servicesData.socialMedia}
+          />
+
+          {/* Card 4: Tráfego Pago */}
+          <ScrollingCard 
+            innerRef={cardRef4}
+            nextScrollTarget={1}
+            {...servicesData.trafegoPago}
+          />
+
+          <div 
+             ref={introRef} 
+             className="absolute inset-0 flex items-center justify-center cursor-pointer pointer-events-auto"
+             onClick={() => {
+                if (typeof window !== 'undefined') {
+                   const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                   window.scrollTo({ top: scrollHeight * 0.25, behavior: 'smooth' });
+                }
+             }}
+          >
+             <div className="text-center text-white px-4 pointer-events-none">
                 <h1 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent uppercase">Agência 47</h1>
                 <p className="text-sm md:text-xl font-light uppercase tracking-[0.5em] opacity-80 flex justify-center">
                   <span className="bg-black/20 backdrop-blur-md border border-white/10 px-6 py-2 rounded-full">Experiência Imersiva</span>
@@ -102,7 +131,7 @@ export default function Basic3DScene() {
              </div>
           </div>
 
-          <div ref={indicatorRef} className="absolute top-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
+          <div ref={indicatorRef} className="absolute top-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40 pointer-events-none">
             <span className="text-[9px] uppercase tracking-[0.4em] font-bold mb-1">Iniciar viagem astral</span>
             <div className="w-5 h-8 border-2 border-white/20 rounded-full flex justify-center p-1">
               <div className="w-1 h-1.5 bg-white/40 rounded-full animate-bounce" />
@@ -113,7 +142,7 @@ export default function Basic3DScene() {
 
        {/* Corpo de rolagem para disparar o scroll (Invisível) */}
        <div className="relative z-20">
-          <div className="h-[800vh]" />
+          <div className="h-[1600vh]" />
           
           {/* Seção Final após o scroll 3D */}
           <div className="py-1 flex items-center justify-center p-8">

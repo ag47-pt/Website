@@ -3,6 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
+const PI = Math.PI;
+const PI2 = Math.PI * 2;
+
 export function Earth({ 
   lerpedScroll, 
   texturePath 
@@ -16,10 +19,10 @@ export function Earth({
   useFrame((state) => {
     if (!meshRef.current) return
     const cur = lerpedScroll.current
-    meshRef.current.rotation.y = (cur * Math.PI * 2) + Math.PI
+    meshRef.current.rotation.y = (cur * PI2) + PI
     meshRef.current.rotation.z = 0.2
-    meshRef.current.scale.setScalar(1.0 + Math.sin(cur * Math.PI) * 0.15)
-    meshRef.current.position.y = Math.sin(cur * Math.PI * 2) * 0.2
+    meshRef.current.scale.setScalar(1.0 + Math.sin(cur * PI) * 0.15)
+    meshRef.current.position.y = Math.sin(cur * PI2) * 0.2
   })
   
   return (
@@ -54,3 +57,8 @@ export function Earth({
     </group>
   )
 }
+
+// Preload de texturas no Edge para evitar "texture pop-in" (gargalo de IO na GPU)
+useTexture.preload('/imgs/mapa-mundi-real-optimized.webp')
+useTexture.preload('/imgs/mapamundi.webp')
+useTexture.preload('/imgs/universo-nebuloso.webp')

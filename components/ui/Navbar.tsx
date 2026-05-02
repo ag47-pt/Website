@@ -41,13 +41,15 @@ export function Navbar({
 
          {/* Desktop Links */}
          <div className="hidden md:flex items-center gap-8 text-white/80 font-bold text-xs tracking-[0.2em] uppercase">
-            <a href="#" onClick={(e) => scrollToPercent(e, 0.415)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Sites</a>
-            <a href="#" onClick={(e) => scrollToPercent(e, 0.745)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">APPs</a>
+            <a href="#" onClick={(e) => scrollToPercent(e, 0.25)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Sites</a>
+            <a href="#" onClick={(e) => scrollToPercent(e, 0.45)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">APPs</a>
+            <a href="#" onClick={(e) => scrollToPercent(e, 0.65)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Social</a>
+            <a href="#" onClick={(e) => scrollToPercent(e, 0.85)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Ads</a>
             
             {/* Botão Lançar com efeito Cometa (Refinado - Branco) */}
             <button 
               onClick={(e) => scrollToPercent(e, 1)} 
-              className="relative group px-8 py-2.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 text-white font-black text-[10px] tracking-[0.2em] uppercase transition-all duration-500 hover:scale-110 active:scale-95 overflow-hidden"
+              className="relative group px-5 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 text-white font-black text-[10px] tracking-[0.2em] uppercase transition-all duration-500 hover:scale-110 active:scale-95 overflow-hidden"
             >
               <span className="relative z-10">Lançar</span>
               
@@ -66,18 +68,32 @@ export function Navbar({
          {/* Mobile Buttons (Sem texto) */}
          <div className="flex md:hidden items-center gap-2">
             <button 
-              onClick={(e) => scrollToPercent(e, 0.415)}
+              onClick={(e) => scrollToPercent(e, 0.25)}
               className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
               aria-label="Sites"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             </button>
             <button 
-              onClick={(e) => scrollToPercent(e, 0.745)}
+              onClick={(e) => scrollToPercent(e, 0.45)}
               className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
               aria-label="APPs"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            </button>
+            <button 
+              onClick={(e) => scrollToPercent(e, 0.65)}
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
+              aria-label="Social Media"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+            <button 
+              onClick={(e) => scrollToPercent(e, 0.85)}
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
+              aria-label="Tráfego Pago"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
             </button>
             
             {/* Botão Lançar Mobile com efeito Cometa (Branco) */}

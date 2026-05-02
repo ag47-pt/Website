@@ -8,6 +8,8 @@ export function ScrollManager({
   introRef,
   cardRef1,
   cardRef2,
+  cardRef3,
+  cardRef4,
   indicatorRef
 }: { 
   scrollOffsetRaw: number, 
@@ -16,6 +18,8 @@ export function ScrollManager({
   introRef: React.RefObject<HTMLDivElement | null>,
   cardRef1: React.RefObject<HTMLDivElement | null>,
   cardRef2: React.RefObject<HTMLDivElement | null>,
+  cardRef3: React.RefObject<HTMLDivElement | null>,
+  cardRef4: React.RefObject<HTMLDivElement | null>,
   indicatorRef: React.RefObject<HTMLDivElement | null>
 }) {
   useFrame((state, delta) => {
@@ -31,6 +35,7 @@ export function ScrollManager({
        const opacity = Math.max(0, 1 - (cur * 6))
        introRef.current.style.opacity = opacity.toString()
        introRef.current.style.transform = `translateY(-${cur * 47}px)`
+       introRef.current.style.pointerEvents = opacity > 0.1 ? 'auto' : 'none'
     }
 
     // Atualiza Indicador de Scroll
@@ -56,11 +61,17 @@ export function ScrollManager({
       ref.current.style.pointerEvents = op > 0.8 ? 'auto' : 'none'
     }
 
-    // Card 1: Websites (25% - 58%)
-    animateCard(cardRef1, 0.27, 0.60, 0.33, 0.50)
+    // Card 1: Websites
+    animateCard(cardRef1, 0.15, 0.35, 0.20, 0.30)
     
-    // Card 2: SaaS (58% - 91%)
-    animateCard(cardRef2, 0.62, 0.97, 0.66, 0.83)
+    // Card 2: SaaS
+    animateCard(cardRef2, 0.35, 0.55, 0.40, 0.50)
+
+    // Card 3: Social Media
+    animateCard(cardRef3, 0.55, 0.75, 0.60, 0.70)
+
+    // Card 4: Tráfego Pago
+    animateCard(cardRef4, 0.75, 0.95, 0.80, 0.90)
   })
   return null
 }
