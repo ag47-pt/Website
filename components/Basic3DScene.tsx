@@ -2,7 +2,7 @@
 
 import { Canvas } from '@react-three/fiber'
 import { Stars } from '@react-three/drei'
-import { useRef, Suspense } from 'react'
+import { useRef, Suspense, useState } from 'react'
 
 // Hooks
 import { usePageScroll } from '../hooks/usePageScroll'
@@ -23,6 +23,22 @@ export default function Basic3DScene() {
   const scrollOffsetRaw = usePageScroll()
   const lerpedScroll = useRef(0)
   
+  const [earthTexturePath, setEarthTexturePath] = useState('/imgs/mapa-mundi-real-optimized.webp')
+
+  const changeEarthTexture = () => {
+    const images = [
+      '/imgs/mapa-mundi-real-optimized.webp',
+      '/imgs/mapamundi.webp',
+      '/imgs/universo-nebuloso.webp'
+    ]
+    const currentIdx = images.indexOf(earthTexturePath)
+    let nextIdx = currentIdx
+    while (nextIdx === currentIdx) {
+      nextIdx = Math.floor(Math.random() * images.length)
+    }
+    setEarthTexturePath(images[nextIdx])
+  }
+  
   // Refs para controle de animação da UI
   const progressRef = useRef<HTMLDivElement>(null)
   const introRef = useRef<HTMLDivElement>(null)
@@ -34,7 +50,7 @@ export default function Basic3DScene() {
     <div className="relative bg-black min-h-screen overflow-x-hidden">
        {/* Background de Fundo Estático */}
        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-          <img src="/imgs/Gemini_compressed.webp" alt="Background" className="w-full h-full object-cover scale-105 opacity-40 blur-[4px] grayscale-[0.3]" />
+          <img src="/imgs/universo-nebuloso.webp" alt="Background" className="w-full h-full object-cover scale-105 opacity-40 blur-[4px] grayscale-[0.3]" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
        </div>
 
@@ -54,7 +70,7 @@ export default function Basic3DScene() {
                   cardRef2={cardRef2}
                   indicatorRef={indicatorRef}
                 />
-                <Earth lerpedScroll={lerpedScroll} />
+                <Earth lerpedScroll={lerpedScroll} texturePath={earthTexturePath} />
                 <ServiceHotspots lerpedScroll={lerpedScroll} />
                 <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
              </Suspense>
@@ -63,7 +79,7 @@ export default function Basic3DScene() {
 
        {/* Camada de UI Interativa */}
        <div className="fixed inset-0 pointer-events-none z-30">
-          <Navbar progressRef={progressRef} />
+          <Navbar progressRef={progressRef} onChangeEarth={changeEarthTexture} />
           
           {/* Card 1: Websites */}
           <ScrollingCard 
@@ -80,11 +96,13 @@ export default function Basic3DScene() {
           <div ref={introRef} className="h-full flex items-center justify-center">
              <div className="text-center text-white px-4">
                 <h1 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent uppercase">Agência 47</h1>
-                <p className="text-sm md:text-xl font-light uppercase tracking-[0.5em] opacity-50">Experiência Imersiva</p>
+                <p className="text-sm md:text-xl font-light uppercase tracking-[0.5em] opacity-80 flex justify-center">
+                  <span className="bg-black/20 backdrop-blur-md border border-white/10 px-6 py-2 rounded-full">Experiência Imersiva</span>
+                </p>
              </div>
           </div>
 
-          <div ref={indicatorRef} className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
+          <div ref={indicatorRef} className="absolute top-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
             <span className="text-[9px] uppercase tracking-[0.4em] font-bold mb-1">Iniciar viagem astral</span>
             <div className="w-5 h-8 border-2 border-white/20 rounded-full flex justify-center p-1">
               <div className="w-1 h-1.5 bg-white/40 rounded-full animate-bounce" />

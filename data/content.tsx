@@ -14,13 +14,11 @@ export const servicesData = {
     title: <><span className="whitespace-nowrap">Websites &</span><br/>Landing Pages</>,
     subtitle: "Websites & Landing Pages",
     img: "/imgs/service_web_design.png",
-    setup: "150€",
-    monthly: "29€",
     desc: (
       <>
         <span className="font-bold text-white">🤣 Quem manda <span className="text-yellow-400 font-black">AQUI</span> é seu cliente! </span><br/>
         <b>💭 Filosofia de solução e foco no </b> <span className="text-blue-400 font-black">SEU PÚBLICO</span><br/> 
-        🧬 É como escrever código com o <span className="text-purple-400 font-black">DNA da SUA EMPRESA</span><br/>🫵🏻 Dando <span className="text-pink-400 font-black">FORMA</span> ao que quer e da <span className="text-red-400 font-black">FORMA</span> que precisar<br/>
+        🧬 É código com o <span className="text-purple-400 font-black">DNA da SUA EMPRESA</span><br/>🫵🏻 Dando <span className="text-pink-400 font-black">FORMA</span> da <span className="text-red-400 font-black">FORMA</span> que é preciso<br/>
         <span className="font-medium text-white italic">🚀 Isso catapulta <span className="text-green-400 font-black">SEU NEGÓCIO</span> para o espaço </span>
       </>
     )
@@ -30,8 +28,6 @@ export const servicesData = {
     title: <><span className="whitespace-nowrap">Saas, Micro-saas,</span><br/>WebApps</>,
     subtitle: "Software as a Service",
     img: "/imgs/service_saas.png",
-    setup: "A partir de 500€",
-    monthly: "Sob Consulta",
     badge: "Inovação",
     desc: (
       <>

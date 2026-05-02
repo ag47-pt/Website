@@ -3,9 +3,15 @@ import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
-export function Earth({ lerpedScroll }: { lerpedScroll: React.MutableRefObject<number> }) {
+export function Earth({ 
+  lerpedScroll, 
+  texturePath 
+}: { 
+  lerpedScroll: React.MutableRefObject<number>,
+  texturePath: string
+}) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const earthTexture = useTexture('/imgs/mapa-mundi-real-optimized.webp')
+  const earthTexture = useTexture(texturePath)
   
   useFrame((state) => {
     if (!meshRef.current) return
@@ -19,18 +25,18 @@ export function Earth({ lerpedScroll }: { lerpedScroll: React.MutableRefObject<n
   return (
     <group scale={0.81}>
       {/* Luz central para dar o efeito de sol iluminando de dentro/perto */}
-      <pointLight position={[0, 0, 2]} intensity={2.5} color="#ffd8a8" distance={10} />
+      <pointLight position={[0, 0, 2]} intensity={1.5} color="#ffd8a8" distance={10} />
       
       <mesh ref={meshRef}>
         <sphereGeometry args={[1, 64, 64]} />
         <meshStandardMaterial 
           map={earthTexture} 
           metalness={0.1} 
-          roughness={0.5} 
+          roughness={0.7} 
           transparent={true} 
           emissive="#ffffff" 
           emissiveMap={earthTexture} 
-          emissiveIntensity={0.8} 
+          emissiveIntensity={0.2} 
         />
       </mesh>
       
@@ -40,7 +46,7 @@ export function Earth({ lerpedScroll }: { lerpedScroll: React.MutableRefObject<n
         <meshStandardMaterial 
           color="#ffaa44" 
           transparent 
-          opacity={0.15} 
+          opacity={0.1} 
           side={THREE.BackSide} 
           blending={THREE.AdditiveBlending}
         />

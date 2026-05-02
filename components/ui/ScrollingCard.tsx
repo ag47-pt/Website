@@ -6,8 +6,6 @@ export function ScrollingCard({
   subtitle, 
   desc, 
   img, 
-  setup, 
-  monthly, 
   badge = "Popular",
   tag = "Desenvolvimento Elite"
 }: { 
@@ -16,8 +14,6 @@ export function ScrollingCard({
   subtitle: string,
   desc: React.ReactNode,
   img: string,
-  setup: string,
-  monthly: string,
   badge?: string,
   tag?: string
 }) {
@@ -42,10 +38,6 @@ export function ScrollingCard({
         <div className="flex items-center gap-3 mb-3"><div className="w-12 h-[1px] bg-blue-500" /><span className="text-[10px] font-bold uppercase tracking-[0.4em] text-blue-400">{tag}</span></div>
         <h3 className="text-3xl font-black mb-3 leading-tight tracking-tighter">{title}</h3>
         <div className="text-sm opacity-90 mb-6 leading-relaxed font-light max-w-lg bg-black/30 p-4 rounded-2xl backdrop-blur-md">{desc}</div>
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1 bg-white/5 p-4 rounded-3xl border border-white/5 group hover:border-blue-500/30 transition-colors"><span className="block text-[10px] uppercase tracking-widest opacity-40 mb-1">Taxa de Setup</span><span className="text-2xl font-black text-white">{setup}</span></div>
-          <div className="flex-1 bg-blue-500/10 p-4 rounded-3xl border border-blue-500/10 group hover:border-blue-500/30 transition-colors"><span className="block text-[10px] uppercase tracking-widest opacity-40 mb-1">Hospedagem</span><span className="text-2xl font-black text-blue-400">{monthly}<span className="text-xs opacity-50 font-light ml-1">/mês</span></span></div>
-        </div>
         <div className="flex items-center gap-4">
           <button style={{ animation: 'cardPulse 4s infinite alternate ease-in-out' }} className="flex-1 py-5 bg-white/10 text-white border-2 font-black rounded-2xl hover:bg-white/20 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 uppercase tracking-widest text-[10px] group flex items-center justify-center gap-2 backdrop-blur-2xl border-white/10">Saiba mais<span className="group-hover:translate-x-2 transition-transform duration-300">→</span></button>
           <div className="hidden md:flex flex-col text-[9px] uppercase tracking-tighter opacity-30 leading-none"><span>Suporte</span><span>24/7 Ativo</span></div>

@@ -30,7 +30,7 @@ export function ScrollManager({
     if (introRef.current) {
        const opacity = Math.max(0, 1 - (cur * 6))
        introRef.current.style.opacity = opacity.toString()
-       introRef.current.style.transform = `translateY(-${cur * 50}px)`
+       introRef.current.style.transform = `translateY(-${cur * 47}px)`
     }
 
     // Atualiza Indicador de Scroll
@@ -57,10 +57,10 @@ export function ScrollManager({
     }
 
     // Card 1: Websites (25% - 58%)
-    animateCard(cardRef1, 0.25, 0.58, 0.33, 0.50)
+    animateCard(cardRef1, 0.27, 0.60, 0.33, 0.50)
     
     // Card 2: SaaS (58% - 91%)
-    animateCard(cardRef2, 0.58, 0.91, 0.66, 0.83)
+    animateCard(cardRef2, 0.62, 0.97, 0.66, 0.83)
   })
   return null
 }
