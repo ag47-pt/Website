@@ -12,7 +12,7 @@ export const servicesData = {
   websites: {
     tag: "Desenvolvimento Elite",
     title: <><span className="whitespace-nowrap">Websites &</span><br/>Landing Pages</>,
-    subtitle: "Websites & Landing Pages",
+    subtitle: "Websites &\nLanding Pages",
     img: "/imgs/service_web_design_pt.webp",
     desc: (
       <>
@@ -26,7 +26,7 @@ export const servicesData = {
   saas: {
     tag: "Desenvolvimento As Service",
     title: <><span className="whitespace-nowrap">Saas, Micro-saas,</span><br/>WebApps</>,
-    subtitle: "Software as a Service",
+    subtitle: "Saas, Micro-saas,\nWebApps",
     img: "/imgs/service_saas_pt.webp",
     badge: "Inovação",
     desc: (
@@ -42,7 +42,7 @@ export const servicesData = {
   socialMedia: {
     tag: "Presença Digital",
     title: <><span className="whitespace-nowrap">Social Media &</span><br/>Conteúdo</>,
-    subtitle: "Social Media & Conteúdo",
+    subtitle: "Social Media &\nConteúdo",
     img: "/imgs/service_social_media_pt.webp",
     desc: (
       <>
@@ -56,7 +56,7 @@ export const servicesData = {
   trafegoPago: {
     tag: "Performance Total",
     title: <><span className="whitespace-nowrap">Tráfego Pago &</span><br/>Conversão</>,
-    subtitle: "Tráfego Pago & Conversão",
+    subtitle: "Tráfego Pago &\nConversão",
     img: "/imgs/service_ads_pt.webp",
     desc: (
       <>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Typewriter } from './Typewriter'
 
 export function ScrollingCard({ 
   innerRef, 
@@ -40,7 +41,9 @@ export function ScrollingCard({
       </div>
       <div className="p-8 md:p-10 md:w-[65%] text-white flex flex-col justify-center">
         <div className="flex items-center gap-3 mb-3"><div className="w-12 h-[1px] bg-blue-500" /><span className="text-[10px] font-bold uppercase tracking-[0.4em] text-blue-400">{tag}</span></div>
-        <h3 className="text-3xl font-black mb-3 leading-tight tracking-tighter">{title}</h3>
+        <h3 className="text-3xl font-black mb-3 leading-tight tracking-tighter">
+          <Typewriter text={subtitle} duration={2000} watchRef={innerRef} />
+        </h3>
         <div className="text-sm opacity-95 mb-6 leading-relaxed font-light bg-black/60 p-6 md:p-8 backdrop-blur-xl border-y border-white/5 -mx-8 md:-mx-10 shadow-2xl">{desc}</div>
         <div className="flex items-center gap-3">
           <button 

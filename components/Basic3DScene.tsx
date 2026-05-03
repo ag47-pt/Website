@@ -19,6 +19,8 @@ import { Earth } from './3d/Earth'
 import { ServiceHotspots } from './3d/ServiceHotspots'
 import { ScrollManager } from './3d/ScrollManager'
 
+import { Typewriter } from './ui/Typewriter'
+
 export default function Basic3DScene() {
    const scrollOffsetRaw = usePageScroll()
    const lerpedScroll = useRef(0)
@@ -151,7 +153,9 @@ export default function Basic3DScene() {
             {/* Seção Final após o scroll 3D */}
             <div className="py-1 flex items-center justify-center p-8">
                <div className="max-w-4xl w-full bg-white/[0.01] backdrop-blur-xl border border-white/5 p-16 rounded-[2.5rem] text-white shadow-2xl text-center">
-                  <h2 className="text-6xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tighter">Pronto para o Próximo Nível?</h2>
+                  <h2 className="text-6xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tighter">
+                     <Typewriter text="Pronto para o Próximo Nível?" duration={3000} delay={500} cursorColor="bg-pink-500" />
+                  </h2>
                </div>
             </div>
             <div className="h-40 flex items-center justify-center text-white/10 text-[10px] uppercase tracking-[0.5em] font-black">Inovação sem limites • 2026</div>
