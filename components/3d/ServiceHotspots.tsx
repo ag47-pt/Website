@@ -10,8 +10,8 @@ export function ServiceHotspots({ lerpedScroll }: { lerpedScroll: React.MutableR
 
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = (lerpedScroll.current * Math.PI * 0.2) + (state.clock.elapsedTime * 0.1)
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1
+      groupRef.current.rotation.y = (lerpedScroll.current * Math.PI * 0.7) + (state.clock.elapsedTime * 0.05)
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.9) * 0.1
     }
   })
 

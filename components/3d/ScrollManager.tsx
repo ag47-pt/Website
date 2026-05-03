@@ -62,16 +62,16 @@ export function ScrollManager({
     }
 
     // Card 1: Websites
-    animateCard(cardRef1, 0.15, 0.35, 0.20, 0.30)
+    animateCard(cardRef1, 0.12, 0.32, 0.20, 0.30)
     
     // Card 2: SaaS
-    animateCard(cardRef2, 0.35, 0.55, 0.40, 0.50)
+    animateCard(cardRef2, 0.32, 0.52, 0.40, 0.50)
 
     // Card 3: Social Media
-    animateCard(cardRef3, 0.55, 0.75, 0.60, 0.70)
+    animateCard(cardRef3, 0.52, 0.72, 0.60, 0.70)
 
     // Card 4: Tráfego Pago
-    animateCard(cardRef4, 0.75, 0.95, 0.80, 0.90)
+    animateCard(cardRef4, 0.72, 0.92, 0.80, 0.90)
   })
   return null
 }
