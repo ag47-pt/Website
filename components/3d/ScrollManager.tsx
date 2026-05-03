@@ -53,11 +53,11 @@ export function ScrollManager({
       const center = (s + e) / 2
       const dist = cur - center
       const ty = (1 - op) * 120 * (dist > 0 ? -1 : 1)
-      const rx = (1 - op) * 25
-      const ry = dist * 40
+      const rx = (1 - op) * 45
+      const ry = dist * 90
       const sc = 0.85 + op * 0.15
       ref.current.style.opacity = Math.max(0, op).toString()
-      ref.current.style.transform = `translate(-50%, calc(-50% + ${ty}px)) perspective(1200px) rotateX(${rx}deg) rotateY(${ry}deg) scale(${sc})`
+      ref.current.style.transform = `translate(-50%, calc(-45% + ${ty}px)) perspective(1200px) rotateX(${rx}deg) rotateY(${ry}deg) scale(${sc})`
       ref.current.style.pointerEvents = op > 0.8 ? 'auto' : 'none'
     }
 

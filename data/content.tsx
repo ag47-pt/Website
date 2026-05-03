@@ -13,7 +13,7 @@ export const servicesData = {
     tag: "Desenvolvimento Elite",
     title: <><span className="whitespace-nowrap">Websites &</span><br/>Landing Pages</>,
     subtitle: "Websites & Landing Pages",
-    img: "/imgs/service_web_design.png",
+    img: "/imgs/service_web_design_pt.webp",
     desc: (
       <>
         <span className="font-bold text-white">🤣 Quem manda <span className="text-yellow-400 font-black">AQUI</span> é seu cliente! </span><br/>
@@ -27,7 +27,7 @@ export const servicesData = {
     tag: "Desenvolvimento As Service",
     title: <><span className="whitespace-nowrap">Saas, Micro-saas,</span><br/>WebApps</>,
     subtitle: "Software as a Service",
-    img: "/imgs/service_saas.png",
+    img: "/imgs/service_saas_pt.webp",
     badge: "Inovação",
     desc: (
       <>
@@ -43,7 +43,7 @@ export const servicesData = {
     tag: "Presença Digital",
     title: <><span className="whitespace-nowrap">Social Media &</span><br/>Conteúdo</>,
     subtitle: "Social Media & Conteúdo",
-    img: "/imgs/service_web_design.png",
+    img: "/imgs/service_social_media_pt.webp",
     desc: (
       <>
         <span className="font-bold text-white">🔥 Quem manda <span className="text-yellow-400 font-black">AQUI</span> é sua audiência! </span><br/>
@@ -57,7 +57,7 @@ export const servicesData = {
     tag: "Performance Total",
     title: <><span className="whitespace-nowrap">Tráfego Pago &</span><br/>Conversão</>,
     subtitle: "Tráfego Pago & Conversão",
-    img: "/imgs/service_web_design.png",
+    img: "/imgs/service_ads_pt.webp",
     desc: (
       <>
         <span className="font-bold text-white">🎯 Quem manda <span className="text-yellow-400 font-black">AQUI</span> são as vendas! </span><br/>

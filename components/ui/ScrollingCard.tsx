@@ -8,7 +8,8 @@ export function ScrollingCard({
   img, 
   badge = "Popular",
   tag = "Desenvolvimento Elite",
-  nextScrollTarget
+  nextScrollTarget,
+  prevScrollTarget
 }: { 
   innerRef: React.RefObject<HTMLDivElement | null>,
   title: React.ReactNode,
@@ -17,7 +18,8 @@ export function ScrollingCard({
   img: string,
   badge?: string,
   tag?: string,
-  nextScrollTarget?: number
+  nextScrollTarget?: number,
+  prevScrollTarget?: number
 }) {
   return (
     <div 
@@ -39,7 +41,7 @@ export function ScrollingCard({
       <div className="p-8 md:p-10 md:w-[65%] text-white flex flex-col justify-center">
         <div className="flex items-center gap-3 mb-3"><div className="w-12 h-[1px] bg-blue-500" /><span className="text-[10px] font-bold uppercase tracking-[0.4em] text-blue-400">{tag}</span></div>
         <h3 className="text-3xl font-black mb-3 leading-tight tracking-tighter">{title}</h3>
-        <div className="text-sm opacity-90 mb-6 leading-relaxed font-light max-w-lg bg-black/30 p-4 rounded-2xl backdrop-blur-md">{desc}</div>
+        <div className="text-sm opacity-95 mb-6 leading-relaxed font-light bg-black/60 p-6 md:p-8 backdrop-blur-xl border-y border-white/5 -mx-8 md:-mx-10 shadow-2xl">{desc}</div>
         <div className="flex items-center gap-3">
           <button 
             onClick={() => {
@@ -48,16 +50,36 @@ export function ScrollingCard({
                 window.scrollTo({ top: scrollHeight * nextScrollTarget, behavior: 'smooth' });
               }
             }}
-            className="self-stretch px-4 bg-white/5 border border-white/20 rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-colors shrink-0 group" 
-            aria-label="Continuar rolando"
+            className="self-stretch px-2.5 bg-white/5 border border-white/20 rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all shrink-0 group" 
+            aria-label="Próximo"
           >
-            <div className="w-4 h-7 border-2 border-white/40 group-hover:border-white/80 transition-colors rounded-full flex justify-center p-[2px]">
-              <div className="w-1 h-1.5 bg-white/60 group-hover:bg-white transition-colors rounded-full animate-bounce" />
+            <div className="w-5 h-8 border-2 border-white/20 group-hover:border-white/40 transition-colors rounded-full flex justify-center p-1">
+              <div className="w-1 h-1.5 bg-white/40 group-hover:bg-white transition-colors rounded-full animate-bounce" />
             </div>
-            <div className="animate-bounce text-base text-white/60 group-hover:text-white transition-colors">↓</div>
+            <div className="animate-bounce text-lg text-white/40 group-hover:text-white transition-colors">↓</div>
           </button>
+          
           <button style={{ animation: 'cardPulse 4s infinite alternate ease-in-out' }} className="flex-1 py-5 bg-white/10 text-white border-2 font-black rounded-2xl hover:bg-white/20 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 uppercase tracking-widest text-[10px] group flex items-center justify-center gap-2 backdrop-blur-2xl border-white/10">Saiba mais<span className="group-hover:translate-x-2 transition-transform duration-300">→</span></button>
-          <div className="hidden md:flex flex-col text-[9px] uppercase tracking-tighter opacity-30 leading-none shrink-0"><span>Suporte</span><span>24/7 Ativo</span></div>
+          
+          {prevScrollTarget !== undefined && (
+            <button 
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                  window.scrollTo({ top: scrollHeight * prevScrollTarget, behavior: 'smooth' });
+                }
+              }}
+              className="self-stretch px-2.5 bg-white/5 border border-white/20 rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all shrink-0 group" 
+              aria-label="Anterior"
+            >
+              <div className="animate-bounce text-lg text-white/40 group-hover:text-white transition-colors">↑</div>
+              <div className="w-5 h-8 border-2 border-white/20 group-hover:border-white/40 transition-colors rounded-full flex flex-col items-center justify-start p-1">
+                <div className="w-1 h-1.5 bg-white/40 group-hover:bg-white transition-colors rounded-full animate-bounce mt-auto" />
+              </div>
+            </button>
+          )}
+
+          <div className="hidden xl:flex flex-col text-[8px] uppercase tracking-tighter opacity-20 leading-none shrink-0 ml-1"><span>Suporte</span><span>Ativo</span></div>
         </div>
       </div>
     </div>

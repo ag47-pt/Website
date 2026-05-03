@@ -86,26 +86,34 @@ export default function Basic3DScene() {
             <Navbar progressRef={progressRef} onChangeEarth={changeEarthTexture} />
 
             {/* Card 1: Websites */}
-            <ScrollingCard
+            <ScrollingCard 
                innerRef={cardRef1}
+               nextScrollTarget={0.45}
+               prevScrollTarget={0}
                {...servicesData.websites}
             />
 
             {/* Card 2: SaaS */}
-            <ScrollingCard
+            <ScrollingCard 
                innerRef={cardRef2}
+               nextScrollTarget={0.65}
+               prevScrollTarget={0.25}
                {...servicesData.saas}
             />
 
             {/* Card 3: Social Media */}
-            <ScrollingCard
+            <ScrollingCard 
                innerRef={cardRef3}
+               nextScrollTarget={0.85}
+               prevScrollTarget={0.45}
                {...servicesData.socialMedia}
             />
 
             {/* Card 4: Tráfego Pago */}
-            <ScrollingCard
+            <ScrollingCard 
                innerRef={cardRef4}
+               nextScrollTarget={1}
+               prevScrollTarget={0.65}
                {...servicesData.trafegoPago}
             />
 
