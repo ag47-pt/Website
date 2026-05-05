@@ -65,8 +65,11 @@ export const metadata: Metadata = {
     "desenvolvimento web",
   ],
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
   },
 };
 
@@ -75,7 +78,7 @@ const jsonLd = {
   '@type': 'Organization',
   name: 'Agência 47',
   url: 'https://ag47.pt',
-  logo: 'https://ag47.pt/icon.svg',
+  logo: 'https://ag47.pt/favicon.ico',
   description:
     'Agência digital especializada em websites de conversão, SaaS, Social Media e Tráfego Pago em Portugal.',
   address: {
