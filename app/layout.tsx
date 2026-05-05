@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "https://www.ag47.pt/opengraph-image.png",
         width: 1200,
         height: 630,
         alt: "Agência 47 — Experiência Digital Imersiva",
