@@ -9,6 +9,7 @@ import { usePageScroll } from '../hooks/usePageScroll'
 
 // Data
 import { servicesData } from '../data/content'
+import { serviceKeyToSlug } from '../data/services'
 
 // UI Components
 import { Navbar } from './ui/Navbar'
@@ -92,6 +93,7 @@ export default function Basic3DScene() {
                innerRef={cardRef1}
                nextScrollTarget={0.45}
                prevScrollTarget={0}
+               slug={serviceKeyToSlug.websites}
                {...servicesData.websites}
             />
 
@@ -100,6 +102,7 @@ export default function Basic3DScene() {
                innerRef={cardRef2}
                nextScrollTarget={0.65}
                prevScrollTarget={0.25}
+               slug={serviceKeyToSlug.saas}
                {...servicesData.saas}
             />
 
@@ -108,6 +111,7 @@ export default function Basic3DScene() {
                innerRef={cardRef3}
                nextScrollTarget={0.85}
                prevScrollTarget={0.45}
+               slug={serviceKeyToSlug.socialMedia}
                {...servicesData.socialMedia}
             />
 
@@ -116,6 +120,7 @@ export default function Basic3DScene() {
                innerRef={cardRef4}
                nextScrollTarget={1}
                prevScrollTarget={0.65}
+               slug={serviceKeyToSlug.trafegoPago}
                {...servicesData.trafegoPago}
             />
 

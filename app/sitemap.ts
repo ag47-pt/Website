@@ -1,23 +1,27 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next'
+import { services } from '@/data/services'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://ag47.pt';
-  
-  // Lista de rotas estáticas
-  const routes = [
-    '',
-    '/servicos/criacao-de-sites',
-    '/servicos/landing-pages',
-    '/servicos/sistemas-e-webapps',
-    '/servicos/micro-saas',
-    '/servicos/trafego-pago',
-    '/servicos/full-service',
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
+  const servicePages = services.map((s) => ({
+    url: `https://ag47.pt/servicos/${s.slug}`,
     lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1 : 0.8,
-  }));
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
 
-  return routes;
+  return [
+    {
+      url: 'https://ag47.pt',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 1,
+    },
+    {
+      url: 'https://ag47.pt/servicos',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    ...servicePages,
+  ]
 }

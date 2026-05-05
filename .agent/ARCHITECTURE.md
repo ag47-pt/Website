@@ -8,9 +8,9 @@
 
 Antigravity Kit is a modular system consisting of:
 
-- **20 Specialist Agents** - Role-based AI personas
-- **36 Skills** - Domain-specific knowledge modules
-- **11 Workflows** - Slash command procedures
+- **21 Specialist Agents** - Role-based AI personas
+- **37 Skills** - Domain-specific knowledge modules
+- **12 Workflows** - Slash command procedures
 
 ---
 
@@ -19,9 +19,9 @@ Antigravity Kit is a modular system consisting of:
 ```plaintext
 .agent/
 ├── ARCHITECTURE.md          # This file
-├── agents/                  # 20 Specialist Agents
-├── skills/                  # 36 Skills
-├── workflows/               # 11 Slash Commands
+├── agents/                  # 21 Specialist Agents
+├── skills/                  # 37 Skills
+├── workflows/               # 12 Slash Commands
 ├── rules/                   # Global Rules
 └── scripts/                 # Master Validation Scripts
 ```
@@ -54,10 +54,11 @@ Specialist AI personas for different domains.
 | `qa-automation-engineer` | E2E testing, CI pipelines  | webapp-testing, testing-patterns                         |
 | `code-archaeologist`     | Legacy code, refactoring   | clean-code, code-review-checklist                        |
 | `explorer-agent`         | Codebase analysis          | -                                                        |
+| `3d-animation-specialist` | 3D Web & Immersive UX      | premium-3d-scroll-page, nextjs-react-expert              |
 
 ---
 
-## 🧩 Skills (36)
+## 🧩 Skills (37)
 
 Modular knowledge domains that agents can load on-demand. based on task context.
 
@@ -69,7 +70,8 @@ Modular knowledge domains that agents can load on-demand. based on task context.
 | `web-design-guidelines` | Web UI audit - 100+ rules for accessibility, UX, performance (Vercel) |
 | `tailwind-patterns`     | Tailwind CSS v4 utilities                                             |
 | `frontend-design`       | UI/UX patterns, design systems                                        |
-| `ui-ux-pro-max`         | 50 styles, 21 palettes, 50 fonts                                      |
+| `ui-ux-pro-max`           | 50 styles, 21 palettes, 50 fonts                                      |
+| `premium-3d-scroll-page` | High-end 3D & Lerp scroll experiences                                 |
 
 ### Backend & API
 
@@ -168,7 +170,7 @@ Modular knowledge domains that agents can load on-demand. based on task context.
 
 ---
 
-## 🔄 Workflows (11)
+## 🔄 Workflows (12)
 
 Slash command procedures. Invoke with `/command`.
 
@@ -185,6 +187,7 @@ Slash command procedures. Invoke with `/command`.
 | `/status`        | Check project status     |
 | `/test`          | Run tests                |
 | `/ui-ux-pro-max` | Design with 50 styles    |
+| `/create-3d`     | Create immersive 3D page |
 
 ---
 
@@ -266,9 +269,9 @@ For details, see [scripts/README.md](scripts/README.md)
 
 | Metric              | Value                         |
 | ------------------- | ----------------------------- |
-| **Total Agents**    | 20                            |
-| **Total Skills**    | 36                            |
-| **Total Workflows** | 11                            |
+| **Total Agents**    | 21                            |
+| **Total Skills**    | 37                            |
+| **Total Workflows** | 12                            |
 | **Total Scripts**   | 2 (master) + 18 (skill-level) |
 | **Coverage**        | ~90% web/mobile development   |
 
@@ -286,3 +289,4 @@ For details, see [scripts/README.md](scripts/README.md)
 | Testing  | `test-engineer`       | testing-patterns, webapp-testing      |
 | Debug    | `debugger`            | systematic-debugging                  |
 | Plan     | `project-planner`     | brainstorming, plan-writing           |
+| 3D Web   | `3d-animation-specialist` | premium-3d-scroll-page            |

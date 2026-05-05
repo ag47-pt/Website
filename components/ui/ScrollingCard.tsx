@@ -1,6 +1,6 @@
 import React from 'react'
-import { Typewriter } from './Typewriter'
 import Link from 'next/link'
+import { Typewriter } from './Typewriter'
 
 export function ScrollingCard({ 
   innerRef, 
@@ -10,9 +10,9 @@ export function ScrollingCard({
   img, 
   badge = "Popular",
   tag = "Desenvolvimento Elite",
+  slug,
   nextScrollTarget,
-  prevScrollTarget,
-  href = "/servicos"
+  prevScrollTarget
 }: { 
   innerRef: React.RefObject<HTMLDivElement | null>,
   title: React.ReactNode,
@@ -21,9 +21,9 @@ export function ScrollingCard({
   img: string,
   badge?: string,
   tag?: string,
+  slug?: string,
   nextScrollTarget?: number,
-  prevScrollTarget?: number,
-  href?: string
+  prevScrollTarget?: number
 }) {
   return (
     <div 
@@ -65,7 +65,17 @@ export function ScrollingCard({
             <div className="animate-bounce text-lg text-white/40 group-hover:text-white transition-colors">↓</div>
           </button>
           
-          <Link href={href} style={{ animation: 'cardPulse 4s infinite alternate ease-in-out' }} className="flex-1 py-5 bg-white/10 text-white border-2 font-black rounded-2xl hover:bg-white/20 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 uppercase tracking-widest text-[10px] group flex items-center justify-center gap-2 backdrop-blur-2xl border-white/10">Saiba mais<span className="group-hover:translate-x-2 transition-transform duration-300">→</span></Link>
+          {slug ? (
+            <Link
+              href={`/servicos/${slug}`}
+              style={{ animation: 'cardPulse 4s infinite alternate ease-in-out' }}
+              className="flex-1 py-5 bg-white/10 text-white border-2 font-black rounded-2xl hover:bg-white/20 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 uppercase tracking-widest text-[10px] group flex items-center justify-center gap-2 backdrop-blur-2xl border-white/10 pointer-events-auto"
+            >
+              Saiba mais<span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
+            </Link>
+          ) : (
+            <button style={{ animation: 'cardPulse 4s infinite alternate ease-in-out' }} className="flex-1 py-5 bg-white/10 text-white border-2 font-black rounded-2xl hover:bg-white/20 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 uppercase tracking-widest text-[10px] group flex items-center justify-center gap-2 backdrop-blur-2xl border-white/10">Saiba mais<span className="group-hover:translate-x-2 transition-transform duration-300">→</span></button>
+          )}
           
           {prevScrollTarget !== undefined && (
             <button 

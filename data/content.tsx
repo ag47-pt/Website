@@ -11,7 +11,6 @@ export const hotspotsData = [
 export const servicesData = {
   websites: {
     tag: "Desenvolvimento Elite",
-    href: "/servicos/criacao-de-sites",
     title: <><span className="whitespace-nowrap">Websites &</span><br/>Landing Pages</>,
     subtitle: "Websites &\nLanding Pages",
     img: "/imgs/service_web_design_pt.webp",
@@ -26,7 +25,6 @@ export const servicesData = {
   },
   saas: {
     tag: "Desenvolvimento As Service",
-    href: "/servicos/sistemas-e-webapps",
     title: <><span className="whitespace-nowrap">Saas, Micro-saas,</span><br/>WebApps</>,
     subtitle: "Saas, Micro-saas,\nWebApps",
     img: "/imgs/service_saas_pt.webp",
@@ -43,7 +41,6 @@ export const servicesData = {
   },
   socialMedia: {
     tag: "Presença Digital",
-    href: "/servicos/full-service",
     title: <><span className="whitespace-nowrap">Social Media &</span><br/>Conteúdo</>,
     subtitle: "Social Media &\nConteúdo",
     img: "/imgs/service_social_media_pt.webp",
@@ -58,7 +55,6 @@ export const servicesData = {
   },
   trafegoPago: {
     tag: "Performance Total",
-    href: "/servicos/trafego-pago",
     title: <><span className="whitespace-nowrap">Tráfego Pago &</span><br/>Conversão</>,
     subtitle: "Tráfego Pago &\nConversão",
     img: "/imgs/service_ads_pt.webp",

@@ -13,67 +13,94 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "AG47 | Agência Full Service - Criação de Sites, SaaS e Tráfego Pago",
-    template: "%s | AG47"
-  },
-  description: "Agência especializada em Criação de Sites, WebApps, Micro-SaaS e Tráfego Pago com foco em ROI e Design 3D Exclusivo. Atendimento em Portugal e Brasil.",
-  keywords: ["Criação de Sites", "Landing Page", "Sistemas Web", "Webapps", "Micro-Saas", "Tráfego Pago", "Agência Full Service", "Marketing Digital Brasil", "Marketing Digital Portugal", "Design 3D", "ROI"],
-  authors: [{ name: "Agência 47" }],
-  creator: "Agência 47",
-  publisher: "Agência 47",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
+  title: "Agência 47 | Websites, SaaS & Marketing Digital em Portugal",
+  description:
+    "Catapultamos o teu negócio para o próximo nível. Criamos websites de conversão, SaaS, Social Media e Tráfego Pago com o DNA da tua marca.",
+  metadataBase: new URL("https://ag47.pt"),
+  alternates: {
+    canonical: "/",
   },
   openGraph: {
-    title: "AG47 | Agência Full Service",
-    description: "Design 3D Exclusivo, Desenvolvimento Ultra-rápido e Foco Total em ROI.",
+    title: "Agência 47 | Websites, SaaS & Marketing Digital",
+    description:
+      "Websites, SaaS, Social Media e Tráfego Pago. Experiência imersiva 3D que reflete a essência da tua marca.",
     url: "https://ag47.pt",
-    siteName: "AG47",
-    locale: "pt_BR",
+    siteName: "Agência 47",
+    locale: "pt_PT",
     type: "website",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "AG47 - Agência Full Service",
+        alt: "Agência 47 — Experiência Digital Imersiva",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AG47 | Agência Full Service",
-    description: "Conduzindo sua marca ao próximo nível com tecnologia e design de ponta.",
-    images: ["/og-image.png"],
+    title: "Agência 47 | Websites, SaaS & Marketing Digital",
+    description:
+      "Catapultamos o teu negócio para o próximo nível com websites, SaaS e marketing de performance.",
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+    googleBot: { index: true, follow: true },
   },
+  keywords: [
+    "agência digital",
+    "agência 47",
+    "ag47",
+    "ag47.pt",
+    "Agencia 47 Portugal",
+    "Agencia Digital Portugal",
+    "Agencia de Marketing Digital",
+    "Agencia de Marketing Digital Portugal",
+    "websites Portugal",
+    "SaaS",
+    "marketing digital",
+    "tráfego pago",
+    "social media",
+    "desenvolvimento web",
+  ],
 };
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Agência 47',
+  url: 'https://ag47.pt',
+  logo: 'https://ag47.pt/favicon.ico',
+  description:
+    'Agência digital especializada em websites de conversão, SaaS, Social Media e Tráfego Pago em Portugal.',
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'PT',
+  },
+  sameAs: [],
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-PT"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
+      <body suppressHydrationWarning className="min-h-full flex flex-col">
+        {children}
+      </body>
     </html>
-  );
+  )
 }

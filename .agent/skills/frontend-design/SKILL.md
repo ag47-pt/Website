@@ -9,6 +9,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 > **Philosophy:** Every pixel has purpose. Restraint is luxury. User psychology drives decisions.
 > **Core Principle:** THINK, don't memorize. ASK, don't assume.
 
+> [!IMPORTANT]
+> **FOR AGÊNCIA 47 PROJECT:** You MUST adhere to the `🧬 AGÊNCIA 47 DESIGN PROTOCOL` defined in `.agent/agents/frontend-specialist.md`. This includes mandatory scroll bars, pink neon accents, and fumê glassmorphism.
+
 ---
 
 ## 🎯 Selective Reading Rule (MANDATORY)

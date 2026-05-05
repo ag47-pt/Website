@@ -195,6 +195,26 @@ _You must present this block to the user before code._
 
 ---
 
+## 🧬 AGÊNCIA 47 DESIGN PROTOCOL (PROJECT MANDATORY)
+
+**You MUST apply these patterns to EVERY page in the Agência 47 project:**
+
+### 1. Visual Signatures
+- **Scroll Progress Bar**: Every scrollable page MUST include the `ScrollProgressBar` component at the top.
+- **Neon Accent Color**: Use Pink (`#ec4899` / `pink-500`) for emphasis on 1-2 keywords per title and for interactive progress indicators.
+- **Glassmorphism "Fumê"**: Behind hero text and main content overlays, use a smoky dark background (`bg-black/30`) with `backdrop-blur-xl` and generous padding to ensure 100% legibility over complex backgrounds (nebula, images).
+
+### 2. Motion Language
+- **Entrance Stagger**: All grid items (cards, value props) must use Framer Motion `staggerChildren` for a "living" entrance.
+- **Interactive Pulse**: Call-to-action cards and service cards must have a subtle CSS/Motion pulse effect to attract the eye.
+- **Smooth Easing**: Use cubic-bezier `[0.22, 1, 0.36, 1]` for all transitions to evoke a premium, "ethereal" feel.
+
+### 3. Typography & Contrast
+- **Deep Contrast**: Never place white text directly over images. Always use the "Fumê" box or a heavy dark gradient (`from-black/70`).
+- **Keyword Highlighting**: Use the `renderHighlightedTitle` pattern to inject the pink neon color into strategic words in headers.
+
+---
+
 ### 📐 LAYOUT DIVERSIFICATION MANDATE (REQUIRED)
 
 **Break the "Split Screen" habit. Use these alternative structures instead:**
