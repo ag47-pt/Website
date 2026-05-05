@@ -1,34 +1,28 @@
 'use client'
 
+import { useState, useRef } from 'react'
 import Link from 'next/link'
-import { motion, Variants } from 'framer-motion'
+import { motion, Variants, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { ScrollProgressBar } from '@/components/ui/ScrollProgressBar'
+import { CountUp } from '@/components/ui/CountUp'
 import { services } from '@/data/services'
+import { usePageScroll } from '@/hooks/usePageScroll'
+import { useTheme, ThemeProvider } from '@/context/ThemeContext'
+import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher'
 
-const fadeInUp: Variants = {
-  initial: { opacity: 0, y: 30 },
-  whileInView: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
-  }
-}
-
-const staggerContainer: Variants = {
-  initial: {},
-  whileInView: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-}
-
-const renderHighlightedTitle = (text: string) => {
+/**
+ * Utilitário para renderizar títulos com destaque colorido.
+ */
+const renderHighlightedTitle = (text: string, theme: any) => {
+  if (!text) return null;
   const parts = text.split(/(\*.*?\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith('*') && part.endsWith('*')) {
       return (
-        <span key={i} className="text-[#ec4899] drop-shadow-[0_0_15px_rgba(236,72,153,0.6)]">
+        <span 
+          key={i} 
+          style={{ color: theme.colors.highlight, filter: `drop-shadow(0 0 15px ${theme.colors.highlight}60)` }}
+        >
           {part.slice(1, -1)}
         </span>
       );
@@ -37,12 +31,138 @@ const renderHighlightedTitle = (text: string) => {
   });
 };
 
-function HeroSection({ service }: { service: (typeof services)[number] }) {
+export default function ServicoDetalheClient({ 
+  service 
+}: { 
+  service: (typeof services)[number] 
+}) {
   return (
-    <section className="relative pt-40 pb-28 px-6 overflow-hidden">
+    <ThemeProvider>
+      <ServicoDetalheContent service={service} />
+    </ThemeProvider>
+  )
+}
+
+function ServicoDetalheContent({ 
+  service 
+}: { 
+  service: (typeof services)[number] 
+}) {
+  const { theme, themeName, toggleTheme } = useTheme()
+  const scrollOffset = usePageScroll()
+  const displayPercent = Math.round(theme.branding.startingPercent + (scrollOffset * (100 - theme.branding.startingPercent)))
+
+  // Variants dinâmicas baseadas no tema
+  const fadeInUp: Variants = {
+    initial: { opacity: 0, y: 30 },
+    whileInView: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: theme.animations.duration, ease: theme.animations.ease }
+    }
+  }
+
+  const staggerContainer: Variants = {
+    initial: {},
+    whileInView: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <style>{`
+        :root {
+          --primary-color: ${theme.colors.primary};
+          --secondary-color: ${theme.colors.secondary};
+          --highlight-color: ${theme.colors.highlight};
+        }
+      `}</style>
+      
+      {/* Fundo fixo */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img
+          src="/imgs/universo-nebuloso.webp"
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-cover opacity-30 blur-[4px]"
+        />
+        <div className="absolute inset-0 bg-black/30" />
+      </div>
+
+      <div className="relative z-10">
+        {/* Navbar */}
+        <nav className="fixed top-0 left-0 w-full z-50 bg-white/5 backdrop-blur-xl border-b border-white/10">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-5">
+              <Link
+                href="/"
+                className="font-black text-2xl tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
+              >
+                AG47
+              </Link>
+              <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
+            </div>
+            <div className="flex items-center gap-6">
+              <Link
+                href="/servicos"
+                className="text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-white transition-colors hidden sm:block"
+              >
+                Serviços
+              </Link>
+              <a
+                href="#contacto"
+                className="text-[10px] uppercase tracking-[0.3em] bg-white text-black font-black px-4 py-2 rounded-full hover:scale-105 transition-all"
+              >
+                Contacto
+              </a>
+            </div>
+          </div>
+          <ScrollProgressBar />
+        </nav>
+
+        <HeroSection service={service} theme={theme} />
+        <ResultsBar service={service} theme={theme} />
+        <ValueProps service={service} theme={theme} fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
+        <ProcessSection service={service} theme={theme} fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
+        <FaqSection service={service} theme={theme} fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
+        <CtaSection service={service} theme={theme} />
+
+        <footer className="border-t border-white/8 py-8 text-center">
+          <p className="text-white/20 text-[10px] uppercase tracking-[0.5em]">
+            Agência 47 · {new Date().getFullYear()}
+          </p>
+        </footer>
+
+        {/* Indicador de Percentagem de Scroll (Ag47 Style) */}
+        <div className="fixed bottom-10 right-10 z-50 flex items-baseline gap-1 select-none pointer-events-none">
+          <span className="text-8xl md:text-[10rem] font-black tracking-tighter text-white/5 tabular-nums leading-none">
+            {displayPercent}
+          </span>
+          <span 
+            style={{ color: theme.colors.scrollPercentage, filter: `drop-shadow(0 0 15px ${theme.colors.scrollPercentage}80)` }}
+            className="text-2xl font-black"
+          >
+            %
+          </span>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+/**
+ * Secções Internas (Componentes Auxiliares)
+ */
+
+function HeroSection({ service, theme }: { service: any, theme: any }) {
+  return (
+    <section className="relative pt-32 pb-24 px-6 overflow-hidden">
       <motion.div 
         initial={{ scale: 1.1, opacity: 0 }}
-        animate={{ scale: 1.05, opacity: 0.35 }}
+        animate={{ scale: 1.05, opacity: 0.5 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
         className="absolute inset-0 z-0"
       >
@@ -50,9 +170,9 @@ function HeroSection({ service }: { service: (typeof services)[number] }) {
           src={service.img}
           alt=""
           aria-hidden="true"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-80"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
       </motion.div>
 
       <div className="relative z-10 max-w-5xl mx-auto text-center">
@@ -69,9 +189,9 @@ function HeroSection({ service }: { service: (typeof services)[number] }) {
             initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
             animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-5xl md:text-8xl font-black tracking-tighter leading-none mb-7 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent whitespace-pre-line"
+            className="text-5xl md:text-7xl font-black tracking-tighter leading-none mb-7 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent whitespace-pre-line"
           >
-            {renderHighlightedTitle(service.heroTitle)}
+            {renderHighlightedTitle(service.heroTitle, theme)}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
@@ -90,8 +210,8 @@ function HeroSection({ service }: { service: (typeof services)[number] }) {
               href="#contacto"
               className="inline-flex items-center gap-3 bg-white text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all duration-300"
             >
-              {service.heroCta}
-              <span>→</span>
+              Começar Agora
+              <span className="text-xl">→</span>
             </a>
           </motion.div>
         </div>
@@ -100,34 +220,63 @@ function HeroSection({ service }: { service: (typeof services)[number] }) {
   )
 }
 
-function ResultsBar({ service }: { service: (typeof services)[number] }) {
+function ResultsBar({ service, theme }: { service: any, theme: any }) {
+  const [activeLegend, setActiveLegend] = useState<number | null>(null)
+  
   return (
-    <motion.section 
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="border-y border-white/10 bg-white/[0.02] backdrop-blur-xl"
-    >
-      <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-        {service.results.map((r, i) => (
-          <motion.div 
+    <section className="relative bg-white/[0.04] backdrop-blur-md border-y border-white/10 py-16 my-12">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        {service.results.map((r: any, i: number) => (
+          <div 
             key={r.label} 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.1 }}
-            viewport={{ once: true }}
-            className="text-center"
+            className="text-center group cursor-pointer relative"
+            onClick={() => setActiveLegend(activeLegend === i ? null : i)}
           >
-            <div className="text-3xl md:text-4xl font-black text-white mb-1">{r.value}</div>
+            <div className="text-4xl md:text-5xl font-black tracking-tighter mb-1 flex items-baseline justify-center gap-0.5">
+              <CountUp value={String(r.value)} duration={2.5} />
+              <span style={{ color: theme.colors.primary }} className="text-xl">{r.suffix}</span>
+            </div>
             <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">{r.label}</div>
-          </motion.div>
+            
+            {r.desc && (
+              <div 
+                style={{ color: theme.colors.primary }}
+                className={`mt-2 text-[8px] font-bold uppercase tracking-widest transition-all duration-300 ${activeLegend === i ? 'opacity-100 scale-110' : 'opacity-60'}`}
+              >
+                {activeLegend === i ? 'Fechar ×' : 'Ver detalhe +'}
+              </div>
+            )}
+            
+            <AnimatePresence>
+              {activeLegend === i && r.desc && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.4, ease: [0.27, 1, 0.45, 1] }}
+                  className="overflow-hidden"
+                >
+                  <p 
+                    style={{ color: theme.colors.secondary }}
+                    className="mt-4 text-sm leading-relaxed font-medium italic border-t border-white/10 pt-4"
+                  >
+                    {r.desc}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         ))}
       </div>
-    </motion.section>
+      </div>
+    </section>
   )
 }
 
-function ValueProps({ service }: { service: (typeof services)[number] }) {
+function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+
   return (
     <section className="max-w-6xl mx-auto px-6 py-24">
       <motion.div 
@@ -139,7 +288,7 @@ function ValueProps({ service }: { service: (typeof services)[number] }) {
       >
         <p className="text-[11px] uppercase tracking-[0.5em] text-white/30 mb-3">O que recebes</p>
         <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
-          Porquê escolher a Agência 47
+          {renderHighlightedTitle('Porquê escolher a *Agência 47*', theme)}
         </h2>
       </motion.div>
       <motion.div 
@@ -149,15 +298,47 @@ function ValueProps({ service }: { service: (typeof services)[number] }) {
         viewport={{ once: true, amount: 0.2 }}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {service.valueProps.map((vp) => (
+        {service.valueProps.map((vp: any, i: number) => (
           <motion.div
             key={vp.title}
             variants={fadeInUp}
-            className="group p-7 rounded-2xl border border-white/8 bg-white/[0.025] hover:bg-white/[0.06] hover:border-white/20 transition-all duration-400"
+            onClick={() => vp.detail && setActiveIndex(activeIndex === i ? null : i)}
+            className={`group p-7 rounded-2xl border transition-all duration-500 flex flex-col h-full ${
+              activeIndex === i 
+              ? 'bg-white/10 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.05)]' 
+              : 'border-white/8 bg-white/[0.025] hover:bg-white/[0.06] hover:border-white/20'
+            } ${vp.detail ? 'cursor-pointer' : 'cursor-default'}`}
           >
             <div className="text-3xl mb-4">{vp.icon}</div>
             <h3 className="font-black text-lg mb-2 tracking-tight">{vp.title}</h3>
-            <p className="text-white/50 text-sm leading-relaxed">{vp.body}</p>
+            <p className="text-white/50 text-sm leading-relaxed mb-4">{vp.body}</p>
+            
+            {vp.detail && (
+              <AnimatePresence>
+                {activeIndex === i && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden border-t border-white/10 pt-4 mt-auto"
+                  >
+                    <p 
+                      style={{ color: theme.colors.primary }}
+                      className="text-sm leading-relaxed font-light italic opacity-90"
+                    >
+                      "{vp.detail}"
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
+            
+            {vp.detail && activeIndex !== i && (
+              <div className="mt-auto pt-4 text-[10px] uppercase tracking-widest text-white/20 group-hover:text-[var(--primary-color)] transition-colors">
+                Saber mais +
+              </div>
+            )}
           </motion.div>
         ))}
       </motion.div>
@@ -165,51 +346,101 @@ function ValueProps({ service }: { service: (typeof services)[number] }) {
   )
 }
 
-function ProcessSection({ service }: { service: (typeof services)[number] }) {
+function ProcessSection({ service, theme, fadeInUp, staggerContainer }: any) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [activeStep, setActiveStep] = useState<number | null>(null)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  })
+
+  const scale = useTransform(scrollYProgress, [0, 0.6], [0.47, 1])
+
   return (
-    <section className="bg-white/[0.02] border-y border-white/8 py-24 px-6">
-      <div className="max-w-4xl mx-auto">
+    <section ref={containerRef} className="relative h-[200vh]">
+      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden bg-white/[0.04] backdrop-blur-md border-y border-white/10">
         <motion.div 
-          variants={fadeInUp}
-          initial="initial"
-          whileInView="whileInView"
-          viewport={{ once: true, margin: "-100px" }}
-          className="text-center mb-16"
+          style={{ scale }}
+          className="max-w-4xl mx-auto px-6 w-full"
         >
-          <p className="text-[11px] uppercase tracking-[0.5em] text-white/30 mb-3">Como funciona</p>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter">O processo</h2>
-        </motion.div>
-        <motion.div 
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="whileInView"
-          viewport={{ once: true, amount: 0.1 }}
-          className="space-y-0"
-        >
-          {service.process.map((step, i) => (
-            <motion.div
-              key={step.step}
-              variants={fadeInUp}
-              className="flex gap-8 items-start py-8 border-b border-white/8 last:border-none group"
-            >
-              <div className="shrink-0 w-16 text-right">
-                <span className="text-4xl font-black text-white/10 group-hover:text-white/20 transition-colors leading-none">
-                  {step.step}
-                </span>
-              </div>
-              <div>
-                <h3 className="font-black text-xl mb-1.5 tracking-tight">{step.title}</h3>
-                <p className="text-white/50 leading-relaxed">{step.desc}</p>
-              </div>
-            </motion.div>
-          ))}
+          <motion.div 
+            variants={fadeInUp}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true, margin: "-100px" }}
+            className="text-center mb-16"
+          >
+            <p className="text-[11px] uppercase tracking-[0.5em] text-white mb-3">Como funciona</p>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-white">O processo</h2>
+          </motion.div>
+          <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true, amount: 0.1 }}
+            className="space-y-0"
+          >
+            {service.process.map((step: any, i: number) => (
+              <motion.div
+                key={step.step}
+                variants={fadeInUp}
+                onClick={() => step.detail && setActiveStep(activeStep === i ? null : i)}
+                className={`flex gap-8 items-start py-8 border-b border-white/10 last:border-none group transition-all duration-500 rounded-xl px-4 -mx-4 ${
+                  activeStep === i ? 'bg-white/5' : 'hover:bg-white/[0.02]'
+                } ${step.detail ? 'cursor-pointer' : 'cursor-default'}`}
+              >
+                <div className="shrink-0 w-16 text-right">
+                  <span className={`text-4xl font-black transition-colors leading-none ${
+                    activeStep === i ? 'text-[var(--primary-color)]' : 'text-white/30 group-hover:text-white/60'
+                  }`}>
+                    {step.step}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <h3 className={`font-black text-xl mb-1.5 tracking-tight transition-colors ${
+                    activeStep === i ? 'text-[var(--primary-color)]' : 'text-white'
+                  }`}>
+                    {step.title}
+                  </h3>
+                  <p className={`transition-opacity duration-500 text-white ${
+                    activeStep === i ? 'opacity-40 text-sm' : 'font-light'
+                  }`}>
+                    {step.desc}
+                  </p>
+                  
+                  {step.detail && (
+                    <AnimatePresence>
+                      {activeStep === i && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                          className="overflow-hidden mt-4 pt-4 border-t border-white/10"
+                        >
+                          <p className="text-white text-base leading-relaxed font-light italic">
+                            "{step.detail}"
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+                </div>
+                {step.detail && activeStep !== i && (
+                  <div className="text-[10px] uppercase tracking-widest text-white/40 group-hover:text-[var(--primary-color)] self-center transition-colors">
+                    Saber mais +
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
         </motion.div>
       </div>
     </section>
   )
 }
 
-function FaqSection({ service }: { service: (typeof services)[number] }) {
+function FaqSection({ service, theme, fadeInUp, staggerContainer }: any) {
   return (
     <section className="max-w-3xl mx-auto px-6 py-24">
       <motion.div 
@@ -229,7 +460,7 @@ function FaqSection({ service }: { service: (typeof services)[number] }) {
         viewport={{ once: true, amount: 0.2 }}
         className="space-y-4"
       >
-        {service.faqs.map((faq) => (
+        {service.faqs.map((faq: any) => (
           <motion.details
             key={faq.q}
             variants={fadeInUp}
@@ -249,7 +480,7 @@ function FaqSection({ service }: { service: (typeof services)[number] }) {
   )
 }
 
-function CtaSection({ service }: { service: (typeof services)[number] }) {
+function CtaSection({ service }: { service: any, theme: any }) {
   return (
     <section id="contacto" className="py-24 px-6">
       <div className="max-w-3xl mx-auto text-center">
@@ -281,64 +512,5 @@ function CtaSection({ service }: { service: (typeof services)[number] }) {
         </motion.div>
       </div>
     </section>
-  )
-}
-
-export default function ServicoDetalheClient({ service }: { service: (typeof services)[number] }) {
-  return (
-    <main className="min-h-screen bg-black text-white">
-      {/* Fundo fixo */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <img
-          src="/imgs/universo-nebuloso.webp"
-          alt=""
-          aria-hidden="true"
-          className="w-full h-full object-cover opacity-30 blur-[4px]"
-        />
-        <div className="absolute inset-0 bg-black/30" />
-      </div>
-
-      <div className="relative z-10">
-        {/* Navbar */}
-        <nav className="fixed top-0 left-0 w-full z-50 bg-white/5 backdrop-blur-xl border-b border-white/10">
-          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="font-black text-2xl tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
-            >
-              AG47
-            </Link>
-            <div className="flex items-center gap-6">
-              <Link
-                href="/servicos"
-                className="text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-white transition-colors hidden sm:block"
-              >
-                Serviços
-              </Link>
-              <a
-                href="#contacto"
-                className="text-[10px] uppercase tracking-[0.3em] bg-white text-black font-black px-4 py-2 rounded-full hover:scale-105 transition-all"
-              >
-                Contacto
-              </a>
-            </div>
-          </div>
-          <ScrollProgressBar />
-        </nav>
-
-        <HeroSection service={service} />
-        <ResultsBar service={service} />
-        <ValueProps service={service} />
-        <ProcessSection service={service} />
-        <FaqSection service={service} />
-        <CtaSection service={service} />
-
-        <footer className="border-t border-white/8 py-8 text-center">
-          <p className="text-white/20 text-[10px] uppercase tracking-[0.5em]">
-            Agência 47 · {new Date().getFullYear()}
-          </p>
-        </footer>
-      </div>
-    </main>
   )
 }
