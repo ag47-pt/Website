@@ -108,9 +108,9 @@ export default function AdminSettingsPage() {
   return (
     <div className="max-w-4xl space-y-10">
       {/* Header */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase leading-none">
             Configurações <span className="px-2" style={{ backgroundColor: theme.colors.primary, color: '#000', borderRadius: '4px' }}>Globais</span>
           </h1>
           <p className="text-sm text-zinc-500 font-mono uppercase tracking-[0.2em]">Ajustes de Branding e Integrações</p>
@@ -132,7 +132,7 @@ export default function AdminSettingsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Branding Section */}
-        <section className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-8 space-y-8 rounded-2xl shadow-2xl relative overflow-hidden">
+        <section className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 space-y-8 rounded-2xl shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: theme.colors.primary }}></div>
           <div className="flex items-center gap-3 border-b border-white/5 pb-6">
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
@@ -170,7 +170,7 @@ export default function AdminSettingsPage() {
         </section>
 
         {/* Social Section */}
-        <section className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-8 space-y-8 rounded-2xl shadow-2xl relative overflow-hidden">
+        <section className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 space-y-8 rounded-2xl shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: theme.colors.primary }}></div>
           <div className="flex items-center gap-3 border-b border-white/5 pb-6">
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
@@ -210,7 +210,7 @@ export default function AdminSettingsPage() {
         </section>
 
         {/* Custom Section */}
-        <section className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-8 space-y-8 rounded-2xl shadow-2xl col-span-1 md:col-span-2 relative overflow-hidden">
+        <section className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 space-y-8 rounded-2xl shadow-2xl col-span-1 md:col-span-2 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: theme.colors.primary }}></div>
           <div className="flex items-center justify-between border-b border-white/5 pb-6">
             <div className="flex items-center gap-3">
@@ -232,8 +232,8 @@ export default function AdminSettingsPage() {
             {settings.custom.length === 0 ? (
               <p className="text-center py-10 text-zinc-700 font-mono text-[10px] uppercase tracking-widest">Nenhum parâmetro extra configurado</p>
             ) : settings.custom.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-12 gap-4 items-center group">
-                <div className="col-span-5">
+              <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center group">
+                <div className="col-span-1 md:col-span-5">
                   <input 
                     className="w-full bg-black/40 border border-white/10 px-4 py-3 text-white text-xs outline-none focus:border-white/30 transition-all font-mono rounded-xl"
                     placeholder="CHAVE"
@@ -241,7 +241,7 @@ export default function AdminSettingsPage() {
                     onChange={(e) => updateCustomField(idx, 'key', e.target.value)}
                   />
                 </div>
-                <div className="col-span-6">
+                <div className="col-span-1 md:col-span-6">
                   <input 
                     className="w-full bg-black/40 border border-white/10 px-4 py-3 text-white text-xs outline-none focus:border-white/30 transition-all font-mono rounded-xl"
                     placeholder="VALOR"

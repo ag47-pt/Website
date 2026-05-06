@@ -169,7 +169,7 @@ export default function AdminSlidesPage() {
             >
               <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-10 rounded-2xl space-y-8 shadow-2xl relative">
                 <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: theme.colors.primary }}></div>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Nome do Cliente</label>
                     <input 
@@ -297,7 +297,7 @@ export default function AdminSlidesPage() {
           >
             <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-10 rounded-2xl space-y-8 shadow-2xl relative">
               <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: theme.colors.primary }}></div>
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Título do Slide</label>
                   <input 
@@ -348,7 +348,7 @@ export default function AdminSlidesPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`group bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-8 rounded-2xl flex items-center gap-8 transition-all relative overflow-hidden ${editingSlideId === slide.id ? 'border-white/20 bg-zinc-900/60 shadow-2xl' : 'hover:border-white/10'}`}
+              className={`group bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 transition-all relative overflow-hidden ${editingSlideId === slide.id ? 'border-white/20 bg-zinc-900/60 shadow-2xl' : 'hover:border-white/10'}`}
               style={{ '--hover-border': `${theme.colors.primary}4D` } as any}
             >
               <div className="absolute top-0 left-0 w-1 h-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: theme.colors.primary }}></div>
@@ -393,7 +393,7 @@ export default function AdminSlidesPage() {
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden bg-black/40 backdrop-blur-2xl border-x border-b border-white/5 p-10 rounded-b-2xl space-y-10"
                 >
-                  <div className="grid grid-cols-2 gap-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                     <div className="space-y-4">
                       <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Título do Slide</label>
                       <input 
@@ -436,7 +436,7 @@ export default function AdminSlidesPage() {
                         <Plus className="w-3 h-3" /> Adicionar KPI
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {slide.stats?.map((stat: any, sIdx: number) => (
                         <div key={sIdx} className="flex gap-4 items-center bg-black/40 p-4 border border-white/5 rounded-2xl group/stat hover:border-white/10 transition-all">
                           <div className="flex-1 space-y-3">
@@ -476,7 +476,7 @@ export default function AdminSlidesPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-10 pt-10 border-t border-white/5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 pt-10 border-t border-white/5">
                     <div className="space-y-4">
                       <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Metáfora Visual (Ícone)</label>
                       <select 

@@ -26,7 +26,7 @@ const Basic3DScene = dynamic(
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-12">
           {/* Hero Text - Réplica exata do Basic3DScene para LCP imediato */}
           <div className="text-center text-white px-4 pointer-events-none select-none">
-            <h1 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent uppercase">
+            <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent uppercase opacity-90">
               Agência 47
             </h1>
             <p className="text-sm md:text-xl font-light uppercase tracking-[0.5em] opacity-80 flex justify-center">

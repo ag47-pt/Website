@@ -123,7 +123,8 @@ export default function AdminLabsPage() {
 
       {/* Table Container */}
       <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
-        <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="border-b border-white/5 bg-black/40">
               <th className="p-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Projeto</th>
@@ -147,7 +148,7 @@ export default function AdminLabsPage() {
                   </div>
                 </td>
                 <td className="p-8">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Cliente</label>
                       <input 
@@ -237,7 +238,7 @@ export default function AdminLabsPage() {
                 <td className="p-8">
                   {editingId === project.id ? (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <input 
                           className="bg-black border border-white/10 px-4 py-2 outline-none w-full text-zinc-400 font-mono text-xs rounded-lg"
                           value={project.client}
@@ -346,6 +347,7 @@ export default function AdminLabsPage() {
           </tbody>
         </table>
       </div>
+    </div>
 
       {/* Footer Info */}
       <div className="flex items-center justify-between p-8 bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl">

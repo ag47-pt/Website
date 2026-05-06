@@ -220,7 +220,8 @@ export default function AdminLeadsPage() {
 
       {/* Table Container */}
       <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
-        <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
             <tr className="border-b border-white/5 bg-black/40">
               <th className="p-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Lead / Contato</th>
@@ -340,6 +341,7 @@ export default function AdminLeadsPage() {
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   );
 }

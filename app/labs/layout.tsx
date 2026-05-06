@@ -28,6 +28,13 @@ export default function LabsLayout({
           background-color: ${theme.colors.primary};
           color: black;
         }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
       {/* Background Blueprint Grid */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
@@ -51,12 +58,12 @@ export default function LabsLayout({
             </div>
           </div>
 
-          <nav className="flex gap-1 md:gap-4">
+          <nav className="flex gap-2 overflow-x-auto no-scrollbar py-2 -my-2 mask-linear-r">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`text-[10px] md:text-xs font-mono px-3 py-1 border transition-all ${
+                className={`text-[10px] md:text-xs font-mono px-3 py-1.5 border transition-all whitespace-nowrap shrink-0 ${
                   pathname === item.path
                     ? 'text-black shadow-lg'
                     : 'border-white/20 text-gray-400 hover:text-white'

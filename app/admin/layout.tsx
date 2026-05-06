@@ -65,9 +65,26 @@ export default function AdminDashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-black text-zinc-400 font-sans selection:bg-primary/30" style={{ '--primary': theme.colors.primary } as any}>
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className="w-72 border-r border-white/5 flex flex-col fixed inset-y-0 z-50 bg-zinc-950/50 backdrop-blur-3xl">
-        <div className="p-10 mb-6">
+      <aside 
+        className={`fixed inset-y-0 left-0 z-[70] w-72 border-r border-white/5 flex flex-col bg-zinc-950/90 backdrop-blur-3xl transition-transform duration-500 lg:translate-x-0 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="p-10 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-500">
               <span className="text-black font-black text-xl italic">47</span>
@@ -77,6 +94,9 @@ export default function AdminDashboardLayout({
               <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Portal v2.0</span>
             </div>
           </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-zinc-500 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <nav className="flex-1 px-6 space-y-1">
@@ -87,6 +107,7 @@ export default function AdminDashboardLayout({
               <Link 
                 key={item.href} 
                 href={item.href}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group relative ${
                   isActive 
                     ? 'text-white bg-white/5 shadow-inner' 
@@ -108,10 +129,6 @@ export default function AdminDashboardLayout({
                 }`}>
                   {item.label}
                 </span>
-                
-                {isActive && (
-                  <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: theme.colors.primary }} />
-                )}
               </Link>
             );
           })}
@@ -139,23 +156,23 @@ export default function AdminDashboardLayout({
       </aside>
 
       <main 
-        className="flex-1 ml-72 min-h-screen flex flex-col"
+        className="flex-1 lg:ml-72 min-h-screen flex flex-col transition-all duration-500"
       >
         {/* Top Header */}
-        <header className="h-20 border-b border-white/5 bg-zinc-950/50 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-40">
+        <header className="h-20 border-b border-white/5 bg-zinc-950/50 backdrop-blur-md flex items-center justify-between px-6 md:px-8 sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-white/5 rounded-md transition-colors"
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 hover:bg-white/5 rounded-md transition-colors lg:hidden"
             >
-              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <Menu className="w-5 h-5" />
             </button>
-            <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-widest">
+            <h2 className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest hidden sm:block">
               System / {pathname.split('/').pop()}
             </h2>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
@@ -169,7 +186,7 @@ export default function AdminDashboardLayout({
           </div>
         </header>
 
-        <div className="p-8 flex-1">
+        <div className="p-4 md:p-8 flex-1">
           <motion.div
             key={pathname}
             initial={{ opacity: 0, y: 10 }}

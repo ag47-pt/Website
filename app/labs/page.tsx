@@ -37,10 +37,10 @@ export default function LabsPage() {
           <Terminal className="w-4 h-4" />
           <span>INITIALIZING_LABS_CORE</span>
         </div>
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white">
+        <h1 className="text-4xl md:text-7xl font-bold tracking-tighter text-white">
           O Futuro é <span className="px-3" style={{ backgroundColor: theme.colors.primary, color: '#000' }}>Experimental</span>
         </h1>
-        <p className="max-w-2xl text-gray-400 text-lg leading-relaxed">
+        <p className="max-w-2xl text-gray-400 text-base md:text-lg leading-relaxed">
           Bem-vindo ao centro de inovação da Agência 47. Aqui, as fronteiras entre o design e o código se fundem para criar experiências digitais sem precedentes.
         </p>
       </section>
@@ -56,7 +56,7 @@ export default function LabsPage() {
           >
             <Link 
               href={cat.path}
-              className="group block relative p-8 border border-white/10 bg-white/5 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
+              className="group block relative p-6 md:p-8 border border-white/10 bg-white/5 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
             >
               {/* Background Accent */}
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">

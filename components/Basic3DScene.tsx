@@ -137,7 +137,7 @@ export default function Basic3DScene() {
                }}
             >
                <div className="text-center text-white px-4 pointer-events-none">
-                  <h1 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter text-white uppercase">
+                  <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter text-white uppercase opacity-90">
                     Agência <span className="px-4" style={{ backgroundColor: theme.colors.primary, color: '#000', borderRadius: '8px' }}>47</span>
                   </h1>
                   <p className="text-sm md:text-xl font-light uppercase tracking-[0.5em] opacity-80 flex justify-center">
