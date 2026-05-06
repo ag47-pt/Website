@@ -177,7 +177,7 @@ function ServicosContent() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, amount: 0.1 }}
-          className="max-w-6xl mx-auto px-6 pb-32 grid grid-cols-1 md:grid-cols-2 gap-6"
+          className="scroll-mt-24 max-w-6xl mx-auto px-6 pb-24 grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           {services.map((service, i) => (
             <motion.div

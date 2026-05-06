@@ -123,7 +123,21 @@ function ServicoDetalheContent({
           <ScrollProgressBar />
         </nav>
 
-        <HeroSection service={service} theme={theme} />
+        <HeroSection 
+          service={service} 
+          theme={theme} 
+          onStartClick={() => {
+            const element = document.getElementById('proxima-sessao');
+            if (element) {
+              const offset = 100; // Offset para compensar o navbar sticky
+              const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+              window.scrollTo({
+                top: elementPosition - offset,
+                behavior: 'smooth'
+              });
+            }
+          }}
+        />
         <ResultsBar service={service} theme={theme} />
         <ValueProps service={service} theme={theme} fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
         <ProcessSection service={service} theme={theme} fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
@@ -157,7 +171,15 @@ function ServicoDetalheContent({
  * Secções Internas (Componentes Auxiliares)
  */
 
-function HeroSection({ service, theme }: { service: any, theme: any }) {
+function HeroSection({ 
+  service, 
+  theme, 
+  onStartClick 
+}: { 
+  service: any, 
+  theme: any,
+  onStartClick?: () => void 
+}) {
   return (
     <section className="relative pt-32 pb-24 px-6 overflow-hidden">
       <motion.div 
@@ -206,13 +228,13 @@ function HeroSection({ service, theme }: { service: any, theme: any }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            <a
-              href="#contacto"
-              className="inline-flex items-center gap-3 bg-white text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all duration-300"
+            <button
+              onClick={onStartClick}
+              className="inline-flex items-center gap-3 bg-white text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all duration-300 cursor-pointer"
             >
               Começar Agora
               <span className="text-xl">→</span>
-            </a>
+            </button>
           </motion.div>
         </div>
       </div>
@@ -220,11 +242,48 @@ function HeroSection({ service, theme }: { service: any, theme: any }) {
   )
 }
 
+function ScrollIndicator({ targetId, extraOffsetVp = 0 }: { targetId: string, extraOffsetVp?: number }) {
+  return (
+    <motion.div 
+      onClick={() => {
+        const nextSection = document.getElementById(targetId);
+        if (nextSection) {
+          const offset = 100;
+          const elementPosition = nextSection.getBoundingClientRect().top + window.pageYOffset;
+          const extraPx = extraOffsetVp * window.innerHeight;
+          
+          window.scrollTo({
+            top: elementPosition - offset + extraPx,
+            behavior: 'smooth'
+          });
+        }
+      }}
+      whileHover={{ scale: 1.1, opacity: 0.8 }}
+      className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/20 cursor-pointer pointer-events-auto transition-all duration-300 z-10"
+    >
+      <div className="w-5 h-8 border-2 border-white/10 rounded-full flex justify-center p-1">
+        <motion.div 
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-1 h-1.5 bg-white/20 rounded-full" 
+        />
+      </div>
+      <motion.div 
+        animate={{ y: [0, 5, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+        className="text-lg"
+      >
+        ↓
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function ResultsBar({ service, theme }: { service: any, theme: any }) {
   const [activeLegend, setActiveLegend] = useState<number | null>(null)
   
   return (
-    <section className="relative bg-white/[0.04] backdrop-blur-md border-y border-white/10 py-16 my-12">
+    <section id="proxima-sessao" className="relative bg-white/[0.04] backdrop-blur-md border-y border-white/10 py-16 my-12">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
         {service.results.map((r: any, i: number) => (
@@ -268,8 +327,11 @@ function ResultsBar({ service, theme }: { service: any, theme: any }) {
             </AnimatePresence>
           </div>
         ))}
+        </div>
       </div>
-      </div>
+
+      {/* Indicador de Scroll */}
+      <ScrollIndicator targetId="value-props" />
     </section>
   )
 }
@@ -278,7 +340,7 @@ function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-24">
+    <section id="value-props" className="max-w-6xl mx-auto px-6 py-9">
       <motion.div 
         variants={fadeInUp}
         initial="initial"
@@ -287,7 +349,7 @@ function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
         className="text-center mb-16"
       >
         <p className="text-[11px] uppercase tracking-[0.5em] text-white/30 mb-3">O que recebes</p>
-        <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
+        <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
           {renderHighlightedTitle('Porquê escolher a *Agência 47*', theme)}
         </h2>
       </motion.div>
@@ -342,6 +404,11 @@ function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
           </motion.div>
         ))}
       </motion.div>
+      
+      {/* Indicador de Scroll para a próxima sessão */}
+      <div className="relative mt-16 h-10">
+        <ScrollIndicator targetId="processo" extraOffsetVp={1.5} />
+      </div>
     </section>
   )
 }
@@ -357,21 +424,23 @@ function ProcessSection({ service, theme, fadeInUp, staggerContainer }: any) {
   const scale = useTransform(scrollYProgress, [0, 0.6], [0.47, 1])
 
   return (
-    <section ref={containerRef} className="relative h-[200vh]">
-      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden bg-white/[0.04] backdrop-blur-md border-y border-white/10">
+    <section id="processo" ref={containerRef} className="relative h-[300vh]">
+      <div className="sticky top-0 min-h-[100dvh] flex items-center justify-center bg-white/[0.04] backdrop-blur-md border-y border-white/10 py-10 md:py-0">
         <motion.div 
           style={{ scale }}
-          className="max-w-4xl mx-auto px-6 w-full"
+          className="max-w-4xl mx-auto px-6 w-full py-6 md:py-20"
         >
           <motion.div 
             variants={fadeInUp}
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-16"
+            className="text-center mb-8 md:mb-12"
           >
-            <p className="text-[11px] uppercase tracking-[0.5em] text-white mb-3">Como funciona</p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-white">O processo</h2>
+            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] text-white mb-2 md:mb-3">Como funciona</p>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
+              O processo
+            </h2>
           </motion.div>
           <motion.div 
             variants={staggerContainer}
@@ -385,25 +454,25 @@ function ProcessSection({ service, theme, fadeInUp, staggerContainer }: any) {
                 key={step.step}
                 variants={fadeInUp}
                 onClick={() => step.detail && setActiveStep(activeStep === i ? null : i)}
-                className={`flex gap-8 items-start py-8 border-b border-white/10 last:border-none group transition-all duration-500 rounded-xl px-4 -mx-4 ${
+                className={`flex gap-4 md:gap-8 items-start py-4 md:py-8 border-b border-white/10 last:border-none group transition-all duration-500 rounded-xl px-4 -mx-4 ${
                   activeStep === i ? 'bg-white/5' : 'hover:bg-white/[0.02]'
                 } ${step.detail ? 'cursor-pointer' : 'cursor-default'}`}
               >
-                <div className="shrink-0 w-16 text-right">
-                  <span className={`text-4xl font-black transition-colors leading-none ${
+                <div className="shrink-0 w-10 md:w-16 text-right">
+                  <span className={`text-2xl md:text-4xl font-black transition-colors leading-none ${
                     activeStep === i ? 'text-[var(--primary-color)]' : 'text-white/30 group-hover:text-white/60'
                   }`}>
                     {step.step}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <h3 className={`font-black text-xl mb-1.5 tracking-tight transition-colors ${
+                  <h3 className={`font-black text-base md:text-xl mb-1 tracking-tight transition-colors ${
                     activeStep === i ? 'text-[var(--primary-color)]' : 'text-white'
                   }`}>
                     {step.title}
                   </h3>
-                  <p className={`transition-opacity duration-500 text-white ${
-                    activeStep === i ? 'opacity-40 text-sm' : 'font-light'
+                  <p className={`transition-opacity duration-500 text-white leading-snug ${
+                    activeStep === i ? 'opacity-40 text-[13px] md:text-sm' : 'text-sm md:font-light'
                   }`}>
                     {step.desc}
                   </p>
@@ -416,9 +485,9 @@ function ProcessSection({ service, theme, fadeInUp, staggerContainer }: any) {
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                          className="overflow-hidden mt-4 pt-4 border-t border-white/10"
+                          className="overflow-hidden mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/10"
                         >
-                          <p className="text-white text-base leading-relaxed font-light italic">
+                          <p className="text-white text-sm md:text-base leading-relaxed font-light italic">
                             "{step.detail}"
                           </p>
                         </motion.div>
@@ -427,7 +496,7 @@ function ProcessSection({ service, theme, fadeInUp, staggerContainer }: any) {
                   )}
                 </div>
                 {step.detail && activeStep !== i && (
-                  <div className="text-[10px] uppercase tracking-widest text-white/40 group-hover:text-[var(--primary-color)] self-center transition-colors">
+                  <div className="text-[9px] md:text-[10px] uppercase tracking-widest text-white/40 group-hover:text-[var(--primary-color)] self-center transition-colors">
                     Saber mais +
                   </div>
                 )}
@@ -451,7 +520,9 @@ function FaqSection({ service, theme, fadeInUp, staggerContainer }: any) {
         className="text-center mb-14"
       >
         <p className="text-[11px] uppercase tracking-[0.5em] text-white/30 mb-3">Dúvidas frequentes</p>
-        <h2 className="text-3xl md:text-5xl font-black tracking-tighter">FAQ</h2>
+        <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
+          FAQ
+        </h2>
       </motion.div>
       <motion.div 
         variants={staggerContainer}
@@ -480,7 +551,7 @@ function FaqSection({ service, theme, fadeInUp, staggerContainer }: any) {
   )
 }
 
-function CtaSection({ service }: { service: any, theme: any }) {
+function CtaSection({ service, theme }: { service: any, theme: any }) {
   return (
     <section id="contacto" className="py-24 px-6">
       <div className="max-w-3xl mx-auto text-center">
@@ -491,8 +562,8 @@ function CtaSection({ service }: { service: any, theme: any }) {
           viewport={{ once: true }}
           className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-14"
         >
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-4">
-            {service.ctaTitle}
+          <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight mb-6 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
+            {renderHighlightedTitle(service.ctaTitle, theme)}
           </h2>
           <p className="text-white/50 text-lg mb-10 leading-relaxed">{service.ctaBody}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -503,7 +574,7 @@ function CtaSection({ service }: { service: any, theme: any }) {
               Falar connosco →
             </a>
             <Link
-              href="/servicos"
+              href="/servicos#grid-servicos"
               className="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:bg-white/20 transition-all duration-300 border border-white/20"
             >
               Ver todos os serviços

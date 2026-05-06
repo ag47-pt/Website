@@ -104,7 +104,7 @@ export const services: ServiceLP[] = [
       { q: 'O site fica meu?', a: 'Sim, 100%. Código, domínio e hosting são teus. Sem dependências da agência.' },
       { q: 'Posso atualizar o conteúdo depois?', a: 'Sim. Entregamos com CMS simples ou guia de edição para seres autónomo.' },
     ],
-    ctaTitle: 'Pronto para um site que trabalha por ti?',
+    ctaTitle: 'Pronto para um site que *vende* por ti?',
     ctaBody: 'Diagnóstico gratuito de 15 minutos. Saímos com um plano claro para o teu projeto.',
   },
 
@@ -179,7 +179,7 @@ export const services: ServiceLP[] = [
       { q: 'E se precisar de mudar algo após o lançamento?', a: 'Para isso serve o modelo recorrente. Iteramos mensalmente com base em dados reais.' },
       { q: 'Integram com ferramentas externas?', a: 'Sim. Zapier, webhooks, APIs REST/GraphQL — integramos com qualquer ferramenta que o teu negócio usa.' },
     ],
-    ctaTitle: 'A tua ideia merece sair do papel.',
+    ctaTitle: 'A tua ideia merece sair do *papel*.',
     ctaBody: 'Conta-nos o que queres construir. Sessão de discovery gratuita de 30 min.',
   },
 
@@ -253,7 +253,7 @@ export const services: ServiceLP[] = [
       { q: 'Preciso de aprovar o conteúdo?', a: 'Sim. Tens sempre a última palavra. Enviamos para aprovação com antecedência mínima de 3 dias.' },
       { q: 'Fazem conteúdo em vídeo?', a: 'Sim, incluindo Reels e TikToks com guião, edição e legendas.' },
     ],
-    ctaTitle: 'Pronto para construir uma presença que gera negócio?',
+    ctaTitle: 'Pronto para construir uma presença que *gera negócio*?',
     ctaBody: 'Mostramos o potencial das tuas redes numa análise gratuita de 20 minutos.',
   },
 
@@ -343,7 +343,7 @@ export const services: ServiceLP[] = [
       { q: 'Em quanto tempo vejo resultados?', a: 'Primeiras leads em 48-72h após lançamento. Otimização real acontece ao longo das primeiras 4 semanas.' },
       { q: 'O que acontece se as campanhas não performarem?', a: 'Revisamos a estratégia sem custo adicional. O sucesso do teu negócio é o nosso KPI.' },
     ],
-    ctaTitle: 'Chega de queimar budget sem retorno.',
+    ctaTitle: 'Chega de queimar budget sem *retorno*.',
     ctaBody: 'Auditoria gratuita da tua conta de anúncios. Sem compromisso.',
   },
 ]
