@@ -1,6 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { Typewriter } from './Typewriter'
+import { useTheme } from '@/context/ThemeContext'
 
 export function ScrollingCard({ 
   innerRef, 
@@ -25,25 +26,39 @@ export function ScrollingCard({
   nextScrollTarget?: number,
   prevScrollTarget?: number
 }) {
+  const { theme } = useTheme();
   return (
     <div 
       ref={innerRef}
       style={{ animation: 'cardPulse 4s infinite alternate ease-in-out' }}
       className="absolute top-1/2 left-1/2 w-[95%] max-w-[850px] min-h-[400px] bg-white/5 backdrop-blur-xl border-2 rounded-3xl overflow-hidden shadow-2xl z-50 flex flex-col md:flex-row opacity-0 pointer-events-none"
     >
-      <style>{`
+      <style jsx>{`
         @keyframes cardPulse {
-          0% { border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 30px rgba(59, 130, 246, 0.2), inset 0 0 15px rgba(59, 130, 246, 0.1); }
-          50% { border-color: rgba(168, 85, 247, 0.8); box-shadow: 0 0 60px rgba(168, 85, 247, 0.4), inset 0 0 25px rgba(168, 85, 247, 0.2); }
-          100% { border-color: rgba(236, 72, 153, 0.5); box-shadow: 0 0 30px rgba(236, 72, 153, 0.2), inset 0 0 15px rgba(236, 72, 153, 0.1); }
+          0% { border-color: ${theme.colors.secondary}80; box-shadow: 0 0 30px ${theme.colors.secondary}33, inset 0 0 15px ${theme.colors.secondary}1A; }
+          50% { border-color: ${theme.colors.primary}CC; box-shadow: 0 0 60px ${theme.colors.primary}66, inset 0 0 25px ${theme.colors.primary}33; }
+          100% { border-color: ${theme.colors.secondary}80; box-shadow: 0 0 30px ${theme.colors.secondary}33, inset 0 0 15px ${theme.colors.secondary}1A; }
         }
       `}</style>
       <div className="relative w-full md:w-[35%] h-48 md:h-auto overflow-hidden">
         <img src={img} alt={subtitle} className="w-full h-full object-cover scale-110" />
-        {badge && <div className="absolute top-6 left-6 bg-gradient-to-r from-blue-500 to-purple-600 text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-[0.2em] shadow-lg shadow-blue-500/20">{badge}</div>}
+        {badge && (
+          <div 
+            className="absolute top-6 left-6 text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-[0.2em] shadow-lg"
+            style={{ 
+              background: `linear-gradient(to right, ${theme.colors.secondary}, ${theme.colors.primary})`,
+              boxShadow: `0 0 10px ${theme.colors.primary}33`
+            }}
+          >
+            {badge}
+          </div>
+        )}
       </div>
       <div className="p-8 md:p-10 md:w-[65%] text-white flex flex-col justify-center">
-        <div className="flex items-center gap-3 mb-3"><div className="w-12 h-[1px] bg-blue-500" /><span className="text-[10px] font-bold uppercase tracking-[0.4em] text-blue-400">{tag}</span></div>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-[1px]" style={{ backgroundColor: theme.colors.secondary }} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.4em]" style={{ color: theme.colors.primary }}>{tag}</span>
+        </div>
         <h3 className="text-3xl font-black mb-3 leading-tight tracking-tighter">
           <Typewriter text={subtitle} duration={2000} watchRef={innerRef} />
         </h3>

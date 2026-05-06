@@ -21,8 +21,10 @@ import { ServiceHotspots } from './3d/ServiceHotspots'
 import { ScrollManager } from './3d/ScrollManager'
 
 import { Typewriter } from './ui/Typewriter'
+import { useTheme } from '@/context/ThemeContext'
 
 export default function Basic3DScene() {
+   const { theme } = useTheme();
    const scrollOffsetRaw = usePageScroll()
    const lerpedScroll = useRef(0)
 
@@ -135,7 +137,9 @@ export default function Basic3DScene() {
                }}
             >
                <div className="text-center text-white px-4 pointer-events-none">
-                  <h1 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent uppercase">Agência 47</h1>
+                  <h1 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter text-white uppercase">
+                    Agência <span className="px-4" style={{ backgroundColor: theme.colors.primary, color: '#000', borderRadius: '8px' }}>47</span>
+                  </h1>
                   <p className="text-sm md:text-xl font-light uppercase tracking-[0.5em] opacity-80 flex justify-center">
                      <span className="bg-black/20 backdrop-blur-md border border-white/10 px-6 py-2 rounded-full">Experiência Imersiva</span>
                   </p>
@@ -158,8 +162,11 @@ export default function Basic3DScene() {
             {/* Seção Final após o scroll 3D */}
             <div className="py-1 flex items-center justify-center p-8">
                <div className="max-w-4xl w-full bg-white/[0.01] backdrop-blur-xl border border-white/5 p-16 rounded-[2.5rem] text-white shadow-2xl text-center">
-                  <h2 className="text-6xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tighter">
-                     <Typewriter text="Pronto para o Próximo Nível?" duration={3000} delay={500} cursorColor="bg-pink-500" />
+                  <h2 
+                    className="text-6xl font-black bg-clip-text text-transparent tracking-tighter"
+                    style={{ backgroundImage: `linear-gradient(to right, #60a5fa, ${theme.colors.secondary}, ${theme.colors.primary})` }}
+                  >
+                     <Typewriter text="Pronto para o Próximo Nível?" duration={3000} delay={500} cursorColor={theme.colors.primary} />
                   </h2>
                </div>
             </div>

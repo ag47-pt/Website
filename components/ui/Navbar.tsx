@@ -1,4 +1,9 @@
-import React from 'react'
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { useTheme } from '@/context/ThemeContext';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 export function Navbar({ 
   progressRef, 
@@ -7,6 +12,7 @@ export function Navbar({
   progressRef: React.RefObject<HTMLDivElement | null>,
   onChangeEarth: () => void
 }) {
+  const { theme, themeName, toggleTheme } = useTheme();
   const scrollToPercent = (e: React.MouseEvent, percent: number) => {
     e.preventDefault()
     if (typeof window !== 'undefined') {
@@ -27,17 +33,19 @@ export function Navbar({
            </div>
 
            {/* Botão de Alterar Terra - Agora ao lado do logo */}
-           <button 
-             onClick={onChangeEarth}
-             className="w-9 h-9 rounded-full bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center group relative overflow-hidden"
-             aria-label="Mudar Visão do Planeta"
-           >
-             <div className="w-4 h-4 rounded-full border border-white/30 group-hover:border-white/60 transition-colors relative z-10">
-               <div className="absolute inset-[1px] rounded-full border border-white/10 group-hover:border-white/20" />
-             </div>
-             <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-           </button>
-         </div>
+            <button 
+              onClick={onChangeEarth}
+              className="w-9 h-9 rounded-full bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center group relative overflow-hidden"
+              aria-label="Mudar Visão do Planeta"
+            >
+              <div className="w-4 h-4 rounded-full border border-white/30 group-hover:border-white/60 transition-colors relative z-10">
+                <div className="absolute inset-[1px] rounded-full border border-white/10 group-hover:border-white/20" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
+          </div>
 
          {/* Desktop Links */}
          <div className="hidden md:flex items-center gap-8 text-white/80 font-bold text-xs tracking-[0.2em] uppercase">
@@ -45,6 +53,18 @@ export function Navbar({
             <a href="#" onClick={(e) => scrollToPercent(e, 0.45)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">APPs</a>
             <a href="#" onClick={(e) => scrollToPercent(e, 0.65)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Social</a>
             <a href="#" onClick={(e) => scrollToPercent(e, 0.85)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Ads</a>
+             <Link 
+               href="/labs" 
+               className="transition-all border px-3 py-1 rounded-sm tracking-widest flex items-center gap-2"
+               style={{ 
+                 color: theme.colors.primary, 
+                 borderColor: `${theme.colors.primary}33`,
+                 backgroundColor: `${theme.colors.primary}0D`
+               }}
+             >
+               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: theme.colors.primary }} />
+               Labs
+             </Link>
             
             {/* Botão Lançar com efeito Cometa (Refinado - Branco) */}
             <button 
@@ -95,6 +115,19 @@ export function Navbar({
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
             </button>
+
+            <Link 
+              href="/labs"
+              className="w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-90"
+              style={{ 
+                backgroundColor: `${theme.colors.primary}1A`,
+                borderColor: `${theme.colors.primary}4D`,
+                color: theme.colors.primary
+              }}
+              aria-label="Labs"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v10"/><path d="M18.4 4.6a9 9 0 1 1-12.8 0"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/></svg>
+            </Link>
             
             {/* Botão Lançar Mobile com efeito Cometa (Branco) */}
             <button 
@@ -113,12 +146,21 @@ export function Navbar({
             </button>
          </div>
        </div>
-       <div 
-         className="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-transparent via-purple-500 to-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.8)] transition-all duration-100 ease-out" 
-         ref={progressRef} 
-         style={{ width: '0%' }}
-       >
-         <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_15px_4px_rgba(236,72,153,1),0_0_30px_8px_rgba(168,85,247,0.8)]">
+        <div 
+          className="absolute bottom-0 left-0 h-[3px] transition-all duration-100 ease-out shadow-lg" 
+          ref={progressRef} 
+          style={{ 
+            width: '0%',
+            background: `linear-gradient(to right, transparent, ${theme.colors.secondary}, ${theme.colors.primary})`,
+            boxShadow: `0 0 15px ${theme.colors.primary}CC`
+          }}
+        >
+          <div 
+            className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-2 h-2 bg-white rounded-full"
+            style={{ 
+              boxShadow: `0 0 15px 4px ${theme.colors.primary}, 0 0 30px 8px ${theme.colors.secondary}CC`
+            }}
+          >
             <div className="absolute inset-0 bg-white rounded-full animate-ping opacity-75" />
          </div>
        </div>
