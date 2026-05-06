@@ -1,3 +1,5 @@
+// SEO: metadata (title, description, openGraph, twitter, canonical) + JSON-LD (Service + FAQPage)
+// is defined in the parent Server Component: app/servicos/[slug]/page.tsx
 'use client'
 
 import { useState, useRef } from 'react'
@@ -36,11 +38,7 @@ export default function ServicoDetalheClient({
 }: { 
   service: (typeof services)[number] 
 }) {
-  return (
-    <ThemeProvider>
-      <ServicoDetalheContent service={service} />
-    </ThemeProvider>
-  )
+  return <ServicoDetalheContent service={service} />
 }
 
 function ServicoDetalheContent({ 
@@ -105,18 +103,46 @@ function ServicoDetalheContent({
               </Link>
               <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
             </div>
-            <div className="flex items-center gap-6">
+
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center gap-6">
               <Link
-                href="/servicos"
-                className="text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-white transition-colors hidden sm:block"
+                href="/servicos#grid-servicos"
+                className="text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-white transition-colors"
               >
-                Serviços
+                Outros Serviços
               </Link>
               <a
                 href="#contacto"
                 className="text-[10px] uppercase tracking-[0.3em] bg-white text-black font-black px-4 py-2 rounded-full hover:scale-105 transition-all"
               >
                 Contacto
+              </a>
+            </div>
+
+            {/* Mobile Round Buttons */}
+            <div className="flex md:hidden items-center gap-2">
+              <Link 
+                href="/servicos#grid-servicos"
+                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
+                aria-label="Todos os Serviços"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </Link>
+              <Link 
+                href="/servicos/planos"
+                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
+                aria-label="Preços"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </Link>
+              <a 
+                href="#contacto"
+                className="relative group w-9 h-9 rounded-full bg-white/10 backdrop-blur-lg border border-white/30 flex items-center justify-center text-white transition-all active:scale-90 overflow-hidden"
+                aria-label="Contacto"
+              >
+                <svg className="relative z-10" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <div className="absolute inset-0 bg-white/5 animate-pulse" />
               </a>
             </div>
           </div>
@@ -230,7 +256,8 @@ function HeroSection({
           >
             <button
               onClick={onStartClick}
-              className="inline-flex items-center gap-3 bg-white text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all duration-300 cursor-pointer"
+              style={{ backgroundColor: theme.colors.primary }}
+              className="inline-flex items-center gap-3 text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all duration-300 cursor-pointer"
             >
               Começar Agora
               <span className="text-xl">→</span>
@@ -242,7 +269,7 @@ function HeroSection({
   )
 }
 
-function ScrollIndicator({ targetId, extraOffsetVp = 0 }: { targetId: string, extraOffsetVp?: number }) {
+function ScrollIndicator({ targetId, theme, extraOffsetVp = 0 }: { targetId: string, theme: any, extraOffsetVp?: number }) {
   return (
     <motion.div 
       onClick={() => {
@@ -259,22 +286,33 @@ function ScrollIndicator({ targetId, extraOffsetVp = 0 }: { targetId: string, ex
         }
       }}
       whileHover={{ scale: 1.1, opacity: 0.8 }}
-      className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/20 cursor-pointer pointer-events-auto transition-all duration-300 z-10"
+      className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer pointer-events-auto transition-all duration-300 z-10"
+      style={{ color: `${theme.colors.primary}40` }}
     >
-      <div className="w-5 h-8 border-2 border-white/10 rounded-full flex justify-center p-1">
+      <div className="flex items-center gap-3">
+        <div className="w-5 h-8 border-2 rounded-full flex justify-center p-1" style={{ borderColor: `${theme.colors.primary}20` }}>
+          <motion.div 
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="w-1 h-1.5 rounded-full" 
+            style={{ backgroundColor: theme.colors.primary }}
+          />
+        </div>
         <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          className="w-1 h-1.5 bg-white/20 rounded-full" 
-        />
+          animate={{ y: [0, 5, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+          className="text-lg"
+          style={{ color: `${theme.colors.primary}60` }}
+        >
+          ↓
+        </motion.div>
       </div>
-      <motion.div 
-        animate={{ y: [0, 5, 0] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-        className="text-lg"
+      <p 
+        className="text-[8px] uppercase tracking-[0.4em] font-black mt-1"
+        style={{ color: `${theme.colors.primary}40` }}
       >
-        ↓
-      </motion.div>
+        Clica para explorar
+      </p>
     </motion.div>
   );
 }
@@ -293,7 +331,9 @@ function ResultsBar({ service, theme }: { service: any, theme: any }) {
             onClick={() => setActiveLegend(activeLegend === i ? null : i)}
           >
             <div className="text-4xl md:text-5xl font-black tracking-tighter mb-1 flex items-baseline justify-center gap-0.5">
-              <CountUp value={String(r.value)} duration={2.5} />
+              <span style={{ color: theme.colors.highlight }}>
+                <CountUp value={String(r.value)} duration={2.5} />
+              </span>
               <span style={{ color: theme.colors.primary }} className="text-xl">{r.suffix}</span>
             </div>
             <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">{r.label}</div>
@@ -331,7 +371,7 @@ function ResultsBar({ service, theme }: { service: any, theme: any }) {
       </div>
 
       {/* Indicador de Scroll */}
-      <ScrollIndicator targetId="value-props" />
+      <ScrollIndicator targetId="value-props" theme={theme} />
     </section>
   )
 }
@@ -367,9 +407,10 @@ function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
             onClick={() => vp.detail && setActiveIndex(activeIndex === i ? null : i)}
             className={`group p-7 rounded-2xl border transition-all duration-500 flex flex-col h-full ${
               activeIndex === i 
-              ? 'bg-white/10 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.05)]' 
-              : 'border-white/8 bg-white/[0.025] hover:bg-white/[0.06] hover:border-white/20'
+              ? 'bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)]' 
+              : 'bg-white/[0.03] border-white/5 hover:border-white/20'
             } ${vp.detail ? 'cursor-pointer' : 'cursor-default'}`}
+            style={{ borderColor: activeIndex === i ? theme.colors.primary : undefined }}
           >
             <div className="text-3xl mb-4">{vp.icon}</div>
             <h3 className="font-black text-lg mb-2 tracking-tight">{vp.title}</h3>
@@ -397,7 +438,10 @@ function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
             )}
             
             {vp.detail && activeIndex !== i && (
-              <div className="mt-auto pt-4 text-[10px] uppercase tracking-widest text-white/20 group-hover:text-[var(--primary-color)] transition-colors">
+              <div 
+                className="mt-auto pt-4 text-[10px] uppercase tracking-widest text-white/20 transition-colors"
+                style={{ color: activeIndex === i ? theme.colors.primary : undefined }}
+              >
                 Saber mais +
               </div>
             )}
@@ -407,7 +451,7 @@ function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
       
       {/* Indicador de Scroll para a próxima sessão */}
       <div className="relative mt-16 h-10">
-        <ScrollIndicator targetId="processo" extraOffsetVp={1.5} />
+        <ScrollIndicator targetId="processo" theme={theme} extraOffsetVp={1.5} />
       </div>
     </section>
   )
@@ -459,16 +503,22 @@ function ProcessSection({ service, theme, fadeInUp, staggerContainer }: any) {
                 } ${step.detail ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 <div className="shrink-0 w-10 md:w-16 text-right">
-                  <span className={`text-2xl md:text-4xl font-black transition-colors leading-none ${
-                    activeStep === i ? 'text-[var(--primary-color)]' : 'text-white/30 group-hover:text-white/60'
-                  }`}>
+                  <span 
+                    className={`text-2xl md:text-4xl font-black transition-colors leading-none ${
+                      activeStep === i ? '' : 'text-white/30 group-hover:text-white/60'
+                    }`}
+                    style={{ color: activeStep === i ? theme.colors.primary : undefined }}
+                  >
                     {step.step}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <h3 className={`font-black text-base md:text-xl mb-1 tracking-tight transition-colors ${
-                    activeStep === i ? 'text-[var(--primary-color)]' : 'text-white'
-                  }`}>
+                  <h3 
+                    className={`font-black text-base md:text-xl mb-1 tracking-tight transition-colors ${
+                      activeStep === i ? '' : 'text-white'
+                    }`}
+                    style={{ color: activeStep === i ? theme.colors.primary : undefined }}
+                  >
                     {step.title}
                   </h3>
                   <p className={`transition-opacity duration-500 text-white leading-snug ${
@@ -569,7 +619,8 @@ function CtaSection({ service, theme }: { service: any, theme: any }) {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="mailto:contacto@ag47.pt"
-              className="inline-flex items-center justify-center gap-2 bg-white text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all duration-300"
+              style={{ backgroundColor: theme.colors.primary }}
+              className="inline-flex items-center justify-center gap-2 text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all duration-300"
             >
               Falar connosco →
             </a>
@@ -578,6 +629,16 @@ function CtaSection({ service, theme }: { service: any, theme: any }) {
               className="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:bg-white/20 transition-all duration-300 border border-white/20"
             >
               Ver todos os serviços
+            </Link>
+          </div>
+          
+          <div className="mt-10 pt-8 border-t border-white/5">
+            <Link 
+              href="/servicos/planos"
+              style={{ color: `${theme.colors.primary}60` }}
+              className="text-[10px] md:text-[11px] uppercase tracking-[0.4em] hover:text-white transition-all duration-300 font-black inline-block"
+            >
+              Consulte a nossa tabela de preços completa →
             </Link>
           </div>
         </motion.div>

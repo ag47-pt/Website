@@ -1,3 +1,5 @@
+// SEO: metadata (title, description, openGraph, twitter, canonical)
+// is defined in the parent Server Component: app/servicos/page.tsx
 'use client'
 
 import { useRef } from 'react'
@@ -10,11 +12,7 @@ import { useTheme, ThemeProvider } from '@/context/ThemeContext'
 import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher'
 
 export default function ServicosClient() {
-  return (
-    <ThemeProvider>
-      <ServicosContent />
-    </ThemeProvider>
-  )
+  return <ServicosContent />
 }
 
 function ServicosContent() {
@@ -93,12 +91,40 @@ function ServicosContent() {
               </Link>
               <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
             </div>
-            <Link
-              href="/"
-              className="text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-white transition-colors flex items-center gap-2"
-            >
-              <span>←</span> Voltar ao início
-            </Link>
+
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center gap-6">
+              <Link
+                href="/servicos#grid-servicos"
+                className="text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-white transition-colors"
+              >
+                Outros Serviços
+              </Link>
+              <a
+                href="#contacto"
+                className="text-[10px] uppercase tracking-[0.3em] bg-white text-black font-black px-4 py-2 rounded-full hover:scale-105 transition-all"
+              >
+                Contacto
+              </a>
+            </div>
+
+            {/* Mobile Round Buttons */}
+            <div className="flex md:hidden items-center gap-2">
+              <Link 
+                href="/servicos#grid-servicos"
+                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
+                aria-label="Todos os Serviços"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </Link>
+              <Link 
+                href="/servicos/planos"
+                className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-lg border border-white/30 flex items-center justify-center text-white transition-all active:scale-90"
+                aria-label="Preços"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </Link>
+            </div>
           </div>
           <ScrollProgressBar />
         </nav>
@@ -150,21 +176,60 @@ function ServicosContent() {
                 Soluções digitais de alta performance. <br />
                 Escolhe o serviço certo para o teu momento.
               </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-8 relative z-10"
+              >
+                <Link 
+                  href="/servicos/planos"
+                  className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-3.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transition-all hover:scale-105 active:scale-95 group"
+                >
+                  Ver Tabela de Preços 
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </motion.div>
               
-              {/* Indicador de scroll dentro do card */}
+              {/* Indicador de scroll dentro do card (Estilo Mouse) */}
               <motion.div 
                 style={{ opacity: useTransform(scrollYProgress, [0, 0.15], [1, 0]) }}
-                className="mt-14 flex flex-col items-center gap-2 group-hover/hero:scale-110 transition-transform"
+                className="mt-14 flex flex-col items-center gap-2 group-hover/hero:scale-110 transition-transform cursor-pointer"
+                onClick={() => {
+                  const grid = document.getElementById('grid-servicos');
+                  if (grid) {
+                    window.scrollTo({
+                      top: grid.offsetTop - 100,
+                      behavior: 'smooth'
+                    });
+                  }
+                }}
               >
-                <div 
-                  style={{ background: `linear-gradient(to bottom, transparent, ${theme.colors.primary}, transparent)` }}
-                  className="w-[1px] h-16 animate-pulse" 
-                />
-                <span 
-                  className="text-[10px] uppercase tracking-[0.3em] text-white/40 group-hover/hero:text-[var(--primary-color)] transition-colors"
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-8 border-2 rounded-full flex justify-center p-1" style={{ borderColor: `${theme.colors.primary}20` }}>
+                    <motion.div 
+                      animate={{ y: [0, 10, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-1 h-1.5 rounded-full" 
+                      style={{ backgroundColor: theme.colors.primary }}
+                    />
+                  </div>
+                  <motion.div 
+                    animate={{ y: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                    className="text-lg"
+                    style={{ color: `${theme.colors.primary}60` }}
+                  >
+                    ↓
+                  </motion.div>
+                </div>
+                <p 
+                  className="text-[8px] uppercase tracking-[0.4em] font-black mt-1"
+                  style={{ color: `${theme.colors.primary}40` }}
                 >
                   Clica para explorar
-                </span>
+                </p>
               </motion.div>
             </motion.div>
           </div>

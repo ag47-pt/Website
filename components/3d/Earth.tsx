@@ -58,7 +58,5 @@ export function Earth({
   )
 }
 
-// Preload de texturas no Edge para evitar "texture pop-in" (gargalo de IO na GPU)
+// Preload apenas da textura inicial para LCP mais rápido
 useTexture.preload('/imgs/mapa-mundi-real-optimized.webp')
-useTexture.preload('/imgs/mapamundi.webp')
-useTexture.preload('/imgs/universo-nebuloso.webp')

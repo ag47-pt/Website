@@ -13,17 +13,28 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [currentTheme, setCurrentTheme] = useState(defaultTheme)
-  const [themeName, setThemeName] = useState('default')
+  const [currentTheme, setCurrentTheme] = useState(limeTheme)
+  const [themeName, setThemeName] = useState('lime')
 
-  const toggleTheme = () => {
-    if (themeName === 'default') {
-      setCurrentTheme(limeTheme)
-      setThemeName('lime')
-    } else {
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('ag47-theme')
+    if (saved === 'default') {
       setCurrentTheme(defaultTheme)
       setThemeName('default')
+    } else if (saved === 'lime') {
+      setCurrentTheme(limeTheme)
+      setThemeName('lime')
     }
+  }, [])
+
+  const toggleTheme = () => {
+    const nextName = themeName === 'default' ? 'lime' : 'default'
+    const nextTheme = nextName === 'lime' ? limeTheme : defaultTheme
+    
+    setCurrentTheme(nextTheme)
+    setThemeName(nextName)
+    localStorage.setItem('ag47-theme', nextName)
   }
 
   return (

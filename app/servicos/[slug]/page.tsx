@@ -25,7 +25,22 @@ export async function generateMetadata({
       title: service.metaTitle,
       description: service.metaDescription,
       url: `https://ag47.pt/servicos/${service.slug}`,
-      images: [{ url: service.img, alt: service.cardTitle }],
+      siteName: 'Agência 47',
+      locale: 'pt_PT',
+      type: 'website',
+      images: [
+        {
+          url: `https://ag47.pt${service.img}`,
+          width: 1200,
+          height: 630,
+          alt: `${service.cardTitle} — Agência 47`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: service.metaTitle,
+      description: service.metaDescription,
     },
   }
 }
@@ -40,5 +55,48 @@ export default async function ServicoPage({
 
   if (!service) notFound()
 
-  return <ServicoDetalheClient service={service} />
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: service.cardTitle,
+      description: service.metaDescription,
+      provider: {
+        '@type': 'Organization',
+        name: 'Agência 47',
+        url: 'https://ag47.pt',
+      },
+      areaServed: {
+        '@type': 'Country',
+        name: 'Portugal',
+      },
+      url: `https://ag47.pt/servicos/${service.slug}`,
+    },
+    ...(service.faqs?.length
+      ? [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: service.faqs.map((faq: { q: string; a: string }) => ({
+              '@type': 'Question',
+              name: faq.q,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: faq.a,
+              },
+            })),
+          },
+        ]
+      : []),
+  ]
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ServicoDetalheClient service={service} />
+    </>
+  )
 }
