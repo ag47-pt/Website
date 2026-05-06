@@ -89,6 +89,7 @@ const jsonLd = {
 }
 
 import { ThemeProvider } from "@/context/ThemeContext";
+import { SupportChatbox } from "@/components/ui/SupportChatbox";
 
 export default function RootLayout({
   children,
@@ -110,6 +111,7 @@ export default function RootLayout({
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-black">
         <ThemeProvider>
           {children}
+          <SupportChatbox />
         </ThemeProvider>
       </body>
     </html>
