@@ -20,11 +20,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem('ag47-theme')
     if (saved === 'default') {
-      setCurrentTheme(defaultTheme)
-      setThemeName('default')
+      setCurrentTheme(prev => prev === defaultTheme ? prev : defaultTheme)
+      setThemeName(prev => prev === 'default' ? prev : 'default')
     } else if (saved === 'lime') {
-      setCurrentTheme(limeTheme)
-      setThemeName('lime')
+      setCurrentTheme(prev => prev === limeTheme ? prev : limeTheme)
+      setThemeName(prev => prev === 'lime' ? prev : 'lime')
     }
   }, [])
 

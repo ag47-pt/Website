@@ -41,12 +41,21 @@ export default function AdminDashboardPage() {
 
   const [leadTrend, setLeadTrend] = useState<{ day: string, count: number }[]>([]);
 
-  useEffect(() => {
-    fetchDashboardData();
+  const formatTimeAgo = React.useCallback((dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d atrás`;
+    if (hours > 0) return `${hours}h atrás`;
+    if (minutes > 0) return `${minutes}m atrás`;
+    return 'Agora';
   }, []);
 
-  async function fetchDashboardData() {
-    setLoading(true);
+  const fetchDashboardData = React.useCallback(async () => {
     try {
       // 1. Fetch Counts
       const [leadsCount, labsCount, presCount, slidesCount, allLeads] = await Promise.all([
@@ -117,21 +126,11 @@ export default function AdminDashboardPage() {
       console.error('Error fetching dashboard data:', error);
     }
     setLoading(false);
-  }
+  }, [formatTimeAgo]);
 
-  function formatTimeAgo(dateStr: string) {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) return `${days}d atrás`;
-    if (hours > 0) return `${hours}h atrás`;
-    if (minutes > 0) return `${minutes}m atrás`;
-    return 'Agora';
-  }
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
   return (
     <div className="space-y-12 relative">
       <AnimatePresence>
@@ -276,10 +275,6 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      <style jsx>{`
-        .text-primary { color: var(--primary); }
-        .bg-primary { background-color: var(--primary); }
-      `}</style>
     </div>
   );
 }

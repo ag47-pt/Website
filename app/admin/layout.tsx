@@ -37,7 +37,8 @@ export default function AdminDashboardLayout({
     if (auth !== 'true') {
       router.push('/admin');
     } else {
-      setIsAuthenticated(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsAuthenticated(prev => (prev === true ? prev : true));
     }
   }, [pathname, router]);
 

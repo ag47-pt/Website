@@ -40,7 +40,12 @@ export default function PresentationViewerPage() {
   const [slides, setSlides] = useState<SlideData[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [showLeadModal, setShowLeadModal] = useState(false);
+  const [showLeadModal, setShowLeadModal] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('ag47_lead_registered');
+    }
+    return false;
+  });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAutoPlay, setIsAutoPlay] = useState(false);
 
@@ -48,16 +53,7 @@ export default function PresentationViewerPage() {
   const [lead, setLead] = useState({ name: '', email: '', whatsapp: '' });
   const [isRegistering, setIsRegistering] = useState(false);
 
-  useEffect(() => {
-    // Check if lead is already registered
-    const savedLead = localStorage.getItem('ag47_lead_registered');
-    if (!savedLead) {
-      setShowLeadModal(true);
-    }
-    fetchData();
-  }, [slug]);
-
-  async function fetchData() {
+  const fetchData = React.useCallback(async () => {
     setLoading(true);
     // 1. Fetch Presentation
     const { data: pData, error: pError } = await supabase
@@ -78,7 +74,11 @@ export default function PresentationViewerPage() {
       if (sData) setSlides(sData);
     }
     setLoading(false);
-  }
+  }, [slug]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

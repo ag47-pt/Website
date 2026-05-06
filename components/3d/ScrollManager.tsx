@@ -24,6 +24,7 @@ export function ScrollManager({
 }) {
   useFrame((state, delta) => {
     const lerpFactor = 0.05
+    // eslint-disable-next-line react-compiler/react-compiler
     lerpedScroll.current += (scrollOffsetRaw - lerpedScroll.current) * lerpFactor
     const cur = lerpedScroll.current
     

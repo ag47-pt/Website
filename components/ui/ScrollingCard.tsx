@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Typewriter } from './Typewriter'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -41,7 +42,14 @@ export function ScrollingCard({
         }
       `}</style>
       <div className="relative w-full md:w-[35%] h-48 md:h-auto overflow-hidden">
-        <img src={img} alt={subtitle} className="w-full h-full object-cover scale-110" />
+        <Image 
+          src={img} 
+          alt={subtitle} 
+          fill
+          sizes="(max-width: 768px) 100vw, 35vw"
+          className="object-cover scale-110" 
+          priority={badge === "Destaque"}
+        />
         {badge && (
           <div 
             className="absolute top-6 left-6 text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-[0.2em] shadow-lg"

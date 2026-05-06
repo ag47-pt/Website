@@ -18,12 +18,7 @@ export default function AdminSettingsPage() {
     custom: [] as { key: string, value: string }[]
   });
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    setLoading(true);
+  const fetchSettings = React.useCallback(async () => {
     const { data, error } = await supabase.from('site_settings').select('*');
     if (!error && data) {
       const formatted: any = { custom: [] };
@@ -37,7 +32,11 @@ export default function AdminSettingsPage() {
       setSettings(prev => ({ ...prev, ...formatted }));
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleSave = async () => {
     setIsSaving(true);

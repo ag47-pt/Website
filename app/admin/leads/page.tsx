@@ -31,11 +31,7 @@ export default function AdminLeadsPage() {
     company: ''
   });
 
-  useEffect(() => {
-    fetchLeads();
-  }, []);
-
-  const fetchLeads = async () => {
+  const fetchLeads = React.useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('leads')
@@ -44,7 +40,11 @@ export default function AdminLeadsPage() {
     
     if (!error && data) setLeads(data);
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
 
   const createLead = async () => {
     if (!newLead.name || !newLead.email) return;

@@ -7,18 +7,7 @@ import { Layers, Activity, Lock, ExternalLink, Cpu, Loader2 } from 'lucide-react
 import { useTheme } from '@/context/ThemeContext';
 import { supabase } from '@/config/supabase';
 
-interface Project {
-  id: string;
-  name: string;
-  client: string;
-  status: string;
-  progress: number;
-  specs: string[];
-  thumbnail_url: string;
-  slug: string;
-  sandbox_url?: string;
-  sandbox_file_url?: string;
-}
+import { Project } from '@/types/labs';
 
 export default function DevShowcasePage() {
   const { theme } = useTheme();
@@ -119,10 +108,12 @@ export default function DevShowcasePage() {
             <div className="p-6 space-y-6">
               <div className="space-y-1">
                 <div className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">{project.client}</div>
-                <h3 className="text-xl font-bold transition-colors">
-                  <style jsx>{`
-                    h3:hover { color: ${theme.colors.primary}; }
-                  `}</style>
+                <h3 
+                  className="text-xl font-bold transition-colors duration-300"
+                  style={{ color: 'inherit' }} // Default
+                  onMouseEnter={(e) => (e.currentTarget.style.color = theme.colors.primary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'inherit')}
+                >
                   {project.name}
                 </h3>
               </div>

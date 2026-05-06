@@ -2,64 +2,53 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ScrollControls, Scroll, useScroll, useGLTF, Environment, Html } from '@react-three/drei'
-import { useRef, useState } from 'react'
+import React, { useRef, useState, Suspense } from 'react'
 import * as THREE from 'three'
 
-// Componente com modelo 3D externo
+function ModelFallback({ groupRef }: { groupRef: React.RefObject<THREE.Group | null> }) {
+  return (
+    <group ref={groupRef}>
+      <mesh>
+        <torusKnotGeometry args={[0.8, 0.25, 128, 16]} />
+        <meshStandardMaterial color="#ff44aa" metalness={0.7} roughness={0.2} />
+      </mesh>
+    </group>
+  )
+}
+
 function AnimatedModel({ modelPath = '/models/torus.glb' }: { modelPath?: string }) {
   const groupRef = useRef<THREE.Group>(null)
   const scroll = useScroll()
   
-  // Tenta carregar o modelo, fallback para geometria básica
-  let gltf: any = { scene: null }
-  let error = false
-  try {
-    gltf = useGLTF(modelPath)
-  } catch (e) {
-    if (e instanceof Promise) throw e
-    error = true
-  }
-  const { scene } = gltf
+  // Standard useGLTF call (should be wrapped in Suspense by parent)
+  const gltf = useGLTF(modelPath)
   
   useFrame(() => {
     if (!groupRef.current) return
-    
     const t = scroll.offset
-    
     groupRef.current.rotation.y = t * Math.PI * 2
     groupRef.current.position.y = Math.sin(t * Math.PI) * 0.3
     groupRef.current.scale.setScalar(0.8 + t * 0.4)
   })
   
-  if (error || !scene) {
-    // Fallback: um torus knot bonito
-    return (
-      <group ref={groupRef}>
-        <mesh>
-          <torusKnotGeometry args={[0.8, 0.25, 128, 16]} />
-          <meshStandardMaterial color="#ff44aa" metalness={0.7} roughness={0.2} />
-        </mesh>
-      </group>
-    )
-  }
+  if (!gltf.scene) return <ModelFallback groupRef={groupRef} />
   
-  return <primitive ref={groupRef} object={scene} scale={1.5} />
+  return <primitive ref={groupRef} object={gltf.scene} scale={1.5} />
 }
 
 // Câmera que se move com o scroll
 function MovingCamera() {
   const scroll = useScroll()
-  const { camera } = useThree()
   
-  useFrame(() => {
+  useFrame((state) => {
     const t = scroll.offset
     // Movimento circular da câmera
     const radius = 4
     const angle = t * Math.PI * 2
-    camera.position.x = Math.sin(angle) * radius
-    camera.position.z = Math.cos(angle) * radius
-    camera.position.y = Math.sin(angle * 2) * 1
-    camera.lookAt(0, 0, 0)
+    state.camera.position.x = Math.sin(angle) * radius
+    state.camera.position.z = Math.cos(angle) * radius
+    state.camera.position.y = Math.sin(angle * 2) * 1
+    state.camera.lookAt(0, 0, 0)
   })
   
   return null
@@ -112,7 +101,9 @@ export default function Model3DScene() {
           <Environment preset="sunset" />
           
           <ScrollControls pages={4} damping={0.08}>
-            <AnimatedModel />
+            <Suspense fallback={<ModelFallback groupRef={{ current: null } as any} />}>
+              <AnimatedModel />
+            </Suspense>
             <DynamicUI />
           </ScrollControls>
         </Canvas>

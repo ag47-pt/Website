@@ -1,23 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Save, Plus, Trash2, Edit3, ExternalLink, RefreshCw, Loader2, X, Image as ImageIcon } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { supabase } from '@/config/supabase';
 
-interface Project {
-  id: string;
-  name: string;
-  client: string;
-  status: string;
-  progress: number;
-  slug: string;
-  specs: string[];
-  thumbnail_url: string;
-  sandbox_url?: string;
-  sandbox_file_url?: string;
-}
+import { Project } from '@/types/labs';
 
 export default function AdminLabsPage() {
   const { theme } = useTheme();
@@ -190,7 +180,13 @@ export default function AdminLabsPage() {
                   <div className="flex gap-4 items-start">
                     <label className="shrink-0 w-20 h-20 rounded-xl bg-black/50 border-2 border-dashed border-white/10 hover:border-white/30 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all overflow-hidden group relative">
                       {newProject.thumbnail_url ? (
-                        <img src={newProject.thumbnail_url} className="w-full h-full object-cover" alt="Thumbnail" />
+                        <Image 
+                          src={newProject.thumbnail_url} 
+                          fill
+                          className="object-cover" 
+                          alt="Thumbnail Preview" 
+                          unoptimized
+                        />
                       ) : (
                         <>
                           <ImageIcon className="w-5 h-5 text-zinc-600 group-hover:text-zinc-400" />
@@ -316,7 +312,13 @@ export default function AdminLabsPage() {
                   <div className="flex gap-4 items-start">
                     <label className="shrink-0 w-20 h-20 rounded-xl bg-black/50 border-2 border-dashed border-white/10 hover:border-white/30 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all overflow-hidden group/thumb relative">
                       {project.thumbnail_url ? (
-                        <img src={project.thumbnail_url} className="w-full h-full object-cover" alt="Thumbnail" />
+                        <Image 
+                          src={project.thumbnail_url} 
+                          fill
+                          className="object-cover" 
+                          alt={project.name} 
+                          unoptimized
+                        />
                       ) : (
                         <div className="flex flex-col items-center justify-center gap-1">
                           <ImageIcon className="w-5 h-5 text-zinc-600 group-hover/thumb:text-zinc-400" />
@@ -340,7 +342,13 @@ export default function AdminLabsPage() {
                         />
                       ) : (
                         <div className="flex flex-col">
-                          <span className="text-white font-bold text-lg tracking-tight group-hover:text-primary transition-colors" style={{ '--primary': theme.colors.primary } as any}>{project.name}</span>
+                          <span 
+                            className="text-white font-bold text-lg tracking-tight transition-colors"
+                            onMouseEnter={(e) => (e.currentTarget.style.color = theme.colors.primary)}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = 'white')}
+                          >
+                            {project.name}
+                          </span>
                           <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{project.slug}</span>
                         </div>
                       )}
@@ -420,15 +428,15 @@ export default function AdminLabsPage() {
                       <span className="text-xs font-bold text-white">{project.progress}%</span>
                     </div>
                     {editingId === project.id ? (
-                      <input 
-                        type="range"
-                        min="0"
-                        max="100"
-                        className="w-full accent-primary h-1"
-                        style={{ '--primary': theme.colors.primary } as any}
-                        value={project.progress}
-                        onChange={(e) => updateProjectLocal(project.id, 'progress', parseInt(e.target.value))}
-                      />
+                        <input 
+                          type="range"
+                          min="0"
+                          max="100"
+                          className="w-full h-1"
+                          style={{ accentColor: theme.colors.primary }}
+                          value={project.progress}
+                          onChange={(e) => updateProjectLocal(project.id, 'progress', parseInt(e.target.value))}
+                        />
                     ) : (
                       <div className="w-40 h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <motion.div 
@@ -508,10 +516,6 @@ export default function AdminLabsPage() {
         </div>
       </div>
 
-      <style jsx>{`
-        .text-primary { color: var(--primary); }
-        .accent-primary { accent-color: var(--primary); }
-      `}</style>
     </div>
   );
 }

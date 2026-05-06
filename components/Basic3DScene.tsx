@@ -28,7 +28,7 @@ export default function Basic3DScene() {
    const scrollOffsetRaw = usePageScroll()
    const lerpedScroll = useRef(0)
 
-   const [earthTexturePath, setEarthTexturePath] = useState('/imgs/mapa-mundi-real-optimized.webp')
+   const [earthTexturePath, setEarthTexturePath] = useState('/imgs/universo-nebuloso.webp')
 
    const changeEarthTexture = () => {
       const images = [
