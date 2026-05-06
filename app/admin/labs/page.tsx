@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Plus, Trash2, Edit3, ExternalLink, RefreshCw, Loader2, X } from 'lucide-react';
+import { Save, Plus, Trash2, Edit3, ExternalLink, RefreshCw, Loader2, X, Image as ImageIcon } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { supabase } from '@/config/supabase';
 
@@ -15,21 +15,28 @@ interface Project {
   slug: string;
   specs: string[];
   thumbnail_url: string;
+  sandbox_url?: string;
+  sandbox_file_url?: string;
 }
 
 export default function AdminLabsPage() {
+  const { theme } = useTheme();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const { theme } = useTheme();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [newProject, setNewProject] = useState({
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const [newProject, setNewProject] = useState<Partial<Project>>({
     name: '',
     client: '',
     slug: '',
     status: 'IN_DEVELOPMENT',
-    progress: 0
+    progress: 0,
+    sandbox_url: '',
+    sandbox_file_url: '',
+    specs: []
   });
 
   useEffect(() => {
@@ -47,6 +54,43 @@ export default function AdminLabsPage() {
     setLoading(false);
   }
 
+  const handleFileUpload = async (file: File, projectId?: string, type: 'html' | 'image' = 'html') => {
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${type === 'html' ? 'sandboxes' : 'thumbnails'}/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('labs')
+        .upload(filePath, file, {
+          contentType: type === 'html' ? 'text/html' : file.type,
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('labs')
+        .getPublicUrl(filePath);
+
+      if (projectId || editingId) {
+        const id = projectId || editingId;
+        updateProjectLocal(id!, type === 'html' ? 'sandbox_file_url' : 'thumbnail_url', publicUrl);
+      } else {
+        setNewProject(prev => ({ 
+          ...prev, 
+          [type === 'html' ? 'sandbox_file_url' : 'thumbnail_url']: publicUrl 
+        }));
+      }
+      alert(`${type === 'html' ? 'Arquivo' : 'Imagem'} carregada com sucesso!`);
+    } catch (error: any) {
+      alert('Erro no upload: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSave = async (project: Project) => {
     setIsSaving(true);
     const { error } = await supabase
@@ -56,12 +100,17 @@ export default function AdminLabsPage() {
         client: project.client,
         status: project.status,
         progress: project.progress,
-        specs: project.specs,
-        slug: project.slug
+        slug: project.slug,
+        sandbox_url: project.sandbox_url,
+        sandbox_file_url: project.sandbox_file_url,
+        thumbnail_url: project.thumbnail_url
       })
       .eq('id', project.id);
 
-    if (!error) {
+    if (error) {
+      console.error('Error saving project:', error);
+      alert(`Erro ao salvar: ${error.message}${error.message.includes('column') ? ' (Provavelmente a coluna sandbox_url não existe na tabela)' : ''}`);
+    } else {
       setEditingId(null);
       fetchProjects();
     }
@@ -71,7 +120,8 @@ export default function AdminLabsPage() {
   const deleteProject = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este projeto?')) return;
     const { error } = await supabase.from('labs_projects').delete().eq('id', id);
-    if (!error) fetchProjects();
+    if (error) alert('Erro ao excluir: ' + error.message);
+    else fetchProjects();
   };
 
   const createProject = async () => {
@@ -84,10 +134,10 @@ export default function AdminLabsPage() {
 
     if (error) {
       console.error('Error creating project:', error);
-      alert('Erro ao criar projeto: ' + error.message);
+      alert(`Erro ao criar: ${error.message}${error.message.includes('column') ? ' (Provavelmente a coluna sandbox_url não existe na tabela)' : ''}`);
     } else {
       setIsCreating(false);
-      setNewProject({ name: '', client: '', slug: '', status: 'IN_DEVELOPMENT', progress: 0 });
+      setNewProject({ name: '', client: '', slug: '', status: 'IN_DEVELOPMENT', progress: 0, sandbox_url: '' });
       fetchProjects();
     }
     setIsSaving(false);
@@ -137,18 +187,36 @@ export default function AdminLabsPage() {
             {isCreating && (
               <tr className="bg-white/[0.03]" style={{ borderLeft: `4px solid ${theme.colors.primary}` }}>
                 <td className="p-8">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Título do Projeto</label>
-                    <input 
-                      placeholder="Ex: Neural Interface"
-                      className="bg-black/50 border border-white/10 px-4 py-3 outline-none w-full text-white font-bold rounded-xl focus:border-white/30 transition-all"
-                      value={newProject.name}
-                      onChange={(e) => setNewProject({ ...newProject, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                    />
+                  <div className="flex gap-4 items-start">
+                    <label className="shrink-0 w-20 h-20 rounded-xl bg-black/50 border-2 border-dashed border-white/10 hover:border-white/30 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all overflow-hidden group relative">
+                      {newProject.thumbnail_url ? (
+                        <img src={newProject.thumbnail_url} className="w-full h-full object-cover" alt="Thumbnail" />
+                      ) : (
+                        <>
+                          <ImageIcon className="w-5 h-5 text-zinc-600 group-hover:text-zinc-400" />
+                          <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest">Capa</span>
+                        </>
+                      )}
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], undefined, 'image')}
+                      />
+                    </label>
+                    <div className="space-y-2 grow">
+                      <label className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Título do Projeto</label>
+                      <input 
+                        placeholder="Ex: Neural Interface"
+                        className="bg-black/50 border border-white/10 px-4 py-3 outline-none w-full text-white font-bold rounded-xl focus:border-white/30 transition-all"
+                        value={newProject.name}
+                        onChange={(e) => setNewProject({ ...newProject, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                      />
+                    </div>
                   </div>
                 </td>
                 <td className="p-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Cliente</label>
                       <input 
@@ -168,6 +236,35 @@ export default function AdminLabsPage() {
                         <option value="IN_DEVELOPMENT">EM DESENVOLVIMENTO</option>
                         <option value="BETA_TESTING">BETA TEST</option>
                       </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Link Externo (Web)</label>
+                      <input 
+                        placeholder="https://exemplo.com"
+                        className="bg-black/50 border border-white/10 px-4 py-3 outline-none w-full text-xs rounded-xl focus:border-white/30 transition-all"
+                        value={newProject.sandbox_url}
+                        onChange={(e) => setNewProject({ ...newProject, sandbox_url: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Protótipo HTML (Arquivo)</label>
+                      <div className="flex gap-2">
+                        <input 
+                          placeholder="Link do arquivo carregado"
+                          readOnly
+                          className="bg-black/20 border border-white/5 px-4 py-3 outline-none w-full text-xs rounded-xl text-zinc-500 italic"
+                          value={newProject.sandbox_file_url || 'Nenhum arquivo...'}
+                        />
+                        <label className="shrink-0 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 cursor-pointer transition-all">
+                          <input 
+                            type="file" 
+                            className="hidden" 
+                            accept=".html"
+                            onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                          />
+                          {isUploading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -216,29 +313,44 @@ export default function AdminLabsPage() {
             ) : projects.map((project) => (
               <tr key={project.id} className="group hover:bg-white/[0.01] transition-all duration-500">
                 <td className="p-8">
-                  {editingId === project.id ? (
-                    <input 
-                      className="bg-black border-2 px-4 py-3 outline-none w-full text-white font-bold rounded-xl transition-all"
-                      style={{ borderColor: theme.colors.primary + '40' }}
-                      value={project.name}
-                      onChange={(e) => updateProjectLocal(project.id, 'name', e.target.value)}
-                    />
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center border border-white/5 group-hover:border-white/10 transition-all">
-                        <span className="text-zinc-500 font-mono text-xs">{project.name.charAt(0)}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-white font-bold text-lg tracking-tight group-hover:text-primary transition-colors" style={{ '--primary': theme.colors.primary } as any}>{project.name}</span>
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{project.slug}</span>
-                      </div>
+                  <div className="flex gap-4 items-start">
+                    <label className="shrink-0 w-20 h-20 rounded-xl bg-black/50 border-2 border-dashed border-white/10 hover:border-white/30 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all overflow-hidden group/thumb relative">
+                      {project.thumbnail_url ? (
+                        <img src={project.thumbnail_url} className="w-full h-full object-cover" alt="Thumbnail" />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <ImageIcon className="w-5 h-5 text-zinc-600 group-hover/thumb:text-zinc-400" />
+                          <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest">Capa</span>
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], project.id, 'image')}
+                      />
+                    </label>
+                    <div className="grow">
+                      {editingId === project.id ? (
+                        <input 
+                          className="bg-black border-2 px-4 py-3 outline-none w-full text-white font-bold rounded-xl transition-all"
+                          style={{ borderColor: theme.colors.primary + '40' }}
+                          value={project.name}
+                          onChange={(e) => updateProjectLocal(project.id, 'name', e.target.value)}
+                        />
+                      ) : (
+                        <div className="flex flex-col">
+                          <span className="text-white font-bold text-lg tracking-tight group-hover:text-primary transition-colors" style={{ '--primary': theme.colors.primary } as any}>{project.name}</span>
+                          <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{project.slug}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </td>
                 <td className="p-8">
                   {editingId === project.id ? (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <input 
                           className="bg-black border border-white/10 px-4 py-2 outline-none w-full text-zinc-400 font-mono text-xs rounded-lg"
                           value={project.client}
@@ -252,6 +364,29 @@ export default function AdminLabsPage() {
                           <option value="IN_DEVELOPMENT">IN_DEVELOPMENT</option>
                           <option value="BETA_TESTING">BETA_TESTING</option>
                         </select>
+                        <input 
+                          placeholder="Link Externo"
+                          className="bg-black border border-white/10 px-4 py-2 outline-none w-full text-zinc-400 font-mono text-[10px] rounded-lg"
+                          value={project.sandbox_url || ''}
+                          onChange={(e) => updateProjectLocal(project.id, 'sandbox_url', e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <input 
+                            placeholder="Arquivo Carregado"
+                            readOnly
+                            className="bg-black/20 border border-white/5 px-2 py-2 outline-none w-full text-zinc-600 font-mono text-[9px] rounded-lg truncate italic"
+                            value={project.sandbox_file_url ? 'Arquivo OK' : 'Sem arquivo'}
+                          />
+                          <label className="shrink-0 p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 cursor-pointer transition-all">
+                            <input 
+                              type="file" 
+                              className="hidden" 
+                              accept=".html"
+                              onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], project.id)}
+                            />
+                            {isUploading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                          </label>
+                        </div>
                       </div>
                       <textarea 
                         className="bg-black border border-white/10 px-4 py-3 outline-none w-full text-zinc-400 font-mono text-xs h-24 rounded-xl"
@@ -310,37 +445,45 @@ export default function AdminLabsPage() {
                   </div>
                 </td>
                 <td className="p-8 text-right">
-                  <div className="flex justify-end gap-3 opacity-40 group-hover:opacity-100 transition-opacity">
-                    {editingId === project.id ? (
+                    <div className="flex justify-end gap-3 opacity-40 group-hover:opacity-100 transition-opacity">
+                      {editingId === project.id ? (
+                        <button 
+                          onClick={() => handleSave(project)}
+                          className="w-10 h-10 flex items-center justify-center bg-green-500 text-black rounded-xl hover:brightness-110 active:scale-90 transition-all"
+                          disabled={isSaving}
+                        >
+                          {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        </button>
+                      ) : (
+                        <>
+                          {project.sandbox_url && (
+                            <a 
+                              href={`/labs/sandbox/${project.slug}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl transition-all"
+                              title="Ver Sandbox Profissional"
+                            >
+                              <ExternalLink className="w-4 h-4 text-zinc-400 hover:text-white" />
+                            </a>
+                          )}
+                          <button 
+                            onClick={() => setEditingId(project.id)}
+                            className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl transition-all"
+                            title="Editar Projeto"
+                          >
+                            <Edit3 className="w-4 h-4 text-zinc-400 hover:text-white" />
+                          </button>
+                        </>
+                      )}
                       <button 
-                        onClick={() => handleSave(project)}
-                        className="w-10 h-10 flex items-center justify-center bg-green-500 text-black rounded-xl hover:brightness-110 active:scale-90 transition-all"
-                        disabled={isSaving}
+                        onClick={() => deleteProject(project.id)}
+                        className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-xl transition-all group/del"
+                        title="Excluir Projeto"
                       >
-                        {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        <Trash2 className="w-4 h-4 text-zinc-400 group-hover/del:text-red-500" />
                       </button>
-                    ) : (
-                      <button 
-                        onClick={() => setEditingId(project.id)}
-                        className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl transition-all"
-                      >
-                        <Edit3 className="w-4 h-4 text-zinc-400 hover:text-white" />
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => deleteProject(project.id)}
-                      className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-xl transition-all group/del"
-                    >
-                      <Trash2 className="w-4 h-4 text-zinc-400 group-hover/del:text-red-500" />
-                    </button>
-                    <a 
-                      href={`/labs/dev/${project.slug}`}
-                      target="_blank"
-                      className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-blue-500/10 border border-white/5 hover:border-blue-500/20 rounded-xl transition-all"
-                    >
-                      <ExternalLink className="w-4 h-4 text-zinc-400" />
-                    </a>
-                  </div>
+                    </div>
                 </td>
               </tr>
             ))}

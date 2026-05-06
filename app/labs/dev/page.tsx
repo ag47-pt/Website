@@ -16,6 +16,8 @@ interface Project {
   specs: string[];
   thumbnail_url: string;
   slug: string;
+  sandbox_url?: string;
+  sandbox_file_url?: string;
 }
 
 export default function DevShowcasePage() {
@@ -84,14 +86,21 @@ export default function DevShowcasePage() {
             className="group relative bg-zinc-950 border border-white/5 overflow-hidden"
           >
             {/* Visual Preview */}
-            <div className="h-48 relative grayscale group-hover:grayscale-0 transition-all duration-700">
+            <div className="h-56 relative overflow-hidden transition-all duration-700">
               <Image 
                 src={project.thumbnail_url || 'https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1000&auto=format&fit=crop'} 
                 alt={project.name}
                 fill
-                className="object-cover opacity-50 group-hover:opacity-80 transition-opacity"
+                className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+              {/* Primary Glow Overlay */}
+              <div 
+                className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-700"
+                style={{ 
+                  background: `linear-gradient(to top, ${theme.colors.primary}, transparent)` 
+                }}
+              ></div>
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700"></div>
               
               {/* Overlay Tags */}
               <div className="absolute top-4 left-4 flex gap-2">
@@ -148,20 +157,22 @@ export default function DevShowcasePage() {
               </div>
 
               {/* Action */}
-              <a 
-                href={`/labs/dev/${project.slug}`}
-                className="w-full py-3 border border-white/10 transition-colors flex items-center justify-center gap-2 text-[10px] font-mono tracking-widest uppercase"
-                style={{ '--hover-border': theme.colors.primary } as any}
-              >
-                <style jsx>{`
-                  a:hover { border-color: var(--hover-border); }
-                `}</style>
-                {project.status === 'INTERNAL_ALPHA' ? (
-                  <>Pedir Acesso <Lock className="w-3 h-3" /></>
-                ) : (
-                  <>Abrir Sandbox <ExternalLink className="w-3 h-3" /></>
-                )}
-              </a>
+              {(project.sandbox_url || project.sandbox_file_url) ? (
+                <a 
+                  href={`/labs/sandbox/${project.slug}`}
+                  className="w-full py-3 border border-white/10 transition-all flex items-center justify-center gap-2 text-[10px] font-mono tracking-widest uppercase hover:bg-white/5"
+                  style={{ borderColor: `${theme.colors.primary}40` }}
+                >
+                  Abrir Sandbox <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : (
+                <button 
+                  disabled
+                  className="w-full py-3 border border-white/5 text-zinc-700 flex items-center justify-center gap-2 text-[10px] font-mono tracking-widest uppercase cursor-not-allowed"
+                >
+                  Sandbox Offline <Lock className="w-3 h-3" />
+                </button>
+              )}
             </div>
 
             {/* Tech Decoration */}
