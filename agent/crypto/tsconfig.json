@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "../../.crypto-agent-build",
+    "noEmit": false
+  },
+  "include": [
+    "./**/*.ts"
+  ]
+}

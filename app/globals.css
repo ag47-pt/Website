@@ -12,6 +12,115 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ============================================================
+   NexusAI Platform Design System
+   ============================================================ */
+
+@theme {
+  /* Brand & Status Colors */
+  --color-primary: #3B82F6;
+  --color-surface: #FFFFFF;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #3B82F6;
+
+  /* UI Element Colors */
+  --color-border: #E5E7EB;
+  --color-input-bg: #F9FAFB;
+  --color-input-border: #D1D5DB;
+
+  /* Text Colors */
+  --color-text-main: #111827;
+  --color-text-muted: #6B7280;
+  --color-text-light: #9CA3AF;
+}
+
+/* Force NexusAI to always render in light mode regardless of OS theme */
+.nexus-layout {
+  --background: #F5F7FA;
+  --foreground: #111827;
+  --color-background: #F5F7FA;
+  color-scheme: light;
+}
+
+/* Custom shadow utilities */
+@layer utilities {
+  .shadow-soft { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+  .shadow-glow { box-shadow: 0 0 15px var(--nexus-glow, rgba(59, 130, 246, 0.5)); }
+  .shadow-card { box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.02); }
+  .hover\:shadow-soft:hover { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+  .hover\:shadow-glow:hover { box-shadow: 0 0 15px var(--nexus-glow, rgba(59, 130, 246, 0.5)); }
+}
+
+/* On solid-primary backgrounds, force readable text (dark on lime/orange, white on pink) */
+[data-nexus-theme] [class~="bg-primary"] {
+  color: var(--nexus-on-primary, #ffffff);
+}
+
+/*
+  text-primary must be legible on white/light surfaces.
+  Bright accents (lime #D1FF00, orange #ffaa00, pink #ec4899) all fail WCAG on white.
+  --nexus-primary-text holds a darkened, contrast-safe version of each theme's accent.
+*/
+[data-nexus-theme] :where([class~="text-primary"]) {
+  color: var(--nexus-primary-text, var(--color-primary));
+}
+/* Also darken primary borders so outlines are visible */
+[data-nexus-theme] :where([class~="border-primary"]) {
+  border-color: var(--nexus-primary-text, var(--color-primary));
+}
+
+/* Pulse animation for live status indicators */
+@keyframes nexus-pulse {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+.nexus-pulse-dot { animation: nexus-pulse 2s infinite; }
+
+/* ============================================================
+   NexusAI Dark Mode
+   Activated by data-nexus-dark="true" on the root .nexus-layout div
+   ============================================================ */
+
+.nexus-layout[data-nexus-dark="false"] { color-scheme: light; }
+
+.nexus-layout[data-nexus-dark="true"] {
+  --background:         #0F1117;
+  --foreground:         #F1F5F9;
+  --color-background:   #0F1117;
+  --color-surface:      #1A1D27;
+  --color-border:       #2D3148;
+  --color-input-bg:     #1F2235;
+  --color-input-border: #3D4166;
+  --color-text-main:    #F1F5F9;
+  --color-text-muted:   #94A3B8;
+  --color-text-light:   #64748B;
+  color-scheme: dark;
+}
+
+/* In dark mode accents are already legible on dark surfaces — use raw primary */
+[data-nexus-dark="true"] :where([class~="text-primary"]) {
+  color: var(--color-primary);
+}
+[data-nexus-dark="true"] :where([class~="border-primary"]) {
+  border-color: var(--color-primary);
+}
+
+/* Scrollbar adapts to dark */
+[data-nexus-dark="true"] .nexus-scrollbar::-webkit-scrollbar-thumb       { background: #2D3148; }
+[data-nexus-dark="true"] .nexus-scrollbar::-webkit-scrollbar-thumb:hover { background: #3D4166; }
+
+/* Custom scrollbar for NexusAI containers */
+.nexus-scrollbar::-webkit-scrollbar          { display: block !important; width: 6px; height: 6px; }
+.nexus-scrollbar::-webkit-scrollbar-track   { background: transparent; }
+.nexus-scrollbar::-webkit-scrollbar-thumb   { background: #E5E7EB; border-radius: 10px; }
+.nexus-scrollbar::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
+
+/* Hide scrollbar globally within nexus (except .nexus-scrollbar) */
+.nexus-layout *:not(.nexus-scrollbar):not(.nexus-scrollbar *)::-webkit-scrollbar { display: none; }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
