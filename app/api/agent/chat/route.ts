@@ -103,12 +103,25 @@ export async function POST(req: NextRequest) {
 
       // Executar ferramentas e devolver resultados
       const responseParts: Part[] = await Promise.all(
-        functionCallParts.map(async (p) => ({
-          functionResponse: {
-            name: p.functionCall!.name!,
-            response: await executeTool(p.functionCall!.name!, p.functionCall!.args as Record<string, unknown>),
-          },
-        }))
+        functionCallParts.map(async (p) => {
+          const toolResult = await executeTool(
+            p.functionCall!.name!,
+            p.functionCall!.args as Record<string, unknown>
+          )
+
+          // Gemini expects functionResponse.response as an object.
+          const responsePayload: Record<string, unknown> =
+            toolResult && typeof toolResult === 'object'
+              ? (toolResult as Record<string, unknown>)
+              : { value: toolResult }
+
+          return {
+            functionResponse: {
+              name: p.functionCall!.name!,
+              response: responsePayload,
+            },
+          }
+        })
       )
       contents.push({ role: 'user', parts: responseParts })
     }
