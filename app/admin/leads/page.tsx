@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -115,7 +115,7 @@ export default function AdminLeadsPage() {
   );
 
   const exportCSV = () => {
-    const headers = ['Nome', 'Email', 'Serviço', 'Score', 'Temperatura', 'Tags', 'Urgência', 'Descrição', 'Orçamento', 'Data'];
+    const headers = ['Nome', 'Email', 'Servi├ºo', 'Score', 'Temperatura', 'Tags', 'Urg├¬ncia', 'Descri├º├úo', 'Or├ºamento', 'Data'];
     const csvContent = [
       headers.join(','),
       ...leads.map((l) => [
@@ -148,7 +148,7 @@ export default function AdminLeadsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">
-            Gestão de{' '}
+            Gest├úo de{' '}
             <span
               className="px-2"
               style={{ backgroundColor: primary, color: '#000', borderRadius: '4px' }}
@@ -157,7 +157,7 @@ export default function AdminLeadsPage() {
             </span>
           </h1>
           <p className="text-sm font-mono uppercase tracking-[0.2em]" style={{ color: secondary }}>
-            Chatbot & Apresentações — {leads.length} leads capturados
+            Chatbot & Apresenta├º├Áes ÔÇö {leads.length} leads capturados
           </p>
         </div>
         <button
@@ -174,7 +174,7 @@ export default function AdminLeadsPage() {
         <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 w-5 h-5" />
         <input
           type="text"
-          placeholder="Buscar por nome, email ou serviço..."
+          placeholder="Buscar por nome, email ou servi├ºo..."
           className={`w-full bg-zinc-900/80 backdrop-blur-xl pl-16 pr-6 py-5 rounded-2xl text-sm outline-none transition-all text-white font-mono placeholder:text-zinc-500 ${
             isDark ? 'border border-white/10 focus:border-white/20' : 'border border-zinc-300 focus:border-zinc-400'
           }`}
@@ -193,11 +193,11 @@ export default function AdminLeadsPage() {
               <tr className={`border-b ${isDark ? 'border-white/5 bg-black/40' : 'border-zinc-200 bg-zinc-100/60'}`}>
                 <th className="p-6 w-8"></th>
                 <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Lead</th>
-                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Serviço</th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Servi├ºo</th>
                 <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Score</th>
                 <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Tags</th>
                 <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Data</th>
-                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest text-right">Ações</th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest text-right">A├º├Áes</th>
               </tr>
             </thead>
             <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-zinc-200'}`}>
@@ -246,7 +246,7 @@ export default function AdminLeadsPage() {
                             {lead.servico_interesse}
                           </span>
                         ) : (
-                          <span className="text-zinc-700 text-xs font-mono">—</span>
+                          <span className="text-zinc-700 text-xs font-mono">ÔÇö</span>
                         )}
                       </td>
 
@@ -275,7 +275,7 @@ export default function AdminLeadsPage() {
                           <Calendar className="w-3 h-3 text-zinc-700" />
                           {lead.created_at
                             ? new Date(lead.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                            : '—'}
+                            : 'ÔÇö'}
                         </div>
                       </td>
 
@@ -304,7 +304,7 @@ export default function AdminLeadsPage() {
                             >
                               <div className="px-8 py-7 bg-black/40 border-b border-white/5 space-y-6">
 
-                                {/* ── Score cards row ── */}
+                                {/* ÔöÇÔöÇ Score cards row ÔöÇÔöÇ */}
                                 <div className="flex flex-wrap gap-3">
                                   <div className="bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 min-w-[90px]">
                                     <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Lead Score</p>
@@ -316,7 +316,7 @@ export default function AdminLeadsPage() {
                                   </div>
                                   {lead.urgencia && (
                                     <div className="bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 min-w-[90px]">
-                                      <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Urgência</p>
+                                      <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Urg├¬ncia</p>
                                       <span className="text-white text-sm font-semibold">{lead.urgencia}</span>
                                     </div>
                                   )}
@@ -328,7 +328,7 @@ export default function AdminLeadsPage() {
                                   )}
                                 </div>
 
-                                {/* ── Fields grid ── */}
+                                {/* ÔöÇÔöÇ Fields grid ÔöÇÔöÇ */}
                                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                   <div>
                                     <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Nome</p>
@@ -340,7 +340,7 @@ export default function AdminLeadsPage() {
                                   </div>
                                   {lead.servico_interesse && (
                                     <div>
-                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Serviço de Interesse</p>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Servi├ºo de Interesse</p>
                                       <span style={{ background: `${secondary}26`, border: `1px solid ${secondary}66`, color: secondary, borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
                                         {lead.servico_interesse}
                                       </span>
@@ -348,19 +348,19 @@ export default function AdminLeadsPage() {
                                   )}
                                   {lead.descricao_projeto && (
                                     <div className="sm:col-span-2">
-                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Descrição do Projeto</p>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Descri├º├úo do Projeto</p>
                                       <p className="text-zinc-200 text-sm leading-relaxed">{lead.descricao_projeto}</p>
                                     </div>
                                   )}
                                   {lead.orcamento_estimado && (
                                     <div>
-                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Orçamento Estimado</p>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Or├ºamento Estimado</p>
                                       <p className="text-zinc-200 text-sm">{lead.orcamento_estimado}</p>
                                     </div>
                                   )}
                                 </div>
 
-                                {/* ── Tags ── */}
+                                {/* ÔöÇÔöÇ Tags ÔöÇÔöÇ */}
                                 {(lead.tags ?? []).length > 0 && (
                                   <div>
                                     <p className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: secondary }}>Tags</p>
@@ -374,13 +374,13 @@ export default function AdminLeadsPage() {
                                   </div>
                                 )}
 
-                                {/* ── Summary + Conversation ── */}
+                                {/* ÔöÇÔöÇ Summary + Conversation ÔöÇÔöÇ */}
                                 <div className="grid md:grid-cols-2 gap-4">
 
-                                  {/* Resumo de Qualificação */}
+                                  {/* Resumo de Qualifica├º├úo */}
                                   {lead.conversation_summary && (
                                     <div>
-                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: secondary }}>Resumo de Qualificação</p>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: secondary }}>Resumo de Qualifica├º├úo</p>
                                       <div className="bg-zinc-900/60 border border-white/5 rounded-xl p-4 space-y-1.5">
                                         {lead.conversation_summary
                                           .split('\n')
@@ -391,7 +391,7 @@ export default function AdminLeadsPage() {
                                             const hasLabel = parts.length >= 2;
                                             return (
                                               <div key={i} className={`text-sm ${isDash ? 'flex gap-1.5' : ''}`}>
-                                                {isDash && <span className="shrink-0" style={{ color: secondary }}>—</span>}
+                                                {isDash && <span className="shrink-0" style={{ color: secondary }}>ÔÇö</span>}
                                                 {hasLabel ? (
                                                   <>
                                                     <span className="text-zinc-500">{parts[0].trim()}:</span>
@@ -407,11 +407,11 @@ export default function AdminLeadsPage() {
                                     </div>
                                   )}
 
-                                  {/* Histórico da Conversa */}
+                                  {/* Hist├│rico da Conversa */}
                                   {(lead.chat_history ?? []).length > 0 && (
                                     <div>
                                       <p className="text-[9px] font-mono uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: secondary }}>
-                                        <MessageSquare className="w-3 h-3" /> Histórico da Conversa
+                                        <MessageSquare className="w-3 h-3" /> Hist├│rico da Conversa
                                       </p>
                                       <div className="bg-zinc-900/60 border border-white/5 rounded-xl p-4 max-h-64 overflow-y-auto space-y-3">
                                         {(lead.chat_history ?? []).map((msg, i) => (
@@ -420,7 +420,7 @@ export default function AdminLeadsPage() {
                                               className="text-[9px] font-mono uppercase tracking-widest font-bold"
                                               style={{ color: msg.role === 'user' ? secondary : '#555' }}
                                             >
-                                              {msg.role === 'user' ? '👤 USER' : '🤖 AGENT'}
+                                              {msg.role === 'user' ? '­ƒæñ USER' : '­ƒñû AGENT'}
                                             </span>
                                             <p className={`text-sm leading-relaxed ${msg.role === 'user' ? 'text-zinc-200' : 'text-zinc-400'}`}>
                                               {msg.content}
@@ -432,15 +432,15 @@ export default function AdminLeadsPage() {
                                   )}
                                 </div>
 
-                                {/* ── CTA ── */}
+                                {/* ÔöÇÔöÇ CTA ÔöÇÔöÇ */}
                                 <div>
                                   <a
-                                    href={`mailto:${lead.email}?subject=AG47 — A sua proposta está a caminho, ${lead.name.split(' ')[0]}!`}
+                                    href={`mailto:${lead.email}?subject=AG47 ÔÇö A sua proposta est├í a caminho, ${lead.name.split(' ')[0]}!`}
                                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
                                     style={{ background: primary, color: primaryTextColor }}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    ✉️ Responder ao Lead
+                                    Ô£ë´©Å Responder ao Lead
                                   </a>
                                 </div>
                               </div>
