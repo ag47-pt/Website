@@ -12,7 +12,8 @@ interface Lead {
   email: string;
   phone: string;
   company: string;
-  created_at: string;
+  created_at?: string;
+  viewed_at?: string;
 }
 
 export default function AdminLeadsPage() {
@@ -33,17 +34,34 @@ export default function AdminLeadsPage() {
 
   const fetchLeads = React.useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    let query = await supabase
       .from('leads')
       .select('*')
       .order('created_at', { ascending: false });
-    
-    if (!error && data) setLeads(data);
+
+    if (query.error) {
+      query = await supabase
+        .from('leads')
+        .select('*')
+        .order('viewed_at', { ascending: false });
+    }
+
+    if (!query.error && query.data) {
+      const normalized = query.data.map((lead) => ({
+        ...lead,
+        created_at: lead.created_at ?? lead.viewed_at,
+      }));
+      setLeads(normalized);
+    }
+
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchLeads();
+    const timer = window.setTimeout(() => {
+      void fetchLeads();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [fetchLeads]);
 
   const createLead = async () => {
@@ -93,7 +111,7 @@ export default function AdminLeadsPage() {
         l.email,
         l.phone,
         l.company,
-        new Date(l.created_at).toLocaleString()
+        l.created_at ? new Date(l.created_at).toLocaleString() : ''
       ].join(','))
     ].join('\n');
 
@@ -303,11 +321,13 @@ export default function AdminLeadsPage() {
                 <td className="p-8 text-zinc-500 text-xs font-mono">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-3 h-3 text-zinc-700" />
-                    {new Date(lead.created_at).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric'
-                    })}
+                    {lead.created_at
+                      ? new Date(lead.created_at).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })
+                      : 'Sem data'}
                   </div>
                 </td>
                 <td className="p-8 text-right">

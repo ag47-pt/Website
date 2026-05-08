@@ -83,8 +83,8 @@ export async function executeTool(name: string, args: Record<string, unknown>): 
       const { nome, email, servico_interesse, descricao_projeto = '', orcamento_estimado = '' } =
         args as Record<string, string>
 
-      // Guardar no Supabase
-      const { error: dbError } = await supabase.from('leads').insert({
+      // Tenta schema novo primeiro; faz fallback para schema antigo se preciso.
+      const { error: primaryInsertError } = await supabase.from('leads').insert({
         name: nome,
         email,
         source: 'chatbot',
@@ -92,7 +92,24 @@ export async function executeTool(name: string, args: Record<string, unknown>): 
         descricao_projeto: descricao_projeto || null,
         orcamento_estimado: orcamento_estimado || null,
       })
-      if (dbError) console.error('[ag47-agent] supabase insert error:', dbError.message)
+
+      let dbError = primaryInsertError
+      if (dbError) {
+        const fallbackInsert = await supabase.from('leads').insert({
+          name: nome,
+          email,
+        })
+        dbError = fallbackInsert.error
+      }
+
+      if (dbError) {
+        console.error('[ag47-agent] supabase insert error:', dbError.message)
+        return {
+          status: 'error',
+          message:
+            'Não consegui registar o lead agora. Podes confirmar os teus dados e tentar novamente em instantes?',
+        }
+      }
 
       // Enviar email de notificação
       try {

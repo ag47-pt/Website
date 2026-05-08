@@ -57,14 +57,28 @@ export default function AdminDashboardPage() {
 
   const fetchDashboardData = React.useCallback(async () => {
     try {
+      type LeadTimestampRow = { created_at?: string | null; viewed_at?: string | null }
+      type RecentLeadRow = { id: string; name: string; created_at?: string | null; viewed_at?: string | null }
+
       // 1. Fetch Counts
-      const [leadsCount, labsCount, presCount, slidesCount, allLeads] = await Promise.all([
+      const [leadsCount, labsCount, presCount, slidesCount] = await Promise.all([
         supabase.from('leads').select('*', { count: 'exact', head: true }),
         supabase.from('labs_projects').select('*', { count: 'exact', head: true }),
         supabase.from('presentations').select('*', { count: 'exact', head: true }),
         supabase.from('slides').select('*', { count: 'exact', head: true }),
-        supabase.from('leads').select('created_at'),
       ]);
+
+      let leadTimestampField: 'created_at' | 'viewed_at' = 'created_at';
+      let leadTimestampRows: LeadTimestampRow[] = [];
+
+      const allLeadsCreated = await supabase.from('leads').select('created_at');
+      if (allLeadsCreated.error) {
+        leadTimestampField = 'viewed_at';
+        const allLeadsViewed = await supabase.from('leads').select('viewed_at');
+        leadTimestampRows = (allLeadsViewed.data || []) as LeadTimestampRow[];
+      } else {
+        leadTimestampRows = (allLeadsCreated.data || []) as LeadTimestampRow[];
+      }
 
       setStats([
         { label: 'Leads Totais', value: leadsCount.count?.toString() || '0', change: '+100%', icon: <Users className="w-5 h-5" />, color: 'blue' },
@@ -82,19 +96,44 @@ export default function AdminDashboardPage() {
 
       const trend = last7Days.map(day => ({
         day: day.split('-')[2], // Just the day number
-        count: (allLeads.data || []).filter(l => l.created_at.startsWith(day)).length
+        count: leadTimestampRows.filter(l => {
+          const timestamp = leadTimestampField === 'created_at' ? l.created_at : l.viewed_at;
+          return typeof timestamp === 'string' && timestamp.startsWith(day);
+        }).length
       }));
       setLeadTrend(trend);
 
       // 3. Fetch Recent Activities
-      const [recentLeads, recentLabs, recentPres] = await Promise.all([
-        supabase.from('leads').select('id, name, created_at').order('created_at', { ascending: false }).limit(3),
+      const recentLeadsCreated = await supabase
+        .from('leads')
+        .select('id, name, created_at')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      let recentLeadRows: RecentLeadRow[] = [];
+      if (recentLeadsCreated.error) {
+        const recentLeadsViewed = await supabase
+          .from('leads')
+          .select('id, name, viewed_at')
+          .order('viewed_at', { ascending: false })
+          .limit(3);
+        recentLeadRows = (recentLeadsViewed.data || []) as RecentLeadRow[];
+      } else {
+        recentLeadRows = (recentLeadsCreated.data || []) as RecentLeadRow[];
+      }
+
+      const [recentLabs, recentPres] = await Promise.all([
         supabase.from('labs_projects').select('id, name, created_at').order('created_at', { ascending: false }).limit(3),
         supabase.from('presentations').select('id, client_name, created_at').order('created_at', { ascending: false }).limit(3),
       ]);
 
+      const normalizedRecentLeads = recentLeadRows.map((lead) => ({
+        ...lead,
+        created_at: lead.created_at ?? lead.viewed_at ?? '',
+      }));
+
       const activities: ActivityItem[] = [
-        ...(recentLeads.data || []).map(l => ({
+        ...normalizedRecentLeads.map(l => ({
           id: l.id,
           type: 'lead' as const,
           message: `Novo lead capturado: ${l.name}`,
@@ -129,7 +168,10 @@ export default function AdminDashboardPage() {
   }, [formatTimeAgo]);
 
   useEffect(() => {
-    fetchDashboardData();
+    const timer = window.setTimeout(() => {
+      void fetchDashboardData();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [fetchDashboardData]);
   return (
     <div className="space-y-12 relative">
