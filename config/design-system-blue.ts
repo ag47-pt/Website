@@ -5,17 +5,17 @@
 
 export const theme = {
   colors: {
-    primary: '#ffaa00', // Laranja principal (Orange 500)
-    secondary: '#fff480', // Amarelo (Yellow 500)
-    accent: '#fff480', // Amarelo (Yellow 500)
+    primary: '#0059ff', // Azul principal (Blue 500)
+    secondary: '#6399ff', // Azul claro (Blue 300)
+    accent: '#6399ff', // Amarelo (Yellow 500)
     
     // Especializados
-    scrollPercentage: '#ffaa00', // Laranja para indicador de scroll
-    highlight: '#ffaa00', // Laranja mais claro para destaque
+    scrollPercentage: '#0059ff', // Azul para indicador de scroll
+    highlight: '#6399ff', // Azul mais claro para destaque
     comet: {
       from: 'transparent', // Começa transparente
-      via: '#fff480', // Passa pelo amarelo
-      to: '#ffaa00' // Termina no laranja
+      via: '#0059ff', // Passa pelo azul
+      to: '#6399ff' // Termina no azul
     },
     
     // Backgrounds & Glass

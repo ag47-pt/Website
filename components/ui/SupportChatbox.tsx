@@ -180,7 +180,7 @@ export function SupportChatbox() {
         onClick={() => setIsOpen((o) => !o)}
         className="fixed bottom-5 left-5 sm:bottom-6 sm:left-6 z-50 w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
         style={{
-          background: `linear-gradient(135deg, ${secondary}, ${primary})`,
+          background: primary,
           boxShadow: `0 0 24px ${hex6(primary)}66`,
         }}
         animate={{ x: floatPos.x, y: floatPos.y }}
@@ -255,6 +255,14 @@ export function SupportChatbox() {
                 <p className="text-xs text-white/50">Assistente I.A</p>
               </div>
               <div className="ml-auto flex items-center gap-2 relative">
+                {/* Botão de fechar — visível apenas em mobile */}
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="sm:hidden w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                  aria-label="Fechar chat"
+                >
+                  <span className="text-white/70 text-sm leading-none font-bold">✕</span>
+                </button>
                 <span
                   className="w-2 h-2 rounded-full shrink-0"
                   style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}
@@ -415,7 +423,7 @@ export function SupportChatbox() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-30 transition-opacity"
-                  style={{ background: `linear-gradient(135deg, ${secondary}, ${primary})` }}
+                  style={{ background: primary }}
                   aria-label="Enviar mensagem"
                 >
                   <svg

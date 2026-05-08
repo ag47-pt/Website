@@ -6,7 +6,7 @@
 export const theme = { 
   colors: { 
     primary: '#D1FF00', // Lima principal (Lime 500)
-    secondary: '#00d9ffff', // Ciano (Cyan 500)
+    secondary: '#3fe2ff', // Ciano (Cyan 500)
     accent: '#00d9ff', // Esmeralda (Emerald 500)
     
     // Especializados 

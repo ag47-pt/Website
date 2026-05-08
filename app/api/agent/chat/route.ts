@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 import type { Content, Part } from '@google/genai'
-import { AG47_TOOLS, executeTool } from '@/agent/tools'
+import { AG47_TOOLS, executeTool, type HistoryMessage } from '@/agent/tools'
 import { SYSTEM_INSTRUCTION } from '@/agent/config'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY! })
@@ -33,15 +33,10 @@ async function generateWithRetry(params: Parameters<typeof ai.models.generateCon
   throw new Error('Max retries exceeded')
 }
 
-interface HistoryMessage {
-  role: 'user' | 'assistant'
-  content: string
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { message, history, model } = body as { message: unknown; history: unknown; model: unknown }
+    const { message, history, model } = body as { message: unknown; history: HistoryMessage[]; model: unknown }
     const selectedModel = (typeof model === 'string' && ALLOWED_MODELS.has(model)) ? model : DEFAULT_MODEL
 
     if (typeof message !== 'string' || message.trim().length === 0) {
@@ -51,11 +46,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mensagem demasiado longa' }, { status: 400 })
     }
 
-    // Converter histórico do cliente para formato Gemini
+    // Normalizar histórico do cliente
+    const safeHistory: HistoryMessage[] = Array.isArray(history)
+      ? history.filter((m) => m.role === 'user' || m.role === 'assistant')
+      : []
+
+    // Converter para formato Gemini
     const contents: Content[] = []
 
-    if (Array.isArray(history)) {
-      for (const msg of history as HistoryMessage[]) {
+    if (safeHistory.length > 0) {
+      for (const msg of safeHistory) {
         if (msg.role === 'user' || msg.role === 'assistant') {
           contents.push({
             role: msg.role === 'assistant' ? 'model' : 'user',
@@ -106,7 +106,8 @@ export async function POST(req: NextRequest) {
         functionCallParts.map(async (p) => {
           const toolResult = await executeTool(
             p.functionCall!.name!,
-            p.functionCall!.args as Record<string, unknown>
+            p.functionCall!.args as Record<string, unknown>,
+            safeHistory
           )
 
           // Gemini expects functionResponse.response as an object.

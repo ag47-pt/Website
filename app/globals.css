@@ -128,6 +128,31 @@
   }
 }
 
+/* ============================================================
+   Admin Light Mode
+   Activated by .admin-light on the root admin wrapper div.
+   Remaps the dark zinc/black palette to light equivalents so
+   all child pages (leads, dashboard, etc.) adapt automatically.
+   ============================================================ */
+.admin-light {
+  color-scheme: light;
+
+  /* Background surfaces: near-black → near-white */
+  --color-black:       oklch(100% 0 0);
+  --color-zinc-950:    oklch(98.5% 0.002 264);
+  --color-zinc-900:    oklch(96% 0.002 264);
+  --color-zinc-800:    oklch(92% 0.002 264);
+  --color-zinc-700:    oklch(86% 0.003 264);
+
+  /* Text: white → near-black so text-white is legible on light backgrounds */
+  --color-white:       oklch(10% 0 0);
+
+  /* Text zinc shades → darker for contrast on light bg */
+  --color-zinc-400:    oklch(38% 0.005 264);
+  --color-zinc-500:    oklch(45% 0.005 264);
+  --color-zinc-600:    oklch(52% 0.005 264);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

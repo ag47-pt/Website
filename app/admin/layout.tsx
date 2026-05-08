@@ -13,7 +13,9 @@ import {
   User,
   Menu,
   X,
-  Shield
+  Shield,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher';
@@ -27,7 +29,7 @@ export default function AdminDashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const { theme, themeName, toggleTheme } = useTheme();
+  const { theme, themeName, toggleTheme, isDark, toggleDark } = useTheme();
 
   useEffect(() => {
     // Basic check for the login page
@@ -65,7 +67,7 @@ export default function AdminDashboardLayout({
   ];
 
   return (
-    <div className="flex min-h-screen bg-black text-zinc-400 font-sans selection:bg-primary/30" style={{ '--primary': theme.colors.primary } as any}>
+    <div className={`flex min-h-screen font-sans selection:bg-primary/30 ${isDark ? 'admin-dark bg-black text-zinc-400' : 'admin-light bg-zinc-50 text-zinc-600'}`} style={{ '--primary': theme.colors.primary } as any}>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -111,8 +113,8 @@ export default function AdminDashboardLayout({
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group relative ${
                   isActive 
-                    ? 'text-white bg-white/5 shadow-inner' 
-                    : 'hover:bg-white/[0.02] hover:text-zinc-200'
+                    ? `text-white ${isDark ? 'bg-white/5' : 'bg-zinc-100'} shadow-inner` 
+                    : `${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-zinc-100'} hover:text-zinc-200`
                 }`}
               >
                 {isActive && (
@@ -136,7 +138,9 @@ export default function AdminDashboardLayout({
         </nav>
 
         <div className="p-8">
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/5 space-y-4">
+          <div className={`p-6 rounded-2xl border space-y-4 ${
+            isDark ? 'bg-gradient-to-br from-white/5 to-transparent border-white/5' : 'bg-zinc-100 border-zinc-200'
+          }`}>
              <div className="flex items-center gap-3">
                <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center overflow-hidden">
                  <Settings className="w-4 h-4 text-zinc-500" />
@@ -148,7 +152,9 @@ export default function AdminDashboardLayout({
              </div>
              <button 
                onClick={handleLogout}
-               className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-white"
+               className={`w-full py-2 border rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-white ${
+                 isDark ? 'bg-white/5 hover:bg-white/10 border-white/5' : 'bg-zinc-200 hover:bg-zinc-300 border-zinc-300'
+               }`}
              >
                Logout
              </button>
@@ -160,28 +166,48 @@ export default function AdminDashboardLayout({
         className="flex-1 lg:ml-72 min-h-screen flex flex-col transition-all duration-500"
       >
         {/* Top Header */}
-        <header className="h-20 border-b border-white/5 bg-zinc-950/50 backdrop-blur-md flex items-center justify-between px-6 md:px-8 sticky top-0 z-40">
+        <header
+          className="h-20 border-b backdrop-blur-md flex items-center justify-between px-6 md:px-8 sticky top-0 z-40"
+          style={{
+            borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#e4e4e7',
+            background:  isDark ? 'rgba(9,9,11,0.5)'        : 'rgba(255,255,255,0.85)',
+          }}
+        >
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 hover:bg-white/5 rounded-md transition-colors lg:hidden"
+              className={`p-2 rounded-md transition-colors lg:hidden ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
             >
-              <Menu className="w-5 h-5" />
+              <Menu className={`w-5 h-5 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`} />
             </button>
-            <h2 className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest hidden sm:block">
+            <h2 className={`text-[10px] font-mono uppercase tracking-widest hidden sm:block ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
               System / {pathname.split('/').pop()}
             </h2>
           </div>
 
           <div className="flex items-center gap-4 md:gap-6">
             <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
+            {/* Dark / Light toggle */}
+            <button
+              onClick={toggleDark}
+              className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 hover:scale-110 active:scale-95 ${
+                isDark ? 'bg-white/5 border-white/10 hover:bg-white/15' : 'bg-black/5 border-black/10 hover:bg-black/10'
+              }`}
+              aria-label={isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+              title={isDark ? 'Modo Claro' : 'Modo Escuro'}
+            >
+              {isDark
+                ? <Sun  className="w-4 h-4 text-zinc-400" />
+                : <Moon className="w-4 h-4 text-zinc-500" />
+              }
+            </button>
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
-                <div className="text-[10px] font-bold text-white uppercase tracking-tighter">Administrador Principal</div>
-                <div className="text-[8px] font-mono text-zinc-600">ID: 0x47_ROOT</div>
+                <div className={`text-[10px] font-bold uppercase tracking-tighter ${isDark ? 'text-white' : 'text-zinc-800'}`}>Administrador Principal</div>
+                <div className="text-[8px] font-mono text-zinc-400">ID: 0x47_ROOT</div>
               </div>
-              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center">
-                <User className="w-5 h-5 text-zinc-500" />
+              <div className={`w-10 h-10 rounded-full border flex items-center justify-center ${isDark ? 'bg-zinc-900 border-white/10' : 'bg-zinc-100 border-zinc-300'}`}>
+                <User className={`w-5 h-5 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
               </div>
             </div>
           </div>

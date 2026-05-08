@@ -2,124 +2,140 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Download, Search, Mail, User, Phone, Calendar, Loader2, Plus, X, Edit3, Save } from 'lucide-react';
+import { Trash2, Download, Search, Mail, Calendar, Loader2, ChevronDown, ChevronRight, MessageSquare } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { supabase } from '@/config/supabase';
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 interface Lead {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  company: string;
+  source?: string;
+  servico_interesse?: string;
+  descricao_projeto?: string;
+  orcamento_estimado?: string;
+  urgencia?: string;
+  lead_score?: number;
+  lead_temperature?: string;
+  tags?: string[];
+  conversation_summary?: string;
+  chat_history?: ChatMessage[];
   created_at?: string;
   viewed_at?: string;
+}
+
+const TEMP_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  hot:  { bg: 'rgba(239,68,68,0.15)',  text: '#ef4444', border: 'rgba(239,68,68,0.4)'  },
+  warm: { bg: 'rgba(249,115,22,0.15)', text: '#f97316', border: 'rgba(249,115,22,0.4)' },
+  cold: { bg: 'rgba(59,130,246,0.15)', text: '#3b82f6', border: 'rgba(59,130,246,0.4)' },
+};
+
+function TemperatureBadge({ temp }: { temp?: string }) {
+  const t = (temp ?? 'cold').toLowerCase();
+  const c = TEMP_COLORS[t] ?? TEMP_COLORS.cold;
+  return (
+    <span style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>
+      {t.toUpperCase()}
+    </span>
+  );
+}
+
+function ScoreBadge({ score, primary }: { score?: number; primary: string }) {
+  const s = score ?? 0;
+  const color = s >= 80 ? '#ef4444' : s >= 50 ? '#f97316' : primary;
+  return (
+    <span style={{ color, fontWeight: 800, fontSize: 16 }}>
+      {s}<span style={{ color: '#555', fontWeight: 400, fontSize: 11 }}>/100</span>
+    </span>
+  );
 }
 
 export default function AdminLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const { theme } = useTheme();
-
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [newLead, setNewLead] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: ''
-  });
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { theme, isDark } = useTheme();
+  const primary = theme.colors.primary;
+  const secondary = theme.colors.secondary;
+  // Use black text on light primaries (lime, orange) and white on dark ones (pink)
+  const primaryTextColor = (() => {
+    const hex = primary.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  })();
 
   const fetchLeads = React.useCallback(async () => {
     setLoading(true);
-    let query = await supabase
+    let { data, error } = await supabase
       .from('leads')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (query.error) {
-      query = await supabase
+    if (error) {
+      ({ data, error } = await supabase
         .from('leads')
         .select('*')
-        .order('viewed_at', { ascending: false });
+        .order('viewed_at', { ascending: false }));
     }
 
-    if (!query.error && query.data) {
-      const normalized = query.data.map((lead) => ({
+    if (!error && data) {
+      const normalized = (data as Lead[]).map((lead) => ({
         ...lead,
         created_at: lead.created_at ?? lead.viewed_at,
       }));
       setLeads(normalized);
     }
-
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void fetchLeads();
-    }, 0);
+    const timer = window.setTimeout(() => { void fetchLeads(); }, 0);
     return () => window.clearTimeout(timer);
   }, [fetchLeads]);
-
-  const createLead = async () => {
-    if (!newLead.name || !newLead.email) return;
-    setIsSaving(true);
-    const { error } = await supabase.from('leads').insert([newLead]);
-    if (!error) {
-      setIsCreating(false);
-      setNewLead({ name: '', email: '', phone: '', company: '' });
-      fetchLeads();
-    }
-    setIsSaving(false);
-  };
-
-  const updateLead = async (id: string, updatedData: Partial<Lead>) => {
-    setIsSaving(true);
-    const { error } = await supabase.from('leads').update(updatedData).eq('id', id);
-    if (!error) {
-      setEditingId(null);
-      fetchLeads();
-    }
-    setIsSaving(false);
-  };
 
   const deleteLead = async (id: string) => {
     if (!confirm('Excluir este lead?')) return;
     const { error } = await supabase.from('leads').delete().eq('id', id);
-    if (!error) fetchLeads();
+    if (!error) void fetchLeads();
   };
 
-  const updateLeadLocal = (id: string, field: string, value: string) => {
-    setLeads(leads.map(l => l.id === id ? { ...l, [field]: value } : l));
-  };
-
-  const filteredLeads = leads.filter(lead => 
-    lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.company?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLeads = leads.filter((lead) =>
+    (lead.name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (lead.email ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (lead.servico_interesse ?? '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const exportCSV = () => {
-    const headers = ['Nome', 'Email', 'Telefone', 'Empresa', 'Data'];
+    const headers = ['Nome', 'Email', 'Serviço', 'Score', 'Temperatura', 'Tags', 'Urgência', 'Descrição', 'Orçamento', 'Data'];
     const csvContent = [
       headers.join(','),
-      ...leads.map(l => [
-        l.name,
-        l.email,
-        l.phone,
-        l.company,
-        l.created_at ? new Date(l.created_at).toLocaleString() : ''
+      ...leads.map((l) => [
+        `"${l.name ?? ''}"`,
+        `"${l.email ?? ''}"`,
+        `"${l.servico_interesse ?? ''}"`,
+        l.lead_score ?? 0,
+        l.lead_temperature ?? '',
+        `"${(l.tags ?? []).join('; ')}"`,
+        l.urgencia ?? '',
+        `"${(l.descricao_projeto ?? '').replace(/"/g, "'")}"`,
+        `"${l.orcamento_estimado ?? ''}"`,
+        l.created_at ? new Date(l.created_at).toLocaleString() : '',
       ].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `leads_ag47_${new Date().toISOString().split('T')[0]}.csv`);
+    link.href = URL.createObjectURL(blob);
+    link.download = `leads_ag47_${new Date().toISOString().split('T')[0]}.csv`;
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -132,236 +148,314 @@ export default function AdminLeadsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">
-            Gestão de <span className="px-2" style={{ backgroundColor: theme.colors.primary, color: '#000', borderRadius: '4px' }}>Leads</span>
+            Gestão de{' '}
+            <span
+              className="px-2"
+              style={{ backgroundColor: primary, color: '#000', borderRadius: '4px' }}
+            >
+              Leads
+            </span>
           </h1>
-          <p className="text-sm text-zinc-500 font-mono uppercase tracking-[0.2em]">Contatos capturados via Apresentações</p>
+          <p className="text-sm font-mono uppercase tracking-[0.2em]" style={{ color: secondary }}>
+            Chatbot & Apresentações — {leads.length} leads capturados
+          </p>
         </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={exportCSV}
-            className="bg-white/5 border border-white/10 text-white px-8 py-4 font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-white hover:text-black transition-all active:scale-95 rounded-full shadow-lg"
-          >
-            <Download className="w-4 h-4" /> Exportar CSV
-          </button>
-          <button 
-            onClick={() => setIsCreating(!isCreating)}
-            className="px-8 py-4 font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95 rounded-full shadow-lg hover:brightness-110"
-            style={{ 
-              backgroundColor: theme.colors.primary, 
-              color: '#000',
-              boxShadow: `0 8px 24px ${theme.colors.primary}40`
-            }}
-          >
-            {isCreating ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {isCreating ? 'Cancelar' : 'Adicionar Lead'}
-          </button>
-        </div>
+        <button
+          onClick={exportCSV}
+          className="px-8 py-4 font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95 rounded-full shadow-lg hover:opacity-80"
+          style={{ background: primary, color: primaryTextColor }}
+        >
+          <Download className="w-4 h-4" /> Exportar CSV
+        </button>
       </div>
 
-      <AnimatePresence>
-        {isCreating && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-10 rounded-2xl space-y-8 shadow-2xl relative">
-              <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: theme.colors.primary }}></div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Nome</label>
-                  <input 
-                    className="w-full bg-black/40 border border-white/10 p-4 text-white text-sm outline-none focus:border-white/30 transition-all rounded-xl"
-                    placeholder="Nome completo"
-                    value={newLead.name}
-                    onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Email</label>
-                  <input 
-                    className="w-full bg-black/40 border border-white/10 p-4 text-white text-sm outline-none focus:border-white/30 transition-all rounded-xl"
-                    placeholder="email@empresa.com"
-                    value={newLead.email}
-                    onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Telefone</label>
-                  <input 
-                    className="w-full bg-black/40 border border-white/10 p-4 text-white text-sm outline-none focus:border-white/30 transition-all rounded-xl"
-                    placeholder="(00) 00000-0000"
-                    value={newLead.phone}
-                    onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Empresa</label>
-                  <input 
-                    className="w-full bg-black/40 border border-white/10 p-4 text-white text-sm outline-none focus:border-white/30 transition-all rounded-xl"
-                    placeholder="Empresa LTDA"
-                    value={newLead.company}
-                    onChange={(e) => setNewLead({ ...newLead, company: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <button 
-                  onClick={createLead}
-                  disabled={isSaving}
-                  className="px-10 py-4 bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all rounded-full shadow-xl active:scale-95 disabled:opacity-50"
-                  style={{ '--primary': theme.colors.primary } as any}
-                >
-                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar Lead'}
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Search Bar */}
-      <div className="relative group max-w-2xl">
-        <div className="absolute inset-0 bg-gradient-to-r opacity-20 blur-xl group-focus-within:opacity-40 transition-opacity" style={{ from: theme.colors.primary, to: 'transparent' } as any}></div>
-        <div className="relative">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-white transition-colors w-5 h-5" />
-          <input 
-            type="text"
-            placeholder="Buscar leads por nome, email ou empresa..."
-            className="w-full bg-zinc-900/80 backdrop-blur-xl border border-white/10 pl-16 pr-6 py-5 rounded-2xl text-sm outline-none focus:border-white/20 transition-all text-white font-mono placeholder:text-zinc-700"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      {/* Search */}
+      <div className="relative max-w-2xl">
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 w-5 h-5" />
+        <input
+          type="text"
+          placeholder="Buscar por nome, email ou serviço..."
+          className={`w-full bg-zinc-900/80 backdrop-blur-xl pl-16 pr-6 py-5 rounded-2xl text-sm outline-none transition-all text-white font-mono placeholder:text-zinc-500 ${
+            isDark ? 'border border-white/10 focus:border-white/20' : 'border border-zinc-300 focus:border-zinc-400'
+          }`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
-      {/* Table Container */}
-      <div className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+      {/* Table */}
+      <div className={`bg-zinc-900/40 backdrop-blur-xl rounded-2xl overflow-hidden ${
+        isDark ? 'border border-white/5 shadow-2xl' : 'border border-zinc-200 shadow-sm'
+      }`}>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
-          <thead>
-            <tr className="border-b border-white/5 bg-black/40">
-              <th className="p-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Lead / Contato</th>
-              <th className="p-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Empresa</th>
-              <th className="p-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Data de Captura</th>
-              <th className="p-8 text-[10px] font-mono text-zinc-500 uppercase tracking-widest text-right">Controle</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="p-32 text-center">
-                  <Loader2 className="w-12 h-12 animate-spin mx-auto text-zinc-800" />
-                  <p className="mt-6 text-zinc-500 font-mono text-[10px] uppercase tracking-[0.3em]">Carregando leads...</p>
-                </td>
+          <table className="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr className={`border-b ${isDark ? 'border-white/5 bg-black/40' : 'border-zinc-200 bg-zinc-100/60'}`}>
+                <th className="p-6 w-8"></th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Lead</th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Serviço</th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Score</th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Tags</th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Data</th>
+                <th className="p-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest text-right">Ações</th>
               </tr>
-            ) : filteredLeads.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="p-32 text-center text-zinc-600 font-mono text-xs uppercase tracking-widest">
-                  <div className="text-zinc-800 font-black text-6xl opacity-20 mb-4 uppercase">Limpo</div>
-                  Nenhum lead encontrado no sistema.
-                </td>
-              </tr>
-            ) : filteredLeads.map((lead) => (
-              <tr key={lead.id} className={`group hover:bg-white/[0.01] transition-all duration-500 ${editingId === lead.id ? 'bg-white/[0.02]' : ''}`}>
-                <td className="p-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center border border-white/5 group-hover:border-white/10 transition-all">
-                      <User className="w-5 h-5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
-                    </div>
-                    <div className="flex flex-col gap-1 min-w-0">
-                      {editingId === lead.id ? (
-                        <div className="space-y-2 max-w-sm">
-                          <input 
-                            className="w-full bg-black/40 border border-white/10 px-3 py-2 text-white text-sm outline-none rounded-lg focus:border-white/20"
-                            value={lead.name}
-                            onChange={(e) => updateLeadLocal(lead.id, 'name', e.target.value)}
-                          />
-                          <input 
-                            className="w-full bg-black/40 border border-white/10 px-3 py-2 text-zinc-400 text-[10px] font-mono outline-none rounded-lg focus:border-white/20"
-                            value={lead.email}
-                            onChange={(e) => updateLeadLocal(lead.id, 'email', e.target.value)}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <span className="text-white font-bold text-lg tracking-tight group-hover:text-primary transition-colors" style={{ '--primary': theme.colors.primary } as any}>{lead.name}</span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-mono text-zinc-500 flex items-center gap-1.5">
-                              <Mail className="w-3 h-3" /> {lead.email}
-                            </span>
-                            {lead.phone && (
-                              <span className="text-[10px] font-mono text-zinc-500 flex items-center gap-1.5">
-                                <Phone className="w-3 h-3" /> {lead.phone}
-                              </span>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="p-8">
-                   {editingId === lead.id ? (
-                     <input 
-                       className="w-full bg-black/40 border border-white/10 px-3 py-2 text-zinc-400 text-[10px] font-mono outline-none rounded-lg focus:border-white/20"
-                       value={lead.company || ''}
-                       placeholder="Empresa"
-                       onChange={(e) => updateLeadLocal(lead.id, 'company', e.target.value)}
-                     />
-                   ) : (
-                     <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full inline-block">
-                       <span className="text-zinc-400 text-[10px] font-mono uppercase tracking-widest">
-                         {lead.company || 'Pessoa Física'}
-                       </span>
-                     </div>
-                   )}
-                </td>
-                <td className="p-8 text-zinc-500 text-xs font-mono">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-3 h-3 text-zinc-700" />
-                    {lead.created_at
-                      ? new Date(lead.created_at).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })
-                      : 'Sem data'}
-                  </div>
-                </td>
-                <td className="p-8 text-right">
-                  <div className="flex justify-end gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
-                    {editingId === lead.id ? (
-                      <button 
-                        onClick={() => updateLead(lead.id, lead)}
-                        disabled={isSaving}
-                        className="w-10 h-10 flex items-center justify-center bg-white text-black rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-                      >
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => setEditingId(lead.id)}
-                        className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl transition-all text-zinc-500 hover:text-white"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => deleteLead(lead.id)}
-                      className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-xl transition-all group/del"
+            </thead>
+            <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-zinc-200'}`}>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="p-32 text-center">
+                    <Loader2 className="w-12 h-12 animate-spin mx-auto text-zinc-800" />
+                    <p className="mt-6 text-zinc-500 font-mono text-[10px] uppercase tracking-[0.3em]">Carregando leads...</p>
+                  </td>
+                </tr>
+              ) : filteredLeads.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-32 text-center text-zinc-600 font-mono text-xs uppercase tracking-widest">
+                    <div className="text-zinc-800 font-black text-6xl opacity-20 mb-4 uppercase">Limpo</div>
+                    Nenhum lead encontrado.
+                  </td>
+                </tr>
+              ) : (
+                filteredLeads.map((lead) => (
+                  <React.Fragment key={lead.id}>
+                    <tr
+                      className="group hover:bg-white/[0.02] transition-all duration-300 cursor-pointer"
+                      onClick={() => setExpandedId(expandedId === lead.id ? null : lead.id)}
                     >
-                      <Trash2 className="w-4 h-4 text-zinc-600 group-hover/del:text-red-500" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      {/* Expand toggle */}
+                      <td className="pl-6 pr-2">
+                        <span className="text-zinc-600 group-hover:text-zinc-400 transition-colors">
+                          {expandedId === lead.id
+                            ? <ChevronDown className="w-4 h-4" />
+                            : <ChevronRight className="w-4 h-4" />}
+                        </span>
+                      </td>
+
+                      {/* Name + Email */}
+                      <td className="p-6">
+                        <div className="font-bold text-white text-base tracking-tight">{lead.name}</div>
+                        <div className="flex items-center gap-1.5 mt-1 text-[10px] font-mono text-zinc-500">
+                          <Mail className="w-3 h-3" /> {lead.email}
+                        </div>
+                      </td>
+
+                      {/* Service */}
+                      <td className="p-6">
+                        {lead.servico_interesse ? (
+                          <span style={{ background: `${secondary}26`, border: `1px solid ${secondary}66`, color: secondary, borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+                            {lead.servico_interesse}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-700 text-xs font-mono">—</span>
+                        )}
+                      </td>
+
+                      {/* Score + Temperature */}
+                      <td className="p-6">
+                        <div className="flex flex-col gap-1.5">
+                          <ScoreBadge score={lead.lead_score} primary={primary} />
+                          <TemperatureBadge temp={lead.lead_temperature} />
+                        </div>
+                      </td>
+
+                      {/* Tags */}
+                      <td className="p-6 max-w-[200px]">
+                        <div className="flex flex-wrap gap-1">
+                          {(lead.tags ?? []).slice(0, 4).map((tag) => (
+                            <span key={tag} className="text-[10px] font-mono bg-white/5 border border-white/10 text-zinc-400 rounded px-1.5 py-0.5">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+
+                      {/* Date */}
+                      <td className="p-6 text-zinc-500 text-xs font-mono whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-3 h-3 text-zinc-700" />
+                          {lead.created_at
+                            ? new Date(lead.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                            : '—'}
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="p-6 text-right" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => deleteLead(lead.id)}
+                          className="w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl opacity-40 group-hover:opacity-100 hover:bg-red-500/20 hover:border-red-500/40 transition-all ml-auto"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Expanded row */}
+                    <AnimatePresence>
+                      {expandedId === lead.id && (
+                        <tr key={`${lead.id}-expanded`}>
+                          <td colSpan={7} className="p-0">
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-8 py-7 bg-black/40 border-b border-white/5 space-y-6">
+
+                                {/* ── Score cards row ── */}
+                                <div className="flex flex-wrap gap-3">
+                                  <div className="bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 min-w-[90px]">
+                                    <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Lead Score</p>
+                                    <ScoreBadge score={lead.lead_score} primary={primary} />
+                                  </div>
+                                  <div className="bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 min-w-[90px]">
+                                    <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Temperatura</p>
+                                    <TemperatureBadge temp={lead.lead_temperature} />
+                                  </div>
+                                  {lead.urgencia && (
+                                    <div className="bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 min-w-[90px]">
+                                      <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Urgência</p>
+                                      <span className="text-white text-sm font-semibold">{lead.urgencia}</span>
+                                    </div>
+                                  )}
+                                  {lead.source && (
+                                    <div className="bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 min-w-[90px]">
+                                      <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Fonte</p>
+                                      <span className="text-white text-sm font-semibold">{lead.source}</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* ── Fields grid ── */}
+                                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  <div>
+                                    <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Nome</p>
+                                    <p className="text-white text-sm font-medium">{lead.name}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Email</p>
+                                    <a href={`mailto:${lead.email}`} className="text-sm hover:underline" style={{ color: secondary }}>{lead.email}</a>
+                                  </div>
+                                  {lead.servico_interesse && (
+                                    <div>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Serviço de Interesse</p>
+                                      <span style={{ background: `${secondary}26`, border: `1px solid ${secondary}66`, color: secondary, borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+                                        {lead.servico_interesse}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {lead.descricao_projeto && (
+                                    <div className="sm:col-span-2">
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Descrição do Projeto</p>
+                                      <p className="text-zinc-200 text-sm leading-relaxed">{lead.descricao_projeto}</p>
+                                    </div>
+                                  )}
+                                  {lead.orcamento_estimado && (
+                                    <div>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-1" style={{ color: secondary }}>Orçamento Estimado</p>
+                                      <p className="text-zinc-200 text-sm">{lead.orcamento_estimado}</p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* ── Tags ── */}
+                                {(lead.tags ?? []).length > 0 && (
+                                  <div>
+                                    <p className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: secondary }}>Tags</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {(lead.tags ?? []).map((tag) => (
+                                        <span key={tag} className="text-[11px] font-mono bg-white/5 border border-white/10 text-zinc-300 rounded-md px-2 py-0.5">
+                                          {tag}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* ── Summary + Conversation ── */}
+                                <div className="grid md:grid-cols-2 gap-4">
+
+                                  {/* Resumo de Qualificação */}
+                                  {lead.conversation_summary && (
+                                    <div>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: secondary }}>Resumo de Qualificação</p>
+                                      <div className="bg-zinc-900/60 border border-white/5 rounded-xl p-4 space-y-1.5">
+                                        {lead.conversation_summary
+                                          .split('\n')
+                                          .filter((line) => line.trim())
+                                          .map((line, i) => {
+                                            const isDash = line.trim().startsWith('-');
+                                            const parts = isDash ? line.trim().slice(1).split(':') : line.split(':');
+                                            const hasLabel = parts.length >= 2;
+                                            return (
+                                              <div key={i} className={`text-sm ${isDash ? 'flex gap-1.5' : ''}`}>
+                                                {isDash && <span className="shrink-0" style={{ color: secondary }}>—</span>}
+                                                {hasLabel ? (
+                                                  <>
+                                                    <span className="text-zinc-500">{parts[0].trim()}:</span>
+                                                    <span className="text-zinc-200"> {parts.slice(1).join(':').trim()}</span>
+                                                  </>
+                                                ) : (
+                                                  <span className="text-zinc-300 font-medium">{line.trim()}</span>
+                                                )}
+                                              </div>
+                                            );
+                                          })}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Histórico da Conversa */}
+                                  {(lead.chat_history ?? []).length > 0 && (
+                                    <div>
+                                      <p className="text-[9px] font-mono uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: secondary }}>
+                                        <MessageSquare className="w-3 h-3" /> Histórico da Conversa
+                                      </p>
+                                      <div className="bg-zinc-900/60 border border-white/5 rounded-xl p-4 max-h-64 overflow-y-auto space-y-3">
+                                        {(lead.chat_history ?? []).map((msg, i) => (
+                                          <div key={i} className="space-y-0.5">
+                                            <span
+                                              className="text-[9px] font-mono uppercase tracking-widest font-bold"
+                                              style={{ color: msg.role === 'user' ? secondary : '#555' }}
+                                            >
+                                              {msg.role === 'user' ? '👤 USER' : '🤖 AGENT'}
+                                            </span>
+                                            <p className={`text-sm leading-relaxed ${msg.role === 'user' ? 'text-zinc-200' : 'text-zinc-400'}`}>
+                                              {msg.content}
+                                            </p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* ── CTA ── */}
+                                <div>
+                                  <a
+                                    href={`mailto:${lead.email}?subject=AG47 — A sua proposta está a caminho, ${lead.name.split(' ')[0]}!`}
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
+                                    style={{ background: primary, color: primaryTextColor }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    ✉️ Responder ao Lead
+                                  </a>
+                                </div>
+                              </div>
+                            </motion.div>
+                          </td>
+                        </tr>
+                      )}
+                    </AnimatePresence>
+                  </React.Fragment>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

@@ -2,22 +2,34 @@
 
 import React from 'react'
 
-export function ThemeSwitcher({ 
-  onToggle, 
-  themeName 
+export function ThemeSwitcher({ // onToggle é a função para alternar o tema, themeName é o nome do tema atual (ex: 'default', 'lime', 'orange')
+  onToggle, // themeName é usado para determinar a cor do próximo tema e o estado atual
+  themeName // O nome do tema atual para determinar a cor do próximo tema e o estado atual
 }: { 
-  onToggle: () => void, 
-  themeName: string 
+  onToggle: () => void, // Função para alternar o tema
+  themeName: string // O nome do tema atual para determinar a cor do próximo tema e o estado atual
 }) {
-  const targetColor = themeName === 'default' ? '#D1FF00' : '#ec4899'
-  const currentColor = themeName === 'default' ? '#ec4899' : '#D1FF00'
+  const NEXT_COLOR: Record<string, string> = { // Define a cor do próximo tema com base no tema atual
+    'default': '#D1FF00',  // next: lime
+    'lime':    '#ffaa00',  // next: orange
+    'orange':  '#0059ff',  // next: blue
+    'blue':    '#ec4899',  // next: default (pink)
+  }
+  const CURRENT_COLOR: Record<string, string> = {
+    'default': '#ec4899',
+    'lime':    '#D1FF00',
+    'orange':  '#ffaa00',
+    'blue':    '#0059ff',
+  }
+  const targetColor  = NEXT_COLOR[themeName]    ?? '#D1FF00'
+  const currentColor = CURRENT_COLOR[themeName] ?? '#ec4899'
 
   return (
     <button 
       onClick={onToggle}
       className="w-9 h-9 rounded-full bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center group relative overflow-hidden"
       aria-label="Alterar Design System"
-      title={`Mudar para tema ${themeName === 'default' ? 'LIME' : 'Main'}`}
+      title={`Mudar para tema ${NEXT_COLOR[themeName] ? ({ default: 'LIME', lime: 'ORANGE', orange: 'PINK', pink: 'BLUE', blue: 'DEFAULT' }[themeName] ?? '') : ''}`}
     >
       <style>{`
         @keyframes themePulse {

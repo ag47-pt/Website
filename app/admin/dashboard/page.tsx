@@ -29,7 +29,8 @@ interface ActivityItem {
 }
 
 export default function AdminDashboardPage() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
+  const primary = theme.colors.primary;
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([
     { label: 'Leads Totais', value: '0', change: '0', icon: <Users className="w-5 h-5" />, color: 'blue' },
@@ -205,7 +206,8 @@ export default function AdminDashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-2xl space-y-6 hover:border-white/10 transition-all group relative overflow-hidden shadow-2xl"
+          className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-8 rounded-2xl space-y-6 hover:border-white/10 transition-all group relative overflow-hidden"
+            style={{ boxShadow: isDark ? `0 4px 32px ${primary}33` : `0 4px 20px ${primary}44` }}
           >
             <div className="absolute top-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: theme.colors.primary }}></div>
             <div className="flex justify-between items-start">
@@ -229,7 +231,8 @@ export default function AdminDashboardPage() {
 
       <div className="grid lg:grid-cols-3 gap-8 pb-12">
         {/* Main Chart Section */}
-        <div className="lg:col-span-2 bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-10 rounded-2xl space-y-10 shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-2 bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-6 md:p-10 rounded-2xl space-y-10 relative overflow-hidden"
+           style={{ boxShadow: isDark ? `0 4px 40px ${primary}22` : `0 4px 24px ${primary}44` }}>
            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none" style={{ '--primary': theme.colors.primary } as any}></div>
            <div className="flex justify-between items-center relative z-10">
              <div className="space-y-1">
