@@ -84,28 +84,15 @@ export function SupportChatbox() {
   const [isLoading, setIsLoading] = useState(false)
   const [model, setModel] = useState(MODELS[0].value)
   const [showModelPicker, setShowModelPicker] = useState(false)
-  const [floatPos, setFloatPos] = useState({ x: 0, y: 0 })
+  const [isBlackHoleSucked, setIsBlackHoleSucked] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Faz o botão passear pelo ecrã quando o chat está fechado
   useEffect(() => {
-    if (isOpen) {
-      setFloatPos({ x: 0, y: 0 })
-      return
-    }
-    const move = () => {
-      const vw = window.innerWidth
-      const vh = window.innerHeight
-      setFloatPos({
-        x: Math.floor(Math.random() * (vw - 160)),
-        y: -Math.floor(Math.random() * (vh - 200)),
-      })
-    }
-    move()
-    const id = setInterval(move, 8000)
-    return () => clearInterval(id)
-  }, [isOpen])
+    const handleSuck = () => setIsBlackHoleSucked(true)
+    window.addEventListener('ag47-black-hole-suck', handleSuck)
+    return () => window.removeEventListener('ag47-black-hole-suck', handleSuck)
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -178,16 +165,24 @@ export function SupportChatbox() {
       {/* Botão flutuante */}
       <motion.button
         onClick={() => setIsOpen((o) => !o)}
-        className="fixed bottom-5 left-5 sm:bottom-6 sm:left-6 z-50 w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
+        className="fixed bottom-5 left-5 sm:bottom-6 sm:left-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
         style={{
           background: primary,
           boxShadow: `0 0 24px ${hex6(primary)}66`,
         }}
-        animate={{ x: floatPos.x, y: floatPos.y }}
-        transition={{ duration: 6, ease: 'easeInOut' }}
-        whileHover={{ scale: 1.12 }}
-        whileTap={{ scale: 0.95 }}
+        animate={isBlackHoleSucked ? { 
+          scale: 0, 
+          opacity: 0, 
+          x: 400, // Move towards the center from the left
+          y: -400, // Move upwards towards the center
+          filter: 'blur(20px)',
+          rotate: 45
+        } : { y: [0, -6, 0] }}
+        transition={isBlackHoleSucked ? { duration: 2.5, ease: "easeInOut" } : { duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+        whileHover={isBlackHoleSucked ? {} : { scale: 1.12 }}
+        whileTap={isBlackHoleSucked ? {} : { scale: 0.95 }}
         aria-label={isOpen ? 'Fechar chat' : 'Abrir chat de suporte'}
+        disabled={isBlackHoleSucked}
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
@@ -221,9 +216,16 @@ export function SupportChatbox() {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: theme.animations.duration * 0.25, ease: 'easeOut' }}
+            animate={isBlackHoleSucked ? {
+              scale: 0,
+              opacity: 0,
+              filter: 'blur(40px)',
+              x: 300,
+              y: -500,
+              rotate: -20
+            } : { opacity: 1, y: 0, scale: 1 }}
+            exit={isBlackHoleSucked ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: isBlackHoleSucked ? 3 : theme.animations.duration * 0.25, ease: 'easeOut' }}
             className="fixed z-50 flex flex-col overflow-hidden
               bottom-0 left-0 right-0 rounded-t-2xl rounded-b-none
               sm:bottom-24 sm:left-6 sm:right-auto sm:rounded-2xl sm:w-96"
