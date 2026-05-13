@@ -90,7 +90,7 @@ export default function LabTemplatePage() {
       <LabInfoCard 
         title="Nota Técnica"
         description="Todos os componentes deste template são totalmente responsivos e seguem as diretrizes de acessibilidade WCAG 2.1."
-        icon={Info}
+        icon={<Info className="w-4 h-4" />}
       />
     </div>
   );

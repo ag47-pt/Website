@@ -261,7 +261,8 @@ Todas as animações seguem a física de **Material Design Refined**.
             ))}
             
             <LabVisitCard 
-              name="Design Labs Skill"
+              title="Design Labs Skill"
+              description="Blueprint completo para construção de interfaces inovadoras com Vercel."
               client="AG47_BLUEPRINT"
               thumbnail="/labs/comet.png"
               progress={100}
@@ -270,12 +271,7 @@ Todas as animações seguem a física de **Material Design Refined**.
               path="/labs/ia/agent/skills/ex"
               hasSandbox={true}
               icon={<Layers />}
-              status="READY_TO_USE"
               actionLabel="Baixar Skill"
-              onClick={() => setActiveFeature({
-                title: "Skill: Ag47 Labs Designer",
-                content: SKILL_MD_CONTENT
-              })}
             />
           </div>
         </section>
