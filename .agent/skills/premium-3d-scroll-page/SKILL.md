@@ -1,6 +1,6 @@
 ---
 name: premium-3d-scroll-page
-description: A skill focused on creating high-end 3D scroll-triggered landing pages using Next.js, React Three Fiber (R3F), and Lerp-based animation physics. It includes patterns for smooth scrolling, glassmorphism UI, and optimized 3D rendering.
+description: "A skill focused on creating high-end 3D scroll-triggered landing pages using **Next.js**, **React** Three Fiber (R3F), and Lerp-based animation physics. It includes patterns for smooth scrolling, glassmorphism UI, and optimized 3D rendering."
 ---
 
 # Premium 3D Scroll Experience

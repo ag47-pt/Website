@@ -318,7 +318,7 @@ export default function DashboardPage() {
                     <span className="text-xs text-text-muted">Há 5 min</span>
                   </div>
                   <p className="text-xs text-text-muted mb-2">
-                    Conector 'CRM_Salesforce' falhou nos últimos 3 heartbeats consecutivos.
+                    Conector &apos;CRM_Salesforce&apos; falhou nos últimos 3 heartbeats consecutivos.
                   </p>
                   <div className="flex gap-2">
                     <button className="text-xs font-medium text-danger hover:underline">Ver Detalhes</button>
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                     <span className="text-xs text-text-muted">Há 1 hora</span>
                   </div>
                   <p className="text-xs text-text-muted">
-                    Servidor MCP 'Local_Docs_Search' conectado com sucesso.
+                    Servidor MCP &apos;Local_Docs_Search&apos; conectado com sucesso.
                   </p>
                 </div>
               </div>
@@ -362,7 +362,7 @@ export default function DashboardPage() {
                     <span className="text-xs text-text-muted">Há 3 horas</span>
                   </div>
                   <p className="text-xs text-text-muted">
-                    Agente 'Analista de Dados' atualizado para versão v1.2.0.
+                    Agente &apos;Analista de Dados&apos; atualizado para versão v1.2.0.
                   </p>
                 </div>
               </div>

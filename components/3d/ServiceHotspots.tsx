@@ -4,13 +4,13 @@ import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { hotspotsData } from '../../data/content'
 
-export function ServiceHotspots({ lerpedScroll }: { lerpedScroll: React.MutableRefObject<number> }) {
+export function ServiceHotspots({ lerpedScrollRef }: { lerpedScrollRef: React.MutableRefObject<number> }) {
   const groupRef = useRef<THREE.Group>(null)
   const [active, setActive] = useState<number | null>(null)
 
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = (lerpedScroll.current * Math.PI * 0.7) + (state.clock.elapsedTime * 0.05)
+      groupRef.current.rotation.y = (lerpedScrollRef.current * Math.PI * 0.7) + (state.clock.elapsedTime * 0.05)
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.9) * 0.1
     }
   })

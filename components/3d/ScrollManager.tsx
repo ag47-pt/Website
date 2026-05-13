@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 
 export function ScrollManager({ 
   scrollOffsetRaw, 
-  lerpedScroll,
+  lerpedScrollRef,
   progressRef,
   introRef,
   cardRef1,
@@ -13,7 +13,7 @@ export function ScrollManager({
   indicatorRef
 }: { 
   scrollOffsetRaw: number, 
-  lerpedScroll: React.MutableRefObject<number>,
+  lerpedScrollRef: React.MutableRefObject<number>,
   progressRef: React.RefObject<HTMLDivElement | null>,
   introRef: React.RefObject<HTMLDivElement | null>,
   cardRef1: React.RefObject<HTMLDivElement | null>,
@@ -24,9 +24,8 @@ export function ScrollManager({
 }) {
   useFrame((state, delta) => {
     const lerpFactor = 0.05
-    // eslint-disable-next-line react-compiler/react-compiler
-    lerpedScroll.current += (scrollOffsetRaw - lerpedScroll.current) * lerpFactor
-    const cur = lerpedScroll.current
+    lerpedScrollRef.current += (scrollOffsetRaw - lerpedScrollRef.current) * lerpFactor
+    const cur = lerpedScrollRef.current
     
     // Atualiza Barra de Progresso (começa em 18% para a bolinha flamejante ficar visível)
     if (progressRef.current) progressRef.current.style.width = `${18 + (cur * 82)}%`

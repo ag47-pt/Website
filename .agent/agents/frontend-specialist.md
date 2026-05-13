@@ -1,9 +1,9 @@
 ---
 name: frontend-specialist
-description: Senior Frontend Architect who builds maintainable React/Next.js systems with performance-first mindset. Use when working on UI components, styling, state management, responsive design, or frontend architecture. Triggers on keywords like component, react, vue, ui, ux, css, tailwind, responsive.
+description: "Senior Frontend Architect who builds maintainable **React**/**Next.js** systems with performance-first mindset. Use when working on UI components, styling, state management, responsive design, or frontend architecture. Triggers on keywords like component, react, vue, ui, ux, css, tailwind, responsive."
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
-skills: clean-code, nextjs-react-expert, web-design-guidelines, tailwind-patterns, frontend-design, lint-and-validate
+skills: clean-code, nextjs-react-expert, web-design-guidelines, tailwind-patterns, frontend-design, lint-and-validate, theme-factory, canvas-design, web-artifacts-builder, algorithmic-art, ag47-designer-labs-landing-pages, ag47-designer-labs-miniapps-frontpages
 ---
 
 # Senior Frontend Architect

@@ -6,19 +6,33 @@ Para resolver uma pendência, basta me pedir: *"Vamos trabalhar na pendência X 
 
 ---
 
-## ⚡ Performance & SEO (Foco em Mobile/Lighthouse)
+## 🍴 Ecossistema RESTAG (Próximos Passos)
 
-- [ ] **Reduzir Estrelas no Mobile:** Diminuir o contador do componente `<Stars />` (ex: de 5000 para 500) ou desativá-lo completamente em telas pequenas para poupar processamento da GPU.
-- [ ] **Carregamento Lento (Lazy Load) da Cena 3D:** Exibir um "fundo falso" bonito ou uma imagem de fallback primeiro para garantir LCP imediato (nota 100 no Google), inicializando o Canvas 3D apenas alguns segundos depois ou no primeiro scroll.
-- [ ] **Resolução Dinâmica de Texturas:** Implementar uma lógica para baixar texturas de menor resolução (ex: 512x512 em vez de 2K) caso detecte que o usuário está em um dispositivo móvel.
+- [ ] **Restauração de Integridade Supabase**: Reativar a constraint `profiles_id_fkey` e tornar `owner_id` obrigatório (`NOT NULL`) assim que o fluxo de Auth real estiver operacional.
+- [ ] **Fluxo de Autenticação Real**: Substituir o `MOCK_RESTAURANT_ID` pela ID do restaurante vinculado ao perfil do usuário logado via Supabase Auth.
+- [ ] **Pipeline de Onboarding (Admin)**: Implementar a funcionalidade de aprovação/rejeição de novos nós na página `/restag/admin/onboarding`.
+- [ ] **Editor de Menu Interativo (Merchant)**: Construir a interface para gestão de categorias e itens de menu em `/restag/merchant/menu`.
+- [ ] **Reservas Real-time**: Ativar o Supabase Realtime no dashboard do Merchant para que novas reservas apareçam instantaneamente sem refresh.
+- [ ] **Modo Concierge Ag47**: Desenvolver a lógica de "Impersonate" que permite ao Admin acessar a visão do Merchant com permissões totais para suporte.
+
+## ⚡ Performance, SEO & Acessibilidade (Auditoria Restag)
+
+- [x] **Acessibilidade Crítica**: Adicionar handlers de teclado (`onKeyDown`) em todos os elementos com `onClick` (RestagDetailClient, MapPortal, AuditClient).
+- [x] **Labels de Formulário**: Adicionar `aria-label` ou `label` em campos de entrada no `page.tsx` para conformidade WCAG.
+- [x] **Skeletons de Carregamento**: Implementar estados de Loading para operações assíncronas no portal principal para evitar Layout Shift.
+- [ ] **Otimização de Animações**: Refatorar componentes que animam `top`, `height` ou `margin` para usarem `transform` e `opacity` (melhoria de performance).
+- [x] **Security Headers**: Configurar CSP e HSTS no `next.config.js` conforme recomendado na auditoria de segurança.
+- [ ] **Suporte a Reduced Motion**: Implementar a verificação de `prefers-reduced-motion` em animações de scroll imersivo.
+
+## ⚡ Performance & SEO (Foco em Mobile/Lighthouse)
 
 ## 🐛 Avisos e Manutenção Técnica
 
-- [ ] **Aviso THREE.Clock (Console):** Aguardar e aplicar a futura atualização da biblioteca `@react-three/fiber` que substitui a classe obsoleta `THREE.Clock` pela `THREE.Timer`, eliminando o aviso amarelo no console do navegador.
+- [ ] **Aviso THREE.Clock (Console)**: Atualizar `@react-three/fiber` quando a migração para `THREE.Timer` estiver estável, eliminando o aviso de obsolescência.
 
 ## 🎨 Design & UX (Ideias Futuras)
 
-- [ ] *(Adicione novas ideias de design aqui...)*
+- [ ] **Efeito de Vidro Dinâmico**: Implementar reflexões em tempo real nos cards de "Telemetry" usando `MeshTransmissionMaterial` se a performance permitir.
 
 ---
 *Dica: Marque as caixas com um 'x' (ex: `[x]`) conforme fomos concluindo as tarefas.*

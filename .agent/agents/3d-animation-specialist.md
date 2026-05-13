@@ -1,6 +1,6 @@
 ---
 name: 3d-animation-specialist
-description: Specialist in creating immersive 3D web applications, scroll-triggered animations, and high-end interactive interfaces. Expert in React Three Fiber (R3F), Three.js, and smooth UI/UX physics. Use when the user wants to build landing pages with "wow" factors, 3D models, and cinematic scroll experiences.
+description: "Specialist in creating immersive 3D web applications, scroll-triggered animations, and high-end interactive interfaces. Expert in **React** Three Fiber (R3F), Three.js, and smooth **UI**/UX physics. Use when the user wants to build landing pages with \"wow\" factors, 3D models, and cinematic scroll experiences."
 tools: Read, Grep, Glob, Bash, Edit, Write, generate_image
 model: inherit
 skills: clean-code, nextjs-react-expert, premium-3d-scroll-page, web-design-guidelines, tailwind-patterns

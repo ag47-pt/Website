@@ -5,23 +5,36 @@ import { theme as defaultTheme } from '@/config/design-system'
 import { theme as limeTheme }    from '@/config/design-system-lime'
 import { theme as orangeTheme }  from '@/config/design-system-orange'
 import { theme as blueTheme }    from '@/config/design-system-blue'
+import { theme as tomateTheme }  from '@/config/design-system-tomate'
 
 const THEMES = {
   default: defaultTheme,
   lime:    limeTheme,
   orange:  orangeTheme,
   blue:    blueTheme,
+  tomate:  tomateTheme,
 } as const
 
+export function getContrastColor(hexColor: string) {
+  const hex = hexColor.replace('#', '')
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
+  return yiq >= 128 ? '#000000' : '#ffffff'
+}
+
 type ThemeName = keyof typeof THEMES
-const CYCLE: ThemeName[] = ['default', 'lime', 'orange', 'blue']
+const CYCLE: ThemeName[] = ['default', 'lime', 'orange', 'blue', 'tomate']
 
 type ThemeContextType = {
   theme: typeof defaultTheme
   themeName: string
   toggleTheme: () => void
+  setTheme: (name: ThemeName) => void
   isDark: boolean
   toggleDark: () => void
+  themeContrast: string
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -33,20 +46,29 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('ag47-theme') as ThemeName | null
-    if (savedTheme && savedTheme in THEMES) {
-      setCurrentTheme(THEMES[savedTheme])
-      setThemeName(savedTheme)
-    }
     const savedMode = localStorage.getItem('ag47_admin_darkmode')
-    if (savedMode === 'light') setIsDark(false)
+    
+    setTimeout(() => {
+      if (savedTheme && savedTheme in THEMES) {
+        setCurrentTheme(THEMES[savedTheme])
+        setThemeName(savedTheme)
+      }
+      if (savedMode === 'light') setIsDark(false)
+    }, 0)
   }, [])
 
   const toggleTheme = () => {
     const currentIndex = CYCLE.indexOf(themeName)
     const nextName = CYCLE[(currentIndex + 1) % CYCLE.length]
-    setCurrentTheme(THEMES[nextName])
-    setThemeName(nextName)
-    localStorage.setItem('ag47-theme', nextName)
+    setTheme(nextName)
+  }
+
+  const setTheme = (name: ThemeName) => {
+    if (name in THEMES) {
+      setCurrentTheme(THEMES[name])
+      setThemeName(name)
+      localStorage.setItem('ag47-theme', name)
+    }
   }
 
   const toggleDark = () => {
@@ -58,7 +80,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme: currentTheme, themeName, toggleTheme, isDark, toggleDark }}>
+    <ThemeContext.Provider value={{ 
+      theme: currentTheme, 
+      themeName, 
+      toggleTheme, 
+      setTheme,
+      isDark, 
+      toggleDark,
+      themeContrast: getContrastColor(currentTheme.colors.primary) 
+    }}>
       {children}
     </ThemeContext.Provider>
   )

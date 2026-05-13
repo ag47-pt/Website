@@ -430,7 +430,7 @@ function ValueProps({ service, theme, fadeInUp, staggerContainer }: any) {
                       style={{ color: theme.colors.primary }}
                       className="text-sm leading-relaxed font-light italic opacity-90"
                     >
-                      "{vp.detail}"
+                      &quot;{vp.detail}&quot;
                     </p>
                   </motion.div>
                 )}
@@ -538,7 +538,7 @@ function ProcessSection({ service, theme, fadeInUp, staggerContainer }: any) {
                           className="overflow-hidden mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/10"
                         >
                           <p className="text-white text-sm md:text-base leading-relaxed font-light italic">
-                            "{step.detail}"
+                            &quot;{step.detail}&quot;
                           </p>
                         </motion.div>
                       )}

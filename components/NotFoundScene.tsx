@@ -49,7 +49,7 @@ export default function NotFoundScene() {
           <ambientLight intensity={0.2} />
           <pointLight position={[10, 10, 10]} intensity={0.5} />
           <Suspense fallback={null}>
-            <Earth lerpedScroll={dummyScroll} texturePath="/imgs/Black_Hole.webp" />
+            <Earth lerpedScrollRef={dummyScroll} texturePath="/imgs/Black_Hole.webp" />
             <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={0.5} />
           </Suspense>
         </Canvas>

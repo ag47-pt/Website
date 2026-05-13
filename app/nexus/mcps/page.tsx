@@ -64,22 +64,25 @@ export default function MCPsPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-text-main mb-1.5">Nome</label>
+              <label htmlFor="mcp_name" className="block text-sm font-medium text-text-main mb-1.5">Nome</label>
               <input
+                id="mcp_name"
                 placeholder="Ex: Code Runner"
                 className="w-full px-3 py-2 bg-input-bg border border-input-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-text-main mb-1.5">Endpoint URL</label>
+              <label htmlFor="mcp_endpoint" className="block text-sm font-medium text-text-main mb-1.5">Endpoint URL</label>
               <input
+                id="mcp_endpoint"
                 placeholder="https://mcp.exemplo.com/v1"
                 className="w-full px-3 py-2 bg-input-bg border border-input-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-main mb-1.5">Versão</label>
+              <label htmlFor="mcp_version" className="block text-sm font-medium text-text-main mb-1.5">Versão</label>
               <input
+                id="mcp_version"
                 placeholder="Ex: 1.0.0"
                 className="w-full px-3 py-2 bg-input-bg border border-input-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
@@ -87,8 +90,8 @@ export default function MCPsPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-text-main mb-1.5">Tipo de Auth</label>
-              <select className="w-full px-3 py-2 bg-input-bg border border-input-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none">
+              <label htmlFor="mcp_auth" className="block text-sm font-medium text-text-main mb-1.5">Tipo de Auth</label>
+              <select id="mcp_auth" className="w-full px-3 py-2 bg-input-bg border border-input-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none">
                 <option>Bearer Token</option>
                 <option>API Key</option>
                 <option>Basic Auth</option>
@@ -96,8 +99,9 @@ export default function MCPsPage() {
               </select>
             </div>
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-text-main mb-1.5">Token / Key</label>
+              <label htmlFor="mcp_token" className="block text-sm font-medium text-text-main mb-1.5">Token / Key</label>
               <input
+                id="mcp_token"
                 type="password"
                 placeholder="••••••••••••••"
                 className="w-full px-3 py-2 bg-input-bg border border-input-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"

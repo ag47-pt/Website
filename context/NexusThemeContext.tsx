@@ -73,8 +73,12 @@ export function NexusThemeProvider({
   // Hydrate from localStorage once mounted
   useEffect(() => {
     const saved = localStorage.getItem('nexus-theme') as NexusThemeName | null;
-    if (saved && NEXUS_THEMES[saved]) setThemeState(saved);
-    setIsDark(localStorage.getItem('nexus-dark') === 'true');
+    const isDarkSaved = localStorage.getItem('nexus-dark') === 'true';
+    
+    setTimeout(() => {
+      if (saved && NEXUS_THEMES[saved]) setThemeState(saved);
+      setIsDark(isDarkSaved);
+    }, 0);
   }, []);
 
   const setTheme = (t: NexusThemeName) => {

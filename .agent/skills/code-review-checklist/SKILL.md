@@ -1,6 +1,6 @@
 ---
 name: code-review-checklist
-description: Code review guidelines covering code quality, security, and best practices.
+description: "Code review g**UI**delines covering code quality, **Security**, and best practices."
 allowed-tools: Read, Glob, Grep
 ---
 

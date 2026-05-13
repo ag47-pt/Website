@@ -7,10 +7,10 @@ const PI = Math.PI;
 const PI2 = Math.PI * 2;
 
 export function Earth({ 
-  lerpedScroll, 
+  lerpedScrollRef, 
   texturePath 
 }: { 
-  lerpedScroll: React.MutableRefObject<number>,
+  lerpedScrollRef: React.MutableRefObject<number>,
   texturePath: string
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
@@ -19,7 +19,7 @@ export function Earth({
   
   useFrame((state) => {
     if (!meshRef.current) return
-    const cur = lerpedScroll.current
+    const cur = lerpedScrollRef.current
     const time = state.clock.elapsedTime
     
     // Rotação: Scroll + Auto-rotação lenta

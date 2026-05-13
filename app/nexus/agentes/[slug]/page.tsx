@@ -326,15 +326,17 @@ export default function AgenteDetailPage() {
 
   useEffect(() => {
     if (!agent) return;
-    setEditName(agent.name);
-    setEditDesc(agent.desc);
-    setEditModel(agent.modelValue);
-    setEditPrompt(agent.systemPrompt);
-    setTemperature(0.7);
-    setEditTools(agent.tools ?? []);
-    const meta = agent.metadata ?? {};
-    setVariables(Array.isArray(meta.variables) ? (meta.variables as AgentVariable[]) : []);
-    setMemory(Array.isArray(meta.memory) ? (meta.memory as AgentMemoryEntry[]) : []);
+    setTimeout(() => {
+      setEditName(agent.name);
+      setEditDesc(agent.desc);
+      setEditModel(agent.modelValue);
+      setEditPrompt(agent.systemPrompt);
+      setTemperature(0.7);
+      setEditTools(agent.tools ?? []);
+      const meta = agent.metadata ?? {};
+      setVariables(Array.isArray(meta.variables) ? (meta.variables as AgentVariable[]) : []);
+      setMemory(Array.isArray(meta.memory) ? (meta.memory as AgentMemoryEntry[]) : []);
+    }, 0);
   }, [agent]);
 
   const isBuiltIn = Boolean(staticAgent);

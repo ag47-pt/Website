@@ -26,7 +26,7 @@ import { useTheme } from '@/context/ThemeContext'
 export default function Basic3DScene() {
    const { theme } = useTheme();
    const scrollOffsetRaw = usePageScroll()
-   const lerpedScroll = useRef(0)
+   const lerpedScrollRef = useRef(0)
 
    const [earthTexturePath, setEarthTexturePath] = useState('/imgs/universo-nebuloso.webp')
 
@@ -70,7 +70,7 @@ export default function Basic3DScene() {
                <Suspense fallback={null}>
                   <ScrollManager
                      scrollOffsetRaw={scrollOffsetRaw}
-                     lerpedScroll={lerpedScroll}
+                     lerpedScrollRef={lerpedScrollRef}
                      progressRef={progressRef}
                      introRef={introRef}
                      cardRef1={cardRef1}
@@ -79,8 +79,8 @@ export default function Basic3DScene() {
                      cardRef4={cardRef4}
                      indicatorRef={indicatorRef}
                   />
-                  <Earth lerpedScroll={lerpedScroll} texturePath={earthTexturePath} />
-                  <ServiceHotspots lerpedScroll={lerpedScroll} />
+                  <Earth lerpedScrollRef={lerpedScrollRef} texturePath={earthTexturePath} />
+                  <ServiceHotspots lerpedScrollRef={lerpedScrollRef} />
                   <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
                </Suspense>
             </Canvas>

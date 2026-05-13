@@ -1,41 +1,48 @@
 /**
- * Agência 47 - Design System LIME
- * Versão energética e vibrante com tons de lima e ciano.
+ * Agência 47 - Design System BLUE
+ * Versão tecnológica e sóbria com tons de azul e ciano.
  */
 
 export const theme = {
   colors: {
-    primary: '#0059ff', // Azul principal (Blue 500)
-    secondary: '#6399ff', // Azul claro (Blue 300)
-    accent: '#6399ff', // Amarelo (Yellow 500)
+    primary: '#0059ff', // Azul principal (Blue 500) - usado no botão de alternância entre temas e em elementos de destaque primários.
+    secondary: '#6399ff', // Azul claro (Blue 300) - usado em acentos secundários e detalhes de interface.
+    accent: '#6399ff', // Azul Claro (Blue 300) - usado em estados de hover e elementos de ênfase.
+    textPrimary: '#ffffff', // Texto principal branco usado nos textos dos cards, em toda a navegação do site e em outros locais.
+    textSecondary: '#cbd5e7', // Usado em textos secundários e descrições em toda a navegação do site.
+    textMuted: '#0059ff44', // Usado em textos de menor importância com um toque de transparência azul.
+    textVoice: '#002d80', // Usado em títulos e ícones de destaque secundário na versão azul.
+    
+    textRestagMarked: '#000000ff', // Usado em textos de destaque secundário na versão azul
+    textRestagMarkedBG: '#0059ff', // Usado em background de destaque secundário na versão azul
     
     // Especializados
-    scrollPercentage: '#0059ff', // Azul para indicador de scroll
-    highlight: '#6399ff', // Azul mais claro para destaque
+    scrollPercentage: '#0059ff', // Azul para indicador de scroll usado na barra de progresso e no cabeçalho do site.
+    highlight: '#6399ff', // Azul mais claro para destaque em textos e botões usados em toda a navegação do site.
     comet: {
-      from: 'transparent', // Começa transparente
-      via: '#0059ff', // Passa pelo azul
-      to: '#6399ff' // Termina no azul
+      from: 'transparent', // Começa transparente usado na cauda do cometa.
+      via: '#0059ff', // Cor intermediária (Azul) usado no corpo do cometa.
+      to: '#6399ff' // Cor final (Azul Claro) usado na cabeça do cometa.
     },
     
     // Backgrounds & Glass
     glass: {
-      bg: 'rgba(0, 0, 0, 0.5)', // Fundo escuro semi-transparente para contraste
-      border: 'rgba(132, 204, 22, 0.1)', // Borda sutil com um toque de verde
-      blur: 'blur(24px)' // Efeito de desfoque para o vidro
+      bg: 'rgba(0, 0, 0, 0.5)', // Fundo escuro semi-transparente para o efeito de vidro.
+      border: 'rgba(132, 204, 22, 0.1)', // Borda sutil para definir os limites dos elementos de vidro.
+      blur: 'blur(24px)' // Intensidade do desfoque de fundo para o efeito Frosted Glass.
     }
   },
   
-  branding: {
-    startingPercent: 47, 
+  branding: { // Branding usado no botão de alternância entre temas e na barra de progresso.
+    startingPercent: 47, // O "número mágico" da Agência 47 que inicia as métricas e progressos.
   },
   
-  typography: {
-    fontFamily: 'Inter, sans-serif',
+  typography: { // Tipografia usada em toda a navegação do site para garantir modernidade e legibilidade.
+    fontFamily: 'Inter, sans-serif', // Fonte principal (Inter) para consistência visual.
   },
 
-  animations: {
-    duration: 0.9, // Duração padrão das animações em segundos
-    ease: [0.27, 1, 0.45, 1] as any, // Curva de animação personalizada para um movimento mais fluido
+  animations: { // Configurações de animação usadas em toda a navegação do site para interações e transições fluidas.
+    duration: 0.9, // Duração padrão das animações em segundos.
+    ease: [0.27, 1, 0.45, 1] as any, // Curva de easing personalizada (Cubic Bezier) para um movimento mais premium.
   }
 }

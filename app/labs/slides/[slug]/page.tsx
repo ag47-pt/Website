@@ -77,7 +77,10 @@ export default function PresentationViewerPage() {
   }, [slug]);
 
   useEffect(() => {
-    fetchData();
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchData]);
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
@@ -246,7 +249,7 @@ export default function PresentationViewerPage() {
               <Presentation className="w-5 h-5" style={{ color: theme.colors.primary }} />
               <div className="font-mono text-xs">
                 <span className="text-gray-500 uppercase">{presentation.client_name}</span>
-                <span className="mx-2" style={{ color: theme.colors.primary }}>//</span>
+                <span className="mx-2" style={{ color: theme.colors.primary }}>{"//"}</span>
                 <span className="uppercase tracking-widest text-zinc-300">Slide {currentSlide + 1}</span>
               </div>
             </div>
