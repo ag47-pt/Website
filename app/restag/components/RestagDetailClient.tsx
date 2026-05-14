@@ -38,7 +38,7 @@ const DETAIL_NAV_ITEMS = [
   { id: 'process', label: 'PROTOCOLS', icon: Flame },
   { id: 'menu', label: 'FLAVOR_NODES', icon: Utensils },
   { id: 'contact', label: 'NODE_LOCATION', icon: MapPin },
-  { id: 'audit', label: 'AUDIT_ACCESS', icon: ShieldCheck },
+  { id: 'audit', label: 'REQUEST_AUDIT', icon: ShieldCheck },
 ];
 
 interface RestagDetailClientProps {

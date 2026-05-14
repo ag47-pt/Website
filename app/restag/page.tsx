@@ -40,6 +40,7 @@ const PORTAL_NAV_ITEMS = [
   { id: 'featured', label: 'GRID_NODES', icon: Zap },
   { id: 'map', label: 'GEOSPATIAL_MAP', icon: MapPin },
   { id: 'metrics', label: 'THERMAL_STATUS', icon: Activity },
+  { id: 'audit', label: 'REQUEST_AUDIT', icon: ShieldCheck },
 ];
 
 export default function RestagDiscoveryPortal() {
@@ -324,6 +325,7 @@ export default function RestagDiscoveryPortal() {
 
         {/* Section 5: Call to Action */}
         <motion.section 
+          id="audit"
           variants={itemVariants}
           whileInView="visible"
           initial="hidden"

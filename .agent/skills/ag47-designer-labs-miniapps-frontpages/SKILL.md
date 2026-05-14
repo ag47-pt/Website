@@ -16,34 +16,61 @@ Skill focused on building immersive, technical, and high-end UI/UX for Agência 
 - **Technical Atmosphere**: Blueprint grids, monospace fonts, and coordinate displays.
 - **Section Naming Convention**: Use the 'Technical Registry' pattern for section identifiers (e.g., HeroRestagNode_Registry, MetricasRestag, InfosRestag, GastroEngineeringCycle, TechnicalMenuGrid). This reinforces the idea of a modular, system-based interface.
 - **Glassmorphism**: Heavy use of ackdrop-blur-xl, subtle borders (order-white/10), and glass-shine animations.
+- **Glassmorphism**: Heavy use of  ackdrop-blur-xl, subtle borders ( order-white/10), and glass-shine animations.
 - **Dynamic Theming**: Real-time theme switching via interactive status indicators.
 - **Glow & Atmosphere**: Deep ambient glows and nebula backgrounds.
 - **Scroll Storytelling**: Visible progress indicators (Comet bar) and percentage counters.
 
 ## Core Components
 
-### 1. The Hero Section (Standardized)
-Every Labs page starts with the `<LabHero />` component from `@/app/labs/components`. It centralizes:
-- **Overline (Mini-Título)**: Monospace text with an icon.
-- **Main Title**: High-contrast `tracking-tighter` text with a highlight box.
-- **Description**: Supports **Markdown-style** bolding (`**text**`) for automatic white highlights.
-- **Status Tags**: Operational status indicators with theme-switch interactivity.
-- **Actions & Footer**: Slots for buttons and technical directory paths.
-- **Panoramic Enhancement**: For immersive pages, use `scale-x-[2]` on the background and `mt-[-200px] pt-[200px]` to eliminate gaps under the navbar.
+### 1. The Hero System (Scalable Variations)
+Every Labs page starts with the `<LabHero />` component. It now supports a **variant system** to maintain hierarchy across different levels of information depth.
+
+#### ✅ Hero Variants:
+1. **`variant="full"` (Completa - Default)**:
+   - **Visual**: Immersive 160vh scroll container with "suction" animation.
+   - **Content**: Overtitle, Title, Description, Status Tags, Actions, and Media (Image, Video, or **Mosaic**).
+   - **Mosaic Feature**: Pass `mosaicImages={['url1', 'url2', ... ]}` to render a technical 2x2 grid of thumbnails instead of a single image.
+   - **Use Case**: Main landing nodes (e.g., `/restag`, `/labs/ia`).
+
+2. **`variant="medium"` (Media)**:
+   - **Visual**: Compact 50/50 split layout. No background suction animation.
+   - **Content**: Text on the left, **Actions column on the right** (vertically centered). No image/video.
+   - **Use Case**: Secondary sections or transitional nodes where actions are the priority.
+
+3. **`variant="mini"` (Mini)**:
+   - **Visual**: Minimal padding, no split.
+   - **Content**: Overtitle, smaller title, and description.
+   - **Use Case**: Interior documentation pages or sub-modules (e.g., individual skill pages).
+
+#### 🧠 Rationale (The "Why"):
+- **Information Density**: Different levels of the app require different focus. `full` is for emotional/brand impact; `medium` is for functional efficiency; `mini` is for content consumption.
+- **Visual Hierarchy**: Ensures the user understands where they are in the "system map" based on the visual weight of the hero.
+- **Scalability**: Allows us to build complex hierarchies without overloading the user with high-intensity animations on every single sub-page.
 
 ```tsx
 import { LabHero } from '@/app/labs/components';
-import { Terminal } from 'lucide-react';
+import { Terminal, Play } from 'lucide-react';
 
+// FULL VARIANT with MOSAIC
 <LabHero 
-  overline="INITIALIZING_CORE_V1"
+  variant="full"
+  overline="SYSTEM_LOADED"
   overlineIcon={Terminal}
-  title="O Futuro é"
-  highlight="Experimental"
-  description="Bem-vindo ao centro de **inovação** da Agência 47. Use **Markdown** para destacar partes importantes."
-  statusTags={[{ label: "Live", color: "lime", pulse: true }]}
-  actions={<button className="px-6 py-2 bg-white text-black rounded-full font-bold">Start</button>}
-  footer={<div className="flex items-center gap-2"><span>Path:</span><code className="bg-white/10 px-2 rounded">/labs/core</code></div>}
+  title="Restag"
+  mosaicImages={['/img1.jpg', '/img2.jpg', '/img3.jpg', '/img4.jpg']}
+  description="Immersive **hospitality** node."
+  actions={<button>Deploy</button>}
+/>
+
+// MEDIUM VARIANT (Split actions)
+<LabHero 
+  variant="medium"
+  overline="INTERNAL_MODULE"
+  overlineIcon={Terminal}
+  title="Settings"
+  description="Configure your **node** registry."
+  actions={<button>Save Changes</button>}
 />
 ```
 

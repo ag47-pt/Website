@@ -14,7 +14,27 @@ This document outlines the visual constants used across the Ag47 Labs ecosystem.
 
 ## Typography & Components
 
-### 1. Hero Hierarchy
+### 1. Hero System (Hierarchy & Variations)
+The Hero is the primary navigational and emotional anchor. It supports three variants to adapt to information depth.
+
+#### ✅ Variant: `full` (Completa)
+- **Visual**: Sticky 100vh viewport within a 160vh scroll container.
+- **Layout**: Grid 2-cols (`0.8fr 1.2fr`). Media on left, Text on right.
+- **Animation**: "Suction" physics (scale, rotate, blur, fade) triggered by scroll progress.
+- **Media**: Single Image, Video, or **Mosaic** (2x2 technical grid).
+
+#### ✅ Variant: `medium` (Media)
+- **Visual**: Standard 50/50 split or Sidebar layout. No suction animation.
+- **Layout**: Text Content on left, **Action Column on right** (vertically centered, `border-l border-white/10`, `pl-12`).
+- **Media**: No Image/Video. Focus on functional density.
+
+#### ✅ Variant: `mini` (Mini)
+- **Visual**: Compact padding (`py-12`).
+- **Layout**: Single column, left-aligned text. No split.
+- **Typography**: Reduced title size (`text-3xl` to `text-5xl`).
+- **Use Case**: Sub-nodes and technical documentation.
+
+### 2. Typography & Components
 - **Overline**: Font Mono, 12-14px, tracking 0.2em, Uppercase. Color: Primary.
 - **Title**: Font Sans (Inter/Outfit), 48-72px, Bold, Tracking Tighter.
 - **Dynamic Text Tokens**:
@@ -24,7 +44,7 @@ This document outlines the visual constants used across the Ag47 Labs ecosystem.
 - **Highlight**: Inline background 	heme.colors.textRestagMarkedBG with 	heme.colors.textRestagMarked text. Used via 
 enderFormattedText with *asterisks* syntax.
 
-### 2. Status Tags (Interactive)
+### 3. Status Tags (Interactive)
 Status tags are small pills (`bg-white/5`, `border-white/10`) with a colored dot.
 The dot MUST have an `onClick` that triggers `setTheme` based on its color:
 - Green dot -> `lime`
