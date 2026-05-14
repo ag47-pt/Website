@@ -107,7 +107,7 @@ export default function AgentHero() {
               </Link>
               
               <Link
-                href="/labs/sandbox/ag47-designer-labs"
+                href="/labs/dev/sandbox/ag47-designer-labs"
                 className="rounded-full px-6 py-3 text-sm font-semibold transition-colors flex items-center gap-2 group border border-white/20 bg-white/5 hover:bg-white/10 text-white"
               >
                 <span className="group-hover:opacity-80 transition-opacity flex items-center gap-2">

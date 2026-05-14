@@ -53,8 +53,9 @@ export default function LabTemplatePage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <LabVisitCard 
-            name="Alpha Interface"
+            title="Alpha Interface"
             client="Agência 47"
+            description="Interface experimental com scroll progressivo e glassmorphism."
             thumbnail="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=1000"
             progress={85}
             specs={["Next.js", "Three.js", "AI"]}
@@ -89,7 +90,7 @@ export default function LabTemplatePage() {
       <LabInfoCard 
         title="Nota Técnica"
         description="Todos os componentes deste template são totalmente responsivos e seguem as diretrizes de acessibilidade WCAG 2.1."
-        icon={Info}
+        icon={<Info />}
       />
     </div>
   );

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Lock, ExternalLink, Cpu, Loader2, Layers } from 'lucide-react';
+import { Activity, Cpu, Loader2, Layers } from 'lucide-react';
 import { supabase } from '@/config/supabase';
 import { Project } from '@/types/labs';
 import { LabHero, LabVisitCard, LabInfoCard } from '../components';
@@ -13,13 +13,19 @@ export function DevShowcaseClient() {
 
   useEffect(() => {
     async function fetchProjects() {
-      const { data, error } = await supabase
-        .from('labs_projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (data) setProjects(data);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('labs_projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        if (data) setProjects(data);
+      } catch (err) {
+        console.error('Erro ao carregar projetos do Labs:', err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchProjects();
   }, []);
@@ -29,7 +35,7 @@ export function DevShowcaseClient() {
       <LabHero 
         overline="PROJECT_STREAM_V2.1"
         overlineIcon={Activity}
-        title="Vitrini de"
+        title="Vitrine de"
         highlight="Desenvolvimento"
         description="Acompanhe o desenvolvimento em **tempo real** dos nossos projetos ativos e **MVPs** em fase alfa. Aqui o **design e o código** se fundem para criar experiências digitais sem precedentes."
         statusTags={[
@@ -51,7 +57,7 @@ export function DevShowcaseClient() {
           <div className="col-span-full py-20 text-center border border-white/5 bg-zinc-900/10 rounded-2xl">
             <p className="text-zinc-600 font-mono text-[10px] uppercase tracking-widest text-center">Nenhum projeto em exibição no momento.</p>
           </div>
-        ) : projects.map((project, index) => (
+        ) : projects.map((project) => (
           <LabVisitCard 
             key={project.id}
             title={project.name}
@@ -62,9 +68,9 @@ export function DevShowcaseClient() {
             specs={project.specs || []}
             slug={project.slug}
             hasSandbox={!!(project.sandbox_url || project.sandbox_file_url)}
-            path={`/labs/dev/${project.slug}`}
+            path={`/labs/dev/sandbox/${project.slug}`}
             actionLabel="Acessar Sandbox"
-            icon={<Cpu className="w-full h-full rotate-45" />}
+            icon={<Cpu className="w-8 h-8 rotate-45" />}
           />
         ))}
       </div>
