@@ -268,7 +268,7 @@ Todas as animações seguem a física de **Material Design Refined**.
               progress={100}
               specs={["Blueprint", "UI/UX", "Vercel"]}
               slug="ag47-designer-labs"
-              path="/labs/ia/agent/skills/ex"
+              path="/labs/dev/sandbox/ag47-designer-labs"
               hasSandbox={true}
               icon={<Layers />}
               actionLabel="Ver Detalhes"

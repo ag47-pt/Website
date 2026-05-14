@@ -60,7 +60,7 @@ export default function LabTemplatePage() {
             progress={85}
             specs={["Next.js", "Three.js", "AI"]}
             slug="alpha-ui"
-            path="/labs/sandbox/alpha-ui"    // ← MANDATORY: overtitle path
+            path="/labs/dev/sandbox/alpha-ui"    // ← MANDATORY: overtitle path
             hasSandbox={true}
             icon={<Layers />}
           />
