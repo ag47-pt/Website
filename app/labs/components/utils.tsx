@@ -10,7 +10,7 @@ import React from 'react';
 export const renderFormattedText = (text: string, type: 'title' | 'description', theme: any) => {
   if (!text) return null;
   
-  // Split by *text* or **text** or \n
+  // Split by **text** or *text* or \n
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*|\n)/g);
   
   return parts.map((part, i) => {
@@ -18,25 +18,29 @@ export const renderFormattedText = (text: string, type: 'title' | 'description',
       return <br key={i} />;
     }
     
-    if (part.startsWith('**') && part.endsWith('**')) {
-      // Double asterisk: Bold (white)
-      return <span key={i} className="text-white font-bold">{part.slice(2, -2)}</span>;
-    } else if (part.startsWith('*') && part.endsWith('*')) {
-      // Single asterisk: Highlight (Primary block for titles, Primary color for desc)
+    // Handle both ** and * as highlighted/branded text based on user preference
+    if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('*') && part.endsWith('*'))) {
+      const content = part.startsWith('**') ? part.slice(2, -2) : part.slice(1, -1);
+      
       if (type === 'title') {
         return (
           <span 
             key={i} 
-            className="px-2 py-0.5 rounded mx-1 inline-block" 
-            style={{ backgroundColor: theme.colors.textRestagMarkedBG, color: theme.colors.textRestagMarked }}
+            className="px-2 py-0.5 rounded mx-1 inline-block font-black" 
+            style={{ 
+              backgroundColor: theme.colors.textRestagMarkedBG, 
+              color: theme.colors.textRestagMarked,
+              boxShadow: `0 0 15px ${theme.colors.textRestagMarkedBG}40`
+            }}
           >
-            {part.slice(1, -1)}
+            {content}
           </span>
         );
       } else {
-        return <span key={i} style={{ color: theme.colors.primary }}>{part.slice(1, -1)}</span>;
+        return <span key={i} className="font-bold" style={{ color: theme.colors.primary }}>{content}</span>;
       }
     }
+    
     return part;
   });
 };

@@ -21,6 +21,17 @@ export async function getRestaurants() {
   return data as Restaurant[];
 }
 
+export async function getRestaurantById(id: string) {
+  const { data, error } = await supabase
+    .from('restag_restaurants')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data as Restaurant;
+}
+
 export async function getRestaurantBySlug(slug: string) {
   const { data, error } = await supabase
     .from('restag_restaurants')
@@ -32,10 +43,28 @@ export async function getRestaurantBySlug(slug: string) {
   return data as Restaurant;
 }
 
+export async function updateRestaurant(id: string, updates: Partial<Restaurant>) {
+  const { error } = await supabase
+    .from('restag_restaurants')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
 export async function updateRestaurantStatus(id: string, status: NodeStatus) {
   const { error } = await supabase
     .from('restag_restaurants')
     .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+export async function updateRestaurantSettings(id: string, metaData: any) {
+  const { error } = await supabase
+    .from('restag_restaurants')
+    .update({ meta_data: metaData })
     .eq('id', id);
 
   if (error) throw error;

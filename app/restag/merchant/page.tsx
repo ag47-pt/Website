@@ -88,6 +88,14 @@ export default function MerchantDashboard() {
             icon={<Users className="w-8 h-8" />}
             status="1 MANAGER"
           />
+
+          <LabCallCard 
+            title="Configurações"
+            description="Ajuste limites de pessoas, intervalos e horários de reserva."
+            path="/restag/merchant/configuracoes"
+            icon={<Settings className="w-8 h-8" />}
+            status="CONTROL_PANEL"
+          />
         </motion.section>
 
         {/* 3. Analytics Overview */}

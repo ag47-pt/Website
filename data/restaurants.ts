@@ -30,6 +30,7 @@ export interface RestaurantLP extends Omit<ServiceLP, 'slug'> {
   descriptionLong: string;
   video?: string;
   videoWatermark?: string;
+  brandingColor?: string;
 }
 
 export const restaurants: RestaurantLP[] = [
@@ -125,7 +126,8 @@ export const restaurants: RestaurantLP[] = [
     ],
     features: ['Grelha a Carvão', 'Family-Friendly', 'Ambiente Moderno', 'Garrafeira Premium', 'Estacionamento Fácil'],
     video: "/restag/videos/bipolar-explanada.mp4",
-    videoWatermark: "Bipolar Explanada"
+    videoWatermark: "Bipolar Explanada",
+    brandingColor: "#D1FF00"
   },
   {
     slug: 'carbon-core',

@@ -70,12 +70,19 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, isAc
                 {renderFormattedText(restaurant.cardTitle, 'title', theme)}
               </h3>
               <p className="text-xs text-gray-400 font-mono flex items-center gap-2">
-                <MapPin className="w-3 h-3 text-emerald-500" />
+                <MapPin className="w-3 h-3" style={{ color: theme.colors.primary }} />
                 {restaurant.location?.address || 'Multiple Locations'}
               </p>
             </div>
             <div className="flex flex-col items-end gap-1">
-              <span className="text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              <span 
+                className="text-[10px] font-mono px-2 py-0.5 rounded border"
+                style={{ 
+                  color: theme.colors.primary,
+                  backgroundColor: `${theme.colors.primary}1A`,
+                  borderColor: `${theme.colors.primary}33`
+                }}
+              >
                 ACTIVE_NODE
               </span>
               <div className="flex items-center gap-1 text-xs text-amber-400">

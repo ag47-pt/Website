@@ -38,10 +38,10 @@ export const MapPortal: React.FC<MapPortalProps> = ({ restaurants, onSelect, sel
       </div>
 
       {/* Coordinate Labels */}
-      <div className="absolute top-4 left-4 font-mono text-[8px] text-emerald-500/40 select-none">
+      <div className="absolute top-4 left-4 font-mono text-[8px] select-none" style={{ color: `${theme.colors.primary}66` }}>
         GRID_UNIT: 40px // SCALE: 1:1000 // PROJECTION: LABS_MERCATOR
       </div>
-      <div className="absolute bottom-4 right-4 font-mono text-[8px] text-emerald-500/40 select-none">
+      <div className="absolute bottom-4 right-4 font-mono text-[8px] select-none" style={{ color: `${theme.colors.primary}66` }}>
         LAT_REF: 38.7223 // LNG_REF: -9.1393
       </div>
 
@@ -101,7 +101,7 @@ const MapMarker = ({ restaurant, style, isSelected, onClick, delay, theme }: any
         }}
       >
         {/* Radar Ping */}
-        <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping" />
+        <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: `${theme.colors.primary}33` }} />
         
         {/* Main Marker */}
         <div className={`relative w-10 h-10 flex items-center justify-center rounded-xl border-2 transition-all duration-500 ${

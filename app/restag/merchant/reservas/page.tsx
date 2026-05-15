@@ -1,25 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarCheck, ChevronLeft, Check, X, Clock } from 'lucide-react';
+import { CalendarCheck, ChevronLeft, Check, X, Clock, Users as UsersIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
-
-// Mock Data
-const initialReservations = [
-  { id: 1, name: "João Silva", pax: 2, time: "19:30", date: "Hoje", status: "pending", notes: "Aniversário" },
-  { id: 2, name: "Maria Oliveira", pax: 4, time: "20:00", date: "Hoje", status: "confirmed", notes: "Mesa perto da janela" },
-  { id: 3, name: "Carlos Mendes", pax: 2, time: "21:15", date: "Hoje", status: "pending", notes: "" },
-  { id: 4, name: "Ana Costa", pax: 6, time: "19:00", date: "Amanhã", status: "confirmed", notes: "Cadeira de bebé" },
-];
+import { supabase } from '@/lib/supabase';
+import { Reservation } from '@/types/restag';
 
 export default function ReservasPage() {
   const { theme } = useTheme();
-  const [reservations, setReservations] = useState(initialReservations);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleStatusChange = (id: number, newStatus: string) => {
-    setReservations(prev => prev.map(res => res.id === id ? { ...res, status: newStatus } : res));
+  const fetchReservations = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('restag_reservations')
+        .select('*')
+        .order('reservation_date', { ascending: true })
+        .order('reservation_time', { ascending: true });
+      
+      if (data) setReservations(data);
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error fetching reservations:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReservations();
+  }, []);
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('restag_reservations')
+        .update({ status: newStatus })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setReservations(prev => prev.map(res => res.id === id ? { ...res, status: newStatus as any } : res));
+    } catch (err) {
+      console.error('Error updating status:', err);
+    }
   };
 
   return (
@@ -48,46 +76,54 @@ export default function ReservasPage() {
         <div className="grid gap-4">
           <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-gray-500 border-b border-white/10 pb-2">Pedidos Pendentes</h3>
           
-          {reservations.filter(r => r.status === 'pending').map((res, idx) => (
-            <motion.div 
-              key={res.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-yellow-500/5 border border-yellow-500/20 rounded-xl backdrop-blur-md gap-4"
-            >
-              <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <p className="text-xl font-black text-white">{res.time}</p>
-                  <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{res.date}</p>
-                </div>
-                <div className="w-px h-10 bg-white/10 hidden md:block" />
-                <div>
-                  <h4 className="text-lg font-bold text-white">{res.name}</h4>
-                  <p className="text-sm text-gray-400 font-mono"><UsersIcon className="inline w-4 h-4 mr-1"/> {res.pax} Pessoas {res.notes && `• Observação: ${res.notes}`}</p>
-                </div>
-              </div>
+          {isLoading ? (
+            <div className="p-8 text-center bg-white/5 border border-white/10 rounded-xl text-gray-400 font-mono text-sm">
+              Sincronizando dados...
+            </div>
+          ) : (
+            <>
+              {reservations.filter(r => r.status === 'pending').map((res, idx) => (
+                <motion.div 
+                  key={res.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-yellow-500/5 border border-yellow-500/20 rounded-xl backdrop-blur-md gap-4"
+                >
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <p className="text-xl font-black text-white">{res.reservation_time}</p>
+                      <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{res.reservation_date}</p>
+                    </div>
+                    <div className="w-px h-10 bg-white/10 hidden md:block" />
+                    <div>
+                      <h4 className="text-lg font-bold text-white">{res.customer_name}</h4>
+                      <p className="text-sm text-gray-400 font-mono"><UsersIcon className="inline w-4 h-4 mr-1"/> {res.party_size} Pessoas {res.notes && `• Obs: ${res.notes}`}</p>
+                    </div>
+                  </div>
 
-              <div className="flex gap-2 w-full md:w-auto">
-                <button 
-                  onClick={() => handleStatusChange(res.id, 'confirmed')}
-                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white text-black hover:bg-gray-200 transition-colors font-bold rounded-lg"
-                >
-                  <Check className="w-4 h-4" /> Aprovar
-                </button>
-                <button 
-                  onClick={() => handleStatusChange(res.id, 'cancelled')}
-                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 transition-colors font-bold rounded-lg"
-                >
-                  <X className="w-4 h-4" /> Rejeitar
-                </button>
-              </div>
-            </motion.div>
-          ))}
-          {reservations.filter(r => r.status === 'pending').length === 0 && (
-             <div className="p-8 text-center bg-white/5 border border-white/10 rounded-xl text-gray-400 font-mono text-sm">
-               Nenhuma reserva pendente no momento.
-             </div>
+                  <div className="flex gap-2 w-full md:w-auto">
+                    <button 
+                      onClick={() => handleStatusChange(res.id, 'confirmed')}
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white text-black hover:bg-gray-200 transition-colors font-bold rounded-lg"
+                    >
+                      <Check className="w-4 h-4" /> Aprovar
+                    </button>
+                    <button 
+                      onClick={() => handleStatusChange(res.id, 'rejected')}
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 transition-colors font-bold rounded-lg"
+                    >
+                      <X className="w-4 h-4" /> Rejeitar
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+              {reservations.filter(r => r.status === 'pending').length === 0 && (
+                <div className="p-8 text-center bg-white/5 border border-white/10 rounded-xl text-gray-400 font-mono text-sm">
+                  Nenhuma reserva pendente no momento.
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -103,8 +139,8 @@ export default function ReservasPage() {
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-white">{res.time} • {res.name}</p>
-                    <p className="text-xs text-gray-400 font-mono">{res.pax} Pax | {res.date}</p>
+                    <p className="font-bold text-white">{res.reservation_time} • {res.customer_name}</p>
+                    <p className="text-xs text-gray-400 font-mono">{res.party_size} Pax | {res.reservation_date}</p>
                   </div>
                 </div>
                 <div className="text-xs font-mono text-green-400 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
@@ -112,22 +148,15 @@ export default function ReservasPage() {
                 </div>
               </div>
             ))}
+            {!isLoading && reservations.filter(r => r.status === 'confirmed').length === 0 && (
+               <div className="p-8 text-center bg-white/5 border border-white/10 rounded-xl text-gray-400 font-mono text-sm">
+                 Nenhuma reserva confirmada.
+               </div>
+            )}
           </div>
         </div>
 
       </div>
     </div>
   );
-}
-
-// Inline helper icon
-function UsersIcon(props: React.ComponentProps<'svg'>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  )
 }

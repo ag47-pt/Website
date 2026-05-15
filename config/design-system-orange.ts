@@ -5,44 +5,44 @@
 
 export const theme = {
   colors: {
-    primary: '#ffaa00', // Laranja principal (Orange 500) - usado no botão de alternância entre temas e em elementos de destaque primários.
-    secondary: '#fff480', // Amarelo (Yellow 500) - usado em acentos secundários e detalhes de interface.
-    accent: '#fff480', // Amarelo (Yellow 500) - usado em estados de hover e elementos de ênfase.
-    textPrimary: '#ffffff', // Texto principal branco usado nos textos dos cards, em toda a navegação do site e em outros locais.
-    textSecondary: '#cbd5e7', // Usado em textos secundários e descrições em toda a navegação do site.
-    textMuted: '#ffaa0044', // Usado em textos de menor importância com um toque de transparência laranja.
-    textVoice: '#805500', // Usado em títulos e ícones de destaque secundário na versão laranja.
+    primary: '#ffaa00', // Laranja principal (Orange 500) - tom base energético e vibrante.
+    secondary: '#ff4d00', // Laranja avermelhado (Orange-Red) - para contrastes de profundidade.
+    accent: '#ffcc00', // Amarelo Ouro (Gold) - para brilhos e destaques de alta intensidade.
+    textPrimary: '#ffffff', // Texto principal branco para máxima legibilidade sobre fundos escuros.
+    textSecondary: '#cbd5e7', // Azul acinzentado suave para descrições e textos secundários.
+    textMuted: '#ffd1b388', // Laranja pálido translúcido para metadados e elementos desativados.
+    textVoice: '#cc8800', // Laranja escuro para títulos e ícones que precisam de peso visual.
     
-    textRestagMarked: '#000000ff', // Usado em textos de destaque secundário na versão laranja
-    textRestagMarkedBG: '#ffaa00', // Usado em background de destaque secundário na versão laranja
+    textRestagMarked: '#ffffffff', // Preto sólido para texto sobre fundos de destaque.
+    textRestagMarkedBG: '#ffaa00', // Fundo laranja para marcações de texto.
     
     // Especializados
-    scrollPercentage: '#ffaa00', // Laranja para indicador de scroll usado na barra de progresso e no cabeçalho do site.
-    highlight: '#ffaa00', // Laranja mais claro para destaque em textos e botões usados em toda a navegação do site.
+    scrollPercentage: '#ffaa00', // Laranja para a barra de progresso de leitura.
+    highlight: '#ffcc00', // Amarelo vibrante para destaques em hover e estados ativos.
     comet: {
-      from: 'transparent', // Começa transparente usado na cauda do cometa.
-      via: '#fff480', // Cor intermediária (Amarelo) usado no corpo do cometa.
-      to: '#ffaa00' // Cor final (Laranja) usado na cabeça do cometa.
+      from: 'transparent', // Cauda do cometa (invisível)
+      via: '#ff4d00', // Meio do cometa (vibrante)
+      to: '#ffcc00' // Cabeça do cometa (brilhante)
     },
     
     // Backgrounds & Glass
     glass: {
-      bg: 'rgba(0, 0, 0, 0.5)', // Fundo escuro semi-transparente para o efeito de vidro.
-      border: 'rgba(132, 204, 22, 0.1)', // Borda sutil para definir os limites dos elementos de vidro.
-      blur: 'blur(24px)' // Intensidade do desfoque de fundo para o efeito Frosted Glass.
+      bg: 'rgba(0, 0, 0, 0.5)', 
+      border: 'rgba(255, 170, 0, 0.15)', // Borda de vidro calibrada para o espectro laranja
+      blur: 'blur(24px)'
     }
   },
   
-  branding: { // Branding usado no botão de alternância entre temas e na barra de progresso.
-    startingPercent: 47, // O "número mágico" da Agência 47 que inicia as métricas e progressos.
+  branding: {
+    startingPercent: 47,
   },
   
-  typography: { // Tipografia usada em toda a navegação do site para garantir modernidade e legibilidade.
-    fontFamily: 'Inter, sans-serif', // Fonte principal (Inter) para consistência visual.
+  typography: {
+    fontFamily: 'Inter, sans-serif',
   },
 
-  animations: { // Configurações de animação usadas em toda a navegação do site para interações e transições fluidas.
-    duration: 0.9, // Duração padrão das animações em segundos.
-    ease: [0.27, 1, 0.45, 1] as any, // Curva de easing personalizada (Cubic Bezier) para um movimento mais premium.
+  animations: {
+    duration: 0.8,
+    ease: [0.27, 1, 0.45, 1] as any,
   }
 }

@@ -2,23 +2,34 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Store, ChevronLeft, Search, Eye, Key, Ban } from 'lucide-react';
+import { Store, ChevronLeft, Search, Eye, Key, Ban, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
 
-// Mock Data
-const activeRestaurants = [
-  { id: 1, name: "Cura", slug: "cura-lisboa", status: "Operante", gmv: "€4.2k", lastSync: "há 2 min" },
-  { id: 2, name: "Alma", slug: "alma-lisboa", status: "Operante", gmv: "€3.8k", lastSync: "há 12 min" },
-  { id: 3, name: "Veleiro", slug: "veleiro-cascais", status: "Problema", gmv: "€800", lastSync: "há 2 horas" },
-  { id: 4, name: "Oeste", slug: "oeste-porto", status: "Operante", gmv: "€1.1k", lastSync: "há 5 min" },
-];
+import { getRestaurants } from '@/lib/restag/service';
+import { Restaurant } from '@/types/restag';
 
 export default function NodesAdminPage() {
   const { theme } = useTheme();
   const [search, setSearch] = useState("");
+  const [restaurantsList, setRestaurantsList] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = activeRestaurants.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const data = await getRestaurants();
+        setRestaurantsList(data);
+      } catch (err) {
+        console.error("Failed to load restaurants:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const filtered = restaurantsList.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="relative pb-24 pt-0">
@@ -33,7 +44,7 @@ export default function NodesAdminPage() {
             <h1 className="text-4xl font-bold tracking-tighter text-white flex items-center gap-4">
               Gestão de Nós (Rede)
               <span className="px-3 py-1 bg-white/10 border border-white/20 rounded-full text-xs font-mono tracking-widest uppercase">
-                {activeRestaurants.length} ATIVOS
+                {restaurantsList.length} ATIVOS
               </span>
             </h1>
           </div>
@@ -54,17 +65,23 @@ export default function NodesAdminPage() {
         <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest text-gray-500">Restaurante / Node</th>
-                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest text-gray-500">Status</th>
-                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest text-gray-500">Volume GMV</th>
-                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest text-gray-500">Último Sync</th>
-                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest text-gray-500 text-right">Ações</th>
+              <thead className="bg-white/10 border-b border-white/10">
+                <tr style={{ color: theme.colors.primary }}>
+                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest opacity-70">Restaurante / Node</th>
+                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest opacity-70">Status</th>
+                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest opacity-70">Volume GMV</th>
+                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest opacity-70">Último Sync</th>
+                  <th className="px-6 py-4 text-xs font-mono uppercase tracking-widest opacity-70 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((node, idx) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-mono text-sm">
+                      Sincronizando com a rede...
+                    </td>
+                  </tr>
+                ) : filtered.map((node, idx) => (
                   <motion.tr 
                     key={node.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -85,18 +102,21 @@ export default function NodesAdminPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 text-[10px] font-mono rounded uppercase tracking-widest ${
-                        node.status === 'Operante' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                        node.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                       }`}>
-                        {node.status}
+                        {node.status === 'active' ? 'Operante' : 'Problema'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-mono text-white">{node.gmv}</td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{node.lastSync}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 font-mono text-white">€{Math.floor(Math.random() * 5000)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-400">há {Math.floor(Math.random() * 60)} min</td>
+                    <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button title="Visualizar Página" className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                        <Link href={`/restag/admin/restaurantes/${node.id}`} title="Editar Nó" className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
+                          <Settings className="w-4 h-4" />
+                        </Link>
+                        <Link href={`/restag/${node.slug}`} title="Visualizar Página" className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors">
                           <Eye className="w-4 h-4" />
-                        </button>
+                        </Link>
                         <button title="Acesso Concierge (Impersonate)" className="p-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors border border-blue-500/30">
                           <Key className="w-4 h-4" />
                         </button>

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import LabsLayout from '../labs/layout';
+import RestagMasterLayout from './components/RestagMasterLayout';
 
 export const metadata: Metadata = {
   title: 'Restag Labs | High-End Hospitality Ecosystem',
@@ -12,8 +12,8 @@ export default function RestagRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <LabsLayout bgImage="/labs/bipolar-brunch-veleiro.png">
+    <RestagMasterLayout bgImage="/labs/bipolar-brunch-veleiro.png">
       {children}
-    </LabsLayout>
+    </RestagMasterLayout>
   );
 }
