@@ -43,6 +43,17 @@ export async function getRestaurantBySlug(slug: string) {
   return data as Restaurant;
 }
 
+export async function createRestaurant(restaurant: Partial<Restaurant>) {
+  const { data, error } = await supabase
+    .from('restag_restaurants')
+    .insert([{ ...restaurant, created_at: new Date().toISOString() }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Restaurant;
+}
+
 export async function updateRestaurant(id: string, updates: Partial<Restaurant>) {
   const { error } = await supabase
     .from('restag_restaurants')

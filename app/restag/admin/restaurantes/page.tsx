@@ -49,15 +49,24 @@ export default function NodesAdminPage() {
             </h1>
           </div>
           
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <input 
-              type="text" 
-              placeholder="Buscar restaurante..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 transition-colors"
-            />
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <input 
+                type="text" 
+                placeholder="Buscar restaurante..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+            
+            <Link 
+              href="/restag/admin/restaurantes/new"
+              className="whitespace-nowrap px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)] flex items-center gap-2"
+            >
+              <Store className="w-4 h-4" /> Novo Nó
+            </Link>
           </div>
         </div>
 

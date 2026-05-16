@@ -44,7 +44,7 @@ export const restaurants: RestaurantLP[] = [
     metaTitle: 'Bipolar | Cozinha Variada Contemporânea em Lisboa',
     metaDescription: 'Descobre o melhor do **grill e vinhos** em Lisboa. Ambiente acolhedor e **sabores autênticos** reinventados.',
     heroLabel: 'Grill & Wine Experience',
-    heroTitle: 'A brasa de tradição',
+    heroTitle: 'A brasa e radição',
     heroSubtitle: "A convergência entre a força do fogo e a precisão da engenharia gastronômica.",
     descriptionLong: "Neste refúgio gastronômico em Lisboa, a consistência e a autenticidade são os pilares de cada prato. O Bipolar é onde o calor da brasa encontra uma garrafeira curada, criando um ambiente moderno e familiar que celebra o melhor da cozinha contemporânea reinventada. Os pratos grelhados são o destaque absoluto, preparados com precisão técnica e paixão pela tradição.",
     heroCta: 'Reservar Mesa',

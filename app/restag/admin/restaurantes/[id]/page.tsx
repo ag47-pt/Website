@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Save, Store, Palette, ShieldCheck, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getRestaurantById, updateRestaurant } from '@/lib/restag/service';
+import { getRestaurantById, updateRestaurant, createRestaurant } from '@/lib/restag/service';
 import { Restaurant, NodeStatus } from '@/types/restag';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -14,12 +14,45 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
   const router = useRouter();
   const { theme } = useTheme();
   
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [loading, setLoading] = useState(true);
+  const isNew = id === 'new';
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(isNew ? {
+    id: '',
+    owner_id: '',
+    name: '',
+    slug: '',
+    description: '',
+    address: '',
+    city: '',
+    status: 'active',
+    branding_color: '#D1FF00',
+    meta_data: {
+      tag: 'NOVO',
+      heroLabel: 'Grill & Wine Experience',
+      heroTitle: 'A brasa de tradição',
+      heroSubtitle: '',
+      descriptionLong: '',
+      heroCta: 'Reservar Mesa',
+      cuisine: '',
+      priceRange: '',
+      rating: 4.5,
+      phone: '',
+      metaDescription: '',
+      features: [],
+      gallery: [],
+      reservationSettings: {
+        maxPartySize: 8,
+        intervals: 30,
+        notice: '1 hour'
+      }
+    },
+    created_at: new Date().toISOString()
+  } as Restaurant : null);
+  const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isNew) return;
     async function load() {
       try {
         const data = await getRestaurantById(id);
@@ -32,7 +65,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
       }
     }
     load();
-  }, [id]);
+  }, [id, isNew]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,13 +73,23 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
     setSaving(true);
     try {
-      await updateRestaurant(id, {
+      const payload = {
         name: restaurant.name,
         slug: restaurant.slug,
         status: restaurant.status,
         branding_color: restaurant.branding_color,
-        address: restaurant.address
-      });
+        address: restaurant.address,
+        description: restaurant.description,
+        city: restaurant.city,
+        meta_data: restaurant.meta_data
+      };
+
+      if (isNew) {
+        await createRestaurant(payload);
+      } else {
+        await updateRestaurant(id, payload);
+      }
+      
       router.push('/restag/admin/restaurantes');
     } catch (err) {
       console.error(err);
@@ -54,6 +97,36 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
     } finally {
       setSaving(false);
     }
+  };
+
+  const updateMeta = (key: string, value: any) => {
+    setRestaurant(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        meta_data: {
+          ...(prev.meta_data || {}),
+          [key]: value
+        }
+      };
+    });
+  };
+
+  const updateResSettings = (key: string, value: any) => {
+    setRestaurant(prev => {
+      if (!prev) return null;
+      const settings = prev.meta_data?.reservationSettings || {};
+      return {
+        ...prev,
+        meta_data: {
+          ...(prev.meta_data || {}),
+          reservationSettings: {
+            ...settings,
+            [key]: value
+          }
+        }
+      };
+    });
   };
 
   if (loading) return (
@@ -76,10 +149,12 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           <ChevronLeft className="w-4 h-4" /> Gestão de Nós
         </Link>
         <h1 className="text-4xl font-bold tracking-tighter text-white flex items-center gap-4">
-          Configurar Nó
-          <span className="px-3 py-1 bg-white/10 border border-white/20 rounded-full text-[10px] font-mono tracking-widest uppercase">
-            ID: {id.slice(0, 8)}...
-          </span>
+          {isNew ? 'Criar Novo Nó' : 'Configurar Nó'}
+          {!isNew && (
+            <span className="px-3 py-1 bg-white/10 border border-white/20 rounded-full text-[10px] font-mono tracking-widest uppercase">
+              ID: {id.slice(0, 8)}...
+            </span>
+          )}
         </h1>
       </div>
 
@@ -121,13 +196,177 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
 
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Endereço Principal</label>
+              <input 
+                type="text" 
+                value={restaurant.address || ''}
+                onChange={e => setRestaurant({...restaurant, address: e.target.value})}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-red-500/50 transition-colors"
+                placeholder="Ex: Rua Alecrim 12, Lisboa"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Cidade</label>
+              <input 
+                type="text" 
+                value={restaurant.city || ''}
+                onChange={e => setRestaurant({...restaurant, city: e.target.value})}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-red-500/50 transition-colors"
+                placeholder="Ex: Lisboa"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Labs Blueprint: Hero & Copy Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+        >
+          <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
+            <Palette className="w-5 h-5 text-purple-500" />
+            <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Labs Blueprint: Hero & Copy</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Hero Label</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.heroLabel || ''}
+                onChange={e => updateMeta('heroLabel', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                placeholder="Ex: Grill & Wine Experience"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Etiqueta/Tag</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.tag || ''}
+                onChange={e => updateMeta('tag', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                placeholder="Ex: Reinventada"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Endereço Principal</label>
+            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Hero Title (Markdown Support)</label>
             <input 
               type="text" 
-              value={restaurant.address || ''}
-              onChange={e => setRestaurant({...restaurant, address: e.target.value})}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-red-500/50 transition-colors"
+              value={restaurant.meta_data?.heroTitle || ''}
+              onChange={e => updateMeta('heroTitle', e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors font-bold"
+              placeholder="Ex: A brasa de *tradição*"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Hero Subtitle</label>
+            <textarea 
+              value={restaurant.meta_data?.heroSubtitle || ''}
+              onChange={e => updateMeta('heroSubtitle', e.target.value)}
+              rows={2}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors resize-none"
+              placeholder="Breve frase de impacto para a hero."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Descrição Longa (Storytelling)</label>
+            <textarea 
+              value={restaurant.meta_data?.descriptionLong || ''}
+              onChange={e => updateMeta('descriptionLong', e.target.value)}
+              rows={4}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+              placeholder="O texto completo que aparece na seção de detalhes..."
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Texto do CTA</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.heroCta || ''}
+                onChange={e => updateMeta('heroCta', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                placeholder="Ex: Reservar Mesa"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Telefone de Contato</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.phone || ''}
+                onChange={e => updateMeta('phone', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                placeholder="Ex: +351 210 000 000"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Business Attributes Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+        >
+          <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
+            <ShieldCheck className="w-5 h-5 text-emerald-500" />
+            <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Atributos & SEO</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Cozinha</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.cuisine || ''}
+                onChange={e => updateMeta('cuisine', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                placeholder="Ex: Portuguesa"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Preço Médio</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.priceRange || ''}
+                onChange={e => updateMeta('priceRange', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                placeholder="Ex: avg. 25€"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Rating (0-5)</label>
+              <input 
+                type="number" 
+                step="0.1"
+                min="0"
+                max="5"
+                value={restaurant.meta_data?.rating || 0}
+                onChange={e => updateMeta('rating', parseFloat(e.target.value))}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Meta Description (SEO)</label>
+            <textarea 
+              value={restaurant.meta_data?.metaDescription || ''}
+              onChange={e => updateMeta('metaDescription', e.target.value)}
+              rows={2}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-emerald-500/50 transition-colors resize-none"
+              placeholder="Descrição para Google/SEO..."
             />
           </div>
         </motion.div>
@@ -177,7 +416,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           >
             <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
               <Palette className="w-5 h-5 text-blue-500" />
-              <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Cores & Branding</h2>
+              <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Cores & Media</h2>
             </div>
 
             <div className="space-y-2">
@@ -185,26 +424,126 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               <div className="flex gap-4">
                 <input 
                   type="color" 
-                  value={restaurant.branding_color}
+                  value={restaurant.branding_color || '#D1FF00'}
                   onChange={e => setRestaurant({...restaurant, branding_color: e.target.value})}
                   className="w-12 h-12 rounded-lg bg-transparent border-none cursor-pointer p-0"
                 />
                 <input 
                   type="text" 
-                  value={restaurant.branding_color}
+                  value={restaurant.branding_color || ''}
                   onChange={e => setRestaurant({...restaurant, branding_color: e.target.value})}
                   className="flex-1 bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-red-500/50 transition-colors font-mono"
+                  placeholder="#D1FF00"
                 />
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-black/20 border border-white/5">
-              <p className="text-[10px] font-mono text-gray-500 uppercase leading-relaxed">
-                Nota: A cor de branding é utilizada como acento em elementos específicos quando o tema global permite sobreposição.
-              </p>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Vídeo Background (URL)</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.video || ''}
+                onChange={e => updateMeta('video', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-sm"
+                placeholder="/restag/videos/..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Marca d'água do Vídeo</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.videoWatermark || ''}
+                onChange={e => updateMeta('videoWatermark', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                placeholder="Ex: Bipolar Explanada"
+              />
             </div>
           </motion.div>
         </div>
+
+        {/* Reservation Settings Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+        >
+          <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
+            <ShieldCheck className="w-5 h-5 text-orange-500" />
+            <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Configurações de Reserva</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Máx. Pessoas/Mesa</label>
+              <input 
+                type="number" 
+                value={restaurant.meta_data?.reservationSettings?.maxPartySize || 8}
+                onChange={e => updateResSettings('maxPartySize', parseInt(e.target.value))}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-orange-500/50 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Intervalo (Minutos)</label>
+              <select 
+                value={restaurant.meta_data?.reservationSettings?.intervals || 30}
+                onChange={e => updateResSettings('intervals', parseInt(e.target.value))}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-orange-500/50 transition-colors bg-neutral-900"
+              >
+                <option value={15}>15 min</option>
+                <option value={30}>30 min</option>
+                <option value={45}>45 min</option>
+                <option value={60}>60 min</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Aviso Prévio Mín.</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.reservationSettings?.notice || '1 hour'}
+                onChange={e => updateResSettings('notice', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-orange-500/50 transition-colors"
+                placeholder="Ex: 1 hour, 24 hours"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Features & Gallery Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+        >
+          <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
+            <ShieldCheck className="w-5 h-5 text-yellow-500" />
+            <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Funcionalidades & Galeria</h2>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Destaques / Features (Um por linha)</label>
+            <textarea 
+              value={restaurant.meta_data?.features?.join('\n') || ''}
+              onChange={e => updateMeta('features', e.target.value.split('\n').filter(l => l.trim()))}
+              rows={4}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-yellow-500/50 transition-colors font-mono text-sm"
+              placeholder="Grelha a Carvão&#10;Family-Friendly&#10;Ambiente Moderno"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Galeria de Imagens (URLs - Uma por linha)</label>
+            <textarea 
+              value={restaurant.meta_data?.gallery?.join('\n') || ''}
+              onChange={e => updateMeta('gallery', e.target.value.split('\n').filter(l => l.trim()))}
+              rows={4}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-yellow-500/50 transition-colors font-mono text-sm"
+              placeholder="/restag/foto1.png&#10;https://..."
+            />
+          </div>
+        </motion.div>
 
         {/* Footer Actions */}
         <motion.div 
