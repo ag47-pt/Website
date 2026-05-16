@@ -52,6 +52,7 @@ function mapDbToLP(dbRestaurant: any): RestaurantLP {
     videoWatermark: meta.videoWatermark,
     brandingColor: dbRestaurant.branding_color || meta.brandingColor,
     effectsEnabled: meta.effectsEnabled !== undefined ? meta.effectsEnabled : true,
+    plan: dbRestaurant.subscription?.plan || meta.plan || 'FREE',
   };
 }
 

@@ -8,16 +8,13 @@ Para resolver uma pendência, basta me pedir: *"Vamos trabalhar na pendência X 
 
 ## 🍴 Ecossistema RESTAG (Próximos Passos)
 
-- [ ] **Restauração de Integridade Supabase**: Reativar a constraint `profiles_id_fkey` e tornar `owner_id` obrigatório (`NOT NULL`) assim que o fluxo de Auth real estiver operacional.
-- [ ] **Fluxo de Autenticação Real**: Substituir o `MOCK_RESTAURANT_ID` pela ID do restaurante vinculado ao perfil do usuário logado via Supabase Auth.
-- [ ] **Refatoração de Segurança RLS**: Implementar políticas granulares por `auth.uid()` e corrigir permanentemente a recursão na tabela `profiles` usando funções `SECURITY DEFINER`.
-- [ ] **Pipeline de Onboarding (Admin)**: Implementar a funcionalidade de aprovação/rejeição de novos nós na página `/restag/admin/onboarding`.
-- [ ] **Editor de Metadados Expandido (Merchant)**: Criar interfaces CRUD para Galeria de Imagens, FAQs e Etapas de Processo (`process`) diretamente no painel de configurações.
-- [ ] **Editor de Menu Interativo (Merchant)**: Construir a interface para gestão de categorias e itens de menu em `/restag/merchant/menu`.
-- [ ] **Reservas Real-time**: Ativar o Supabase Realtime no dashboard do Merchant para que novas reservas apareçam instantaneamente sem refresh.
-- [ ] **Sincronização de Branding Global**: Expandir o override de `branding_color` para que afete todos os componentes "Labs Blueprint" vinculados a um restaurante.
-- [ ] **Modo Concierge Ag47**: Desenvolver a lógica de "Impersonate" que permite ao Admin acessar a visão do Merchant com permissões totais para suporte.
-- [x] **Refatoração de UI (Reservas)**: Substituição de asteriscos estáticos por `renderFormattedText` no ReservationDrawer para ativação de efeitos visuais Labs.
+- [ ] **Módulo Menu Digital**: Implementar gerador de QR Code dinâmico e interface de menu interativo para restaurantes.
+- [ ] **Integração Google Business**: Desenvolver widgets e sincronização automática de horários/reservas com o Google.
+- [ ] **Sistema de Planos/Billing**: Integrar Stripe ou similar para gestão de mensalidades fixas (21€, 81€, 350€).
+- [ ] **Orquestrador de ADS**: Criar painel de controle para os 150€ de tráfego gerido no plano Full Stack.
+- [ ] **App Mobile (Android/iOS)**: Iniciar desenvolvimento da versão nativa para clientes amantes de culinária.
+- [ ] **WhatsApp Automation**: Desenvolver bot de atendimento e agendamento via WhatsApp para comerciantes.
+- [ ] **Analytics de Mercado Real-time**: Implementar dashboard de tendências gastronômicas em Lisboa para ajuste ágil da plataforma.
 
 
 ## ⚡ Performance, SEO & Acessibilidade (Auditoria Restag)

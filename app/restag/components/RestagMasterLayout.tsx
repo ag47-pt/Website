@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useTheme } from '@/context/ThemeContext';
-import { ScrollProgressBar } from '@/components/ui/ScrollProgressBar';
-import { usePageScroll } from '@/hooks/usePageScroll';
-import { RestagNavbar } from '@/components/rest/RestagNavbar';
+import { useRestagScroll } from '../hooks/useRestagScroll';
+import { RestagNavbar } from './shared/RestagNavbar';
+import { RestagChatbox } from './shared/RestagChatbox';
 
 export default function RestagMasterLayout({
   children,
@@ -18,11 +18,11 @@ export default function RestagMasterLayout({
 }) {
   const pathname = usePathname();
   const { theme } = useTheme();
-  const scrollOffset = usePageScroll();
+  const scrollOffset = useRestagScroll();
   const displayPercent = Math.round(theme.branding.startingPercent + (scrollOffset * (100 - theme.branding.startingPercent)));
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans" style={{ '--primary-color': theme.colors.primary } as any}>
+    <div className="min-h-screen bg-[#050505] text-white font-sans" style={{ '--primary-color': theme.colors.primary } as any}>
       <style>{`
         ::selection {
           background-color: ${theme.colors.primary};
@@ -45,7 +45,11 @@ export default function RestagMasterLayout({
 
       {/* Ambient Nebula Background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 opacity-50">
+        <div className={`absolute inset-0 transition-all duration-700 ${
+          pathname.startsWith('/restag/admin') || pathname.startsWith('/restag/merchant') 
+            ? 'opacity-20 grayscale-[0.5]' 
+            : 'opacity-30'
+        }`}>
           <Image
             src={bgImage}
             alt="Background"
@@ -54,12 +58,17 @@ export default function RestagMasterLayout({
             priority
           />
         </div>
+
+        {/* Dashboard Dark Overlay */}
+        {(pathname.startsWith('/restag/admin') || pathname.startsWith('/restag/merchant')) && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-[1]"></div>
+        )}
         <div
-          className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full opacity-30 blur-[120px]"
+          className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full opacity-20 blur-[120px]"
           style={{ backgroundColor: theme.colors.primary }}
         ></div>
         <div
-          className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-20 blur-[150px]"
+          className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-10 blur-[150px]"
           style={{ backgroundColor: theme.colors.primary }}
         ></div>
         <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.png')]"></div>
@@ -69,7 +78,11 @@ export default function RestagMasterLayout({
       <RestagNavbar />
 
       {/* Main Content Area */}
-      <main className={`${pathname.startsWith('/restag/admin') || pathname.startsWith('/restag/merchant') ? 'pt-[73px]' : 'pt-20 md:pt-32 pb-20 px-4 sm:px-6 max-w-7xl mx-auto'}`}>
+      <main className={`pt-[73px] pb-20 relative ${
+        (pathname.startsWith('/restag/admin') || pathname.startsWith('/restag/merchant')) 
+        ? 'w-full' 
+        : 'max-w-7xl mx-auto px-4 sm:px-6'
+      }`}>
         {children}
       </main>
 
@@ -97,6 +110,8 @@ export default function RestagMasterLayout({
           %
         </span>
       </div>
+      {/* Restag Specialized Chatbot */}
+      <RestagChatbox />
     </div>
   );
 }

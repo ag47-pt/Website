@@ -462,6 +462,17 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
 
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Watermark do Vídeo (URL PNG)</label>
+              <input 
+                type="text" 
+                value={restaurant.meta_data?.videoWatermark || ''}
+                onChange={e => updateMeta('videoWatermark', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-sm"
+                placeholder="/restag/watermarks/..."
+              />
+            </div>
+
             <div className="space-y-4 pt-4 border-t border-white/10">
               <div className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5">
                 <div className="space-y-1">
@@ -597,6 +608,26 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-gray-400">Horário de Funcionamento (JSON Object)</label>
+              <textarea 
+                defaultValue={JSON.stringify(restaurant.meta_data?.operatingHours || {}, null, 2)}
+                onBlur={e => {
+                  try {
+                    const parsed = JSON.parse(e.target.value);
+                    updateMeta('operatingHours', parsed);
+                  } catch (err) {
+                    alert("Erro no formato JSON dos Horários.");
+                  }
+                }}
+                rows={8}
+                className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-[10px]"
+                placeholder='{ "Segunda-Feira": "12:00 - 23:00", ... }'
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-2">
               <label className="text-xs font-mono uppercase tracking-widest text-gray-400">Métricas / Resultados (JSON Array)</label>
               <textarea 
                 defaultValue={JSON.stringify(restaurant.meta_data?.results || [], null, 2)}
@@ -613,24 +644,23 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                 placeholder="[ { 'label': 'SATISFAÇÃO', 'value': '98%', 'desc': '...' } ]"
               />
             </div>
-          </div>
-
-          <div className="space-y-2 pt-4">
-            <label className="text-xs font-mono uppercase tracking-widest text-gray-400">Cardápio / Menu (JSON Array)</label>
-            <textarea 
-              defaultValue={JSON.stringify(restaurant.meta_data?.menu || [], null, 2)}
-              onBlur={e => {
-                try {
-                  const parsed = JSON.parse(e.target.value);
-                  updateMeta('menu', parsed);
-                } catch (err) {
-                  alert("Erro no formato JSON do Menu.");
-                }
-              }}
-              rows={10}
-              className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-[10px]"
-              placeholder="[ { 'title': '...', 'description': '...', 'price': '...' } ]"
-            />
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-gray-400">Cardápio / Menu (JSON Array)</label>
+              <textarea 
+                defaultValue={JSON.stringify(restaurant.meta_data?.menu || [], null, 2)}
+                onBlur={e => {
+                  try {
+                    const parsed = JSON.parse(e.target.value);
+                    updateMeta('menu', parsed);
+                  } catch (err) {
+                    alert("Erro no formato JSON do Menu.");
+                  }
+                }}
+                rows={8}
+                className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-[10px]"
+                placeholder="[ { 'category': 'Entradas', 'items': [...] } ]"
+              />
+            </div>
           </div>
         </motion.div>
 

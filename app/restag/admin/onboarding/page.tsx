@@ -23,8 +23,8 @@ export default function OnboardingAdminPage() {
   };
 
   return (
-    <div className="relative pb-24 pt-0">
-      <div className="max-w-5xl mx-auto space-y-24 md:space-y-32">
+    <div className="relative pb-24 pt-12 md:pt-16">
+      <div className="max-w-[1600px] mx-auto space-y-12 md:space-y-16">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

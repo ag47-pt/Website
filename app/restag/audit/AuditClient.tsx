@@ -9,8 +9,9 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import Link from 'next/link';
-import { LabHero } from '@/app/labs/components';
+import { HeroRestag } from '../components/HeroRestag';
 import { RestagLayout } from '../components/RestagLayout';
+import { renderRestagText } from '../lib/utils';
 
 // ─── Scroll Progress Bar (Comet) ─────────────────────────────────────────────
 function ScrollProgressBar() {
@@ -258,7 +259,7 @@ export default function AuditClient() {
               style={{ backgroundColor: theme.colors.primary }} />
 
             <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
-              <LabHero
+              <HeroRestag
                 overline="AUDIT_PROTOCOL_v2.4"
                 overlineIcon={ShieldCheck}
                 title="Request"

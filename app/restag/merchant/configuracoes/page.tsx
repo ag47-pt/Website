@@ -19,9 +19,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
-import { supabase } from '@/lib/supabase';
-import { updateRestaurantSettings } from '@/lib/restag/service';
-import { LabHero, LabInfoCard } from '@/app/labs/components';
+import { supabase } from '../../lib/supabase';
+import { updateRestaurantSettings } from '../../lib/service';
+import { HeroRestag } from '../../components/HeroRestag';
+import { RestagInfoCard } from '../../components/shared/RestagCards';
 
 type TabType = 'OPERATIONAL' | 'VISUAL' | 'CORE';
 
@@ -146,28 +147,29 @@ export default function MerchantSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+      <div className="flex items-center justify-center pt-32">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
       </div>
     );
   }
 
   return (
-    <div className="relative pb-24 min-h-screen bg-[#050505] text-white">
-      <div className="max-w-[1600px] mx-auto space-y-16 px-6">
+    <div className="relative pb-24 pt-12 md:pt-16">
+      <div className="max-w-[1600px] mx-auto space-y-12 md:space-y-16 px-4 md:px-12">
         
         {/* Navigation */}
         <Link 
           href="/restag/merchant"
-          className="inline-flex items-center gap-2 text-xs font-mono text-gray-500 hover:text-white transition-colors group mt-8"
+          className="inline-flex items-center gap-2 text-xs font-mono text-gray-500 hover:text-white transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           BACK_TO_TERMINAL
         </Link>
 
         {/* Hero */}
-        <LabHero 
-          overline="./restag/merchant/settings"
+        <HeroRestag 
+          isDashboard
+          overline="./restag/merchant/configuracoes"
           overlineIcon={Settings}
           title="Terminal"
           highlight="Configuration"
@@ -387,7 +389,7 @@ export default function MerchantSettings() {
           </div>
 
           <div className="lg:col-span-4 space-y-6">
-            <LabInfoCard 
+            <RestagInfoCard 
               title="Database Integrity"
               description="A sua instância está conectada diretamente ao cluster Supabase da Agência 47. Toda e qualquer informação é agora variável e editável."
             />

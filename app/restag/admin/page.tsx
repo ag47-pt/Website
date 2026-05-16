@@ -10,7 +10,8 @@ import {
   ServerCrash,
   Loader2
 } from 'lucide-react';
-import { LabHero, LabCallCard } from '@/app/labs/components';
+import { HeroRestag } from '../components/HeroRestag';
+import { RestagCallCard } from '../components/shared/RestagCards';
 import { useTheme } from '@/context/ThemeContext';
 import { getAdminStats } from '@/lib/restag/service';
 
@@ -43,11 +44,11 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="relative pb-24 pt-0">
-      <div className="max-w-7xl mx-auto space-y-24 md:space-y-32">
+    <div className="relative pb-12 pt-0">
+      <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-10 px-4 md:px-12">
         
         {/* 1. Admin Hero */}
-        <LabHero 
+        <HeroRestag 
           overline="./restag/admin/core"
           overlineIcon={ShieldCheck}
           title="Ag47"
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
             { label: "God Mode", color: "red", pulse: true },
             { label: loading ? "Syncing..." : "All Systems Nominal", color: "blue" }
           ]}
+          isDashboard
         />
 
         {/* 2. Admin Modules */}
@@ -66,7 +68,7 @@ export default function AdminDashboard() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="grid md:grid-cols-2 gap-6"
         >
-          <LabCallCard 
+          <RestagCallCard 
             title="Aprovação de Nós"
             description={loading ? "Carregando..." : `Existem ${stats.pendingApproval} restaurantes na fila de espera aguardando auditoria.`}
             path="/restag/admin/onboarding"
@@ -74,7 +76,7 @@ export default function AdminDashboard() {
             status={`${stats.pendingApproval} PENDENTES`}
           />
 
-          <LabCallCard 
+          <RestagCallCard 
             title="Gestão de Rede"
             description="Visualize, suspenda ou atue como Concierge em qualquer restaurante do ecosistema."
             path="/restag/admin/restaurantes"

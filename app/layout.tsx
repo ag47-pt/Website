@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,11 +12,25 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "Agência 47 | Websites, SaaS & Marketing Digital em Portugal",
   description:
     "Catapultamos o teu negócio para o próximo nível. Criamos websites de conversão, SaaS, Social Media e Tráfego Pago com o DNA da tua marca.",
   metadataBase: new URL("https://ag47.pt"),
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Restag",
+  },
   alternates: {
     canonical: "/",
   },
@@ -89,7 +103,7 @@ const jsonLd = {
 }
 
 import { ThemeProvider } from "@/context/ThemeContext";
-import { SupportChatbox } from "@/components/ui/SupportChatbox";
+import { SupportChatboxWrapper } from "@/components/ui/SupportChatboxWrapper";
 
 export default function RootLayout({
   children,
@@ -111,7 +125,7 @@ export default function RootLayout({
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-black">
         <ThemeProvider>
           {children}
-          <SupportChatbox />
+          <SupportChatboxWrapper />
         </ThemeProvider>
       </body>
     </html>

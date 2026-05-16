@@ -128,13 +128,13 @@ export default function AdminLayout({
       </AnimatePresence>
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 sticky top-[73px] h-[calc(100vh-73px)] border-r border-red-500/20 bg-black/40 backdrop-blur-xl hidden md:flex flex-col justify-between z-40">
+      <aside className="w-64 sticky top-0 h-[calc(100vh-73px)] border-r border-red-500/20 bg-black/40 backdrop-blur-xl hidden md:flex flex-col justify-between z-40">
         <SidebarContent />
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 w-full">
-        <div className="max-w-[1600px] mx-auto pt-[100px] px-4 pb-4 md:px-12 md:pb-12 md:pt-14">
+        <div className="max-w-[1600px] mx-auto px-4 pb-4 md:px-12 md:pb-12 pt-0 md:pt-0">
            {children}
         </div>
       </main>

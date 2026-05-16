@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants, useSpring, useTransform, animate } from 'framer-motion';
 import { Utensils, Search, Filter, Layers, Globe, Activity, ShieldCheck, Zap, ChevronRight, MapPin, SlidersHorizontal, Clock, Calendar, Gift, ChevronDown, Info, MousePointer2 } from 'lucide-react';
-import { LabHero } from '@/app/labs/components';
-import { LabVisitCard, LabCallCard } from '@/app/labs/components/LabCards';
+import { HeroRestag } from './components/HeroRestag';
+import { RestagVisitCard, RestagCallCard } from './components/shared/RestagCards';
 import { RestagLayout } from './components/RestagLayout';
 import { MapPortal } from './components/MapPortal';
 import { restaurants, RestaurantLP } from '@/data/restaurants';
 import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'next/navigation';
-import { renderFormattedText } from '@/app/labs/components/utils';
+import { renderRestagText } from './lib/utils';
 import { Skeleton, CardSkeleton, MetricSkeleton } from '@/components/ui/Skeleton';
 
 const containerVariants: Variants = {
@@ -74,11 +74,11 @@ export default function RestagDiscoveryPortal() {
 
   return (
     <RestagLayout activeView="MAP" navItems={PORTAL_NAV_ITEMS}>
-      <div className="space-y-12">
+      <div className="space-y-8">
         
         {/* Section 1: Hero Discovery */}
         <div id="hero">
-          <LabHero 
+          <HeroRestag 
           overline="RESTAG_HOSPITALITY_v1.0"
           overlineIcon={Utensils}
           title="Discovery"
@@ -96,7 +96,7 @@ export default function RestagDiscoveryPortal() {
         <motion.section 
           id="featured"
           variants={itemVariants}
-          className="space-y-12"
+          className="space-y-8"
         >
           {/* Advanced Filter Bar */}
           <div className="flex flex-col gap-8">
@@ -128,7 +128,7 @@ export default function RestagDiscoveryPortal() {
               <div>
                 <h3 className="font-mono text-[10px] uppercase tracking-[0.4em] mb-1" style={{ color: theme.colors.textMuted }}>Grid_Clusters</h3>
                 <div className="text-2xl font-bold text-white tracking-tight uppercase">
-                  {renderFormattedText("Featured_*Nodes*", 'title', theme)}
+                  {renderRestagText("Featured_*Nodes*", 'title', theme)}
                 </div>
               </div>
             </div>
@@ -143,7 +143,7 @@ export default function RestagDiscoveryPortal() {
               </>
             ) : (
               restaurants.map((rest) => (
-                <LabVisitCard 
+                <RestagVisitCard 
                   key={rest.slug}
                   title={rest.cardTitle}
                   client={rest.address.split(',')[0]}
@@ -166,7 +166,7 @@ export default function RestagDiscoveryPortal() {
         <motion.section 
           id="map"
           variants={itemVariants}
-          className="space-y-12"
+          className="space-y-8"
         >
           <div className="grid lg:grid-cols-12 gap-12 items-start">
             {/* Left: Map Discovery */}
@@ -178,7 +178,7 @@ export default function RestagDiscoveryPortal() {
                   </div>
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                      {renderFormattedText("Geospatial_*Index*", 'title', theme)}
+                      {renderRestagText("Geospatial_*Index*", 'title', theme)}
                     </h2>
                     <p className="text-[8px] sm:text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textMuted }}>Global_Node_Positioning_v4.0</p>
                   </div>
@@ -225,14 +225,14 @@ export default function RestagDiscoveryPortal() {
             </div>
 
             {/* Right: Node Registry */}
-            <div className="lg:col-span-4 space-y-8">
+            <div className="lg:col-span-4 space-y-6">
               <div className="flex items-center gap-4 px-2">
                 <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
                   <Layers className="w-6 h-6" style={{ color: theme.colors.primary }} />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white tracking-tight uppercase">
-                    {renderFormattedText("*Registry*", 'title', theme)}
+                    {renderRestagText("*Registry*", 'title', theme)}
                   </h2>
                   <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textMuted }}>Active_Node_Roster</p>
                 </div>
@@ -251,7 +251,7 @@ export default function RestagDiscoveryPortal() {
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ delay: idx * 0.05 }}
                     >
-                      <LabCallCard 
+                      <RestagCallCard 
                         title={rest.cardTitle}
                         description={rest.address}
                         path={`/restag/${rest.slug}`}
@@ -279,7 +279,7 @@ export default function RestagDiscoveryPortal() {
             whileInView="visible"
             initial="hidden"
             viewport={{ once: true, margin: "-100px" }}
-            className="max-w-7xl mx-auto px-6 py-20 relative z-10"
+            className="max-w-7xl mx-auto px-6 py-12 relative z-10"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
               {isLoading ? (
@@ -330,7 +330,7 @@ export default function RestagDiscoveryPortal() {
           whileInView="visible"
           initial="hidden"
           viewport={{ once: true }}
-          className="relative p-20 rounded-[64px] overflow-hidden border border-white/10 bg-zinc-950/40 group text-center"
+          className="relative p-12 md:p-16 rounded-[64px] overflow-hidden border border-white/10 bg-zinc-950/40 group text-center"
         >
           <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--dot-color)_1.5px,transparent_1.5px)] bg-[size:32px_32px]" style={{ '--dot-color': theme.colors.primary } as any} />
@@ -348,7 +348,7 @@ export default function RestagDiscoveryPortal() {
             
             <div className="space-y-4">
               <h2 className="text-5xl md:text-6xl font-bold text-white tracking-tighter leading-none uppercase">
-                {renderFormattedText("Deploy to the *Grid*", 'title', theme)}
+                {renderRestagText("Deploy to the *Grid*", 'title', theme)}
               </h2>
               <p className="text-xl font-mono uppercase tracking-widest" style={{ color: theme.colors.textSecondary }}>Ag47 Labs Infrastructure</p>
             </div>

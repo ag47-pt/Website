@@ -27,10 +27,11 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
 import { useTheme } from '@/context/ThemeContext';
-import { LabHero, LabInfoCard, LabCallCard } from '@/app/labs/components';
-import { renderFormattedText } from '@/app/labs/components/utils';
+import { HeroRestag } from './HeroRestag';
+import { RestagInfoCard, RestagCallCard } from './shared/RestagCards';
+import { renderRestagText } from '../lib/utils';
 import { RestaurantLP } from '@/data/restaurants';
 import Image from 'next/image';
 import { RestagLayout } from './RestagLayout';
@@ -87,7 +88,7 @@ const MetricCard = ({ stat, theme }: { stat: any, theme: any }) => {
         {targetValue % 1 === 0 ? Math.floor(count) : count.toFixed(1)}
         {suffix}
       </span>
-      <p className="text-xs font-mono leading-relaxed" style={{ color: theme.colors.textSecondary }}>{renderFormattedText(stat.desc || '', 'description', theme)}</p>
+      <p className="text-xs font-mono leading-relaxed" style={{ color: theme.colors.textSecondary }}>{renderRestagText(stat.desc || '', 'description', theme)}</p>
     </motion.div>
   );
 };
@@ -95,31 +96,10 @@ const MetricCard = ({ stat, theme }: { stat: any, theme: any }) => {
 export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaurant }) => {
   const { theme: globalTheme, themeContrast: globalContrast } = useTheme();
   
-  // Local theme override from DB
-  const theme = React.useMemo(() => {
-    if (restaurant.brandingColor) {
-      return {
-        ...globalTheme,
-        colors: {
-          ...globalTheme.colors,
-          primary: restaurant.brandingColor
-        }
-      };
-    }
-    return globalTheme;
-  }, [globalTheme, restaurant.brandingColor]);
+  // Use global theme from context
+  const theme = globalTheme;
   
-  const themeContrast = React.useMemo(() => {
-    if (!restaurant.brandingColor) return globalContrast;
-    
-    // Simple brightness check to determine contrast (White or Black)
-    const hex = restaurant.brandingColor.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 128 ? '#000000' : '#ffffff';
-  }, [restaurant.brandingColor, globalContrast]);
+  const themeContrast = globalContrast;
 
   const [isReserving, setIsReserving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -149,11 +129,11 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
   return (
     <RestagLayout navItems={DETAIL_NAV_ITEMS}>
       <div ref={containerRef} className="relative min-h-screen">
-        <div className={`relative ${isReserving ? 'z-[200]' : ''} space-y-8 md:space-y-16 pb-32`}>
+        <div className={`relative ${isReserving ? 'z-[200]' : ''} space-y-4 md:space-y-6 pb-12`}>
           
           {/* 1. Hero Section (Labs Blueprint) */}
           <div id="hero">
-            <LabHero 
+            <HeroRestag 
               theme={theme}
               effectsEnabled={restaurant.effectsEnabled}
               overline={`NODE_REGISTRY // ${restaurant.slug.toUpperCase()}`}
@@ -164,61 +144,53 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
               image={restaurant.gallery[0]}
               video={restaurant.video}
               watermark={restaurant.videoWatermark}
-              onImageClick={() => setIsReserving(true)}
-          statusTags={[
-            { label: restaurant.cuisine, color: 'secondary' as any },
-            { label: restaurant.priceRange, color: 'blue' as any },
-            { label: `STABILITY_SCORE: ${restaurant.rating * 20}%`, color: 'main' as any }
-          ]}
-          actions={
-            <div className="flex flex-wrap items-center gap-4">
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsReserving(true)}
-                className="flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-black transition-all group"
-                style={{ 
-                  backgroundColor: theme.colors.primary, 
-                  color: themeContrast,
-                  boxShadow: `0 0 30px ${theme.colors.primary}33`
-                }}
-              >
-                <Calendar className="w-4 h-4" /> 
-                BOOK_TABLE_v1.0
-              </motion.button>
+              statusTags={[
+                { label: restaurant.cuisine, color: 'secondary' as any },
+                { label: restaurant.priceRange, color: 'blue' as any },
+                { label: `STABILITY_SCORE: ${restaurant.rating * 20}%`, color: 'main' as any }
+              ]}
+              actions={
+                <div className="flex flex-wrap items-center gap-4">
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsReserving(true)}
+                    className="flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-black transition-all group shadow-2xl"
+                    style={{ backgroundColor: theme.colors.primary, color: '#000', boxShadow: `0 10px 30px ${theme.colors.primary}33` }}
+                  >
+                    <Calendar className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                    {restaurant.heroCta}
+                  </motion.button>
 
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  const el = document.getElementById('menu');
-                  if (el) {
-                    const offset = 80;
-                    const bodyRect = document.body.getBoundingClientRect().top;
-                    const elementRect = el.getBoundingClientRect().top;
-                    const elementPosition = elementRect - bodyRect;
-                    const offsetPosition = elementPosition - offset;
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      const el = document.getElementById('menu');
+                      if (el) {
+                        const offset = 80;
+                        window.scrollTo({
+                          top: el.getBoundingClientRect().top + window.scrollY - offset,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }}
+                    className="flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-black transition-all border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/10"
+                  >
+                    <Utensils className="w-4 h-4" /> 
+                    VIEW_MENU
+                  </motion.button>
+                  
+                  <div className="hidden md:flex items-center gap-2 px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-xs font-mono backdrop-blur-md" style={{ color: theme.colors.textSecondary }}>
+                    <MapPin className="w-4 h-4" style={{ color: theme.colors.primary }} />
+                    {restaurant.address.toUpperCase()}
+                  </div>
+                </div>
+              }
+            />
+          </div>
 
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
-                }}
-                className="flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-black transition-all border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/10"
-              >
-                <Utensils className="w-4 h-4" /> 
-                VIEW_MENU
-              </motion.button>
-              
-              <div className="flex items-center gap-2 px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-xs font-mono backdrop-blur-md" style={{ color: theme.colors.textSecondary }}>
-                <MapPin className="w-4 h-4" style={{ color: theme.colors.primary }} />
-                {restaurant.address.toUpperCase()}
-              </div>
-            </div>
-          }
-        />
-      </div>
+
 
         {/* 2. Results/Metrics Bar (Labs Blueprint) */}
         <div id="metrics" className="max-w-7xl mx-auto px-6 scroll-mt-20">
@@ -233,7 +205,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
         <section 
           id="editorial" 
           ref={editorialRef}
-          className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center scroll-mt-20 pt-16 pb-32"
+          className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center scroll-mt-20 pt-10 pb-20"
         >
           <div className="space-y-8">
             <div 
@@ -243,7 +215,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
               .editorial/abstract
             </div>
             <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight uppercase">
-              {renderFormattedText("A ESSÊNCIA DA *EXPERIÊNCIA*", 'title', theme)}
+              {renderRestagText("A ESSÊNCIA DA *EXPERIÊNCIA*", 'title', theme)}
             </h2>
             <p className="leading-relaxed text-lg italic" style={{ color: theme.colors.textSecondary }}>
               "{restaurant.descriptionLong}"
@@ -284,7 +256,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
         </section>
 
         {/* 3. Technical Menu (Grid) - MOVED UP FOR CONVERSION */}
-        <section id="menu" className="max-w-7xl mx-auto px-6 py-32 space-y-16 scroll-mt-20">
+        <section id="menu" className="max-w-7xl mx-auto px-6 py-20 space-y-12 scroll-mt-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-10">
             <div className="space-y-4">
               <div 
@@ -294,7 +266,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                 .menu/node_registry
               </div>
               <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase">
-                {renderFormattedText("PROTOCOLOS_DE_*SABOR*", 'title', theme)}
+                {renderRestagText("PROTOCOLOS_DE_*SABOR*", 'title', theme)}
               </h2>
             </div>
             <div className="flex gap-4">
@@ -328,12 +300,12 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
         </section>
         
         {/* 3.5 Dedicated Booking Section (New Module) */}
-        <section id="reservations" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
+        <section id="reservations" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-20">
           <BookingSection restaurant={restaurant} onOpenDrawer={() => setIsReserving(true)} />
         </section>
 
         {/* 4. Sticky Scroll Process (Labs Blueprint) */}
-        <div id="process" className="max-w-7xl mx-auto px-6 py-40 scroll-mt-20">
+        <div id="process" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
           <div className="grid lg:grid-cols-2 gap-20 items-start">
             <div className="space-y-8 sticky top-40 h-fit">
               <div 
@@ -343,7 +315,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                 .culinary/engineering
               </div>
               <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
-                {renderFormattedText("THE *GASTRO*\nENGINEERING\nCYCLE", 'title', theme)}
+                {renderRestagText("THE *GASTRO*\nENGINEERING\nCYCLE", 'title', theme)}
               </h2>
               <p className="max-w-md leading-relaxed" style={{ color: theme.colors.textSecondary }}>
                 Nossos nós operacionais seguem protocolos rígidos para garantir a integridade da experiência sensorial. 
@@ -360,7 +332,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
         </div>
 
         {/* 4.5 Operational Registry & Contact */}
-        <section id="contact" className="max-w-7xl mx-auto px-6 py-20 scroll-mt-20">
+        <section id="contact" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-20">
           <div className="grid lg:grid-cols-12 gap-8">
             <div className="lg:col-span-4 space-y-6">
               <div className="p-10 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-3xl space-y-8">
@@ -408,7 +380,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
         </section>
 
         {/* 5. Final CTA / Bento Grid */}
-        <section id="audit" className="max-w-7xl mx-auto px-6 pb-40 scroll-mt-20 pt-16">
+        <section id="audit" className="max-w-7xl mx-auto px-6 pb-12 scroll-mt-20 pt-10">
           <div className="grid md:grid-cols-12 gap-6 h-auto md:h-[500px]">
             <motion.div 
               whileHover={{ y: -5 }}
@@ -421,7 +393,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                 </div>
               </div>
               <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none relative z-10">
-                {renderFormattedText("INITIATE THE\n*EXPERIENCE\nNODE *RESTAG*", 'title', theme)}
+                {renderRestagText("INITIATE THE\n*EXPERIENCE\nNODE *RESTAG*", 'title', theme)}
               </h2>
               <p className="text-gray-400 max-w-md relative z-10">
                 Acesse o núcleo da nossa gastronomia. Garanta seu slot de processamento agora.
@@ -447,7 +419,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                 onMouseEnter={(e) => e.currentTarget.style.borderColor = `${theme.colors.primary}4D`}
                 onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
               >
-                <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderFormattedText("*Notice_Interval*", 'title', theme)}</span>
+                <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderRestagText("*Notice_Interval*", 'title', theme)}</span>
                 <span className="text-4xl font-bold tracking-tighter relative z-10">{restaurant.reservationSettings.notice}</span>
                 <p className="text-[10px] text-gray-100 font-mono mt-2 uppercase relative z-10">Required lead time for prep</p>
                 <div className="absolute bottom-0 right-0 p-4 text-6xl font-black text-white/[0.03] pointer-events-none select-none">
@@ -462,7 +434,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                 onMouseEnter={(e) => e.currentTarget.style.borderColor = `${theme.colors.primary}4D`}
                 onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
               >
-                <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderFormattedText("*Max_Capacity*", 'title', theme)}</span>
+                <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderRestagText("*Max_Capacity*", 'title', theme)}</span>
                 <span className="text-4xl font-bold tracking-tighter relative z-10">{restaurant.reservationSettings.maxPartySize} NODES</span>
                 <p className="text-[10px] text-gray-100 font-mono mt-2 uppercase relative z-10">Maximum simultaneous processing</p>
                 <div className="absolute bottom-0 right-0 p-4 text-6xl font-black text-white/[0.03] pointer-events-none select-none">
@@ -472,10 +444,10 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
             </div>
           </div>
         </section>
-
       </div>
-
-      {/* Reservation Drawer */}
+    </div>
+      
+      {/* Reservation Drawer Overlay */}
       <AnimatePresence>
         {isReserving && (
           <ReservationDrawer 
@@ -484,9 +456,8 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
           />
         )}
       </AnimatePresence>
-    </div>
-  </RestagLayout>
-);
+    </RestagLayout>
+  );
 };
 
 const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP, onOpenDrawer: () => void }) => {
@@ -508,7 +479,7 @@ const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP
             .reservation/sync_module
           </div>
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-none">
-            {renderFormattedText("GARANTA SEU\n**SLOT** DE\nEXPERIÊNCIA", 'title', theme)}
+            {renderRestagText("GARANTA SEU\n**SLOT** DE\nEXPERIÊNCIA", 'title', theme)}
           </h2>
           <p className="text-gray-400 max-w-md leading-relaxed">
             Nossos slots de processamento gastronômico são limitados para garantir a integridade de cada ciclo. 
@@ -584,11 +555,11 @@ const MenuItem = ({ item }: { item: any }) => {
       )}
       <div className="flex justify-between items-start mb-2 relative z-10">
         <h4 className="text-xl font-black text-white group-hover:bg-[var(--hover-color)] group-hover:text-black transition-all px-2 rounded-lg -ml-2 inline-block uppercase tracking-tighter" style={{ '--hover-color': theme.colors.primary } as any}>
-          {renderFormattedText(item.name, 'title', theme)}
+          {renderRestagText(item.name, 'title', theme)}
         </h4>
         <span className="font-mono text-lg" style={{ color: theme.colors.primary }}>{item.price}</span>
       </div>
-      <p className="text-sm leading-relaxed italic max-w-md" style={{ color: theme.colors.textMuted }}>{renderFormattedText(item.desc, 'description', theme)}</p>
+      <p className="text-sm leading-relaxed italic max-w-md" style={{ color: theme.colors.textMuted }}>{renderRestagText(item.desc, 'description', theme)}</p>
     </motion.div>
   );
 };
@@ -718,12 +689,18 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
         className="fixed inset-0 bg-black/80 backdrop-blur-md z-[150]"
       />
       <motion.div 
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
+        initial={{ y: "100%", x: 0 }}
+        animate={{ y: 0, x: 0 }}
+        exit={{ y: "100%", x: 0 }}
+        variants={{
+          desktop: { y: 0, x: 0 },
+          mobile: { y: 0, x: 0 }
+        }}
         transition={{ type: "spring", damping: 30, stiffness: 200 }}
-        className="fixed top-0 right-0 w-full md:w-[500px] h-full bg-[#0a0a0a] border-l border-white/10 z-[200] shadow-2xl overflow-hidden flex flex-col"
+        className="fixed bottom-0 right-0 w-full md:w-[500px] md:top-0 md:h-full h-[92vh] bg-[#0a0a0a] border-t md:border-t-0 md:border-l border-white/10 z-[200] shadow-2xl overflow-hidden flex flex-col rounded-t-[40px] md:rounded-t-none"
       >
+        {/* Mobile Handle */}
+        <div className="md:hidden w-12 h-1.5 bg-white/10 rounded-full mx-auto mt-4 mb-2 shrink-0" />
         {/* Header */}
         <div className="p-8 border-b border-white/5 bg-zinc-950/50 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -732,7 +709,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
             </div>
             <div>
               <h2 className="text-xl font-bold text-white uppercase tracking-tighter">
-                {renderFormattedText("RESERVA_*PROTOCOL*", 'title', theme)}
+                {renderRestagText("RESERVA_*PROTOCOL*", 'title', theme)}
               </h2>
               <p className="text-[10px] font-mono text-gray-500">{restaurant.cardTitle.replace(/\*/g, '').toUpperCase()} // SLOT_CALIBRATION</p>
             </div>
@@ -747,7 +724,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
           <section className="space-y-4">
             <div className="flex justify-between items-end">
               <h3 className="text-[10px] font-mono uppercase tracking-[0.3em]">
-                {renderFormattedText("01. Party_*Size*_Config", 'title', theme)}
+                {renderRestagText("01. Party_*Size*_Config", 'title', theme)}
               </h3>
               <span className="text-[10px] font-mono text-gray-500 uppercase">LIMIT: {restaurant.reservationSettings.maxPartySize} NODES</span>
             </div>
@@ -808,7 +785,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
           {/* Date Selection */}
           <section className="space-y-4">
             <h3 className="text-[10px] font-mono uppercase tracking-[0.3em]">
-              {renderFormattedText("02. Temporal_*Node*_Target", 'title', theme)}
+              {renderRestagText("02. Temporal_*Node*_Target", 'title', theme)}
             </h3>
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
               {dates.map(d => (
@@ -828,7 +805,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
           {/* Time Slots */}
           <section className="space-y-4">
             <h3 className="text-[10px] font-mono uppercase tracking-[0.3em]">
-              {renderFormattedText("03. Time_Slot_*Calibration*", 'title', theme)}
+              {renderRestagText("03. Time_Slot_*Calibration*", 'title', theme)}
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {['19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00'].map(t => (
@@ -847,7 +824,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
           {/* Guest Identity */}
           <section className="space-y-4">
             <h3 className="text-[10px] font-mono uppercase tracking-[0.3em]">
-              {renderFormattedText("04. Guest_*Identity*_Metadata", 'title', theme)}
+              {renderRestagText("04. Guest_*Identity*_Metadata", 'title', theme)}
             </h3>
             <div className="space-y-3">
               <input 
@@ -878,7 +855,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
             </div>
           )}
 
-          <LabInfoCard 
+          <RestagInfoCard 
             title="SYNC_ACTIVE"
             description="Slot calibration synchronized with local restaurant hardware every 30s via Ag47 Nexus."
           />
@@ -935,8 +912,8 @@ const ProcessStep = ({ step, index, total, theme }: { step: any, index: number, 
         <div className="w-12 h-12 rounded-xl flex items-center justify-center text-black font-bold" style={{ backgroundColor: theme.colors.primary }}>
           {step.step}
         </div>
-        <h3 className="text-3xl font-bold tracking-tighter uppercase">{renderFormattedText(step.title, 'title', theme)}</h3>
-        <p className="leading-relaxed italic" style={{ color: theme.colors.textSecondary }}>{renderFormattedText(step.desc, 'description', theme)}</p>
+        <h3 className="text-3xl font-bold tracking-tighter uppercase">{renderRestagText(step.title, 'title', theme)}</h3>
+        <p className="leading-relaxed italic" style={{ color: theme.colors.textSecondary }}>{renderRestagText(step.desc, 'description', theme)}</p>
         <div className="pt-6 border-t border-white/5">
           <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Metadata_Log</p>
           <p className="text-xs mt-2" style={{ color: theme.colors.textMuted }}>{step.detail}</p>

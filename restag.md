@@ -8,23 +8,26 @@ Project RESTAG is a high-end, technical hospitality platform built for the Agên
 - **Geometry**: Sharp corners (0-2px) for technical sections; subtle rounding (12px) for food/dish highlights to maintain appetite appeal.
 - **Motion**: Sticky scroll narratives for restaurant stories, staggered metric counters for "Restaurant Performance", and glassmorphism overlays for the reservation flow.
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture & Monetization
 
-### 1. Portal B2C (Consumer) - `/restag`
-- **Hero**: Immersive search with technical HUD (Coordenadas do usuário, Status do sistema).
-- **Discovery**: Interactive Map (using the Labs Blueprint grid as a base) + Grid of restaurants.
-- **Restaurant Landing Pages**: `/restag/[slug]` using the `ag47-designer-labs-landing-pages` skill.
-- **Reservation System**: A multi-step glassmorphism drawer (`AnimatePresence`).
-- **Gift Cards**: Interactive 3D-feeling cards with glow effects.
+### 1. Business Logic: Modular SaaS
+- **Free Tier**: Immersive LP (`/restag/[slug]`).
+- **Premium Modules**: 
+  - `MENU_DIGITAL`: QR Code + Interactive Menu (21€/mo).
+  - `RESERVATIONS`: Booking Engine + Google Widgets (81€/mo).
+  - `ADS_ORCHESTRATOR`: Managed traffic (included in 350€ Full Pack).
 
-### 2. Dashboard B2B (Merchant) - `/restag/admin`
-- **Stats**: Real-time performance metrics (Revenue, Guest Visits, Visit Rate).
-- **Table Management**: Visual grid representing the restaurant floor with real-time status (Labs style).
-- **Marketing**: Automated campaign controls with monospace technical labels.
+### 2. Portal B2C (Consumer) - `/restag`
+- **Discovery**: WebApp focused on gastro-lovers, providing certified node exploration.
+- **Future Mobile**: Native Android/iOS apps for unified hospitality access.
 
-### 3. Data Strategy
+### 3. Dashboard B2B (Merchant) - `/restag/merchant`
+- **Module Control**: Feature flags in the UI based on the active subscription plan.
+- **Onboarding**: Direct path to activate premium modules.
+
+### 4. Data Strategy
 - **Source of Truth**: `data/restaurants.ts` (Typed as `RestaurantLP`).
-- **State Management**: `RestagContext` for session handling (Current Reservation, Cart, User Preferences).
+- **Subscription State**: Each restaurant node contains a `plan` type defining active modules.
 
 ---
 

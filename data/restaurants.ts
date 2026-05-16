@@ -32,6 +32,7 @@ export interface RestaurantLP extends Omit<ServiceLP, 'slug'> {
   videoWatermark?: string;
   brandingColor?: string;
   effectsEnabled?: boolean;
+  plan: 'FREE' | 'MENU_CORE' | 'RESERVATION_PRO' | 'FULL_STACK_ADS';
 }
 
 export const restaurants: RestaurantLP[] = [
@@ -129,7 +130,8 @@ export const restaurants: RestaurantLP[] = [
     features: ['Grelha a Carvão', 'Family-Friendly', 'Ambiente Moderno', 'Garrafeira Premium', 'Estacionamento Fácil'],
     video: "/restag/videos/bipolar-explanada.mp4",
     videoWatermark: "Bipolar Explanada",
-    brandingColor: "#D1FF00"
+    brandingColor: "#D1FF00",
+    plan: 'RESERVATION_PRO'
   },
   {
     slug: 'carbon-core',
@@ -198,6 +200,7 @@ export const restaurants: RestaurantLP[] = [
       "https://images.unsplash.com/photo-1550966841-3ee7adac1668?q=80&w=1000&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1635349911418-46d822f0801c?q=80&w=1000&auto=format&fit=crop"
     ],
-    features: ['Molecular Lab', 'Thermal Sensors', 'Experimental Dining', 'Air-Locked Entrance', 'Restricted Access']
+    features: ['Molecular Lab', 'Thermal Sensors', 'Experimental Dining', 'Air-Locked Entrance', 'Restricted Access'],
+    plan: 'FULL_STACK_ADS'
   }
 ]

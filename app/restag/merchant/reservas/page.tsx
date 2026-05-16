@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import { CalendarCheck, ChevronLeft, Check, X, Clock, Users as UsersIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
-import { supabase } from '@/lib/supabase';
-import { Reservation } from '@/types/restag';
+import { getReservations, updateReservationStatus } from '../../lib/service';
+import { Reservation } from '../../types';
 
 export default function ReservasPage() {
   const { theme } = useTheme();
@@ -16,14 +16,8 @@ export default function ReservasPage() {
   const fetchReservations = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('restag_reservations')
-        .select('*')
-        .order('reservation_date', { ascending: true })
-        .order('reservation_time', { ascending: true });
-      
-      if (data) setReservations(data);
-      if (error) throw error;
+      const data = await getReservations();
+      if (data) setReservations(data as Reservation[]);
     } catch (err) {
       console.error('Error fetching reservations:', err);
     } finally {
@@ -37,12 +31,7 @@ export default function ReservasPage() {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('restag_reservations')
-        .update({ status: newStatus })
-        .eq('id', id);
-      
-      if (error) throw error;
+      await updateReservationStatus(id, newStatus as any);
       
       setReservations(prev => prev.map(res => res.id === id ? { ...res, status: newStatus as any } : res));
     } catch (err) {
@@ -51,8 +40,8 @@ export default function ReservasPage() {
   };
 
   return (
-    <div className="relative pb-24 pt-0">
-      <div className="max-w-[1600px] mx-auto space-y-24 md:space-y-32 px-6">
+    <div className="relative pb-24 pt-12 md:pt-16">
+      <div className="max-w-[1600px] mx-auto space-y-12 md:space-y-16 px-4 md:px-12">
         
         {/* Header */}
         <div className="flex items-center justify-between">

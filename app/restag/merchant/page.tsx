@@ -11,9 +11,12 @@ import {
   Settings,
   Loader2
 } from 'lucide-react';
-import { LabHero, LabCallCard, LabInfoCard } from '@/app/labs/components';
 import { useTheme } from '@/context/ThemeContext';
-import { getMerchantStats } from '@/lib/restag/service';
+import { getMerchantStats } from '../lib/service';
+import { HeroRestag } from '../components/HeroRestag';
+import { RestagCallCard, RestagInfoCard } from '../components/shared/RestagCards';
+import { SubscriptionPanel } from '../components/merchant/SubscriptionPanel';
+import { restaurants, RestaurantLP } from '@/data/restaurants';
 
 export default function MerchantDashboard() {
   const { theme } = useTheme();
@@ -22,6 +25,7 @@ export default function MerchantDashboard() {
     pendingReservations: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [currentRestaurant, setCurrentRestaurant] = useState<RestaurantLP | undefined>(undefined);
 
   // Mock ID para demonstração - Futuramente virá do Auth/Profile
   const MOCK_RESTAURANT_ID = '00000000-0000-0000-0000-000000000000';
@@ -29,7 +33,10 @@ export default function MerchantDashboard() {
   useEffect(() => {
     async function loadStats() {
       try {
-        // Tentamos carregar, se falhar (ID inválido), mantemos zeros
+        // Simulando carregamento do restaurante logado (Bipolar para teste)
+        const rest = restaurants.find(r => r.slug === 'bipolar');
+        setCurrentRestaurant(rest);
+
         const data = await getMerchantStats(MOCK_RESTAURANT_ID).catch(() => ({ totalReservations: 0, pendingReservations: 0 }));
         setStats(data);
       } catch (error) {
@@ -41,47 +48,70 @@ export default function MerchantDashboard() {
     loadStats();
   }, []);
 
+  const isModuleActive = (module: 'MENU' | 'RESERVATIONS' | 'ADS') => {
+    if (!currentRestaurant) return false;
+    const p = currentRestaurant.plan;
+    if (p === 'FULL_STACK_ADS') return true;
+    if (module === 'MENU' && p === 'MENU_CORE') return true;
+    if (module === 'RESERVATIONS' && p === 'RESERVATION_PRO') return true;
+    return false;
+  };
+
   return (
-    <div className="relative pb-24">
-      <div className="max-w-[1600px] mx-auto space-y-24 md:space-y-32">
+    <div className="relative pb-12">
+      <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-10 px-4 md:px-12">
         
         {/* 1. Dashboard Hero */}
-        <LabHero 
+        <HeroRestag 
           overline="./restag/merchant/dashboard"
           overlineIcon={Store}
           title="Merchant"
           highlight="Terminal"
           description="Bem-vindo ao **Painel de Controle** do seu comércio. Faça a gestão de **reservas**, atualize o seu **menu** em tempo real e adicione novos gestores à sua equipe."
           statusTags={[
-            { label: loading ? "Connecting..." : "Sync Active", color: "lime", pulse: true },
+            { label: loading ? "Connecting..." : "Sync Active", color: "lime" },
             { label: "Merchant Node", color: "blue" }
           ]}
+          isDashboard
         />
 
-        {/* 2. Core Modules */}
+        {/* 2. Subscription Status */}
+        {currentRestaurant && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <SubscriptionPanel plan={currentRestaurant.plan} />
+          </motion.section>
+        )}
+
+        {/* 3. Core Modules */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          <LabCallCard 
+          <RestagCallCard 
             title="Gestão de Reservas"
-            description="Aprove, rejeite e acompanhe o fluxo de clientes no seu salão."
-            path="/restag/merchant/reservas"
+            description={isModuleActive('RESERVATIONS') ? "Aprove, rejeite e acompanhe o fluxo de clientes no seu salão." : "Módulo bloqueado. Faça o upgrade para ativar o motor de reservas."}
+            path={isModuleActive('RESERVATIONS') ? "/restag/merchant/reservas" : "#"}
             icon={<CalendarCheck className="w-8 h-8" />}
-            status={`${stats.pendingReservations} PENDENTES`}
+            status={isModuleActive('RESERVATIONS') ? `${stats.pendingReservations} PENDENTES` : "BLOQUEADO"}
+            opacity={isModuleActive('RESERVATIONS') ? 1 : 0.5}
           />
 
-          <LabCallCard 
+          <RestagCallCard 
             title="Edição de Menu"
-            description="Atualize preços, adicione pratos ou altere descrições em tempo real."
-            path="/restag/merchant/menu"
+            description={isModuleActive('MENU') ? "Atualize preços, adicione pratos ou altere descrições em tempo real." : "Módulo bloqueado. Faça o upgrade para ativar o menu digital."}
+            path={isModuleActive('MENU') ? "/restag/merchant/menu" : "#"}
             icon={<UtensilsCrossed className="w-8 h-8" />}
-            status="ACTIVE"
+            status={isModuleActive('MENU') ? "ACTIVE" : "BLOQUEADO"}
+            opacity={isModuleActive('MENU') ? 1 : 0.5}
           />
 
-          <LabCallCard 
+          <RestagCallCard 
             title="Equipe & Acessos"
             description="Convide novos gestores ou adicione permissões de concierge à Ag47."
             path="/restag/merchant/equipa"
@@ -89,7 +119,7 @@ export default function MerchantDashboard() {
             status="1 MANAGER"
           />
 
-          <LabCallCard 
+          <RestagCallCard 
             title="Configurações"
             description="Ajuste limites de pessoas, intervalos e horários de reserva."
             path="/restag/merchant/configuracoes"
@@ -138,7 +168,7 @@ export default function MerchantDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <LabInfoCard 
+          <RestagInfoCard 
             title="Configurações e Suporte"
             description="Precisa de ajuda ou deseja ajustar as configurações da sua assinatura Restag? Acesse as definições ou chame o suporte concierge da Agência 47."
             icon={<Settings className="w-6 h-6" />}

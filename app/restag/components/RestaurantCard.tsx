@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 import { ChefHat, MapPin, Clock, Star, Zap, ChevronRight, Activity, Thermometer, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
-import { renderFormattedText } from '@/app/labs/components/utils';
+import { renderRestagText } from '../lib/utils';
 
 interface RestaurantCardProps {
   restaurant: any;
@@ -67,7 +67,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, isAc
                 .restag/node/{restaurant.slug}
               </div>
               <h3 className="text-2xl font-bold text-white tracking-tighter leading-tight transition-all duration-500 inline-block group-hover:bg-[var(--hover-color)] group-hover:text-black px-2 rounded-lg -ml-2" style={{ '--hover-color': theme.colors.primary } as any}>
-                {renderFormattedText(restaurant.cardTitle, 'title', theme)}
+                {renderRestagText(restaurant.cardTitle, 'title', theme)}
               </h3>
               <p className="text-xs text-gray-400 font-mono flex items-center gap-2">
                 <MapPin className="w-3 h-3" style={{ color: theme.colors.primary }} />
@@ -93,7 +93,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, isAc
           </div>
 
           <p className="text-sm text-gray-500 line-clamp-2 mb-4">
-            {renderFormattedText(restaurant.metaDescription, 'description', theme)}
+            {renderRestagText(restaurant.metaDescription, 'description', theme)}
           </p>
 
           {/* Technical Metadata Bar */}
