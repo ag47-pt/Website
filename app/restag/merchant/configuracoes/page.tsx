@@ -153,8 +153,8 @@ export default function MerchantSettings() {
   }
 
   return (
-    <div className="relative pb-24 pt-0 min-h-screen bg-[#050505] text-white">
-      <div className="max-w-7xl mx-auto space-y-16 px-6">
+    <div className="relative pb-24 min-h-screen bg-[#050505] text-white">
+      <div className="max-w-[1600px] mx-auto space-y-16 px-6">
         
         {/* Navigation */}
         <Link 
@@ -209,7 +209,7 @@ export default function MerchantSettings() {
 
                   <div className="grid gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-2" style={{ color: theme.colors.textVoice }}>
                         <Type className="w-3 h-3" /> Restaurant_Name
                       </label>
                       <input 
@@ -221,7 +221,7 @@ export default function MerchantSettings() {
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-2" style={{ color: theme.colors.textVoice }}>
                         <Globe className="w-3 h-3" /> Geo_Location_Address
                       </label>
                       <input 
@@ -233,7 +233,7 @@ export default function MerchantSettings() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-2" style={{ color: theme.colors.textVoice }}>
                         <Activity className="w-3 h-3" /> Branding_Hex_Color
                       </label>
                       <div className="flex gap-4 items-center">
@@ -270,7 +270,7 @@ export default function MerchantSettings() {
 
                   <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                      <label className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-gray-500">
+                      <label className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>
                         <Users className="w-3 h-3" /> Max_Party_Size
                       </label>
                       <div className="flex items-center gap-4 p-4 bg-black/40 border border-white/5 rounded-2xl">
@@ -281,7 +281,7 @@ export default function MerchantSettings() {
                     </div>
 
                     <div className="space-y-4">
-                      <label className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-gray-500">
+                      <label className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>
                         <Clock className="w-3 h-3" /> Time_Intervals
                       </label>
                       <select 
@@ -314,7 +314,7 @@ export default function MerchantSettings() {
                   <div className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Hero_Title</label>
+                        <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Hero_Title</label>
                         <input 
                           type="text" 
                           value={formData.meta.heroTitle} 
@@ -323,7 +323,7 @@ export default function MerchantSettings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Hero_Highlight_Tag</label>
+                        <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Hero_Highlight_Tag</label>
                         <input 
                           type="text" 
                           value={formData.meta.tag} 
@@ -335,7 +335,7 @@ export default function MerchantSettings() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Hero_Subtitle</label>
+                      <label className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Hero_Subtitle</label>
                       <textarea 
                         value={formData.meta.heroSubtitle} 
                         onChange={(e) => updateMeta('heroSubtitle', e.target.value)}
@@ -344,7 +344,7 @@ export default function MerchantSettings() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-2" style={{ color: theme.colors.textVoice }}>
                         <ImageIcon className="w-3 h-3" /> Cinematic_Video_URL
                       </label>
                       <input 
@@ -393,7 +393,7 @@ export default function MerchantSettings() {
             />
             
             <div className="p-8 bg-zinc-950 border border-white/10 rounded-3xl space-y-4">
-              <h4 className="text-[10px] font-mono uppercase tracking-widest text-gray-500 flex items-center gap-2">
+              <h4 className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-2" style={{ color: theme.colors.textVoice }}>
                 <Layout className="w-3 h-3" /> Preview_Status
               </h4>
               <div className="aspect-video relative rounded-xl overflow-hidden border border-white/5 bg-black">

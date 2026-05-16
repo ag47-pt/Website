@@ -76,6 +76,7 @@ interface LabHeroProps {
   onImageClick?: () => void;
   variant?: 'full' | 'medium' | 'mini'; // New variant system
   theme?: any;
+  effectsEnabled?: boolean;
 }
 
 export const LabHero = ({ 
@@ -93,7 +94,8 @@ export const LabHero = ({
   watermark,
   onImageClick,
   variant = 'full',
-  theme: customTheme
+  theme: customTheme,
+  effectsEnabled = true
 }: LabHeroProps) => {
   const { theme: globalTheme } = useTheme();
   const theme = customTheme || globalTheme;
@@ -104,10 +106,9 @@ export const LabHero = ({
     offset: ["start start", "end end"]
   });
 
-  // Animations (mainly for full/media with media)
-  const imageRotate = useTransform(scrollYProgress, [0, 1], [0, 45]);
-  const textOpacity = useTransform(scrollYProgress, [0.5, 0.8], [1, 0]);
-  const textY = useTransform(scrollYProgress, [0.5, 0.8], [0, -80]);
+  // Animations (mainly for full/media with media) - Respecting effectsEnabled
+  const mediaScale = useTransform(scrollYProgress, [0, 1], effectsEnabled ? [1, 1.15] : [1, 1]);
+  const watermarkOpacity = useTransform(scrollYProgress, [0, 1], effectsEnabled ? [0.6, 1] : [1, 1]);
 
   const hasMedia = !!(image || video || mosaicImages);
 
@@ -115,7 +116,6 @@ export const LabHero = ({
   
   const renderTextContent = (isCentered = false) => (
     <motion.div 
-      style={hasMedia ? { opacity: textOpacity, y: textY } : {}}
       className={`space-y-6 ${isCentered ? 'text-center flex flex-col items-center' : 'text-left'}`}
     >
       <div className="flex items-center gap-2 font-mono text-sm tracking-[0.2em]" style={{ color: theme.colors.primary }}>
@@ -123,10 +123,10 @@ export const LabHero = ({
         <span>{overline}</span>
       </div>
       
-      <h1 className={`${variant === 'mini' ? 'text-3xl md:text-5xl' : 'text-4xl md:text-7xl'} font-bold tracking-tighter text-white leading-tight`}>
+      <h1 className={`${variant === 'mini' ? 'text-2xl md:text-4xl' : 'text-3xl md:text-5xl lg:text-6xl'} font-black tracking-tighter text-white leading-tight uppercase`}>
         {renderFormattedText(title, 'title', theme)}
         {highlight && (
-          <span className="px-3 py-1 rounded-lg ml-3 inline-block" style={{ backgroundColor: theme.colors.primary, color: '#000' }}>
+          <span className="px-3 py-1 rounded-lg md:ml-3 mt-3 md:mt-0 inline-block text-xl md:text-3xl lg:text-4xl" style={{ backgroundColor: theme.colors.primary, color: '#000' }}>
             {highlight}
           </span>
         )}
@@ -172,7 +172,7 @@ export const LabHero = ({
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1 }}
         style={{ 
-          rotate: imageRotate
+          scale: mediaScale
         }}
         className="relative aspect-[4/3] max-w-[500px] w-full lg:ml-auto rounded-[40px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] group z-20 cursor-pointer"
       >
@@ -193,10 +193,13 @@ export const LabHero = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 z-10" />
         
         {watermark && (
-          <div className="absolute bottom-8 right-8 z-30 pointer-events-none text-right">
+          <motion.div 
+            style={{ opacity: watermarkOpacity }}
+            className="absolute bottom-8 right-8 z-30 pointer-events-none text-right"
+          >
             <div className="text-[8px] font-mono uppercase tracking-[0.4em] text-white/40 mb-1">Authenticated_Node</div>
             <div className="text-sm font-black text-white/60 tracking-widest uppercase">{watermark}</div>
-          </div>
+          </motion.div>
         )}
         
         <div className="absolute top-0 right-0 p-6">
@@ -247,9 +250,9 @@ export const LabHero = ({
 
   // Default Full Variant
   return (
-    <div ref={sectionRef} className={`${hasMedia ? 'lg:min-h-[130vh]' : 'min-h-0'} relative`}>
+    <div ref={sectionRef} className={`${hasMedia ? 'lg:min-h-[110vh]' : 'min-h-0'} relative`}>
       <div className={`${hasMedia ? 'lg:sticky lg:top-0 lg:h-screen flex items-start lg:pt-0' : 'relative'} w-full overflow-hidden`}>
-        <section className={`w-full max-w-7xl mx-auto px-6 ${hasMedia ? 'grid lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-16 items-center pt-6 lg:pt-0' : 'space-y-6'}`}>
+        <section className={`w-full max-w-7xl mx-auto px-6 ${hasMedia ? 'grid lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-16 items-center pt-12 lg:pt-0 pb-12 lg:pb-0' : 'space-y-6 pt-12'}`}>
           {renderTextContent(false)}
           {hasMedia && renderMedia()}
         </section>

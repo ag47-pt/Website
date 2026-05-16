@@ -42,8 +42,8 @@ export default function MerchantDashboard() {
   }, []);
 
   return (
-    <div className="relative pb-24 pt-0">
-      <div className="max-w-7xl mx-auto space-y-24 md:space-y-32">
+    <div className="relative pb-24">
+      <div className="max-w-[1600px] mx-auto space-y-24 md:space-y-32">
         
         {/* 1. Dashboard Hero */}
         <LabHero 
@@ -106,7 +106,7 @@ export default function MerchantDashboard() {
         >
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="font-mono text-[10px] uppercase tracking-[0.4em] text-gray-500 mb-1">Telemetry</h3>
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.4em] mb-1" style={{ color: theme.colors.textVoice }}>Telemetry</h3>
               <div className="text-2xl font-bold text-white tracking-tight uppercase">
                 Visão <span style={{ color: theme.colors.primary }}>Geral</span>
               </div>
@@ -115,16 +115,16 @@ export default function MerchantDashboard() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-             <div className="p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mb-2">Reservas Totais</p>
+             <div className="p-6 md:p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+                <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: theme.colors.textVoice }}>Reservas Totais</p>
                 <div className="text-4xl font-black text-white">{stats.totalReservations}</div>
              </div>
-             <div className="p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mb-2">Visualizações no App</p>
+             <div className="p-6 md:p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+                <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: theme.colors.textVoice }}>Visualizações no App</p>
                 <div className="text-4xl font-black text-white">0</div>
              </div>
-             <div className="p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mb-2">Avaliação Média</p>
+             <div className="p-6 md:p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+                <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: theme.colors.textVoice }}>Avaliação Média</p>
                 <div className="text-4xl font-black text-white flex items-end gap-2">
                   0.0 <span className="text-sm font-normal text-gray-500 mb-1">/ 5.0</span>
                 </div>

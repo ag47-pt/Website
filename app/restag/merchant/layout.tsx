@@ -11,8 +11,11 @@ import {
   LogOut,
   Settings,
   X,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,8 +25,23 @@ export default function MerchantLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme } = useTheme();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
+  const [impersonateData, setImpersonateData] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const data = localStorage.getItem('restag_impersonate');
+    if (data) {
+      setImpersonateData(JSON.parse(data));
+    }
+  }, []);
+
+  const stopImpersonation = () => {
+    localStorage.removeItem('restag_impersonate');
+    setImpersonateData(null);
+    router.push('/restag/admin/restaurantes');
+  };
 
   const navItems = [
     { name: 'Dashboard', path: '/restag/merchant', icon: Store },
@@ -110,7 +128,7 @@ export default function MerchantLayout({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 bottom-0 w-72 bg-black/90 backdrop-blur-2xl border-r border-white/10 z-[80] md:hidden flex flex-col justify-between"
+              className="fixed top-[73px] left-0 bottom-0 w-72 bg-black/90 backdrop-blur-2xl border-r border-white/10 z-[80] md:hidden flex flex-col justify-between h-[calc(100vh-73px)]"
             >
               <div className="absolute top-6 right-6">
                 <button 
@@ -133,8 +151,31 @@ export default function MerchantLayout({
 
       {/* Main Content */}
       <main className="flex-1 w-full">
+        {/* Impersonation Banner */}
+        <AnimatePresence>
+          {impersonateData && (
+            <motion.div 
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              className="bg-blue-600 text-white px-6 py-2 flex items-center justify-between z-50 sticky top-[73px] border-b border-blue-400/30"
+            >
+              <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
+                <ShieldAlert className="w-4 h-4" />
+                <span>Modo Concierge Ativo: Atuando como <span className="underline decoration-white/40">{impersonateData.name}</span></span>
+              </div>
+              <button 
+                onClick={stopImpersonation}
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-[10px] font-black transition-all border border-white/20"
+              >
+                FINALIZAR SESSÃO <ArrowRight className="w-3 h-3" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Adiciona um padding e ajusta para que o conteúdo preencha o espaço da direita */}
-        <div className="max-w-7xl mx-auto p-4 md:px-12 md:pb-12 md:pt-0">
+        <div className="max-w-[1600px] mx-auto p-4 md:px-12 md:pb-12 md:pt-14">
            {children}
         </div>
       </main>

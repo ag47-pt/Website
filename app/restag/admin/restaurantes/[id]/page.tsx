@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Save, Store, Palette, ShieldCheck, Globe } from 'lucide-react';
+import { ChevronLeft, Save, Store, Palette, ShieldCheck, Globe, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getRestaurantById, updateRestaurant, createRestaurant } from '@/lib/restag/service';
 import { Restaurant, NodeStatus } from '@/types/restag';
 import { useTheme } from '@/context/ThemeContext';
+import { Toast, ToastType } from '@/app/restag/components/Toast';
 
 export default function EditRestaurantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
@@ -39,6 +40,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
       metaDescription: '',
       features: [],
       gallery: [],
+      effectsEnabled: true,
       reservationSettings: {
         maxPartySize: 8,
         intervals: 30,
@@ -50,6 +52,17 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
+
+  const showToast = (message: string, type: ToastType) => {
+    setToast({ message, type, isVisible: true });
+  };
 
   useEffect(() => {
     if (isNew) return;
@@ -73,27 +86,27 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
     setSaving(true);
     try {
-      const payload = {
-        name: restaurant.name,
-        slug: restaurant.slug,
-        status: restaurant.status,
-        branding_color: restaurant.branding_color,
-        address: restaurant.address,
-        description: restaurant.description,
-        city: restaurant.city,
-        meta_data: restaurant.meta_data
+      // Garantir que temos um owner_id para novos registros (dummy admin id se necessário)
+      const { id: restId, ...payloadWithoutId } = restaurant;
+      const finalPayload = {
+        ...(isNew ? payloadWithoutId : restaurant),
+        owner_id: restaurant.owner_id || '00000000-0000-0000-0000-000000000000', // Fallback se estiver vazio
+        updated_at: new Date().toISOString()
       };
 
       if (isNew) {
-        await createRestaurant(payload);
+        await createRestaurant(finalPayload);
+        showToast("Novo nó criado com sucesso!", "success");
+        // Pequeno delay para o usuário ver o sucesso antes de redirecionar
+        setTimeout(() => router.push('/restag/admin/restaurantes'), 2000);
       } else {
-        await updateRestaurant(id, payload);
+        await updateRestaurant(id, finalPayload);
+        showToast("Alterações salvas no banco de dados.", "success");
       }
-      
-      router.push('/restag/admin/restaurantes');
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao salvar alterações.");
+    } catch (err: any) {
+      console.error("Save Error Details:", err);
+      const errorMessage = err.message || "Erro desconhecido ao salvar.";
+      showToast(`ERRO_SYNC: ${errorMessage}`, "error");
     } finally {
       setSaving(false);
     }
@@ -142,7 +155,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
   );
 
   return (
-    <div className="relative pb-24 max-w-4xl mx-auto">
+    <div className="relative pb-24 max-w-7xl mx-auto px-4 md:px-0">
       {/* Header */}
       <div className="mb-12">
         <Link href="/restag/admin/restaurantes" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-4 font-mono uppercase tracking-widest">
@@ -163,7 +176,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+          className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
         >
           <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
             <Store className="w-5 h-5 text-red-500" />
@@ -172,7 +185,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Nome do Comércio</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Nome do Comércio</label>
               <input 
                 type="text" 
                 value={restaurant.name}
@@ -182,7 +195,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Slug (URL Path)</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Slug (URL Path)</label>
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input 
@@ -198,7 +211,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Endereço Principal</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Endereço Principal</label>
               <input 
                 type="text" 
                 value={restaurant.address || ''}
@@ -208,7 +221,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Cidade</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Cidade</label>
               <input 
                 type="text" 
                 value={restaurant.city || ''}
@@ -225,7 +238,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+          className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
         >
           <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
             <Palette className="w-5 h-5 text-purple-500" />
@@ -234,7 +247,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Hero Label</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Hero Label</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.heroLabel || ''}
@@ -244,7 +257,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Etiqueta/Tag</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Etiqueta/Tag</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.tag || ''}
@@ -256,7 +269,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Hero Title (Markdown Support)</label>
+            <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Hero Title (Markdown Support)</label>
             <input 
               type="text" 
               value={restaurant.meta_data?.heroTitle || ''}
@@ -267,7 +280,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Hero Subtitle</label>
+            <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Hero Subtitle</label>
             <textarea 
               value={restaurant.meta_data?.heroSubtitle || ''}
               onChange={e => updateMeta('heroSubtitle', e.target.value)}
@@ -278,7 +291,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Descrição Longa (Storytelling)</label>
+            <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Descrição Longa (Storytelling)</label>
             <textarea 
               value={restaurant.meta_data?.descriptionLong || ''}
               onChange={e => updateMeta('descriptionLong', e.target.value)}
@@ -290,7 +303,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Texto do CTA</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Texto do CTA</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.heroCta || ''}
@@ -300,7 +313,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Telefone de Contato</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Telefone de Contato</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.phone || ''}
@@ -317,7 +330,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+          className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
         >
           <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
             <ShieldCheck className="w-5 h-5 text-emerald-500" />
@@ -326,7 +339,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
           <div className="grid md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Cozinha</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Cozinha</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.cuisine || ''}
@@ -336,7 +349,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Preço Médio</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Preço Médio</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.priceRange || ''}
@@ -346,7 +359,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Rating (0-5)</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Rating (0-5)</label>
               <input 
                 type="number" 
                 step="0.1"
@@ -360,7 +373,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Meta Description (SEO)</label>
+            <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Meta Description (SEO)</label>
             <textarea 
               value={restaurant.meta_data?.metaDescription || ''}
               onChange={e => updateMeta('metaDescription', e.target.value)}
@@ -377,7 +390,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+            className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
           >
             <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
               <ShieldCheck className="w-5 h-5 text-green-500" />
@@ -391,7 +404,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                   className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
                     restaurant.status === status 
                       ? 'bg-white/10 border-white/30 text-white' 
-                      : 'bg-transparent border-white/5 text-gray-500 hover:bg-white/5'
+                      : 'bg-transparent border-white/5 text-gray-400 hover:bg-white/5'
                   }`}
                 >
                   <span className="font-mono uppercase tracking-widest text-sm">{status}</span>
@@ -412,7 +425,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+            className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
           >
             <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
               <Palette className="w-5 h-5 text-blue-500" />
@@ -420,7 +433,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Cor de Destaque (Hex)</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Cor de Destaque (Hex)</label>
               <div className="flex gap-4">
                 <input 
                   type="color" 
@@ -439,7 +452,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Vídeo Background (URL)</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Vídeo Background (URL)</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.video || ''}
@@ -449,15 +462,23 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Marca d'água do Vídeo</label>
-              <input 
-                type="text" 
-                value={restaurant.meta_data?.videoWatermark || ''}
-                onChange={e => updateMeta('videoWatermark', e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors"
-                placeholder="Ex: Bipolar Explanada"
-              />
+            <div className="space-y-4 pt-4 border-t border-white/10">
+              <div className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5">
+                <div className="space-y-1">
+                  <div className="text-xs font-mono uppercase tracking-widest text-white">Efeitos de Movimento</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-tighter">Ativar parallax e scroll animations</div>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    const current = restaurant.meta_data?.effectsEnabled !== false;
+                    updateMeta('effectsEnabled', !current);
+                  }}
+                  className={`w-12 h-6 rounded-full relative transition-colors ${restaurant.meta_data?.effectsEnabled !== false ? 'bg-blue-500' : 'bg-gray-700'}`}
+                >
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${restaurant.meta_data?.effectsEnabled !== false ? 'left-7' : 'left-1'}`} />
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -467,7 +488,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+          className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
         >
           <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
             <ShieldCheck className="w-5 h-5 text-orange-500" />
@@ -476,7 +497,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
           <div className="grid md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Máx. Pessoas/Mesa</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Máx. Pessoas/Mesa</label>
               <input 
                 type="number" 
                 value={restaurant.meta_data?.reservationSettings?.maxPartySize || 8}
@@ -485,7 +506,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Intervalo (Minutos)</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Intervalo (Minutos)</label>
               <select 
                 value={restaurant.meta_data?.reservationSettings?.intervals || 30}
                 onChange={e => updateResSettings('intervals', parseInt(e.target.value))}
@@ -498,7 +519,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Aviso Prévio Mín.</label>
+              <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Aviso Prévio Mín.</label>
               <input 
                 type="text" 
                 value={restaurant.meta_data?.reservationSettings?.notice || '1 hour'}
@@ -515,7 +536,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-md space-y-6"
+          className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
         >
           <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
             <ShieldCheck className="w-5 h-5 text-yellow-500" />
@@ -523,7 +544,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Destaques / Features (Um por linha)</label>
+            <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Destaques / Features (Um por linha)</label>
             <textarea 
               value={restaurant.meta_data?.features?.join('\n') || ''}
               onChange={e => updateMeta('features', e.target.value.split('\n').filter(l => l.trim()))}
@@ -534,13 +555,81 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-mono text-gray-500 uppercase tracking-widest">Galeria de Imagens (URLs - Uma por linha)</label>
+            <label className="text-xs font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Galeria de Imagens (URLs - Uma por linha)</label>
             <textarea 
               value={restaurant.meta_data?.gallery?.join('\n') || ''}
               onChange={e => updateMeta('gallery', e.target.value.split('\n').filter(l => l.trim()))}
               rows={4}
               className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-yellow-500/50 transition-colors font-mono text-sm"
               placeholder="/restag/foto1.png&#10;https://..."
+            />
+          </div>
+        </motion.div>
+
+        {/* Gastro Engineering, Metrics & Menu (JSON) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-md space-y-6"
+        >
+          <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
+            <Zap className="w-5 h-5 text-blue-400" />
+            <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Conteúdo Dinâmico (JSON)</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-gray-400">Processo / Engenharia (JSON Array)</label>
+              <textarea 
+                defaultValue={JSON.stringify(restaurant.meta_data?.process || [], null, 2)}
+                onBlur={e => {
+                  try {
+                    const parsed = JSON.parse(e.target.value);
+                    updateMeta('process', parsed);
+                  } catch (err) {
+                    alert("Erro no formato JSON do Processo.");
+                  }
+                }}
+                rows={8}
+                className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-[10px]"
+                placeholder="[ { 'step': '01', 'title': '...', 'desc': '...' } ]"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-gray-400">Métricas / Resultados (JSON Array)</label>
+              <textarea 
+                defaultValue={JSON.stringify(restaurant.meta_data?.results || [], null, 2)}
+                onBlur={e => {
+                  try {
+                    const parsed = JSON.parse(e.target.value);
+                    updateMeta('results', parsed);
+                  } catch (err) {
+                    alert("Erro no formato JSON das Métricas.");
+                  }
+                }}
+                rows={8}
+                className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-[10px]"
+                placeholder="[ { 'label': 'SATISFAÇÃO', 'value': '98%', 'desc': '...' } ]"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-4">
+            <label className="text-xs font-mono uppercase tracking-widest text-gray-400">Cardápio / Menu (JSON Array)</label>
+            <textarea 
+              defaultValue={JSON.stringify(restaurant.meta_data?.menu || [], null, 2)}
+              onBlur={e => {
+                try {
+                  const parsed = JSON.parse(e.target.value);
+                  updateMeta('menu', parsed);
+                } catch (err) {
+                  alert("Erro no formato JSON do Menu.");
+                }
+              }}
+              rows={10}
+              className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-mono text-[10px]"
+              placeholder="[ { 'title': '...', 'description': '...', 'price': '...' } ]"
             />
           </div>
         </motion.div>
@@ -568,6 +657,14 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
           </button>
         </motion.div>
       </form>
+
+      {/* Feedback Toast */}
+      <Toast 
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
+      />
     </div>
   );
 }

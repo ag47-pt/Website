@@ -83,7 +83,7 @@ export const RestagLayout: React.FC<RestagLayoutProps> = ({ children, activeView
         <motion.div 
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="flex items-center gap-2 p-1.5 bg-black/80 backdrop-blur-3xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+          className="flex items-center gap-1.5 md:gap-2 p-1 md:p-1.5 bg-black/80 backdrop-blur-3xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
         >
           {currentNavItems.map((item) => (
             <RoundHUDIcon 
@@ -128,14 +128,14 @@ const RoundHUDIcon = ({ icon: Icon, tooltip, isActive = false, onClick }: any) =
         whileHover={{ scale: 1.1, y: -2 }}
         whileTap={{ scale: 0.9 }}
         onClick={onClick}
-        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 relative ${
+        className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-500 relative ${
           isActive 
             ? 'text-black z-10' 
             : 'text-gray-400 hover:text-white bg-white/5 border border-white/5 hover:border-white/20'
         }`}
         style={isActive ? { backgroundColor: theme.colors.primary } : {}}
       >
-        <Icon className={`w-5 h-5 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+        <Icon className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
         
         {/* Active Glow */}
         {isActive && (

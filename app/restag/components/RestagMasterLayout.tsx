@@ -69,7 +69,7 @@ export default function RestagMasterLayout({
       <RestagNavbar />
 
       {/* Main Content Area */}
-      <main className="pt-32 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+      <main className={`${pathname.startsWith('/restag/admin') || pathname.startsWith('/restag/merchant') ? 'pt-[73px]' : 'pt-20 md:pt-32 pb-20 px-4 sm:px-6 max-w-7xl mx-auto'}`}>
         {children}
       </main>
 

@@ -4,18 +4,24 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { RestaurantLP } from '@/data/restaurants';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 function mapDbToLP(dbRestaurant: any): RestaurantLP {
   const meta = dbRestaurant.meta_data || {};
+  const gallery = meta.gallery || [];
+  
   return {
     slug: dbRestaurant.slug,
     tag: meta.tag || '',
     cardTitle: meta.cardTitle || dbRestaurant.name,
     cardSubtitle: meta.cardSubtitle || dbRestaurant.name,
-    img: meta.img || '/restag/franguia_gallery_0.png',
+    img: meta.img || gallery[0] || '/restag/franguia_gallery_0.png',
     badge: meta.badge || '',
     metaTitle: meta.metaTitle || `${dbRestaurant.name} | Restag`,
     metaDescription: meta.metaDescription || dbRestaurant.description || '',
@@ -40,11 +46,12 @@ function mapDbToLP(dbRestaurant: any): RestaurantLP {
     reservationSettings: meta.reservationSettings || { maxPartySize: 8, intervals: 30, notice: '2 hours' },
     phone: meta.phone || '',
     operatingHours: meta.operatingHours || {},
-    gallery: meta.gallery || [],
+    gallery: gallery,
     features: meta.features || [],
     video: meta.video,
     videoWatermark: meta.videoWatermark,
     brandingColor: dbRestaurant.branding_color || meta.brandingColor,
+    effectsEnabled: meta.effectsEnabled !== undefined ? meta.effectsEnabled : true,
   };
 }
 

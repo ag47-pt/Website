@@ -52,7 +52,7 @@ export default function ReservasPage() {
 
   return (
     <div className="relative pb-24 pt-0">
-      <div className="max-w-5xl mx-auto space-y-24 md:space-y-32">
+      <div className="max-w-[1600px] mx-auto space-y-24 md:space-y-32 px-6">
         
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -74,7 +74,7 @@ export default function ReservasPage() {
 
         {/* Action Board */}
         <div className="grid gap-4">
-          <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-gray-500 border-b border-white/10 pb-2">Pedidos Pendentes</h3>
+          <h3 className="font-mono text-xs uppercase tracking-[0.3em] border-b border-white/10 pb-2" style={{ color: theme.colors.textVoice }}>Pedidos Pendentes</h3>
           
           {isLoading ? (
             <div className="p-8 text-center bg-white/5 border border-white/10 rounded-xl text-gray-400 font-mono text-sm">
@@ -129,7 +129,7 @@ export default function ReservasPage() {
 
         {/* Confirmed List */}
         <div className="grid gap-4 pt-8">
-          <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-gray-500 border-b border-white/10 pb-2">Próximas Chegadas (Confirmadas)</h3>
+          <h3 className="font-mono text-xs uppercase tracking-[0.3em] border-b border-white/10 pb-2" style={{ color: theme.colors.textVoice }}>Próximas Chegadas (Confirmadas)</h3>
           
           <div className="grid gap-3">
             {reservations.filter(r => r.status === 'confirmed').map((res) => (

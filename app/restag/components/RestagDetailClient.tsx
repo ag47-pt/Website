@@ -96,18 +96,55 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
   const { theme: globalTheme, themeContrast: globalContrast } = useTheme();
   
   // Local theme override from DB
-  const theme = globalTheme;
+  const theme = React.useMemo(() => {
+    if (restaurant.brandingColor) {
+      return {
+        ...globalTheme,
+        colors: {
+          ...globalTheme.colors,
+          primary: restaurant.brandingColor
+        }
+      };
+    }
+    return globalTheme;
+  }, [globalTheme, restaurant.brandingColor]);
   
-  // Calculate local contrast for the custom branding color
-  
-  const themeContrast = globalContrast;
+  const themeContrast = React.useMemo(() => {
+    if (!restaurant.brandingColor) return globalContrast;
+    
+    // Simple brightness check to determine contrast (White or Black)
+    const hex = restaurant.brandingColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128 ? '#000000' : '#ffffff';
+  }, [restaurant.brandingColor, globalContrast]);
 
   const [isReserving, setIsReserving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const editorialRef = useRef<HTMLDivElement>(null);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
+
+  const { scrollYProgress: editorialScroll } = useScroll({
+    target: editorialRef,
+    offset: ["start end", "end start"]
+  });
+
+  // Spring settings for organic card motion
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+
+  const y0 = useSpring(useTransform(editorialScroll, [0.1, 0.6], restaurant.effectsEnabled ? [-60, 60] : [0, 0]), springConfig);
+  const y1 = useSpring(useTransform(editorialScroll, [0.1, 0.6], restaurant.effectsEnabled ? [-100, 100] : [0, 0]), springConfig);
+  const y2 = useSpring(useTransform(editorialScroll, [0.1, 0.6], restaurant.effectsEnabled ? [-140, 140] : [0, 0]), springConfig);
+
+  const r0 = useSpring(useTransform(editorialScroll, [0.1, 0.6], restaurant.effectsEnabled ? [4, -4] : [0, 0]), springConfig);
+  const r1 = useSpring(useTransform(editorialScroll, [0.1, 0.6], restaurant.effectsEnabled ? [-4, 4] : [0, 0]), springConfig);
+  const r2 = useSpring(useTransform(editorialScroll, [0.1, 0.6], restaurant.effectsEnabled ? [2, -2] : [0, 0]), springConfig);
 
   return (
     <RestagLayout navItems={DETAIL_NAV_ITEMS}>
@@ -115,9 +152,10 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
         <div className={`relative ${isReserving ? 'z-[200]' : ''} space-y-8 md:space-y-16 pb-32`}>
           
           {/* 1. Hero Section (Labs Blueprint) */}
-          <div id="hero" className="-mt-8 md:mt-0">
+          <div id="hero">
             <LabHero 
               theme={theme}
+              effectsEnabled={restaurant.effectsEnabled}
               overline={`NODE_REGISTRY // ${restaurant.slug.toUpperCase()}`}
               overlineIcon={Activity}
               title={restaurant.heroTitle}
@@ -192,7 +230,11 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
         </div>
 
         {/* 2.5 Editorial & Discovery Gallery */}
-        <section id="editorial" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center scroll-mt-20 pt-16">
+        <section 
+          id="editorial" 
+          ref={editorialRef}
+          className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center scroll-mt-20 pt-16 pb-32"
+        >
           <div className="space-y-8">
             <div 
               className="text-xs font-mono tracking-[0.3em] uppercase"
@@ -200,7 +242,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
             >
               .editorial/abstract
             </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight uppercase">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight uppercase">
               {renderFormattedText("A ESSÊNCIA DA *EXPERIÊNCIA*", 'title', theme)}
             </h2>
             <p className="leading-relaxed text-lg italic" style={{ color: theme.colors.textSecondary }}>
@@ -215,22 +257,29 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 h-[500px]">
-            {restaurant.gallery.slice(0, 4).map((img, idx) => (
-              <motion.div 
-                key={idx}
-                whileHover={{ scale: 0.98 }}
-                className={`relative overflow-hidden rounded-3xl border border-white/10 ${idx === 0 ? 'row-span-2' : ''}`}
-              >
-                <Image 
-                  src={img} 
-                  alt={`${restaurant.cardTitle.replace(/\*/g, '')} Gallery ${idx}`} 
-                  fill 
-                  className="object-cover transition-transform duration-700 hover:scale-110" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[500px] md:h-[600px] relative">
+            {restaurant.gallery.slice(0, 3).map((img, idx) => {
+              // Individual scroll transforms for "baralho" effect
+              const y = [y0, y1, y2][idx];
+              const r = [r0, r1, r2][idx];
+              
+              return (
+                <motion.div 
+                  key={idx}
+                  style={{ y, rotate: r, zIndex: 10 + idx }}
+                  whileHover={{ scale: 1.05, zIndex: 50, rotate: 0 }}
+                  className={`relative overflow-hidden rounded-[32px] border border-white/10 shadow-2xl ${idx === 0 ? 'row-span-2' : ''}`}
+                >
+                  <Image 
+                    src={img} 
+                    alt={`${restaurant.cardTitle.replace(/\*/g, '')} Gallery ${idx}`} 
+                    fill 
+                    className="object-cover" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-20" />
+                </motion.div>
+              );
+            })}
           </div>
         </section>
 
@@ -244,7 +293,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
               >
                 .menu/node_registry
               </div>
-              <h2 className="text-5xl font-black tracking-tighter uppercase">
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase">
                 {renderFormattedText("PROTOCOLOS_DE_*SABOR*", 'title', theme)}
               </h2>
             </div>
@@ -293,7 +342,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
               >
                 .culinary/engineering
               </div>
-              <h2 className="text-5xl font-black tracking-tighter leading-none">
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
                 {renderFormattedText("THE *GASTRO*\nENGINEERING\nCYCLE", 'title', theme)}
               </h2>
               <p className="max-w-md leading-relaxed" style={{ color: theme.colors.textSecondary }}>
@@ -360,7 +409,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
 
         {/* 5. Final CTA / Bento Grid */}
         <section id="audit" className="max-w-7xl mx-auto px-6 pb-40 scroll-mt-20 pt-16">
-          <div className="grid md:grid-cols-12 gap-6 h-[500px]">
+          <div className="grid md:grid-cols-12 gap-6 h-auto md:h-[500px]">
             <motion.div 
               whileHover={{ y: -5 }}
               className="md:col-span-8 bg-black/60 border border-white/10 rounded-3xl p-16 flex flex-col justify-center items-start space-y-8 relative overflow-hidden backdrop-blur-2xl group"
@@ -371,7 +420,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                   L47
                 </div>
               </div>
-              <h2 className="text-6xl font-black tracking-tighter leading-none relative z-10">
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none relative z-10">
                 {renderFormattedText("INITIATE THE\n*EXPERIENCE\nNODE *RESTAG*", 'title', theme)}
               </h2>
               <p className="text-gray-400 max-w-md relative z-10">
@@ -458,7 +507,7 @@ const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP
           >
             .reservation/sync_module
           </div>
-          <h2 className="text-5xl font-black tracking-tighter uppercase leading-none">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-none">
             {renderFormattedText("GARANTA SEU\n**SLOT** DE\nEXPERIÊNCIA", 'title', theme)}
           </h2>
           <p className="text-gray-400 max-w-md leading-relaxed">
@@ -805,7 +854,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
                 type="text" placeholder="NOME_COMPLETO" value={name} onChange={(e) => setName(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-white/40 transition-colors"
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input 
                   type="tel" placeholder="TELEFONE" value={phone} onChange={(e) => setPhone(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-white/40 transition-colors"
@@ -865,9 +914,9 @@ const ProcessStep = ({ step, index, total, theme }: { step: any, index: number, 
     <div 
       className="sticky h-0 overflow-visible"
       style={{ 
-        top: '200px',
+        top: '120px',
         zIndex: index + 1,
-        marginTop: index > 0 ? `${index * 60}vh` : '0'
+        marginTop: index > 0 ? '60vh' : '0'
       }}
     >
       <motion.div 
@@ -875,7 +924,7 @@ const ProcessStep = ({ step, index, total, theme }: { step: any, index: number, 
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10%" }}
         transition={{ duration: 0.5 }}
-        className="space-y-6 p-10 bg-zinc-900/90 border border-white/10 rounded-[40px] backdrop-blur-3xl relative overflow-hidden group shadow-2xl"
+        className="space-y-6 p-6 md:p-10 bg-zinc-900/90 border border-white/10 rounded-[30px] md:rounded-[40px] backdrop-blur-3xl relative overflow-hidden group shadow-2xl"
       >
         <div 
           className="absolute top-0 right-0 p-8 text-8xl font-black text-white/[0.03] pointer-events-none transition-colors"

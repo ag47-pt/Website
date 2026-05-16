@@ -31,11 +31,13 @@ export interface RestaurantLP extends Omit<ServiceLP, 'slug'> {
   video?: string;
   videoWatermark?: string;
   brandingColor?: string;
+  effectsEnabled?: boolean;
 }
 
 export const restaurants: RestaurantLP[] = [
   {
     slug: 'bipolar',
+    effectsEnabled: true,
     tag: '\nReinventada\n ',
     cardTitle: '*Bipolar*',
     cardSubtitle: 'Bipolar\nGrill & Wine',
@@ -131,6 +133,7 @@ export const restaurants: RestaurantLP[] = [
   },
   {
     slug: 'carbon-core',
+    effectsEnabled: true,
     tag: 'LABS_CERTIFIED_v1.0',
     cardTitle: '*Carbon Core*',
     cardSubtitle: 'Carbon Core\nThermal Dining',
