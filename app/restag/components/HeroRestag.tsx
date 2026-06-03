@@ -38,7 +38,7 @@ export const HeroRestag = ({
   statusTags,
   isDashboard = false
 }: HeroRestagProps) => {
-  const { theme: globalTheme } = useTheme();
+  const { theme: globalTheme, isDark, themeContrast } = useTheme();
   const theme = customTheme || globalTheme;
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -50,8 +50,6 @@ export const HeroRestag = ({
   // High-End Labs Animations (respecting effectsEnabled)
   const mediaScale = useTransform(scrollYProgress, [0, 1], effectsEnabled ? [1, 1.15] : [1, 1]);
   const watermarkOpacity = useTransform(scrollYProgress, [0, 1], effectsEnabled ? [0.6, 1] : [1, 1]);
-
-  // Content Formatting (using localized util)
 
   return (
     <div ref={sectionRef} className={`relative ${isDashboard ? '' : 'lg:min-h-[110vh]'}`}>
@@ -69,10 +67,10 @@ export const HeroRestag = ({
               <span>{overline}</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter text-white leading-[0.9] uppercase">
+            <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.9] uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>
               {renderRestagText(title, 'title', theme)}
               {highlight && (
-                <span className="block mt-4 px-4 py-2 rounded-xl text-2xl md:text-4xl w-fit" style={{ backgroundColor: theme.colors.primary, color: '#000' }}>
+                <span className="block mt-4 px-4 py-2 rounded-xl text-2xl md:text-4xl w-fit" style={{ backgroundColor: theme.colors.primary, color: themeContrast }}>
                   {highlight}
                 </span>
               )}
@@ -96,14 +94,14 @@ export const HeroRestag = ({
                       repeat: Infinity,
                       ease: "easeInOut" 
                     } : {}}
-                    className="px-3 py-1 rounded-md text-[10px] font-mono border border-white/10 uppercase tracking-widest bg-white/5"
+                    className={`px-3 py-1 rounded-md text-[10px] font-mono border uppercase tracking-widest transition-all ${isDark ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'}`}
                     style={{ 
                       color: tag.color === 'main' ? theme.colors.primary : 
                              tag.color === 'secondary' ? theme.colors.secondary :
                              tag.color === 'blue' ? '#3b82f6' :
                              tag.color === 'orange' ? '#f97316' :
                              tag.color === 'lime' ? '#84cc16' : 
-                             tag.color === 'red' ? '#ef4444' : '#fff'
+                             tag.color === 'red' ? '#ef4444' : isDark ? '#fff' : '#111827'
                     }}
                   >
                     {tag.label}
@@ -123,7 +121,7 @@ export const HeroRestag = ({
           <div className="relative flex justify-center lg:justify-end py-6 lg:py-0 self-center w-full">
             <motion.div 
               style={{ scale: mediaScale }}
-              className="relative aspect-[4/3] max-w-[500px] w-full lg:ml-auto rounded-[40px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] group z-20"
+              className={`relative aspect-[4/3] max-w-[500px] w-full lg:ml-auto rounded-[40px] overflow-hidden border shadow-[0_0_80px_rgba(0,0,0,0.5)] group z-20 transition-all ${isDark ? 'border-white/10' : 'border-black/10'}`}
             >
               {video ? (
                 <video 
@@ -142,7 +140,7 @@ export const HeroRestag = ({
                   className="object-cover transition-transform duration-700 group-hover:scale-110" 
                 />
               ) : (
-                <div className="w-full h-full bg-white/5 flex items-center justify-center font-mono text-white/20">
+                <div className={`w-full h-full flex items-center justify-center font-mono transition-all ${isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-black/20'}`}>
                   NO_MEDIA_LOADED
                 </div>
               )}
@@ -160,10 +158,10 @@ export const HeroRestag = ({
               )}
               
               <div className="absolute top-0 right-0 p-6">
-                <div className="w-10 h-10 border-t-2 border-r-2 border-white/20 rounded-tr-xl" />
+                <div className={`w-10 h-10 border-t-2 border-r-2 rounded-tr-xl transition-all ${isDark ? 'border-white/20' : 'border-black/20'}`} />
               </div>
               <div className="absolute bottom-0 left-0 p-6">
-                <div className="w-10 h-10 border-b-2 border-l-2 border-white/20 rounded-bl-xl" />
+                <div className={`w-10 h-10 border-b-2 border-l-2 rounded-bl-xl transition-all ${isDark ? 'border-white/20' : 'border-black/20'}`} />
               </div>
             </motion.div>
 

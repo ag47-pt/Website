@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants, useSpring, useTransform, animate } from 'framer-motion';
-import { Utensils, Search, Filter, Layers, Globe, Activity, ShieldCheck, Zap, ChevronRight, MapPin, SlidersHorizontal, Clock, Calendar, Gift, ChevronDown, Info, MousePointer2 } from 'lucide-react';
+import { Utensils, Search, Filter, Layers, Globe, Activity, ShieldCheck, Zap, ChevronRight, MapPin, SlidersHorizontal, Clock, Calendar, Gift, ChevronDown, Info, MousePointer2, ChevronDown as ChevronDownIcon } from 'lucide-react';
 import { HeroRestag } from './components/HeroRestag';
 import { RestagVisitCard, RestagCallCard } from './components/shared/RestagCards';
 import { RestagLayout } from './components/RestagLayout';
@@ -44,7 +44,7 @@ const PORTAL_NAV_ITEMS = [
 ];
 
 export default function RestagDiscoveryPortal() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const router = useRouter();
   const [selectedRest, setSelectedRest] = useState<RestaurantLP | undefined>(undefined);
   const [activeCluster, setActiveCluster] = useState('ALL_NODES');
@@ -79,17 +79,18 @@ export default function RestagDiscoveryPortal() {
         {/* Section 1: Hero Discovery */}
         <div id="hero">
           <HeroRestag 
-          overline="RESTAG_HOSPITALITY_v1.0"
-          overlineIcon={Utensils}
-          title="Discovery"
-          highlight="Portal"
-          description="Mapeamento geospacial de alta precisão para destinos culinários certificados. Conecte-se à malha de hospitalidade mais avançada de Portugal."
-          statusTags={[
-            { label: "GRID_ACTIVE", color: "lime", pulse: true },
-            { label: "2_NODES_DETECTION", color: "blue" },
-            { label: "SINTRA_CLUSTER", color: "main" }
-          ]}
-        />
+            overline="RESTAG_HOSPITALITY_v1.0"
+            overlineIcon={Utensils}
+            title="Discovery"
+            highlight="Portal"
+            description="Mapeamento geospacial de alta precisão para destinos culinários certificados. Conecte-se à malha de hospitalidade mais avançada de Portugal."
+            image="/restag/franguia_gallery_0.png"
+            statusTags={[
+              { label: "GRID_ACTIVE", color: "lime", pulse: true },
+              { label: "2_NODES_DETECTION", color: "blue" },
+              { label: "SINTRA_CLUSTER", color: "main" }
+            ]}
+          />
         </div>
 
         {/* Section 2: Featured Nodes with Advanced Filters */}
@@ -101,10 +102,10 @@ export default function RestagDiscoveryPortal() {
           {/* Advanced Filter Bar */}
           <div className="flex flex-col gap-8">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <div className="p-2 bg-white/5 border border-white/10 rounded-xl" style={{ color: theme.colors.textSecondary }}>
+              <div className={`p-2 border rounded-xl transition-all ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`} style={{ color: theme.colors.textSecondary }}>
                 <SlidersHorizontal className="w-5 h-5" />
               </div>
-              <div className="w-[1px] h-6 bg-white/10 mx-1 hidden sm:block" />
+              <div className={`w-[1px] h-6 mx-1 hidden sm:block transition-all ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
               
               <div className="flex flex-wrap gap-2">
                 <FilterPill icon={Clock} label="Open" />
@@ -113,7 +114,7 @@ export default function RestagDiscoveryPortal() {
               </div>
               
               <div className="relative group">
-                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] sm:text-sm font-medium hover:bg-white/10 transition-all" style={{ color: theme.colors.textPrimary }}>
+                <button className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-[10px] sm:text-sm font-medium transition-all ${isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-black/5 border-black/10 hover:bg-black/10'}`} style={{ color: theme.colors.textPrimary }}>
                   <Utensils className="w-3.5 h-3.5" />
                   Cuisines
                   <ChevronDown className="w-3.5 h-3.5 opacity-50 group-hover:rotate-180 transition-transform" />
@@ -121,13 +122,13 @@ export default function RestagDiscoveryPortal() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 border-b border-white/5 pb-8">
-              <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+            <div className={`flex items-center gap-4 border-b pb-8 transition-all ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+              <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
                 <Activity className="w-6 h-6" style={{ color: theme.colors.primary }} />
               </div>
               <div>
                 <h3 className="font-mono text-[10px] uppercase tracking-[0.4em] mb-1" style={{ color: theme.colors.textMuted }}>Grid_Clusters</h3>
-                <div className="text-2xl font-bold text-white tracking-tight uppercase">
+                <div className={`text-2xl font-bold tracking-tight uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {renderRestagText("Featured_*Nodes*", 'title', theme)}
                 </div>
               </div>
@@ -171,13 +172,13 @@ export default function RestagDiscoveryPortal() {
           <div className="grid lg:grid-cols-12 gap-12 items-start">
             {/* Left: Map Discovery */}
             <div className="lg:col-span-8 space-y-8">
-              <div className="sticky top-24 z-40 flex flex-col sm:flex-row sm:items-center justify-between bg-black/60 border border-white/5 p-4 sm:p-6 rounded-[32px] md:rounded-[40px] backdrop-blur-3xl gap-6 sm:gap-4 shadow-2xl transition-all">
+              <div className={`sticky top-24 z-40 flex flex-col sm:flex-row sm:items-center justify-between border p-4 sm:p-6 rounded-[32px] md:rounded-[40px] backdrop-blur-3xl gap-6 sm:gap-4 shadow-2xl transition-all ${isDark ? 'bg-black/60 border-white/5' : 'bg-white/80 border-black/10'}`}>
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl border flex items-center justify-center flex-shrink-0 transition-all ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
                     <Search className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: theme.colors.primary }} />
                   </div>
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {renderRestagText("Geospatial_*Index*", 'title', theme)}
                     </h2>
                     <p className="text-[8px] sm:text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textMuted }}>Global_Node_Positioning_v4.0</p>
@@ -198,8 +199,8 @@ export default function RestagDiscoveryPortal() {
                       aria-label={`Filter nodes by ${cluster.replace('_', ' ')}`}
                       className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg font-mono text-[8px] sm:text-[10px] border transition-all ${
                         activeCluster === cluster 
-                          ? 'text-black border-white' 
-                          : 'bg-white/5 border-white/10 hover:border-white/20'
+                          ? (isDark ? 'text-black border-white bg-white' : 'text-white border-black bg-black') 
+                          : (isDark ? 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20' : 'bg-black/5 border-black/10 text-gray-600 hover:border-black/20')
                       }`}
                       style={activeCluster === cluster ? { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary } : { color: theme.colors.textMuted }}
                     >
@@ -209,7 +210,7 @@ export default function RestagDiscoveryPortal() {
                 </div>
               </div>
 
-              <div className="relative rounded-[40px] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-zinc-950">
+              <div className={`relative rounded-[40px] overflow-hidden border shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all ${isDark ? 'border-white/10 bg-zinc-950' : 'border-black/10 bg-zinc-100'}`}>
                 <MapPortal 
                   restaurants={restaurants} 
                   onSelect={(r: RestaurantLP) => {
@@ -227,11 +228,11 @@ export default function RestagDiscoveryPortal() {
             {/* Right: Node Registry */}
             <div className="lg:col-span-4 space-y-6">
               <div className="flex items-center gap-4 px-2">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-all ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
                   <Layers className="w-6 h-6" style={{ color: theme.colors.primary }} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white tracking-tight uppercase">
+                  <h2 className={`text-2xl font-bold tracking-tight uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {renderRestagText("*Registry*", 'title', theme)}
                   </h2>
                   <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textMuted }}>Active_Node_Roster</p>
@@ -268,7 +269,7 @@ export default function RestagDiscoveryPortal() {
         </motion.section>
 
         {/* Section 4: Ecosystem Metrics (Full-Width Background and Animations) */}
-        <div id="metrics" className="relative w-screen left-1/2 -translate-x-1/2 overflow-hidden border-y border-white/18 bg-zinc-900/5 backdrop-blur-2xl">
+        <div id="metrics" className={`relative w-screen left-1/2 -translate-x-1/2 overflow-hidden border-y backdrop-blur-2xl transition-all ${isDark ? 'border-white/10 bg-zinc-900/5' : 'border-black/10 bg-black/[0.02]'}`}>
           {/* Internal technical background */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -330,7 +331,7 @@ export default function RestagDiscoveryPortal() {
           whileInView="visible"
           initial="hidden"
           viewport={{ once: true }}
-          className="relative p-12 md:p-16 rounded-[64px] overflow-hidden border border-white/10 bg-zinc-950/40 group text-center"
+          className={`relative p-12 md:p-16 rounded-[64px] overflow-hidden border group text-center transition-all ${isDark ? 'border-white/10 bg-zinc-950/40' : 'border-black/10 bg-black/[0.02]'}`}
         >
           <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--dot-color)_1.5px,transparent_1.5px)] bg-[size:32px_32px]" style={{ '--dot-color': theme.colors.primary } as any} />
@@ -340,14 +341,14 @@ export default function RestagDiscoveryPortal() {
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center relative"
+              className={`w-24 h-24 rounded-3xl border flex items-center justify-center relative transition-all ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
             >
               <div className="absolute inset-0 blur-xl opacity-20" style={{ backgroundColor: theme.colors.primary }} />
               <Utensils className="w-10 h-10" style={{ color: theme.colors.primary }} />
             </motion.div>
             
             <div className="space-y-4">
-              <h2 className="text-5xl md:text-6xl font-bold text-white tracking-tighter leading-none uppercase">
+              <h2 className={`text-5xl md:text-6xl font-bold tracking-tighter leading-none uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {renderRestagText("Deploy to the *Grid*", 'title', theme)}
               </h2>
               <p className="text-xl font-mono uppercase tracking-widest" style={{ color: theme.colors.textSecondary }}>Ag47 Labs Infrastructure</p>
@@ -371,9 +372,9 @@ export default function RestagDiscoveryPortal() {
 }
 
 const FilterPill = ({ icon: Icon, label }: { icon: any; label: string }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   return (
-    <button className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm font-medium hover:bg-white/10 transition-all hover:border-white/20 active:scale-95" style={{ color: theme.colors.textPrimary }}>
+    <button className={`flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-medium transition-all active:scale-95 ${isDark ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20' : 'bg-black/5 border-black/10 hover:bg-black/10 hover:border-black/20'}`} style={{ color: theme.colors.textPrimary }}>
       <Icon className="w-4 h-4" style={{ color: theme.colors.primary }} />
       {label}
     </button>
@@ -381,12 +382,12 @@ const FilterPill = ({ icon: Icon, label }: { icon: any; label: string }) => {
 };
 
 const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: any) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [count, setCount] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
 
-   return (
+  return (
     <motion.div 
       role="button"
       tabIndex={0}
@@ -411,13 +412,13 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
       className="flex flex-col items-center text-center gap-4 group cursor-pointer"
       onClick={() => setIsExpanded(!isExpanded)}
     >
-      <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-2 border border-white/10 group-hover:border-white/20 transition-all group-hover:scale-110 relative">
-        <Icon className="w-7 h-7 text-gray-500 group-hover:text-white transition-colors" style={{ color: theme.colors.primary }} />
+      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-2 border transition-all group-hover:scale-110 relative ${isDark ? 'bg-white/5 border-white/10 group-hover:border-white/20' : 'bg-black/5 border-black/10 group-hover:border-black/20'}`}>
+        <Icon className={`w-7 h-7 transition-colors`} style={{ color: theme.colors.primary }} />
         {/* Secondary color accent */}
         <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full opacity-50 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: theme.colors.secondary }} />
       </div>
       
-      <div className="text-5xl font-bold text-white tracking-tighter transition-all group-hover:scale-105 tabular-nums" style={{ color: theme.colors.primary }}>
+      <div className={`text-5xl font-bold tracking-tighter transition-all group-hover:scale-105 tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`} style={{ color: theme.colors.primary }}>
         {targetValue % 1 === 0 ? Math.floor(count) : count.toFixed(1)}
         {suffix}
       </div>
@@ -429,7 +430,7 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
             animate={{ rotate: isExpanded ? 180 : 0 }}
             className="text-gray-400"
           >
-            <ChevronDown className="w-3 h-3" />
+            <ChevronDownIcon className="w-3 h-3" />
           </motion.div>
         </div>
         
@@ -450,7 +451,7 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
       </div>
 
       {/* Hover prompt */}
-      <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[8px] font-mono text-white/20 uppercase tracking-widest">
+      <div className={`mt-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[8px] font-mono uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-black/20'}`}>
         <MousePointer2 className="w-2.5 h-2.5" />
         Protocol_Details
       </div>

@@ -25,7 +25,8 @@ import {
   Info as InfoIcon,
   CheckCircle2,
   AlertCircle,
-  Loader2
+  Loader2,
+  ChevronDown as ChevronDownIcon
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '@/context/ThemeContext';
@@ -61,6 +62,7 @@ const handleKeyDown = (e: React.KeyboardEvent, callback: () => void) => {
 const MetricCard = ({ stat, theme }: { stat: any, theme: any }) => {
   const [count, setCount] = React.useState(0);
   const [hasAnimated, setHasAnimated] = React.useState(false);
+  const { isDark } = useTheme();
   
   // Extract number from string (e.g., "95%" -> 95)
   const targetValue = parseFloat(stat.value.replace(/[^0-9.]/g, '')) || 0;
@@ -81,9 +83,9 @@ const MetricCard = ({ stat, theme }: { stat: any, theme: any }) => {
           setHasAnimated(true);
         }
       }}
-      className="p-10 flex flex-col items-center text-center space-y-2 hover:bg-white/5 transition-colors group cursor-pointer"
+      className={`p-10 flex flex-col items-center text-center space-y-2 transition-colors group cursor-pointer ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
     >
-      <span className="text-[10px] font-mono uppercase tracking-widest transition-colors group-hover:text-white" style={{ color: theme.colors.textMuted }}>{stat.label}</span>
+      <span className={`text-[10px] font-mono uppercase tracking-widest transition-colors ${isDark ? 'group-hover:text-white' : 'group-hover:text-gray-900'}`} style={{ color: theme.colors.textMuted }}>{stat.label}</span>
       <span className="text-5xl font-black tracking-tighter tabular-nums" style={{ color: theme.colors.primary }}>
         {targetValue % 1 === 0 ? Math.floor(count) : count.toFixed(1)}
         {suffix}
@@ -94,11 +96,10 @@ const MetricCard = ({ stat, theme }: { stat: any, theme: any }) => {
 };
 
 export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaurant }) => {
-  const { theme: globalTheme, themeContrast: globalContrast } = useTheme();
+  const { theme: globalTheme, themeContrast: globalContrast, isDark } = useTheme();
   
   // Use global theme from context
   const theme = globalTheme;
-  
   const themeContrast = globalContrast;
 
   const [isReserving, setIsReserving] = useState(false);
@@ -156,7 +157,7 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsReserving(true)}
                     className="flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-black transition-all group shadow-2xl"
-                    style={{ backgroundColor: theme.colors.primary, color: '#000', boxShadow: `0 10px 30px ${theme.colors.primary}33` }}
+                    style={{ backgroundColor: theme.colors.primary, color: themeContrast, boxShadow: `0 10px 30px ${theme.colors.primary}33` }}
                   >
                     <Calendar className="w-4 h-4 transition-transform group-hover:rotate-12" />
                     {restaurant.heroCta}
@@ -175,13 +176,21 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
                         });
                       }
                     }}
-                    className="flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-black transition-all border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white/10"
+                    className={`flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-black transition-all border backdrop-blur-md ${
+                      isDark 
+                        ? 'border-white/20 bg-white/5 hover:bg-white/10 text-white' 
+                        : 'border-black/20 bg-black/5 hover:bg-black/10 text-gray-900'
+                    }`}
                   >
                     <Utensils className="w-4 h-4" /> 
                     VIEW_MENU
                   </motion.button>
                   
-                  <div className="hidden md:flex items-center gap-2 px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-xs font-mono backdrop-blur-md" style={{ color: theme.colors.textSecondary }}>
+                  <div className={`hidden md:flex items-center gap-2 px-6 py-4 border rounded-xl text-xs font-mono backdrop-blur-md transition-all ${
+                    isDark 
+                      ? 'bg-white/5 border-white/10 text-white' 
+                      : 'bg-black/5 border-black/10 text-gray-900'
+                  }`} style={{ color: theme.colors.textSecondary }}>
                     <MapPin className="w-4 h-4" style={{ color: theme.colors.primary }} />
                     {restaurant.address.toUpperCase()}
                   </div>
@@ -190,262 +199,287 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
             />
           </div>
 
-
-
-        {/* 2. Results/Metrics Bar (Labs Blueprint) */}
-        <div id="metrics" className="max-w-7xl mx-auto px-6 scroll-mt-20">
-          <div className="grid md:grid-cols-3 gap-1px bg-white/1 border border-white/20 rounded-2xl overflow-hidden backdrop-blur-xl">
-            {restaurant.results.map((stat, idx) => (
-              <MetricCard key={idx} stat={stat} theme={theme} />
-            ))}
-          </div>
-        </div>
-
-        {/* 2.5 Editorial & Discovery Gallery */}
-        <section 
-          id="editorial" 
-          ref={editorialRef}
-          className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center scroll-mt-20 pt-10 pb-20"
-        >
-          <div className="space-y-8">
-            <div 
-              className="text-xs font-mono tracking-[0.3em] uppercase"
-              style={{ color: theme.colors.primary }}
-            >
-              .editorial/abstract
-            </div>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight uppercase">
-              {renderRestagText("A ESSÊNCIA DA *EXPERIÊNCIA*", 'title', theme)}
-            </h2>
-            <p className="leading-relaxed text-lg italic" style={{ color: theme.colors.textSecondary }}>
-              "{restaurant.descriptionLong}"
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {restaurant.features.map(feature => (
-                <span key={feature} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-mono text-gray-400 uppercase tracking-widest">
-                  {feature}
-                </span>
+          {/* 2. Results/Metrics Bar (Labs Blueprint) */}
+          <div id="metrics" className="max-w-7xl mx-auto px-6 scroll-mt-20">
+            <div className={`grid md:grid-cols-3 gap-1px border rounded-2xl overflow-hidden backdrop-blur-xl transition-all ${
+              isDark ? 'bg-white/5 border-white/20' : 'bg-black/5 border-black/20'
+            }`}>
+              {restaurant.results.map((stat, idx) => (
+                <MetricCard key={idx} stat={stat} theme={theme} />
               ))}
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[500px] md:h-[600px] relative">
-            {restaurant.gallery.slice(0, 3).map((img, idx) => {
-              // Individual scroll transforms for "baralho" effect
-              const y = [y0, y1, y2][idx];
-              const r = [r0, r1, r2][idx];
-              
-              return (
-                <motion.div 
-                  key={idx}
-                  style={{ y, rotate: r, zIndex: 10 + idx }}
-                  whileHover={{ scale: 1.05, zIndex: 50, rotate: 0 }}
-                  className={`relative overflow-hidden rounded-[32px] border border-white/10 shadow-2xl ${idx === 0 ? 'row-span-2' : ''}`}
-                >
-                  <Image 
-                    src={img} 
-                    alt={`${restaurant.cardTitle.replace(/\*/g, '')} Gallery ${idx}`} 
-                    fill 
-                    className="object-cover" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-20" />
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
 
-        {/* 3. Technical Menu (Grid) - MOVED UP FOR CONVERSION */}
-        <section id="menu" className="max-w-7xl mx-auto px-6 py-20 space-y-12 scroll-mt-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-10">
-            <div className="space-y-4">
+          {/* 2.5 Editorial & Discovery Gallery */}
+          <section 
+            id="editorial" 
+            ref={editorialRef}
+            className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center scroll-mt-20 pt-10 pb-20"
+          >
+            <div className="space-y-8">
               <div 
                 className="text-xs font-mono tracking-[0.3em] uppercase"
                 style={{ color: theme.colors.primary }}
               >
-                .menu/node_registry
+                .editorial/abstract
               </div>
-              <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase">
-                {renderRestagText("PROTOCOLOS_DE_*SABOR*", 'title', theme)}
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight uppercase">
+                {renderRestagText("A ESSÊNCIA DA *EXPERIÊNCIA*", 'title', theme)}
               </h2>
-            </div>
-            <div className="flex gap-4">
-              <div className="px-4 py-2 rounded-full text-[10px] font-mono flex items-center gap-2 border" 
-                   style={{ 
-                     backgroundColor: `${theme.colors.textVoice}1a`, 
-                     borderColor: `${theme.colors.textVoice}33`, 
-                     color: theme.colors.textVoice 
-                   }}>
-                <Zap className="w-3 h-3" />
-                SENSORY_OPTIMIZED
-              </div>
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-16">
-            {restaurant.menu.map((category, cIdx) => (
-              <div key={cIdx} className="space-y-8">
-                <h3 className="text-sm font-mono uppercase tracking-[0.5em] flex items-center gap-4" style={{ color: theme.colors.textMuted }}>
-                  <span>{category.category}</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
-                </h3>
-                <div className="space-y-4">
-                  {category.items.map((item, iIdx) => (
-                    <MenuItem key={iIdx} item={item} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-        
-        {/* 3.5 Dedicated Booking Section (New Module) */}
-        <section id="reservations" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-20">
-          <BookingSection restaurant={restaurant} onOpenDrawer={() => setIsReserving(true)} />
-        </section>
-
-        {/* 4. Sticky Scroll Process (Labs Blueprint) */}
-        <div id="process" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
-          <div className="grid lg:grid-cols-2 gap-20 items-start">
-            <div className="space-y-8 sticky top-40 h-fit">
-              <div 
-                className="text-xs font-mono tracking-[0.3em] uppercase"
-                style={{ color: theme.colors.primary }}
-              >
-                .culinary/engineering
-              </div>
-              <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
-                {renderRestagText("THE *GASTRO*\nENGINEERING\nCYCLE", 'title', theme)}
-              </h2>
-              <p className="max-w-md leading-relaxed" style={{ color: theme.colors.textSecondary }}>
-                Nossos nós operacionais seguem protocolos rígidos para garantir a integridade da experiência sensorial. 
-                Cada etapa é calibrada para máxima eficiência.
+              <p className="leading-relaxed text-lg italic" style={{ color: theme.colors.textSecondary }}>
+                "{restaurant.descriptionLong}"
               </p>
+              <div className="flex flex-wrap gap-3">
+                {restaurant.features.map(feature => (
+                  <span key={feature} className={`px-3 py-1 border rounded-full text-[10px] font-mono uppercase tracking-widest transition-all ${
+                    isDark ? 'bg-white/5 border-white/10 text-gray-400' : 'bg-black/5 border-black/10 text-gray-600'
+                  }`}>
+                    {feature}
+                  </span>
+                ))}
+              </div>
             </div>
             
-            <div className="relative pb-[120vh] grid grid-cols-1">
-              {restaurant.process.map((step, idx) => (
-                <ProcessStep key={idx} step={step} index={idx} total={restaurant.process.length} theme={theme} />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* 4.5 Operational Registry & Contact */}
-        <section id="contact" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-20">
-          <div className="grid lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-4 space-y-6">
-              <div className="p-10 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-3xl space-y-8">
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Contact_Node</span>
-                  <div className="flex items-center gap-4 text-2xl font-bold text-white">
-                    <Phone className="w-6 h-6" style={{ color: theme.colors.primary }} />
-                    {restaurant.phone}
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[500px] md:h-[600px] relative">
+              {restaurant.gallery.slice(0, 3).map((img, idx) => {
+                // Individual scroll transforms for "baralho" effect
+                const y = [y0, y1, y2][idx];
+                const r = [r0, r1, r2][idx];
                 
-                <div className="space-y-4">
-                  <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Operating_Registry</span>
-                  <div className="space-y-3">
-                    {Object.entries(restaurant.operatingHours).map(([day, hours]) => (
-                      <div key={day} className="flex justify-between items-center border-b border-white/5 pb-2">
-                        <span className="text-xs text-gray-400 font-mono">{day}</span>
-                        <span className={`text-xs font-mono ${hours === 'Encerrado' ? 'text-red-500/60' : 'text-white'}`}>{hours}</span>
-                      </div>
+                return (
+                  <motion.div 
+                    key={idx}
+                    style={{ y, rotate: r, zIndex: 10 + idx }}
+                    whileHover={{ scale: 1.05, zIndex: 50, rotate: 0 }}
+                    className={`relative overflow-hidden rounded-[32px] border shadow-2xl transition-all ${
+                      idx === 0 ? 'row-span-2' : ''
+                    } ${isDark ? 'border-white/10' : 'border-black/10'}`}
+                  >
+                    <Image 
+                      src={img} 
+                      alt={`${restaurant.cardTitle.replace(/\*/g, '')} Gallery ${idx}`} 
+                      fill 
+                      className="object-cover" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-20" />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* 3. Technical Menu (Grid) - MOVED UP FOR CONVERSION */}
+          <section id="menu" className="max-w-7xl mx-auto px-6 py-20 space-y-12 scroll-mt-20">
+            <div className={`flex flex-col md:flex-row md:items-end justify-between gap-8 border-b pb-10 transition-all ${
+              isDark ? 'border-white/5' : 'border-black/5'
+            }`}>
+              <div className="space-y-4">
+                <div 
+                  className="text-xs font-mono tracking-[0.3em] uppercase"
+                  style={{ color: theme.colors.primary }}
+                >
+                  .menu/node_registry
+                </div>
+                <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase">
+                  {renderRestagText("PROTOCOLOS_DE_*SABOR*", 'title', theme)}
+                </h2>
+              </div>
+              <div className="flex gap-4">
+                <div className="px-4 py-2 rounded-full text-[10px] font-mono flex items-center gap-2 border" 
+                     style={{ 
+                       backgroundColor: `${theme.colors.textVoice}1a`, 
+                       borderColor: `${theme.colors.textVoice}33`, 
+                       color: theme.colors.textVoice 
+                     }}>
+                  <Zap className="w-3 h-3" />
+                  SENSORY_OPTIMIZED
+                </div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-16">
+              {restaurant.menu.map((category, cIdx) => (
+                <div key={cIdx} className="space-y-8">
+                  <h3 className="text-sm font-mono uppercase tracking-[0.5em] flex items-center gap-4" style={{ color: theme.colors.textMuted }}>
+                    <span>{category.category}</span>
+                    <div className={`h-px flex-1 bg-gradient-to-r ${isDark ? 'from-white/10' : 'from-black/10'} to-transparent`} />
+                  </h3>
+                  <div className="space-y-4">
+                    {category.items.map((item, iIdx) => (
+                      <MenuItem key={iIdx} item={item} />
                     ))}
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-            
-            <div className="lg:col-span-8 relative rounded-[40px] overflow-hidden border border-white/10 min-h-[400px]">
-              <Image 
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200&auto=format&fit=crop" 
-                alt="Map View" 
-                fill 
-                className="object-cover grayscale opacity-40"
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/40 to-transparent" />
-              <div className="absolute bottom-10 left-10 space-y-4">
-                <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Geospatial_Target</span>
-                  <h3 className="text-xl font-bold text-white">{restaurant.address}</h3>
-                  <button className="flex items-center gap-2 text-[10px] font-mono text-gray-400 hover:text-white transition-colors uppercase tracking-widest">
-                    Open_In_Google_Maps <ChevronRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
+          
+          {/* 3.5 Dedicated Booking Section (New Module) */}
+          <section id="reservations" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-20">
+            <BookingSection restaurant={restaurant} onOpenDrawer={() => setIsReserving(true)} />
+          </section>
 
-        {/* 5. Final CTA / Bento Grid */}
-        <section id="audit" className="max-w-7xl mx-auto px-6 pb-12 scroll-mt-20 pt-10">
-          <div className="grid md:grid-cols-12 gap-6 h-auto md:h-[500px]">
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="md:col-span-8 bg-black/60 border border-white/10 rounded-3xl p-16 flex flex-col justify-center items-start space-y-8 relative overflow-hidden backdrop-blur-2xl group"
-            >
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-96 h-96 blur-[100px] rounded-full" style={{ backgroundColor: `${theme.colors.primary}1A` }} />
-                <div className="absolute bottom-0 right-0 p-8 text-[12rem] font-black text-white/[0.02] pointer-events-none select-none">
-                  L47
+          {/* 4. Sticky Scroll Process (Labs Blueprint) */}
+          <div id="process" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
+            <div className="grid lg:grid-cols-2 gap-20 items-start">
+              <div className="space-y-8 sticky top-40 h-fit">
+                <div 
+                  className="text-xs font-mono tracking-[0.3em] uppercase"
+                  style={{ color: theme.colors.primary }}
+                >
+                  .culinary/engineering
                 </div>
+                <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
+                  {renderRestagText("THE *GASTRO*\nENGINEERING\nCYCLE", 'title', theme)}
+                </h2>
+                <p className="max-w-md leading-relaxed" style={{ color: theme.colors.textSecondary }}>
+                  Nossos nós operacionais seguem protocolos rígidos para garantir a integridade da experiência sensorial. 
+                  Cada etapa é calibrada para máxima eficiência.
+                </p>
               </div>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none relative z-10">
-                {renderRestagText("INITIATE THE\n*EXPERIENCE\nNODE *RESTAG*", 'title', theme)}
-              </h2>
-              <p className="text-gray-400 max-w-md relative z-10">
-                Acesse o núcleo da nossa gastronomia. Garanta seu slot de processamento agora.
-              </p>
-              <Link 
-                href="/restag/audit"
-                className="px-12 py-5 rounded-2xl font-black text-black tracking-widest hover:scale-105 transition-all relative z-10 flex items-center justify-center"
-                style={{ 
-                  backgroundColor: theme.colors.primary,
-                  boxShadow: `0 0 40px ${theme.colors.primary}4D`
-                }}
-              >
-                ACCESS_PROTOCOL
-              </Link>
-            </motion.div>
-            
-            <div className="md:col-span-4 grid grid-rows-2 gap-6">
-              <div 
-                className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col justify-center backdrop-blur-xl group transition-all"
-                style={{ 
-                  '--hover-border': `${theme.colors.primary}4D` 
-                } as any}
-                onMouseEnter={(e) => e.currentTarget.style.borderColor = `${theme.colors.primary}4D`}
-                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
-              >
-                <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderRestagText("*Notice_Interval*", 'title', theme)}</span>
-                <span className="text-4xl font-bold tracking-tighter relative z-10">{restaurant.reservationSettings.notice}</span>
-                <p className="text-[10px] text-gray-100 font-mono mt-2 uppercase relative z-10">Required lead time for prep</p>
-                <div className="absolute bottom-0 right-0 p-4 text-6xl font-black text-white/[0.03] pointer-events-none select-none">
-                  TIME_REF
-                </div>
-              </div>
-              <div 
-                className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col justify-center backdrop-blur-xl group transition-all"
-                style={{ 
-                  '--hover-border': `${theme.colors.primary}4D` 
-                } as any}
-                onMouseEnter={(e) => e.currentTarget.style.borderColor = `${theme.colors.primary}4D`}
-                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
-              >
-                <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderRestagText("*Max_Capacity*", 'title', theme)}</span>
-                <span className="text-4xl font-bold tracking-tighter relative z-10">{restaurant.reservationSettings.maxPartySize} NODES</span>
-                <p className="text-[10px] text-gray-100 font-mono mt-2 uppercase relative z-10">Maximum simultaneous processing</p>
-                <div className="absolute bottom-0 right-0 p-4 text-6xl font-black text-white/[0.03] pointer-events-none select-none">
-                  97%
-                </div>
+              
+              <div className="relative pb-[120vh] grid grid-cols-1">
+                {restaurant.process.map((step, idx) => (
+                  <ProcessStep key={idx} step={step} index={idx} total={restaurant.process.length} theme={theme} />
+                ))}
               </div>
             </div>
           </div>
-        </section>
+
+          {/* 4.5 Operational Registry & Contact */}
+          <section id="contact" className="max-w-7xl mx-auto px-6 py-12 scroll-mt-20">
+            <div className="grid lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-4 space-y-6">
+                <div className={`p-10 border rounded-[40px] backdrop-blur-3xl space-y-8 transition-all ${
+                  isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.02] border-black/10'
+                }`}>
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Contact_Node</span>
+                    <div className={`flex items-center gap-4 text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      <Phone className="w-6 h-6" style={{ color: theme.colors.primary }} />
+                      {restaurant.phone}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Operating_Registry</span>
+                    <div className="space-y-3">
+                      {Object.entries(restaurant.operatingHours).map(([day, hours]) => (
+                        <div key={day} className={`flex justify-between items-center border-b pb-2 transition-all ${isDark ? 'border-white/5' : 'border-black/5'}`}>
+                          <span className="text-xs text-gray-400 font-mono">{day}</span>
+                          <span className={`text-xs font-mono ${hours === 'Encerrado' ? 'text-red-500/60' : (isDark ? 'text-white' : 'text-gray-900')}`}>{hours}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className={`lg:col-span-8 relative rounded-[40px] overflow-hidden border min-h-[400px] transition-all ${
+                isDark ? 'border-white/10' : 'border-black/10'
+              }`}>
+                <Image 
+                  src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200&auto=format&fit=crop" 
+                  alt="Map View" 
+                  fill 
+                  className="object-cover grayscale opacity-40"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-black via-black/40 to-transparent" />
+                <div className="absolute bottom-10 left-10 space-y-4">
+                  <div className={`backdrop-blur-xl border p-6 rounded-2xl space-y-2 transition-all ${
+                    isDark ? 'bg-black/60 border-white/10' : 'bg-white/80 border-black/10'
+                  }`}>
+                    <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Geospatial_Target</span>
+                    <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{restaurant.address}</h3>
+                    <button className="flex items-center gap-2 text-[10px] font-mono text-gray-400 hover:text-white transition-colors uppercase tracking-widest">
+                      Open_In_Google_Maps <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 5. Final CTA / Bento Grid */}
+          <section id="audit" className="max-w-7xl mx-auto px-6 pb-12 scroll-mt-20 pt-10">
+            <div className="grid md:grid-cols-12 gap-6 h-auto md:h-[500px]">
+              <motion.div 
+                whileHover={{ y: -5 }}
+                className={`md:col-span-8 border rounded-3xl p-16 flex flex-col justify-center items-start space-y-8 relative overflow-hidden backdrop-blur-2xl group transition-all ${
+                  isDark ? 'bg-black/60 border-white/10' : 'bg-white/80 border-black/10'
+                }`}
+              >
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute top-0 right-0 w-96 h-96 blur-[100px] rounded-full" style={{ backgroundColor: `${theme.colors.primary}1A` }} />
+                  <div className={`absolute bottom-0 right-0 p-8 text-[12rem] font-black pointer-events-none select-none transition-all ${
+                    isDark ? 'text-white/[0.02]' : 'text-black/[0.01]'
+                  }`}>
+                    L47
+                  </div>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none relative z-10">
+                  {renderRestagText("INITIATE THE\n*EXPERIENCE\nNODE *RESTAG*", 'title', theme)}
+                </h2>
+                <p className={`max-w-md relative z-10 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Acesse o núcleo da nossa gastronomia. Garanta seu slot de processamento agora.
+                </p>
+                <Link 
+                  href="/restag/audit"
+                  className="px-12 py-5 rounded-2xl font-black tracking-widest hover:scale-105 transition-all relative z-10 flex items-center justify-center"
+                  style={{ 
+                    backgroundColor: theme.colors.primary,
+                    color: themeContrast,
+                    boxShadow: `0 0 40px ${theme.colors.primary}4D`
+                  }}
+                >
+                  ACCESS_PROTOCOL
+                </Link>
+              </motion.div>
+              
+              <div className="md:col-span-4 grid grid-rows-2 gap-6">
+                <div 
+                  className={`rounded-3xl p-8 flex flex-col justify-center backdrop-blur-xl group transition-all border ${
+                    isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.02] border-black/10'
+                  }`}
+                  style={{ 
+                    '--hover-border': `${theme.colors.primary}4D` 
+                  } as any}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = `${theme.colors.primary}4D`}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
+                >
+                  <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderRestagText("*Notice_Interval*", 'title', theme)}</span>
+                  <span className={`text-4xl font-bold tracking-tighter relative z-10 ${isDark ? 'text-white' : 'text-gray-900'}`}>{restaurant.reservationSettings.notice}</span>
+                  <p className={`text-[10px] font-mono mt-2 uppercase relative z-10 ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>Required lead time for prep</p>
+                  <div className={`absolute bottom-0 right-0 p-4 text-6xl font-black pointer-events-none select-none transition-all ${
+                    isDark ? 'text-white/[0.03]' : 'text-black/[0.02]'
+                  }`}>
+                    TIME_REF
+                  </div>
+                </div>
+                <div 
+                  className={`rounded-3xl p-8 flex flex-col justify-center backdrop-blur-xl group transition-all border ${
+                    isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.02] border-black/10'
+                  }`}
+                  style={{ 
+                    '--hover-border': `${theme.colors.primary}4D` 
+                  } as any}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = `${theme.colors.primary}4D`}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
+                >
+                  <span className="text-[10px] font-mono uppercase mb-2" style={{ color: theme.colors.textVoice }}>{renderRestagText("*Max_Capacity*", 'title', theme)}</span>
+                  <span className={`text-4xl font-bold tracking-tighter relative z-10 ${isDark ? 'text-white' : 'text-gray-900'}`}>{restaurant.reservationSettings.maxPartySize} NODES</span>
+                  <p className={`text-[10px] font-mono mt-2 uppercase relative z-10 ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>Maximum simultaneous processing</p>
+                  <div className={`absolute bottom-0 right-0 p-4 text-6xl font-black pointer-events-none select-none transition-all ${
+                    isDark ? 'text-white/[0.03]' : 'text-black/[0.02]'
+                  }`}>
+                    97%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
       
       {/* Reservation Drawer Overlay */}
       <AnimatePresence>
@@ -461,12 +495,16 @@ export const RestagDetailClient: React.FC<RestagDetailClientProps> = ({ restaura
 };
 
 const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP, onOpenDrawer: () => void }) => {
-  const { theme } = useTheme();
+  const { theme, isDark, themeContrast } = useTheme();
   
   return (
-    <div className="relative p-12 md:p-20 bg-white/5 border border-white/10 rounded-[40px] overflow-hidden backdrop-blur-3xl group">
+    <div className={`relative p-12 md:p-20 border rounded-[40px] overflow-hidden backdrop-blur-3xl group transition-all ${
+      isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.02] border-black/10'
+    }`}>
       {/* Background Decor */}
-      <div className="absolute top-0 right-0 p-12 text-[15rem] font-black text-white/[0.02] pointer-events-none select-none">
+      <div className={`absolute top-0 right-0 p-12 text-[15rem] font-black pointer-events-none select-none transition-all ${
+        isDark ? 'text-white/[0.02]' : 'text-black/[0.01]'
+      }`}>
         BOOK
       </div>
       
@@ -481,17 +519,17 @@ const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-none">
             {renderRestagText("GARANTA SEU\n**SLOT** DE\nEXPERIÊNCIA", 'title', theme)}
           </h2>
-          <p className="text-gray-400 max-w-md leading-relaxed">
+          <p className={`max-w-md leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Nossos slots de processamento gastronômico são limitados para garantir a integridade de cada ciclo. 
             Sincronize sua presença com o nosso nó central.
           </p>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 bg-white/5 border border-white/5 rounded-2xl">
+            <div className={`p-6 border rounded-2xl transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'}`}>
               <span className="block text-[10px] font-mono text-gray-500 uppercase mb-2">Notice_Required</span>
               <span className="text-2xl font-bold">{restaurant.reservationSettings.notice}</span>
             </div>
-            <div className="p-6 bg-white/5 border border-white/5 rounded-2xl">
+            <div className={`p-6 border rounded-2xl transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'}`}>
               <span className="block text-[10px] font-mono text-gray-500 uppercase mb-2">Max_Nodes</span>
               <span className="text-2xl font-bold">{restaurant.reservationSettings.maxPartySize} GUESTS</span>
             </div>
@@ -503,15 +541,19 @@ const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0 border-2 border-dashed border-white/10 rounded-full"
+              className={`absolute inset-0 border-2 border-dashed rounded-full transition-all ${isDark ? 'border-white/10' : 'border-black/10'}`}
             />
             <motion.div 
               animate={{ rotate: -360 }}
               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-8 border border-white/5 rounded-full"
+              className={`absolute inset-8 border rounded-full transition-all ${isDark ? 'border-white/5' : 'border-black/5'}`}
             />
             <div 
-              className="w-48 h-48 rounded-full bg-white/5 border border-white/10 backdrop-blur-2xl flex flex-col items-center justify-center text-center p-6 shadow-[0_0_50px_rgba(255,255,255,0.05)]"
+              className={`w-48 h-48 rounded-full border backdrop-blur-2xl flex flex-col items-center justify-center text-center p-6 transition-all ${
+                isDark 
+                  ? 'bg-white/5 border-white/10 shadow-[0_0_50px_rgba(255,255,255,0.05)]' 
+                  : 'bg-black/5 border-black/10 shadow-[0_0_50px_rgba(0,0,0,0.02)]'
+              }`}
             >
               <Calendar className="w-8 h-8 mb-4" style={{ color: theme.colors.primary }} />
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] mb-1">Status</span>
@@ -523,9 +565,10 @@ const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onOpenDrawer}
-            className="w-full max-w-sm py-6 rounded-2xl font-black text-black tracking-[0.3em] uppercase transition-all shadow-2xl"
+            className="w-full max-w-sm py-6 rounded-2xl font-black tracking-[0.3em] uppercase transition-all shadow-2xl"
             style={{ 
               backgroundColor: theme.colors.primary,
+              color: themeContrast,
               boxShadow: `0 20px 40px ${theme.colors.primary}33`
             }}
           >
@@ -538,7 +581,7 @@ const BookingSection = ({ restaurant, onOpenDrawer }: { restaurant: RestaurantLP
 };
 
 const MenuItem = ({ item }: { item: any }) => {
-  const { theme } = useTheme();
+  const { theme, isDark, themeContrast } = useTheme();
   return (
     <motion.div 
       role="button"
@@ -546,15 +589,22 @@ const MenuItem = ({ item }: { item: any }) => {
       whileHover={{ x: 10 }}
       onClick={() => {}}
       onKeyDown={(e) => handleKeyDown(e, () => {})}
-      className="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all cursor-pointer relative overflow-hidden backdrop-blur-sm"
+      className={`group p-6 border rounded-2xl transition-all cursor-pointer relative overflow-hidden backdrop-blur-sm ${
+        isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-black/5 border-black/10 hover:bg-black/10'
+      }`}
     >
       {item.popular && (
-        <div className="absolute top-0 right-0 px-4 py-1 font-mono text-[8px] font-black rounded-bl-xl text-black" style={{ backgroundColor: theme.colors.primary }}>
+        <div className="absolute top-0 right-0 px-4 py-1 font-mono text-[8px] font-black rounded-bl-xl" style={{ backgroundColor: theme.colors.primary, color: themeContrast }}>
           NODE_STAPLE_v1
         </div>
       )}
       <div className="flex justify-between items-start mb-2 relative z-10">
-        <h4 className="text-xl font-black text-white group-hover:bg-[var(--hover-color)] group-hover:text-black transition-all px-2 rounded-lg -ml-2 inline-block uppercase tracking-tighter" style={{ '--hover-color': theme.colors.primary } as any}>
+        <h4 className={`text-xl font-black group-hover:bg-[var(--hover-color)] group-hover:text-[var(--hover-text-color)] transition-all px-2 rounded-lg -ml-2 inline-block uppercase tracking-tighter ${
+          isDark ? 'text-white' : 'text-gray-900'
+        }`} style={{ 
+          '--hover-color': theme.colors.primary,
+          '--hover-text-color': themeContrast
+        } as any}>
           {renderRestagText(item.name, 'title', theme)}
         </h4>
         <span className="font-mono text-lg" style={{ color: theme.colors.primary }}>{item.price}</span>
@@ -565,7 +615,7 @@ const MenuItem = ({ item }: { item: any }) => {
 };
 
 const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, onClose: () => void }) => {
-  const { theme, themeContrast } = useTheme();
+  const { theme, themeContrast, isDark } = useTheme();
   
   // Form State
   const [partySize, setPartySize] = useState(2);
@@ -658,13 +708,15 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[150]" />
         <motion.div 
           initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-          className="fixed top-0 right-0 w-full md:w-[500px] h-full bg-[#0a0a0a] border-l border-white/10 z-[200] flex flex-col items-center justify-center p-12 text-center"
+          className={`fixed top-0 right-0 w-full md:w-[500px] h-full border-l z-[200] flex flex-col items-center justify-center p-12 text-center transition-all ${
+            isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-white border-black/10 text-gray-900'
+          }`}
         >
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }}>
             <CheckCircle2 className="w-24 h-24 mb-8" style={{ color: theme.colors.primary }} />
           </motion.div>
           <h2 className="text-3xl font-black tracking-tighter uppercase mb-4">RESERVA_SYNC_SUCCESS</h2>
-          <p className="text-gray-400 mb-12 font-mono text-sm uppercase tracking-widest">
+          <p className={`mb-12 font-mono text-sm uppercase tracking-widest ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             O seu slot foi calibrado com sucesso.<br/>Receberá uma confirmação em breve.
           </p>
           <button 
@@ -697,24 +749,28 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
           mobile: { y: 0, x: 0 }
         }}
         transition={{ type: "spring", damping: 30, stiffness: 200 }}
-        className="fixed bottom-0 right-0 w-full md:w-[500px] md:top-0 md:h-full h-[92vh] bg-[#0a0a0a] border-t md:border-t-0 md:border-l border-white/10 z-[200] shadow-2xl overflow-hidden flex flex-col rounded-t-[40px] md:rounded-t-none"
+        className={`fixed bottom-0 right-0 w-full md:w-[500px] md:top-0 md:h-full h-[92vh] border-t md:border-t-0 md:border-l z-[200] shadow-2xl overflow-hidden flex flex-col rounded-t-[40px] md:rounded-t-none transition-all ${
+          isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-white border-black/10 text-gray-900'
+        }`}
       >
         {/* Mobile Handle */}
-        <div className="md:hidden w-12 h-1.5 bg-white/10 rounded-full mx-auto mt-4 mb-2 shrink-0" />
+        <div className={`md:hidden w-12 h-1.5 rounded-full mx-auto mt-4 mb-2 shrink-0 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
         {/* Header */}
-        <div className="p-8 border-b border-white/5 bg-zinc-950/50 flex justify-between items-center">
+        <div className={`p-8 border-b flex justify-between items-center transition-all ${
+          isDark ? 'border-white/5 bg-zinc-950/50' : 'border-black/5 bg-zinc-50'
+        }`}>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg" style={{ backgroundColor: `${theme.colors.primary}20`, border: `1px solid ${theme.colors.primary}40` }}>
               <Calendar className="w-5 h-5" style={{ color: theme.colors.primary }} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white uppercase tracking-tighter">
+              <h2 className={`text-xl font-bold uppercase tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {renderRestagText("RESERVA_*PROTOCOL*", 'title', theme)}
               </h2>
-              <p className="text-[10px] font-mono text-gray-500">{restaurant.cardTitle.replace(/\*/g, '').toUpperCase()} // SLOT_CALIBRATION</p>
+              <p className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>{restaurant.cardTitle.replace(/\*/g, '').toUpperCase()} // SLOT_CALIBRATION</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-500">
+          <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-white/10 text-gray-500' : 'hover:bg-black/10 text-gray-600'}`}>
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -730,11 +786,13 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
             </div>
             
             <div className="flex items-center gap-4">
-              <div className="flex-1 flex items-center justify-between p-2 bg-white/5 border border-white/10 rounded-2xl">
+              <div className={`flex-1 flex items-center justify-between p-2 rounded-2xl border transition-all ${
+                isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-black/5 border-black/10 text-gray-900'
+              }`}>
                 <motion.button 
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setPartySize(Math.max(1, partySize - 1))}
-                  className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-xl font-bold"
+                  className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-black/5 hover:bg-black/10'}`}
                 >
                   -
                 </motion.button>
@@ -744,7 +802,7 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
                     key={partySize}
                     initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="text-4xl font-black tracking-tighter"
+                    className={`text-4xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}
                   >
                     {partySize}
                   </motion.span>
@@ -754,8 +812,11 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
                 <motion.button 
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setPartySize(Math.min(restaurant.reservationSettings.maxPartySize, partySize + 1))}
-                  className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors text-xl font-bold"
-                  style={{ backgroundColor: partySize < restaurant.reservationSettings.maxPartySize ? `${theme.colors.primary}20` : 'transparent', color: partySize < restaurant.reservationSettings.maxPartySize ? theme.colors.primary : 'inherit' }}
+                  className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors text-xl font-bold`}
+                  style={{ 
+                    backgroundColor: partySize < restaurant.reservationSettings.maxPartySize ? `${theme.colors.primary}20` : 'transparent', 
+                    color: partySize < restaurant.reservationSettings.maxPartySize ? theme.colors.primary : (isDark ? '#fff' : '#000') 
+                  }}
                 >
                   +
                 </motion.button>
@@ -767,7 +828,11 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
                   <button 
                     key={size}
                     onClick={() => setPartySize(size)}
-                    className={`px-4 py-2 rounded-xl border font-mono text-xs transition-all ${partySize === size ? 'bg-white border-white text-black' : 'bg-transparent border-white/10 text-gray-400'}`}
+                    className={`px-4 py-2 rounded-xl border font-mono text-xs transition-all ${
+                      partySize === size 
+                        ? (isDark ? 'bg-white border-white text-black' : 'bg-black border-black text-white') 
+                        : (isDark ? 'bg-transparent border-white/10 text-gray-400' : 'bg-transparent border-black/10 text-gray-600')
+                    }`}
                   >
                     {size}P
                   </button>
@@ -792,7 +857,11 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
                 <button 
                   key={d.value}
                   onClick={() => setDate(d.value)}
-                  className={`flex-shrink-0 w-20 p-4 border rounded-xl flex flex-col items-center gap-1 transition-all ${date === d.value ? 'bg-white/10 border-white text-white' : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20'}`}
+                  className={`flex-shrink-0 w-20 p-4 border rounded-xl flex flex-col items-center gap-1 transition-all ${
+                    date === d.value 
+                      ? (isDark ? 'bg-white/10 border-white text-white' : 'bg-black/10 border-black text-black') 
+                      : (isDark ? 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20' : 'bg-black/5 border-black/5 text-gray-600 hover:border-black/20')
+                  }`}
                   style={{ borderColor: date === d.value ? theme.colors.primary : '' }}
                 >
                   <span className="text-[8px] font-mono opacity-60">{d.weekday}</span>
@@ -812,7 +881,11 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
                 <button 
                   key={t}
                   onClick={() => setTime(t)}
-                  className={`p-3 border rounded-xl transition-all font-mono text-xs ${time === t ? 'bg-white/10 border-white text-white' : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20'}`}
+                  className={`p-3 border rounded-xl transition-all font-mono text-xs ${
+                    time === t 
+                      ? (isDark ? 'bg-white/10 border-white text-white' : 'bg-black/10 border-black text-black') 
+                      : (isDark ? 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20' : 'bg-black/5 border-black/5 text-gray-600 hover:border-black/20')
+                  }`}
                   style={{ borderColor: time === t ? theme.colors.primary : '' }}
                 >
                   {t}
@@ -829,21 +902,37 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
             <div className="space-y-3">
               <input 
                 type="text" placeholder="NOME_COMPLETO" value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-white/40 transition-colors"
+                className={`w-full border rounded-xl p-4 text-sm font-mono focus:outline-none transition-colors ${
+                  isDark 
+                    ? 'bg-white/5 border-white/10 text-white focus:border-white/40' 
+                    : 'bg-black/5 border-black/10 text-gray-900 focus:border-black/40'
+                }`}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input 
                   type="tel" placeholder="TELEFONE" value={phone} onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-white/40 transition-colors"
+                  className={`w-full border rounded-xl p-4 text-sm font-mono focus:outline-none transition-colors ${
+                    isDark 
+                      ? 'bg-white/5 border-white/10 text-white focus:border-white/40' 
+                      : 'bg-black/5 border-black/10 text-gray-900 focus:border-black/40'
+                  }`}
                 />
                 <input 
                   type="email" placeholder="EMAIL (OPTIONAL)" value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-white/40 transition-colors"
+                  className={`w-full border rounded-xl p-4 text-sm font-mono focus:outline-none transition-colors ${
+                    isDark 
+                      ? 'bg-white/5 border-white/10 text-white focus:border-white/40' 
+                      : 'bg-black/5 border-black/10 text-gray-900 focus:border-black/40'
+                  }`}
                 />
               </div>
               <textarea 
                 placeholder="OBSERVAÇÕES_ADICIONAIS" value={notes} onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-white/40 transition-colors h-24 resize-none"
+                className={`w-full border rounded-xl p-4 text-sm font-mono focus:outline-none transition-colors h-24 resize-none ${
+                  isDark 
+                    ? 'bg-white/5 border-white/10 text-white focus:border-white/40' 
+                    : 'bg-black/5 border-black/10 text-gray-900 focus:border-black/40'
+                }`}
               />
             </div>
           </section>
@@ -862,13 +951,14 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
         </div>
 
         {/* Footer Action */}
-        <div className="p-8 bg-zinc-950 border-t border-white/5">
+        <div className={`p-8 border-t transition-all ${isDark ? 'bg-zinc-950 border-white/5' : 'bg-zinc-50 border-black/5'}`}>
           <button 
             disabled={isSubmitting}
             onClick={handleSubmit}
-            className="w-full py-5 text-black font-black rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-5 font-black rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             style={{ 
               backgroundColor: theme.colors.primary,
+              color: themeContrast,
               boxShadow: `0 0 40px ${theme.colors.primary}33`
             }}
           >
@@ -886,7 +976,10 @@ const ReservationDrawer = ({ restaurant, onClose }: { restaurant: RestaurantLP, 
     </>
   );
 };
+
 const ProcessStep = ({ step, index, total, theme }: { step: any, index: number, total: number, theme: any }) => {
+  const { isDark, themeContrast } = useTheme();
+
   return (
     <div 
       className="sticky h-0 overflow-visible"
@@ -901,20 +994,24 @@ const ProcessStep = ({ step, index, total, theme }: { step: any, index: number, 
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10%" }}
         transition={{ duration: 0.5 }}
-        className="space-y-6 p-6 md:p-10 bg-zinc-900/90 border border-white/10 rounded-[30px] md:rounded-[40px] backdrop-blur-3xl relative overflow-hidden group shadow-2xl"
+        className={`space-y-6 p-6 md:p-10 border rounded-[30px] md:rounded-[40px] backdrop-blur-3xl relative overflow-hidden group shadow-2xl transition-all ${
+          isDark ? 'bg-zinc-900/90 border-white/10' : 'bg-white/90 border-black/10'
+        }`}
       >
         <div 
-          className="absolute top-0 right-0 p-8 text-8xl font-black text-white/[0.03] pointer-events-none transition-colors"
+          className={`absolute top-0 right-0 p-8 text-8xl font-black pointer-events-none transition-all ${
+            isDark ? 'text-white/[0.03]' : 'text-black/[0.02]'
+          }`}
           style={{ '--hover-text': `${theme.colors.primary}0D` } as any}
         >
           {step.step}
         </div>
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-black font-bold" style={{ backgroundColor: theme.colors.primary }}>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center font-bold" style={{ backgroundColor: theme.colors.primary, color: themeContrast }}>
           {step.step}
         </div>
-        <h3 className="text-3xl font-bold tracking-tighter uppercase">{renderRestagText(step.title, 'title', theme)}</h3>
+        <h3 className={`text-3xl font-bold tracking-tighter uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>{renderRestagText(step.title, 'title', theme)}</h3>
         <p className="leading-relaxed italic" style={{ color: theme.colors.textSecondary }}>{renderRestagText(step.desc, 'description', theme)}</p>
-        <div className="pt-6 border-t border-white/5">
+        <div className={`pt-6 border-t transition-all ${isDark ? 'border-white/5' : 'border-black/5'}`}>
           <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: theme.colors.textVoice }}>Metadata_Log</p>
           <p className="text-xs mt-2" style={{ color: theme.colors.textMuted }}>{step.detail}</p>
         </div>

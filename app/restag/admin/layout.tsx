@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRestagAuth } from '../hooks/useRestagAuth';
+import { supabase } from '../lib/supabase';
 
 export default function AdminLayout({
   children,
@@ -24,6 +26,23 @@ export default function AdminLayout({
   const pathname = usePathname();
   const { theme } = useTheme();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
+  const { loading, role } = useRestagAuth();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/restag/login';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center flex-col gap-4 font-mono text-xs tracking-widest text-red-500/80">
+        <div className="w-12 h-12 rounded-full border border-red-500/30 border-t-red-500 animate-spin flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full border border-red-500/10 border-t-red-500 animate-spin-reverse" />
+        </div>
+        <span>CHECKING SUPERADMIN AUTHENTICATION NODE...</span>
+      </div>
+    );
+  }
 
   const navItems = [
     { name: 'Core Overview', path: '/restag/admin', icon: ShieldCheck },
@@ -78,7 +97,7 @@ export default function AdminLayout({
         <button className="flex items-center gap-3 w-full px-4 py-3 text-red-400 hover:text-white hover:bg-red-500/10 rounded-lg transition-all text-sm font-medium mt-1">
           <ServerCrash className="w-4 h-4" /> Core Config
         </button>
-        <button className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all text-sm font-medium mt-1 border border-transparent">
+        <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all text-sm font-medium mt-1 border border-transparent">
           <LogOut className="w-4 h-4" /> Finalizar Sessão
         </button>
       </div>

@@ -29,13 +29,13 @@ function ScrollProgressBar() {
 // ─── Scroll % HUD ─────────────────────────────────────────────────────────────
 function ScrollHUD() {
   const { scrollYProgress } = useScroll();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [pct, setPct] = useState(47);
   scrollYProgress.on('change', (v) => setPct(Math.round(47 + v * 53)));
   return (
-    <div className="fixed bottom-6 right-6 z-40 font-mono text-xs border border-white/10 bg-black/60 backdrop-blur-xl px-3 py-2 rounded-full pointer-events-none">
+    <div className={`fixed bottom-6 right-6 z-40 font-mono text-xs border backdrop-blur-xl px-3 py-2 rounded-full pointer-events-none ${isDark ? 'border-white/10 bg-black/60' : 'border-black/10 bg-white/85'}`}>
       <span style={{ color: theme.colors.primary }}>{pct}%</span>
-      <span className="text-white/30 ml-1">LOADED</span>
+      <span className={`ml-1 ${isDark ? 'text-white/30' : 'text-black/30'}`}>LOADED</span>
     </div>
   );
 }
@@ -125,7 +125,7 @@ const METRICS = [
 
 // ─── Metric Component (Identical to /restag) ──────────────────────────────────────
 const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: any) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [count, setCount] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -165,13 +165,15 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
       className="flex flex-col items-center text-center gap-4 group cursor-pointer"
       onClick={() => setIsExpanded(!isExpanded)}
     >
-      <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-2 border border-white/10 group-hover:border-white/20 transition-all group-hover:scale-110 relative">
-        <Icon className="w-7 h-7 text-gray-500 group-hover:text-white transition-colors" style={{ color: theme.colors.primary }} />
+      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-2 border transition-all group-hover:scale-110 relative ${
+        isDark ? 'bg-white/5 border-white/10 group-hover:border-white/20' : 'bg-black/5 border-black/10 group-hover:border-black/20'
+      }`}>
+        <Icon className={`w-7 h-7 transition-colors ${isDark ? 'text-gray-500 group-hover:text-white' : 'text-gray-450 group-hover:text-black'}`} style={{ color: theme.colors.primary }} />
         {/* Secondary color accent */}
         <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full opacity-50 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: theme.colors.secondary }} />
       </div>
       
-      <div className="text-5xl font-bold text-white tracking-tighter transition-all group-hover:scale-105 tabular-nums" style={{ color: theme.colors.primary }}>
+      <div className={`text-5xl font-bold tracking-tighter transition-all group-hover:scale-105 tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`} style={{ color: theme.colors.primary }}>
         {targetValue % 1 === 0 ? Math.floor(count) : count.toFixed(1)}
         {suffix}
       </div>
@@ -181,7 +183,7 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
           {label}
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
-            className="text-gray-400"
+            className={isDark ? 'text-gray-400' : 'text-gray-500'}
           >
             <ChevronDown className="w-3 h-3" />
           </motion.div>
@@ -195,7 +197,7 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <p className="text-[9px] font-mono leading-relaxed mt-2 max-w-[150px] uppercase tracking-wider" style={{ color: theme.colors.secondary }}>
+              <p className="text-[9px] font-mono leading-relaxed mt-2 max-w-[150px] uppercase tracking-wider" style={{ color: isDark ? theme.colors.secondary : theme.colors.textSecondary }}>
                 {description}
               </p>
             </motion.div>
@@ -204,7 +206,7 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
       </div>
 
       {/* Hover prompt */}
-      <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[8px] font-mono text-white/20 uppercase tracking-widest">
+      <div className={`mt-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[8px] font-mono uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-black/30'}`}>
         <MousePointer2 className="w-2.5 h-2.5" />
         Protocol_Details
       </div>
@@ -214,7 +216,7 @@ const Metric = ({ label, targetValue, suffix = "", icon: Icon, description }: an
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AuditClient() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [formState, setFormState] = useState({ name: '', business: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
@@ -251,8 +253,14 @@ export default function AuditClient() {
               }}
             />
             {/* Gradient overlay - adjusted for panoramic view and top-fill */}
-            <div className="absolute inset-x-0 top-[-200px] bottom-0 bg-gradient-to-b from-black/95 via-black/30 to-black pointer-events-none" />
-            <div className="absolute inset-x-0 top-[-200px] bottom-0 bg-gradient-to-r from-black via-transparent to-black pointer-events-none opacity-60" />
+            <div className={`absolute inset-x-0 top-[-200px] bottom-0 pointer-events-none ${
+              isDark 
+                ? 'bg-gradient-to-b from-black/95 via-black/30 to-black' 
+                : 'bg-gradient-to-b from-[#f8f9fa]/95 via-[#f8f9fa]/30 to-[#f8f9fa]'
+            }`} />
+            <div className={`absolute inset-x-0 top-[-200px] bottom-0 pointer-events-none opacity-60 ${
+              isDark ? 'bg-gradient-to-r from-black via-transparent to-black' : 'bg-gradient-to-r from-[#f8f9fa] via-transparent to-[#f8f9fa]'
+            }`} />
             
             {/* Ambient glow - wider and shorter, also pulled up */}
             <div className="absolute top-[calc(50%-100px)] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[300px] rounded-full blur-[200px] opacity-25 pointer-events-none"
@@ -281,7 +289,11 @@ export default function AuditClient() {
         </section>
 
         {/* ── SECTION 2: Metrics Bar (Identical to /restag THERMAL_STATUS) ── */}
-        <div id="metrics" className="relative w-screen left-1/2 -translate-x-1/2 overflow-hidden border-y border-white/18 bg-zinc-900/5 backdrop-blur-2xl">
+        <div id="metrics" className={`relative w-screen left-1/2 -translate-x-1/2 overflow-hidden border-y backdrop-blur-2xl transition-all duration-300 ${
+          isDark 
+            ? 'border-white/10 bg-zinc-900/5' 
+            : 'border-black/10 bg-black/[0.02]'
+        }`}>
           {/* Internal technical background */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -318,12 +330,14 @@ export default function AuditClient() {
         {/* ── SECTION 3: Process (Sticky Scroll Stack) ── */}
         <section id="process" className="max-w-7xl mx-auto px-6 pb-24 pt-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-colors ${
+              isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'
+            }`}>
               <Settings className="w-6 h-6" style={{ color: theme.colors.primary }} />
             </div>
             <div>
               <p className="text-[10px] font-mono uppercase tracking-[0.4em] mb-1" style={{ color: theme.colors.primary }}>GASTRO_ENGINEERING_CYCLE</p>
-              <h2 className="text-3xl font-bold text-white tracking-tight uppercase">O Processo</h2>
+              <h2 className={`text-3xl font-bold tracking-tight uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>O Processo</h2>
             </div>
           </motion.div>
 
@@ -343,17 +357,25 @@ export default function AuditClient() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative p-8 md:p-12 rounded-[40px] border border-white/10 bg-zinc-950/95 backdrop-blur-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                  className={`relative p-8 md:p-12 rounded-[40px] border backdrop-blur-2xl overflow-hidden transition-all duration-300 ${
+                    isDark 
+                      ? 'border-white/10 bg-zinc-950/95 shadow-[0_20px_50px_rgba(0,0,0,0.5)]' 
+                      : 'border-black/10 bg-white/90 shadow-[0_20px_50px_rgba(0,0,0,0.05)]'
+                  }`}
                 >
                   {/* Watermark */}
-                  <div className="absolute top-4 right-6 text-[120px] font-black font-mono opacity-[0.04] select-none pointer-events-none leading-none">
+                  <div className={`absolute top-4 right-6 text-[120px] font-black font-mono select-none pointer-events-none leading-none ${
+                    isDark ? 'opacity-[0.04]' : 'opacity-[0.02]'
+                  }`}>
                     {step.id}
                   </div>
                   {/* Glow accent */}
                   <div className="absolute top-0 left-0 w-1.5 h-full rounded-l-[40px]" style={{ backgroundColor: theme.colors.primary }} />
 
                   <div className="flex flex-col md:flex-row gap-8 items-start">
-                    <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                    <div className={`flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center border shadow-inner transition-colors ${
+                      isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'
+                    }`}>
                       <step.icon className="w-7 h-7" style={{ color: theme.colors.primary }} />
                     </div>
                     <div className="flex-1 space-y-4">
@@ -361,10 +383,12 @@ export default function AuditClient() {
                         <p className="text-[10px] font-mono uppercase tracking-[0.4em] mb-1" style={{ color: theme.colors.primary }}>
                           STEP_{step.id} · {step.title}
                         </p>
-                        <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{step.subtitle}</h3>
+                        <h3 className={`text-2xl md:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{step.subtitle}</h3>
                       </div>
-                      <p className="text-white/60 leading-relaxed max-w-2xl">{step.description}</p>
-                      <div className="pt-4 border-t border-white/5 font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">
+                      <p className={`leading-relaxed max-w-2xl ${isDark ? 'text-white/60' : 'text-gray-600'}`}>{step.description}</p>
+                      <div className={`pt-4 border-t font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                        isDark ? 'border-white/5 text-white/30' : 'border-black/5 text-gray-400'
+                      }`}>
                         {step.meta}
                       </div>
                     </div>
@@ -379,10 +403,10 @@ export default function AuditClient() {
         <section id="faq" className="max-w-4xl mx-auto px-6 pb-24 pt-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
             <p className="text-[10px] font-mono uppercase tracking-[0.4em] mb-2" style={{ color: theme.colors.primary }}>FAQ_SECTION</p>
-            <h2 className="text-3xl font-bold text-white tracking-tight uppercase">Perguntas Frequentes</h2>
+            <h2 className={`text-3xl font-bold tracking-tight uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>Perguntas Frequentes</h2>
           </motion.div>
 
-          <div className="space-y-0 divide-y divide-white/8">
+          <div className={`space-y-0 divide-y transition-colors duration-300 ${isDark ? 'divide-white/8' : 'divide-black/10'}`}>
             {FAQ_ITEMS.map((item, i) => (
               <motion.div
                 key={i}
@@ -396,9 +420,9 @@ export default function AuditClient() {
                   aria-expanded={openFaq === i}
                   className="w-full flex items-center justify-between py-6 text-left gap-4 group"
                 >
-                  <span className="font-medium text-white/80 group-hover:text-white transition-colors">{item.q}</span>
+                  <span className={`font-medium transition-colors ${isDark ? 'text-white/80 group-hover:text-white' : 'text-gray-800 group-hover:text-black'}`}>{item.q}</span>
                   <motion.div animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.3 }} className="flex-shrink-0">
-                    <ChevronDown className="w-5 h-5 text-white/40" />
+                    <ChevronDown className={`w-5 h-5 ${isDark ? 'text-white/40' : 'text-black/40'}`} />
                   </motion.div>
                 </button>
                 <AnimatePresence>
@@ -410,7 +434,7 @@ export default function AuditClient() {
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <p className="pb-6 text-white/50 leading-relaxed text-sm">{item.a}</p>
+                      <p className={`pb-6 leading-relaxed text-sm ${isDark ? 'text-white/50' : 'text-gray-600'}`}>{item.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -426,7 +450,11 @@ export default function AuditClient() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative p-8 md:p-16 rounded-[64px] border border-white/10 bg-zinc-950/60 backdrop-blur-2xl overflow-hidden"
+            className={`relative p-8 md:p-16 rounded-[64px] border backdrop-blur-2xl overflow-hidden transition-all duration-300 ${
+              isDark 
+                ? 'border-white/10 bg-zinc-950/60' 
+                : 'border-black/10 bg-white/80 shadow-[0_30px_60px_rgba(0,0,0,0.05)]'
+            }`}
           >
             {/* Dot grid background */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -446,14 +474,14 @@ export default function AuditClient() {
                   <p className="text-[10px] font-mono uppercase tracking-[0.4em] mb-3" style={{ color: theme.colors.primary }}>
                     DEPLOY_AUDIT_REQUEST
                   </p>
-                  <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tighter leading-none uppercase">
+                  <h2 className={`text-4xl md:text-5xl font-bold tracking-tighter leading-none uppercase ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     Pronto para<br />
                     <span className="px-2 py-1 rounded-lg" style={{ backgroundColor: theme.colors.primary, color: '#000' }}>
                       o Próximo Nível?
                     </span>
                   </h2>
                 </div>
-                <p className="text-white/50 leading-relaxed">
+                <p className={`leading-relaxed ${isDark ? 'text-white/50' : 'text-gray-600'}`}>
                   Preenche o formulário e a nossa equipa entra em contacto em menos de 48 horas para agendar a tua auditoria.
                 </p>
 
@@ -465,15 +493,15 @@ export default function AuditClient() {
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <item.icon className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.primary }} />
-                      <span className="text-sm text-white/60">{item.text}</span>
+                      <span className={`text-sm ${isDark ? 'text-white/60' : 'text-gray-700'}`}>{item.text}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="pt-4 border-t border-white/8">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">
+                <div className={`pt-4 border-t transition-colors ${isDark ? 'border-white/8' : 'border-black/10'}`}>
+                  <p className={`font-mono text-[10px] uppercase tracking-[0.3em] transition-colors ${isDark ? 'text-white/30' : 'text-gray-400'}`}>
                     Ou contacta diretamente →{' '}
-                    <a href="mailto:labs@agencia47.pt" className="hover:text-white/60 transition-colors underline underline-offset-4">
+                    <a href="mailto:labs@agencia47.pt" className={`transition-colors underline underline-offset-4 ${isDark ? 'hover:text-white/60' : 'hover:text-black/60'}`}>
                       labs@agencia47.pt
                     </a>
                   </p>
@@ -495,12 +523,14 @@ export default function AuditClient() {
                         <CheckCircle className="w-10 h-10" style={{ color: theme.colors.primary }} />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-white mb-2">REQUEST_SUBMITTED</h3>
-                        <p className="text-white/50 text-sm">Entramos em contacto em menos de 48h.</p>
+                        <h3 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>REQUEST_SUBMITTED</h3>
+                        <p className={`text-sm ${isDark ? 'text-white/50' : 'text-gray-600'}`}>Entramos em contacto em menos de 48h.</p>
                       </div>
                       <button
                         onClick={() => { setSubmitted(false); setFormState({ name: '', business: '', email: '', message: '' }); }}
-                        className="font-mono text-[10px] uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
+                        className={`font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                          isDark ? 'text-white/30 hover:text-white/60' : 'text-gray-450 hover:text-gray-600'
+                        }`}
                       >
                         ← Nova submissão
                       </button>
@@ -529,7 +559,11 @@ export default function AuditClient() {
                             placeholder={field.placeholder}
                             value={formState[field.id as keyof typeof formState]}
                             onChange={(e) => setFormState(prev => ({ ...prev, [field.id]: e.target.value }))}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-white/20 text-sm outline-none focus:border-white/30 transition-colors font-mono"
+                            className={`w-full border rounded-2xl px-4 py-3 text-sm outline-none transition-colors font-mono ${
+                              isDark 
+                                ? 'bg-white/5 border-white/10 text-white placeholder-white/20 focus:border-white/30' 
+                                : 'bg-black/5 border-black/10 text-gray-900 placeholder-black/30 focus:border-black/30'
+                            }`}
                           />
                         </div>
                       ))}
@@ -544,7 +578,11 @@ export default function AuditClient() {
                           placeholder="Descreve brevemente o teu negócio e os principais desafios que enfrentas..."
                           value={formState.message}
                           onChange={(e) => setFormState(prev => ({ ...prev, message: e.target.value }))}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-white/20 text-sm outline-none focus:border-white/30 transition-colors font-mono resize-none"
+                          className={`w-full border rounded-2xl px-4 py-3 text-sm outline-none transition-colors font-mono resize-none ${
+                            isDark 
+                              ? 'bg-white/5 border-white/10 text-white placeholder-white/20 focus:border-white/30' 
+                              : 'bg-black/5 border-black/10 text-gray-900 placeholder-black/30 focus:border-black/30'
+                          }`}
                         />
                       </div>
 
@@ -568,7 +606,7 @@ export default function AuditClient() {
                         )}
                       </button>
 
-                      <p className="text-center font-mono text-[9px] uppercase tracking-widest text-white/20">
+                      <p className={`text-center font-mono text-[9px] uppercase tracking-widest transition-colors ${isDark ? 'text-white/20' : 'text-gray-400'}`}>
                         ENCRYPTED_TRANSMISSION · GDPR_COMPLIANT
                       </p>
                     </motion.form>

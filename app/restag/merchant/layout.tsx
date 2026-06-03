@@ -18,6 +18,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRestagAuth } from '../hooks/useRestagAuth';
+import { supabase } from '../lib/supabase';
 
 export default function MerchantLayout({
   children,
@@ -29,6 +31,12 @@ export default function MerchantLayout({
   const { theme } = useTheme();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
   const [impersonateData, setImpersonateData] = React.useState<any>(null);
+  const { loading, hasModule } = useRestagAuth();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/restag/login';
+  };
 
   React.useEffect(() => {
     const data = localStorage.getItem('restag_impersonate');
@@ -43,12 +51,23 @@ export default function MerchantLayout({
     router.push('/restag/admin/restaurantes');
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center flex-col gap-4 font-mono text-xs tracking-widest text-emerald-500/80">
+        <div className="w-12 h-12 rounded-full border border-emerald-500/30 border-t-emerald-500 animate-spin flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full border border-emerald-500/10 border-t-emerald-500 animate-spin-reverse" />
+        </div>
+        <span>INITIALIZING RESTAG MERCHANT NODE SECURITY...</span>
+      </div>
+    );
+  }
+
   const navItems = [
-    { name: 'Dashboard', path: '/restag/merchant', icon: Store },
-    { name: 'Reservas', path: '/restag/merchant/reservas', icon: CalendarCheck },
-    { name: 'Menu', path: '/restag/merchant/menu', icon: UtensilsCrossed },
-    { name: 'Equipe', path: '/restag/merchant/equipa', icon: Users },
-  ];
+    { name: 'Dashboard', path: '/restag/merchant', icon: Store, visible: true },
+    { name: 'Reservas', path: '/restag/merchant/reservas', icon: CalendarCheck, visible: hasModule('RESERVATIONS') },
+    { name: 'Menu', path: '/restag/merchant/menu', icon: UtensilsCrossed, visible: hasModule('MENU') },
+    { name: 'Equipe', path: '/restag/merchant/equipa', icon: Users, visible: true },
+  ].filter(item => item.visible);
 
   const SidebarContent = () => (
     <>
@@ -95,7 +114,7 @@ export default function MerchantLayout({
         <button className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all text-sm font-medium">
           <Settings className="w-4 h-4" /> Configurações
         </button>
-        <button className="flex items-center gap-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-lg transition-all text-sm font-medium mt-1">
+        <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-lg transition-all text-sm font-medium mt-1">
           <LogOut className="w-4 h-4" /> Desconectar
         </button>
       </div>

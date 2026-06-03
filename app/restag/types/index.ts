@@ -1,4 +1,4 @@
-export type UserRole = 'ag47_admin' | 'merchant' | 'customer';
+export type UserRole = 'ag47_admin' | 'merchant' | 'staff' | 'customer';
 export type NodeStatus = 'pending' | 'active' | 'suspended';
 export type ReservationStatus = 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
 
@@ -15,6 +15,49 @@ export interface Profile {
   full_name: string | null;
   role: UserRole;
   created_at: string;
+}
+
+export interface StaffAssignment {
+  id: string;
+  profile_id: string;
+  restaurant_id: string;
+  allowed_modules: ('MENU' | 'RESERVATIONS' | 'ADS' | 'WHATSAPP')[];
+  permissions: {
+    can_create: boolean;
+    can_read: boolean;
+    can_update: boolean;
+    can_delete: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Invitation {
+  id: string;
+  restaurant_id: string;
+  email: string;
+  allowed_modules: ('MENU' | 'RESERVATIONS' | 'ADS' | 'WHATSAPP')[];
+  permissions: {
+    can_create: boolean;
+    can_read: boolean;
+    can_update: boolean;
+    can_delete: boolean;
+  };
+  status: 'pending' | 'accepted' | 'expired';
+  token: string;
+  created_at: string;
+  expires_at: string;
+}
+
+export interface CustomerCRM {
+  id: string;
+  restaurant_id: string;
+  profile_id: string;
+  total_reservations: number;
+  notes: string | null;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Restaurant {

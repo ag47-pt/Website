@@ -79,15 +79,90 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  const adaptiveTheme = React.useMemo(() => {
+    if (isDark) return currentTheme
+
+    const overrides: Record<string, Partial<typeof defaultTheme['colors']>> = {
+      lime: {
+        primary: '#527000', // Verde lima profundo para legibilidade excepcional no claro
+        secondary: '#007080', // Ciano profundo
+        accent: '#007080',
+        highlight: '#527000',
+        scrollPercentage: '#527000',
+        textVoice: '#3e5500',
+        textRestagMarked: '#ffffff',
+        textRestagMarkedBG: '#527000',
+      },
+      orange: {
+        primary: '#d96200', // Laranja queimado premium
+        secondary: '#b83a00',
+        accent: '#d96200',
+        highlight: '#b83a00',
+        scrollPercentage: '#d96200',
+        textVoice: '#a04000',
+        textRestagMarked: '#ffffff',
+        textRestagMarkedBG: '#d96200',
+      },
+      blue: {
+        primary: '#0059ff', // Azul já é perfeitamente legível no modo claro
+        secondary: '#007b80',
+        accent: '#0059ff',
+        highlight: '#0059ff',
+        scrollPercentage: '#0059ff',
+        textVoice: '#003db3',
+        textRestagMarked: '#ffffff',
+        textRestagMarkedBG: '#0059ff',
+      },
+      tomate: {
+        primary: '#d90000', // Vermelho tomate denso
+        secondary: '#b83a00',
+        accent: '#d90000',
+        highlight: '#b83a00',
+        scrollPercentage: '#d90000',
+        textVoice: '#990000',
+        textRestagMarked: '#ffffff',
+        textRestagMarkedBG: '#d90000',
+      },
+      default: {
+        primary: '#db2777', // Rosa clássico do Labs escurecido para excelente contraste
+        secondary: '#6d28d9',
+        accent: '#db2777',
+        highlight: '#db2777',
+        scrollPercentage: '#db2777',
+        textVoice: '#be185d',
+        textRestagMarked: '#ffffff',
+        textRestagMarkedBG: '#db2777',
+      }
+    }
+
+    const themeOverrides = overrides[themeName] || {}
+
+    return {
+      ...currentTheme,
+      colors: {
+        ...currentTheme.colors,
+        ...themeOverrides,
+        textPrimary: '#111827', // Slate-900 para contraste excelente no modo claro
+        textSecondary: '#4b5563', // Slate-600 para descrições e textos de apoio
+        textMuted: '#8892a0', // Slate-450 para metadados e badges secundários
+        glass: {
+          ...currentTheme.colors.glass,
+          bg: 'rgba(255, 255, 255, 0.85)', // Vidro claro com desfoque elegante
+          border: 'rgba(0, 0, 0, 0.08)', // Borda sutil para contornos claros
+        }
+      }
+    }
+  }, [currentTheme, isDark, themeName])
+
   return (
     <ThemeContext.Provider value={{ 
-      theme: currentTheme, 
+      theme: adaptiveTheme, 
       themeName, 
       toggleTheme, 
       setTheme,
       isDark, 
       toggleDark,
-      themeContrast: getContrastColor(currentTheme.colors.primary) 
+      themeContrast: getContrastColor(adaptiveTheme.colors.primary) 
     }}>
       {children}
     </ThemeContext.Provider>

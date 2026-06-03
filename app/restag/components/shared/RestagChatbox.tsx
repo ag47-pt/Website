@@ -72,7 +72,7 @@ function parseSuggestions(text: string): { body: string; suggestions: string[] }
 }
 
 export function RestagChatbox() {
-  const { theme } = useTheme()
+  const { theme, isDark } = useTheme()
   const primary = theme.colors.primary
   const secondary = theme.colors.secondary
   const hex6 = (c: string) => (c.length === 9 ? c.slice(0, 7) : c)
@@ -183,26 +183,28 @@ export function RestagChatbox() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className="fixed z-50 flex flex-col overflow-hidden bottom-0 right-0 rounded-t-2xl sm:bottom-44 sm:right-8 sm:rounded-2xl sm:w-96"
             style={{
-              background: theme.colors.glass.bg,
+              background: isDark ? theme.colors.glass.bg : 'rgba(255, 255, 255, 0.85)',
               backdropFilter: theme.colors.glass.blur,
-              border: `1px solid ${theme.colors.glass.border}`,
-              boxShadow: `0 0 40px ${hex6(secondary)}33`,
+              border: `1px solid ${isDark ? theme.colors.glass.border : 'rgba(0, 0, 0, 0.08)'}`,
+              boxShadow: isDark 
+                ? `0 0 40px ${hex6(secondary)}33`
+                : `0 10px 40px rgba(0,0,0,0.06)`,
               height: 'min(520px, calc(100dvh - 5rem))',
             }}
           >
             {/* Header */}
-            <div className="px-4 py-3 flex items-center gap-3 shrink-0" style={{ background: `linear-gradient(135deg, ${hex6(secondary)}26, ${hex6(primary)}26)`, borderBottom: `1px solid ${theme.colors.glass.border}` }}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-black text-white shrink-0 border border-white/10">
+            <div className="px-4 py-3 flex items-center gap-3 shrink-0" style={{ background: `linear-gradient(135deg, ${hex6(secondary)}26, ${hex6(primary)}26)`, borderBottom: `1px solid ${isDark ? theme.colors.glass.border : 'rgba(0, 0, 0, 0.08)'}` }}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${isDark ? 'bg-black text-white border-white/10' : 'bg-white text-gray-900 border-black/10'}`}>
                 <Utensils className="w-4 h-4" style={{ color: primary }} />
               </div>
               <div>
-                <p className="text-white text-sm font-semibold leading-tight">Restag Maître</p>
-                <p className="text-xs text-white/50">Assistente Gastronómico</p>
+                <p className={`text-sm font-semibold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>Restag Maître</p>
+                <p className={`text-xs ${isDark ? 'text-white/50' : 'text-gray-500'}`}>Assistente Gastronómico</p>
               </div>
               <div className="ml-auto flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-lime-500 shadow-[0_0_6px_#84cc16]" />
-                <button onClick={() => setIsOpen(false)} className="sm:hidden w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
-                  <span className="text-white/70 text-sm font-bold">✕</span>
+                <button onClick={() => setIsOpen(false)} className={`sm:hidden w-7 h-7 rounded-full flex items-center justify-center ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
+                  <span className={`text-sm font-bold ${isDark ? 'text-white/70' : 'text-black/70'}`}>✕</span>
                 </button>
               </div>
             </div>
@@ -217,7 +219,12 @@ export function RestagChatbox() {
                       className="max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed"
                       style={msg.role === 'user' 
                         ? { background: `linear-gradient(135deg, ${secondary}, ${primary})`, color: 'white', borderBottomRightRadius: '4px' } 
-                        : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.9)', border: `1px solid ${theme.colors.glass.border}`, borderBottomLeftRadius: '4px' }
+                        : { 
+                            background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)', 
+                            color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(17,24,39,0.9)', 
+                            border: `1px solid ${isDark ? theme.colors.glass.border : 'rgba(0,0,0,0.08)'}`, 
+                            borderBottomLeftRadius: '4px' 
+                          }
                       }
                       dangerouslySetInnerHTML={msg.role === 'assistant' ? { __html: renderMarkdown(body, hex6(primary)) } : undefined}
                     >
@@ -245,7 +252,7 @@ export function RestagChatbox() {
               })}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="rounded-2xl px-4 py-2.5 flex items-center gap-1.5 bg-white/5 border border-white/10">
+                  <div className={`rounded-2xl px-4 py-2.5 flex items-center gap-1.5 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
                     {[0, 1, 2].map((i) => (
                       <motion.span key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: primary }} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }} />
                     ))}
@@ -256,8 +263,8 @@ export function RestagChatbox() {
             </div>
 
             {/* Input */}
-            <div className="px-3 py-3 shrink-0" style={{ borderTop: `1px solid ${theme.colors.glass.border}` }}>
-              <div className="flex items-end gap-2 rounded-xl px-3 py-2 bg-white/5 border border-white/10">
+            <div className="px-3 py-3 shrink-0" style={{ borderTop: `1px solid ${isDark ? theme.colors.glass.border : 'rgba(0, 0, 0, 0.08)'}` }}>
+              <div className={`flex items-end gap-2 rounded-xl px-3 py-2 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
                 <textarea
                   ref={inputRef}
                   value={input}
@@ -265,7 +272,7 @@ export function RestagChatbox() {
                   onKeyDown={handleKeyDown}
                   placeholder="Peça informações ou faça uma reserva..."
                   rows={1}
-                  className="flex-1 bg-transparent text-white text-sm placeholder-white/20 resize-none outline-none py-1"
+                  className={`flex-1 bg-transparent text-sm resize-none outline-none py-1 ${isDark ? 'text-white placeholder-white/20' : 'text-gray-900 placeholder-black/30'}`}
                   style={{ maxHeight: '80px' }}
                 />
                 <button

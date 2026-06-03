@@ -5,13 +5,13 @@
 
 export const theme = {
   colors: {
-    primary: '#ffffffff', // Azul Royal (Blue 500) - tom base tecnológico e profundo.
+    primary: '#0059ff', // Azul Royal (Blue 500) - tom base tecnológico e profundo.
     secondary: '#00f2ff', // Ciano Neon - para brilhos de interface e acentos vibrantes.
-    accent: '#fbfbfcff', // Azul Brilhante - para estados de hover e luzes de destaque.
+    accent: '#00d0ff', // Azul Brilhante - para estados de hover e luzes de destaque.
     textPrimary: '#ffffff', // Texto principal branco.
     textSecondary: '#cbd5e7', // Cinza azulado para descrições.
     textMuted: '#fbfcfe88', // Azul pálido translúcido para elementos secundários.
-    textVoice: '#6a8ecfff', // Azul denso para títulos e ícones de destaque.
+    textVoice: '#003db3', // Azul denso para títulos e ícones de destaque.
     
     textRestagMarked: '#ffffffff', 
     textRestagMarkedBG: '#0059ff',
