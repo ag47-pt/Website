@@ -1,0 +1,19 @@
+{
+  "skill_name": "ag47-designer-labs-landing-pages",
+  "evals": [
+    {
+      "id": 1,
+      "name": "create-new-service-lp",
+      "prompt": "Cria uma nova Landing Page completa para o serviço de 'Consultoria de IA Generativa'. A página deve seguir o padrão Labs, ter um fundo nebuloso tecnológico, incluir uma barra de resultados com métricas fictícias, uma sessão de processo de 4 passos com efeito de sticky scroll, e uma tabela de preços integrada com 3 níveis.",
+      "expected_output": "Um componente React (Next.js) que implementa todas as secções solicitadas, utiliza framer-motion para animações (incluindo o sticky scroll), aplica glassmorphism, e integra o sistema de temas da Ag47.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "edit-existing-lp-add-plans",
+      "prompt": "Edita a LP de 'websites-landing-pages' para adicionar uma secção de planos de preços logo após a secção de processo. Usa o design da página de planos oficial, mas integrada no fluxo da LP.",
+      "expected_output": "O ficheiro ServicoDetalheClient.tsx atualizado com a nova secção de planos, mantendo a consistência visual e funcional do componente original.",
+      "files": ["app/servicos/[slug]/ServicoDetalheClient.tsx"]
+    }
+  ]
+}

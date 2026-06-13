@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "higgsfield": {
+      "url": "https://mcp.higgsfield.ai/mcp",
+      "type": "sse"
+    },
+    "github": {
+      "type": "sse",
+      "url": "https://mcp.github.com/mcp"
+    },
+    "google-developer-knowledge": {
+      "httpUrl": "https://developerknowledge.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "AIzaSyDrrSOPXPl1cUuKeg1uF3iMox-6FZFStJ0"
+      }
+    }
+  } 
+}
