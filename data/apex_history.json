@@ -1,0 +1,16 @@
+[
+  {
+    "timestamp": "2026-06-12T23:54:57.522Z",
+    "btcPrice": 63570.01,
+    "fearGreed": 50,
+    "marketPhase": "UNCERTAINTY",
+    "proposalsCount": 0
+  },
+  {
+    "timestamp": "2026-06-13T04:47:34.738Z",
+    "btcPrice": 63618,
+    "fearGreed": 50,
+    "marketPhase": "UNCERTAINTY",
+    "proposalsCount": 0
+  }
+]

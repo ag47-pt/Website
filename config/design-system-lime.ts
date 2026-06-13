@@ -11,7 +11,7 @@ export const theme = {
     textPrimary: '#ffffff', // Texto principal branco usado nos textos dos cards, em toda a navegação do site e em outros locais. 
     textSecondary: '#cbd5e7', // Usado em textos secundários e descrições em toda a navegação do site.
     textMuted: '#b2ffafff', // Usado em textos de menor importância e em elementos desabilitados em toda a navegação do site.
-    textVoice: '#90b100ff', // Usado em titulos e icones de destaque  secundario na versão lime
+    textVoice: '#D1FF00', // Usado em titulos e icones de destaque  secundario na versão lime
     
     textRestagMarked: '#000000ff', // Usado em textos de destaque secundário na versão lime
     textRestagMarkedBG: '#D1FF00', // Usado em background de destaque secundário na versão lime
@@ -29,7 +29,7 @@ export const theme = {
     // Backgrounds & Glass
     glass: {
       bg: 'rgba(0, 0, 0, 0.5)', // Fundo escuro semi-transparente para contraste
-      border: 'rgba(132, 204, 22, 0.1)', // Borda do vidro com um toque de verde
+      border: 'rgba(209, 255, 0, 0.1)', // Borda do vidro com um toque do verde lima principal
       blur: 'blur(24px)' // Efeito de desfoque para o vidro
     }
   },

@@ -29,7 +29,6 @@ export default function LabsLayout({
     { name: 'I.A-47', path: '/labs/ia', icon: Terminal },
     { name: 'DEV SHOWCASE', path: '/labs/dev', icon: Terminal },
     { name: 'SALES SLIDES', path: '/labs/slides', icon: Presentation },
-    { name: 'RESTAG', path: '/restag', icon: Utensils },
   ];
 
   // Close mobile menu on route change
@@ -204,7 +203,7 @@ export default function LabsLayout({
 
       {/* Main Content Area - Adjusted PT for new header height */}
       {/* Main Content Area - Adjusted PT for new header height */}
-      <main className={`relative ${pathname.startsWith('/restag/admin') || pathname.startsWith('/restag/merchant') ? 'pt-[73px]' : 'pt-20 md:pt-32'} pb-20 px-4 sm:px-6 max-w-7xl mx-auto`}>
+      <main className="relative pt-20 md:pt-32 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

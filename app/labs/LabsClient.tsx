@@ -2,11 +2,19 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Terminal, Code2, Presentation, Cpu } from 'lucide-react';
+import { Terminal, Code2, Presentation, Cpu, TrendingUp } from 'lucide-react';
 import { LabHero, LabCallCard } from './components';
 
 export function LabsClient() {
   const categories = [
+    {
+      id: 'apex',
+      title: 'APEX Predictor',
+      description: 'Sinais e previsões semanais, mensais e anuais do mercado de BTC com IA proprietária.',
+      icon: <TrendingUp className="w-8 h-8" />,
+      path: '/labs/apex',
+      status: 'BETA_LIVE',
+    },
     {
       id: 'dev',
       title: 'Dev Showcase',

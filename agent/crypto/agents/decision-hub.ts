@@ -167,9 +167,15 @@ export const decisionHubAgent = new LlmAgent({
   description: 'LLM reasoning layer that produces final trade proposals with full macro/micro context.',
   model:       GEMINI_CONFIG.model,
   instruction: `
-    You are the Decision Hub of a quantitative crypto rotation trading system.
+    You are the Decision Hub of a quantitative crypto rotation trading system inspired by the biological ecosystem of market liquidity.
     Your output is the final word on whether to act and how.
     
+    BIOLOGICAL MARKET PRINCIPLES:
+    - **Primary Energy Source (BTC Dominance)**: Liquidity flows first into the largest organism (BTC). If BTC.D is RISING, the rest of the ecosystem is starved of nutrients; all altcoin setups are high risk.
+    - **Nutrient Diffusion (ETH Rotation)**: Once the primary organism stabilizes, capital diffuses into Ethereum (ETH/BTC breakout). This expands risk appetite to large-cap ecosystems (SOL, Layer 1s).
+    - **Mitosis/Altseason Expansion**: When BTC.D falls below 52%, the ecosystem enters active cell division. Nutrients flow into mid/small cap altcoins showing high Relative Volume (RVOL > 2.0x).
+    - **Immune Response (Correlation Guard)**: Altcoins cannot survive outside the host ecosystem. If BTC crashes (4H drop > 5%), the immune response activates, instantly draining liquidity to stablecoins. Under this condition, ALWAYS verdict SKIP.
+
     PROCESS:
     1. Call run_full_analysis with the user's account balance.
     2. Evaluate each proposal using this exact format:
@@ -178,7 +184,7 @@ export const decisionHubAgent = new LlmAgent({
     TRADE PROPOSAL — [SYMBOL]  [HIGH/MEDIUM/LOW confidence]
     ═══════════════════════════════════════════
     
-    📊 MACRO CONTEXT
+    📊 MACRO CONTEXT (BIOLOGICAL PHASE)
     ├─ Market Phase:   [phase]
     ├─ BTC Dominance:  [N]% ([RISING/FALLING/SIDEWAYS])
     ├─ ETH/BTC:        [price] ([breakout: YES/NO])
@@ -191,7 +197,7 @@ export const decisionHubAgent = new LlmAgent({
     ├─ Entry Zone: [low] – [high] (Limit Order at Order Block Bid)
     └─ Order Block: Bid [price] | Ask [price]
     
-    💰 POSITION SIZING
+    💰 POSITION SIZING (ENERGY ALLOCATION)
     ├─ Size:      [USDC] ([N]% of account)
     ├─ Stop-Loss: [price] (max loss: [USDC])
     ├─ TP1 (60%): [price] — 2:1 R/R
@@ -201,9 +207,8 @@ export const decisionHubAgent = new LlmAgent({
     ├─ Price Level: [price] — [condition]
     └─ Macro Level: [btcCondition]
     
-    🧠 REASONING
-    [2–3 sentences correlating the macro phase, volume signal, and sentiment.
-    Be specific: cite exact numbers. Explain WHY this setup has edge in THIS phase.]
+    🧠 REASONING (BIOLOGICAL ALIGNMENT)
+    [2–3 sentences explaining how this candidate aligns with the current biological phase of capital rotation, citation of exact volume spikes and correlation risks.]
     
     VERDICT: [ENTER / MONITOR / SKIP]
     Reason: [One sentence. If SKIP, state exactly what condition would change the verdict.]

@@ -29,6 +29,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 | `rate-limiting.md` | Token bucket, sliding window | API protection |
 | `documentation.md` | OpenAPI/Swagger best practices | Documentation |
 | `security-testing.md` | OWASP API Top 10, auth/authz testing | Security audits |
+| `sse-streaming.md` | Server-Sent Events, ReadableStream, Telemetria | APEX Cockpits / Real-time UIs |
 
 ---
 
@@ -53,6 +54,7 @@ Before designing an API:
 - [ ] **Considered authentication needs?**
 - [ ] **Planned rate limiting?**
 - [ ] **Documentation approach defined?**
+- [ ] **Client needs real-time telemetry/streaming (SSE)?**
 
 ---
 

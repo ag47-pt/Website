@@ -84,32 +84,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const overrides: Record<string, Partial<typeof defaultTheme['colors']>> = {
       lime: {
-        primary: '#527000', // Verde lima profundo para legibilidade excepcional no claro
-        secondary: '#007080', // Ciano profundo
-        accent: '#007080',
-        highlight: '#527000',
-        scrollPercentage: '#527000',
-        textVoice: '#3e5500',
-        textRestagMarked: '#ffffff',
-        textRestagMarkedBG: '#527000',
+        primary: '#D1FF00', // Verde lima vibrante mantido no modo claro a pedido do utilizador
+        secondary: '#00d9ff',
+        accent: '#00d9ff',
+        highlight: '#D1FF00',
+        scrollPercentage: '#D1FF00',
+        textVoice: '#D1FF00',
+        textRestagMarked: '#000000',
+        textRestagMarkedBG: '#D1FF00',
       },
       orange: {
-        primary: '#d96200', // Laranja queimado premium
-        secondary: '#b83a00',
-        accent: '#d96200',
-        highlight: '#b83a00',
-        scrollPercentage: '#d96200',
-        textVoice: '#a04000',
-        textRestagMarked: '#ffffff',
-        textRestagMarkedBG: '#d96200',
+        primary: '#ffaa00', // Laranja vibrante mantido no modo claro a pedido do utilizador
+        secondary: '#ff4d00',
+        accent: '#ffcc00',
+        highlight: '#ffcc00',
+        scrollPercentage: '#ffaa00',
+        textVoice: '#ffaa00',
+        textRestagMarked: '#000000',
+        textRestagMarkedBG: '#ffaa00',
       },
       blue: {
-        primary: '#0059ff', // Azul já é perfeitamente legível no modo claro
-        secondary: '#007b80',
-        accent: '#0059ff',
-        highlight: '#0059ff',
+        primary: '#0059ff', // Azul mantido no modo claro a pedido do utilizador
+        secondary: '#00f2ff',
+        accent: '#00d0ff',
+        highlight: '#00f2ff',
         scrollPercentage: '#0059ff',
-        textVoice: '#003db3',
+        textVoice: '#0059ff',
         textRestagMarked: '#ffffff',
         textRestagMarkedBG: '#0059ff',
       },

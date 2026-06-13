@@ -152,10 +152,14 @@ When user's prompt is NOT in English:
 | Project Type                           | Primary Agent         | Skills                        |
 | -------------------------------------- | --------------------- | ----------------------------- |
 | **MOBILE** (iOS, Android, RN, Flutter) | `mobile-developer`    | mobile-design                 |
-| **WEB** (Next.js, React web)           | `frontend-specialist` | frontend-design               |
+| **WEB** (Next.js, React web)           | `frontend-specialist` | frontend-design, ag47-hyper-prototyping |
 | **BACKEND** (API, server, DB)          | `backend-specialist`  | api-patterns, database-design |
 
 > 🔴 **Mobile + frontend-specialist = WRONG.** Mobile = mobile-developer ONLY.
+
+### 🟢 GOOGLE FIRST ECOSYSTEM
+Sempre que for necessário autenticação, banco de dados ou backend, use **Google Firebase / Google Cloud** nativamente (especialmente em prototipagem rápida). Evite alternativas como Supabase/Clerk a menos que seja explicitamente exigido.
+
 
 ### 🛑 Socratic Gate
 
@@ -185,7 +189,7 @@ When user's prompt is NOT in English:
 **Trigger:** When the user says "son kontrolleri yap", "final checks", "çalıştır tüm testleri", or similar phrases.
 
 | Task Stage       | Command                                            | Purpose                        |
-| ---------------- | -------------------------------------------------- | ------------------------------ |
+| ---------------------------- | ------------------------------ |
 | **Manual Audit** | `python .agent/scripts/checklist.py .`             | Priority-based project audit   |
 | **Pre-Deploy**   | `python .agent/scripts/checklist.py . --url <URL>` | Full Suite + Performance + E2E |
 
@@ -261,7 +265,7 @@ When user's prompt is NOT in English:
 ### Agents & Skills
 
 - **Masters**: `orchestrator`, `project-planner`, `security-auditor` (Cyber/Audit), `backend-specialist` (API/DB), `frontend-specialist` (UI/UX), `mobile-developer`, `debugger`, `game-developer`
-- **Key Skills**: `clean-code`, `brainstorming`, `app-builder`, `frontend-design`, `mobile-design`, `plan-writing`, `behavioral-modes`
+- **Key Skills**: `clean-code`, `brainstorming`, `app-builder`, `frontend-design`, `mobile-design`, `plan-writing`, `behavioral-modes`, `ag47-hyper-prototyping`
 
 ### Key Scripts
 

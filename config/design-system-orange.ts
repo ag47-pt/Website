@@ -11,7 +11,7 @@ export const theme = {
     textPrimary: '#ffffff', // Texto principal branco para máxima legibilidade sobre fundos escuros.
     textSecondary: '#cbd5e7', // Azul acinzentado suave para descrições e textos secundários.
     textMuted: '#ffd1b388', // Laranja pálido translúcido para metadados e elementos desativados.
-    textVoice: '#cc8800', // Laranja escuro para títulos e ícones que precisam de peso visual.
+    textVoice: '#ffaa00', // Laranja vibrante principal para títulos e ícones de destaque.
     
     textRestagMarked: '#ffffffff', // Preto sólido para texto sobre fundos de destaque.
     textRestagMarkedBG: '#ffaa00', // Fundo laranja para marcações de texto.

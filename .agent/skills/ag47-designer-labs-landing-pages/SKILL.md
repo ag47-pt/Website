@@ -22,10 +22,11 @@ Trigger this skill whenever the user mentions:
 - **Palette**: Dark-first. Backgrounds should be deep black (#000000) or very dark grey.
 - **Dynamic Tokenization**: Use 	heme.colors.textVoice for technical labels and 	extRestagMarked/	extRestagMarkedBG for high-impact highlighted text.
 - **Atmosphere**: Use nebulous, cosmic, or technical background images with low opacity (30%) and blur (4px).
-- **Glassmorphism**: UI elements must use ackdrop-blur-xl, g-white/5, and subtle order-white/10.
+- **Glassmorphism**: UI elements must use  ackdrop-blur-xl,  g-white/5, and subtle  order-white/10.
 - **Watermark Layering**: Apply low-opacity (5%), high-scale monospaced text (e.g., 'L47', 'TIME_REF') as background stickers inside Bento cards to reinforce the technical/experimental feel.
 - **Typography**: Bold, high-contrast headings. Use a mix of white and low-opacity white (60-70%) for hierarchy.
 - **Animations**: Fluid motion using ramer-motion. Prefer scroll-driven animations and sticky positioning.
+- **Dynamic Glows**: Emissores de luz responsivos baseados no contexto da página. Injete sombras intensas no React usando inline styles com opacidade variável (ex: `boxShadow: 0 0 25px ${theme.colors.primary}40`).
 
 ## 2. Page Structure & Components
 
@@ -37,6 +38,7 @@ Trigger this skill whenever the user mentions:
 
 ### 2.2 Results/Metrics Bar
 - **Interaction**: Centered counters with `CountUp` animation.
+- **Advanced Visualization**: Para dados de performance contínua, utilize gráficos SVG minimalistas nativos (SVG Area Charts com preenchimentos lineares degradê), posicionados em segundo plano sob a métrica textual para adicionar profundidade high-tech sem ruído.
 - **Details**: Optional expandable descriptions for each metric using `AnimatePresence`.
 
 ### 2.3 Value Propositions

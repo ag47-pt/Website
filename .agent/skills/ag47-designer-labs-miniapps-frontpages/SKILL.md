@@ -147,6 +147,14 @@ For detail drawers or expanded views:
 - **The Comet**: `ScrollProgressBar` attached to the bottom of the sticky header.
 - **Percentage HUD**: A fixed bottom-right indicator showing the scroll progress starting from 47%.
 
+### 5. Advanced Telemetry & Interactive SVGs (Cockpits)
+Para módulos de análise avançada (Labs/Apex/Swarms), as interfaces devem parecer "painéis de controle" (Cockpits) com densidade de dados e responsividade:
+- **SVGs Interativos & Confidence Areas**: Gráficos construídos com SVGs nativos. Use `<polygon>` com baixa opacidade (`opacity="0.03"`) ligando a base histórica a projeções futuras para criar "Cones de Variância" que mapeiam a dispersão visual do modelo.
+- **SVG Area Charts**: Use preenchimentos degradê (`fill="url(#gradient)"`) de 5% a 0% de opacidade sob as linhas de histórico do gráfico para trazer mais profundidade sem ruído.
+- **Micro-interações de Dados (Modais Glassmorphism)**: Use tabelas técnicas que, ao clicar, disparam modals / Bottom Sheets (`backdrop-blur-2xl`) revelando a telemetria aprofundada ou recomendação do agente (Deep Dives).
+- **HUDs de Streaming em Tempo Real (SSE)**: Simule terminais de execução usando React e `TransformStream` via API (Server-Sent Events) para imprimir os logs operacionais do sistema na tela conforme os agentes processam os blocos de trabalho.
+- **Glow Dinâmico Baseado em Dados**: Em vez de cores estáticas, passe cores baseadas no "viés" dos dados (ex: `$biasColor` = verde ou vermelho) para dentro de atributos `box-shadow` e `style={{ color }}` para criar glows temáticos vibrantes (`box-shadow: 0 0 15px ${biasColor}33`).
+
 ## Project Structure & Implementation
 
 ### 4. Dynamic HUD Navigation (Context-Aware)

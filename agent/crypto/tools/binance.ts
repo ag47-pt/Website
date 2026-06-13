@@ -106,10 +106,8 @@ export async function fetchOrderBook(
 // ── ETH/BTC Price ─────────────────────────────────────────────────────────────
 
 export async function fetchEthBtcPrice(): Promise<number> {
-  // prices() with no args returns all symbols; filter for ETHBTC
-  const tickers = await client.prices()
-  const entry   = tickers.find(t => t.symbol === 'ETHBTC')
-  return parseFloat(entry?.price ?? '0')
+  const tickers = (await client.prices()) as unknown as Record<string, string>
+  return parseFloat(tickers['ETHBTC'] ?? '0')
 }
 
 // ── 24h Volume Stats (used for dominance proxy) ───────────────────────────────

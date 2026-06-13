@@ -2,10 +2,10 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Restag | Portal Gastronómico',
-    short_name: 'Restag',
-    description: 'A revolução na gestão e reserva de restaurantes.',
-    start_url: '/restag',
+    name: 'Agência 47 | Websites, SaaS & Marketing Digital',
+    short_name: 'Agência 47',
+    description: 'Catapultamos o teu negócio para o próximo nível.',
+    start_url: '/',
     display: 'standalone',
     background_color: '#000000',
     theme_color: '#000000',

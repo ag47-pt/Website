@@ -44,7 +44,15 @@ So please pay attention to context cues to understand how to phrase your communi
 It's OK to briefly explain terms if you're in doubt, and feel free to clarify terms with a short definition if you're unsure if the user will get it.
 
 ## Melhoria Contínua (Reforma)
-Utilize a skill g47-designs-Reformador-de-skills para analisar sessões de chat e logs persistentes. Ela ajudará a identificar onde as instruções do skill-creator estão falhando ou podem ser potencializadas com novos padrões de design e lógica da Agência 47.
+Utilize a skill  g47-designs-Reformador-de-skills para analisar sessões de chat e logs persistentes. Ela ajudará a identificar onde as instruções do skill-creator estão falhando ou podem ser potencializadas com novos padrões de design e lógica da Agência 47.
 
 ## Melhoria Contínua (Agência 47)
-Ao criar ou editar skills para o ecossistema Agência 47, siga estes protocolos mandatórios:\n\n1. **Referência de Design**: Se a skill envolver criação de UI, adicione uma regra mandatória de leitura do arquivo g47-designer-labs-miniapps-frontpages/resources/DESIGN_TOKENS.md.\n2. **Nomenclatura Técnica**: Integre o padrão 'Technical Registry' (ex: HeroNode_Registry, EngineeringCycle) nas instruções de estruturação de componentes.\n3. **Fisica de Layout**: Certifique-se de que a skill conheça o padrão 'Natural Sticky Stack' (Card Deck) com gaps de `30vh` para animações de scroll imersivas.\n4. **Tokens Dinâmicos**: Instrua a nova skill a utilizar 	extVoice para rótulos técnicos e 	extRestagMarked para destaques contextuais.\n5. **Navegação de HUD**: Para mini-apps e LPs, exija a implementação de menus flutuantes dinâmicos (HUD) baseados em arrays de `navItems` e Layouts centralizados.
+Ao criar ou editar skills para o ecossistema Agência 47, siga estes protocolos mandatórios:
+
+1. **Referência de Design**: Se a skill envolver criação de UI, adicione uma regra mandatória de leitura do arquivo `ag47-designer-labs-miniapps-frontpages/resources/DESIGN_TOKENS.md`.
+2. **Nomenclatura Técnica**: Integre o padrão 'Technical Registry' (ex: HeroNode_Registry, EngineeringCycle) nas instruções de estruturação de componentes.
+3. **Física de Layout**: Certifique-se de que a skill conheça o padrão 'Natural Sticky Stack' (Card Deck) com gaps de `30vh` para animações de scroll imersivas.
+4. **Tokens Dinâmicos**: Instrua a nova skill a utilizar tokens do tema para rótulos técnicos e destaques contextuais.
+5. **Navegação de HUD**: Para mini-apps e LPs, exija a implementação de menus flutuantes dinâmicos (HUD) baseados em arrays de `navItems` e Layouts centralizados.
+6. **Telemetria Avançada (Cockpits)**: Para UIs baseadas em dados, exija o uso de **SVGs Interativos** nativos com "Confidence Areas" (polígonos de baixa opacidade demonstrando margens) e **HUDs de Streaming SSE** para renderização de terminais e logs em tempo real.
+7. **Glows Dinâmicos**: Instrua o uso de sombras emissoras intensas controladas via React Inline Styles (ex: `boxShadow`), que reajam fluidamente ao viés ou contexto semântico atual dos dados exibidos.

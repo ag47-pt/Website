@@ -131,6 +131,12 @@ Request Flow:
 - Prototypes → Less structure acceptable
 - Always ask: "Will this grow?"
 
+### Streaming-First & Async Generators (Telemetry & AI)
+
+Quando construindo agentes de IA ou processos longos que necessitam reportar progresso ao frontend (ex: APEX Cockpits):
+- **Desacople o Motor de Decisão**: Use Async Generators (`async function*`) para a lógica de negócio, emitindo logs e estados com `yield` em vez de esperar o processamento completo.
+- **Web Streams (`ReadableStream`)**: Em runtimes modernos (Edge, Next.js, Hono), converta esses Generators em fluxos contínuos (Server-Sent Events - SSE) no Controller Layer. Isso evita timeouts de request HTTP tradicionais e permite a criação de interfaces de telemetria altamente fluidas.
+
 ---
 
 ## 4. Error Handling Principles

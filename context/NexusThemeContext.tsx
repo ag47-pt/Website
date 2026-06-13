@@ -28,7 +28,7 @@ export const NEXUS_THEMES: Record<NexusThemeName, NexusTheme> = {
     primary:      '#D1FF00',
     secondary:    '#00d9ff',
     onPrimary:    '#111827',
-    primaryText:  '#3f6212', // lime-900 — 7.2:1 on white
+    primaryText:  '#D1FF00', // Verde lima vibrante (ajustado conforme pedido do usuário)
     glowColor:    'rgba(209, 255, 0, 0.5)',
   },
   orange: {
@@ -36,7 +36,7 @@ export const NEXUS_THEMES: Record<NexusThemeName, NexusTheme> = {
     primary:      '#ffaa00',
     secondary:    '#ffea00',
     onPrimary:    '#111827',
-    primaryText:  '#c2410c', // orange-700 — 4.7:1 on white
+    primaryText:  '#ffaa00', // Laranja vibrante (ajustado conforme pedido do usuário)
     glowColor:    'rgba(255, 170, 0, 0.5)',
   },
 };

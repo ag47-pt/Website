@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Restag",
+    title: "Agência 47",
   },
   alternates: {
     canonical: "/",

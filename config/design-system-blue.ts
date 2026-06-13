@@ -11,7 +11,7 @@ export const theme = {
     textPrimary: '#ffffff', // Texto principal branco.
     textSecondary: '#cbd5e7', // Cinza azulado para descrições.
     textMuted: '#fbfcfe88', // Azul pálido translúcido para elementos secundários.
-    textVoice: '#003db3', // Azul denso para títulos e ícones de destaque.
+    textVoice: '#0059ff', // Azul vibrante principal para títulos e ícones de destaque.
     
     textRestagMarked: '#ffffffff', 
     textRestagMarkedBG: '#0059ff',

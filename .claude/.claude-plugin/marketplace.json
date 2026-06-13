@@ -40,8 +40,7 @@
         "./skills/web-artifacts-builder",
         "./skills/webapp-testing"
       ]
-    }
-    ,
+    },
     {
       "name": "claude-api",
       "description": "Claude API and SDK documentation skill for building LLM-powered applications",
@@ -49,6 +48,15 @@
       "strict": false,
       "skills": [
         "./skills/claude-api"
+      ]
+    },
+    {
+      "name": "andrej-karpathy-skills",
+      "description": "Behavioral guidelines to reduce common LLM coding mistakes: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/karpathy-guidelines"
       ]
     }
   ]
