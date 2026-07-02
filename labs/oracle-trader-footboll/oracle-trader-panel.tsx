@@ -1284,9 +1284,9 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
   return (
     <div className="min-h-screen text-white p-4 md:p-8 font-sans selection:bg-[rgb(var(--theme-primary-rgb)_/_0.3)]" style={{ '--accent': primaryColor, '--theme-primary': primaryColor, '--theme-primary-rgb': primaryRgb, '--theme-secondary': secondaryColor, '--theme-secondary-rgb': secondaryRgb } as React.CSSProperties}>
       <div className="max-w-5xl mx-auto relative">
-        <header className="flex flex-col sm:flex-row items-center justify-between mb-8 p-4 md:p-6 bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/5 relative overflow-hidden gap-4">
+        <header className="flex flex-col sm:flex-row items-center justify-between mb-8 p-4 md:p-6 bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/5 relative gap-4">
           {/* Glass shine effect */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none rounded-3xl" />
 
           <div className="flex items-center gap-4 relative z-10">
             <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[rgb(var(--theme-primary-rgb)_/_0.2)] to-cyan-500/10 border border-[rgb(var(--theme-primary-rgb)_/_0.2)] flex items-center justify-center backdrop-blur-xl shadow-[0_0_20px_rgb(var(--theme-primary-rgb)_/_0.15)] group cursor-pointer">
