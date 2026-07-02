@@ -17,15 +17,16 @@ Erro por informação faltante NÃO é aceitável. Antes de gerar qualquer proba
 
 ### Checklist de Pesquisa e Análise
 
-1. **Escalação provável confirmada:** Se não confirmada, reduza a confiança.
-2. **Lesões / desfalques / suspensões:** Nunca assuma que o time vai com força máxima sem confirmar.
-3. **Forma recente:** Últimos 5 jogos.
-4. **Retrospecto direto (H2H):** Como os times "casam" taticamente.
-5. **Contexto/motivação de tabela:** O que o jogo vale para cada um no torneio.
-6. **Odds atuais (1X2 + gols):** Sem odd = sem cálculo de edge = **sem sinal**.
-7. **Fator de contexto extra:** Clima, altitude, mando de campo, viagens longas.
-8. **Fatores extra-esportivos:** Crises internas, demissões, salários atrasados (só use dados jornalísticos).
-9. **Contexto eliminatório:** Fase de grupos vs. Mata-mata.
+1. **Competição/Liga (Categorização Estrita):** Qual a importância do torneio? (ex: Eliminatórias, Amistoso, Brasileirão). Isso dita a motivação e a variância esperada.
+2. **Escalação provável confirmada:** Se não confirmada, reduza a confiança.
+3. **Lesões / desfalques / suspensões:** Nunca assuma que o time vai com força máxima sem confirmar.
+4. **Forma recente:** Últimos 5 jogos.
+5. **Retrospecto direto (H2H):** Como os times "casam" taticamente.
+6. **Contexto/motivação de tabela:** O que o jogo vale para cada um no torneio.
+7. **Odds atuais (1X2 + gols):** Sem odd = sem cálculo de edge = **sem sinal**.
+8. **Fator de contexto extra:** Clima, altitude, mando de campo, viagens longas.
+9. **Fatores extra-esportivos:** Crises internas, demissões, salários atrasados (só use dados jornalísticos).
+10. **Contexto eliminatório:** Fase de grupos vs. Mata-mata.
 
 ---
 
@@ -99,6 +100,15 @@ Sua resposta **DEVE SER ESTRITAMENTE UM JSON VÁLIDO**, sem formatação Markdow
     "overUnderLine": 2.5,
     "overUnderPick": "under",
     "bttsPick": false
+  },
+  "oddsTaken": {
+    "market": "Match Winner (ex: Home Win)",
+    "odds": 1.95,
+    "bookmaker": "Bet365 / Pinnacle",
+    "capturedAt": "ISO Timestamp"
+  },
+  "stake": {
+    "units": 1.5
   },
   "dataGate": {
     "lineup": {"status": "confirmed", "note": "Time base mantido"},

@@ -143,13 +143,17 @@ All cards include:
   <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 rounded-br-2xl opacity-30 border-[color:var(--theme-primary)]"></div>
   ```
 
-- **Selo Perfect Outcome ("Perfect Success")**: Faixa absoluta no canto superior direito para denotar acerto/sucesso total (ex: 100% de precisão ou "PERFECT PREDICT"), com preenchimento da cor primária do tema e texto em preto puro, emitindo um leve glow externo:
+- **Selo Perfect Outcome ("Perfect Predict/Success")**: Faixa absoluta no **canto INFERIOR DIREITO** para denotar acerto total (ex: 100% precisão ou "PERFECT PREDICT"). Cor primária do tema, texto preto. O arredondamento (`rounded-tl-2xl`) e a direção da sombra (`shadow-[-4px_-4px_...]`) devem ser ajustados para o canto inferior:
 
   ```tsx
-  <div className="absolute top-0 right-0 z-20 bg-[color:var(--theme-primary)] text-black px-4 py-1.5 rounded-bl-2xl font-mono text-[10px] font-black tracking-widest shadow-[-4px_4px_20px_rgb(var(--theme-primary-rgb)_/_0.4)]">
-    🎯 PERFECT SUCCESS
-  </div>
+  {isPerfectPredict && (
+    <div className="absolute bottom-0 right-0 z-20 bg-[color:var(--theme-primary)] text-black px-4 py-1.5 rounded-tl-2xl font-mono text-[10px] font-black tracking-widest shadow-[-4px_-4px_20px_rgb(var(--theme-primary-rgb)_/_0.4)] flex items-center gap-1.5">
+      <span>🎯</span> PERFECT PREDICT <span>⚽</span>
+    </div>
+  )}
   ```
+
+  > ⚠️ **NUNCA coloque no canto superior direito** — conflitua com botões de ação (Dash, Edit, Delete).
 
 - **Thematic Integration**: Uses `ThemeContext` colors automatically.
 - **Entrance Animation**: Staggered `y: 20` fade-in with `viewport={{ once: true }}`.
@@ -178,6 +182,35 @@ For detail drawers or expanded views:
 </AnimatePresence>
 ```
 
+### 3b. Expand/Collapse de Itens de Aba (Padrão Labs Recomendado)
+
+**Regra**: Toda aba densa (Ledger, Pendentes, Aprendizado) deve iniciar com seus itens **retraídos/escondidos** e exibir um único botão central animado que expande/retrai.
+
+- **Estado Inicial**: Itens ocultos. Apenas o botão de ação central visível.
+- **Botão Central Animado**: Use um ícone flutuante animado (emoji ⚽ girando com `animate-bounce` ou `animate-spin`), efeito shimmer infinito, e label dinâmico "Ver Previsões (N)" / "Recolher".
+- **Botão permanece visível**: O botão de expandir/recolher NUNCA deve desaparecer quando os itens estão expandidos — reposicione-o abaixo dos itens ou como sticky.
+
+```tsx
+// Botão de Expand/Collapse animado
+<button
+  onClick={() => setIsExpanded(e => !e)}
+  className="relative group mx-auto flex items-center gap-3 px-6 py-3 rounded-2xl border border-[rgb(var(--theme-primary-rgb)/_0.2)] bg-[rgb(var(--theme-primary-rgb)/_0.05)] hover:bg-[rgb(var(--theme-primary-rgb)/_0.12)] text-[color:var(--theme-primary)] font-mono text-sm transition-all overflow-hidden"
+>
+  {/* Shimmer infinito */}
+  <div
+    className="absolute inset-0 -translate-x-full w-[200%] bg-gradient-to-r from-transparent via-[rgb(var(--theme-primary-rgb)/_0.4)] to-transparent pointer-events-none mix-blend-screen opacity-60"
+    style={{ animation: 'button-shimmer 3s infinite linear' }}
+  />
+  <span className={`text-xl ${isExpanded ? '' : 'animate-bounce'}`}>⚽</span>
+  <span className="relative z-10">
+    {isExpanded ? `Recolher Previsões` : `Ver Previsões (${count})`}
+  </span>
+</button>
+
+// CSS global necessário:
+// @keyframes button-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+```
+
 ### 4. Scroll Experience
 
 - **The Comet**: `ScrollProgressBar` attached to the bottom of the sticky header.
@@ -192,6 +225,7 @@ Para módulos de análise avançada (Labs/Apex/Swarms), as interfaces devem pare
 - **Micro-interações de Dados (Modais Glassmorphism)**: Use tabelas técnicas que, ao clicar, disparam modals / Bottom Sheets (`backdrop-blur-2xl`) revelando a telemetria aprofundada ou recomendação do agente (Deep Dives).
 - **HUDs de Streaming em Tempo Real (SSE)**: Simule terminais de execução usando React e `TransformStream` via API (Server-Sent Events) para imprimir os logs operacionais do sistema na tela conforme os agentes processam os blocos de trabalho.
 - **Glow Dinâmico Baseado em Dados**: Em vez de cores estáticas, passe cores baseadas no "viés" dos dados (ex: `$biasColor` = verde ou vermelho) para dentro de atributos `box-shadow` e `style={{ color }}` para criar glows temáticos vibrantes (`box-shadow: 0 0 15px ${biasColor}33`).
+- **Gráficos side-by-side**: Quando exibir dois gráficos relacionados (ex: Hit Rate + Calibração), renderize-os em grid `grid-cols-1 md:grid-cols-2` no mesmo card/sessão. Nunca separe em abas distintas para dados complementares.
 
 ### 6. Interactive Navigation Pipelines & Shimmer Buttons
 
@@ -252,9 +286,47 @@ Para dar dinamismo a abas de controle de painel ou passos de pipeline:
   </button>
   ```
 
+  > ⚙️ **CSS Global Obrigatório** para shimmer funcionar:
+  > ```css
+  > @keyframes button-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  > ```
+  > Velocidade ideal: **2.5s–3s** (mais lento = mais premium). Nunca use velocidade < 2s.
+
+- **Premium Action Buttons com Mouse Tracking Neon**: Para botões de destaque primário (ex: "Buscar Jogos do Dia"), use borda neon bicolor que segue o cursor via `onMouseMove`:
+
+  ```tsx
+  // No container pai, capture a posição do mouse:
+  onMouseMove={(e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  }}
+
+  // No botão, use backgroundImage com radial-gradient na borda:
+  style={{
+    border: '1px solid transparent',
+    backgroundImage: 'linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), radial-gradient(circle 100px at var(--mouse-x, 0px) var(--mouse-y, 0px), var(--theme-primary), var(--theme-secondary), transparent)',
+    backgroundOrigin: 'border-box',
+    backgroundClip: 'padding-box, border-box',
+    boxShadow: '0 0 15px rgba(var(--theme-primary-rgb), 0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+  }}
+  ```
+
+  > 🧠 **Mirror/Reflexo Periódico**: Adicione um segundo shimmer que dispara a cada 7 segundos com `setInterval`, usando `opacity` controlada via `useRef`, para criar o efeito de reflexo lento que varre o botão periodicamente. Velocidade entre **2s–4s** para o reflexo.
+  > ```tsx
+  > const mirrorRef = useRef<HTMLDivElement>(null);
+  > useEffect(() => {
+  >   const interval = setInterval(() => {
+  >     mirrorRef.current?.classList.add('animate-mirror');
+  >     setTimeout(() => mirrorRef.current?.classList.remove('animate-mirror'), 3000);
+  >   }, 7000);
+  >   return () => clearInterval(interval);
+  > }, []);
+  > ```
+
 ## Project Structure & Implementation
 
-### 4. Dynamic HUD Navigation (Context-Aware)
+### 7. Dynamic HUD Navigation (Context-Aware)
 
 Every immersive app MUST use a context-aware navigation system (HUD).
 
@@ -279,6 +351,44 @@ export default function App() {
 }
 ```
 
+### 7b. Sticky Header Colapsável (Padrão Sticky-Collapse Labs)
+
+Para mini-apps com painel de abas e pipeline superior, use um bloco sticky único que **colapsa ao rolar para baixo** e **expande ao rolar para cima** (ou ao clicar).
+
+**Regras obrigatórias**:
+1. O header sticky deve conter: logo + path, seletor de modelo IA, abas de navegação, e pipeline de etapas — tudo em um bloco único.
+2. O colapso deve ser suave via `framer-motion` com `height: 0 → auto`.
+3. Quando **recolhido**, ao clicar no botão central das abas, avançar para a próxima aba em ordem crescente (1→2→3→4→1), sem precisar expandir o header.
+4. O botão de toggle (expand/collapse) deve ter ícone claramente distinguível: `ChevronDown` expandido, `ChevronUp` recolhido — ou `Menu`/`X`.
+5. **NUNCA** use `position: absolute` dentro do sticky; use `position: sticky top-0 z-50`.
+
+```tsx
+// Padrão de detecção de scroll para auto-collapse
+const [isCollapsed, setIsCollapsed] = useState(false);
+const lastScrollY = useRef(0);
+
+useEffect(() => {
+  const handleScroll = () => {
+    const currentY = window.scrollY;
+    if (currentY > lastScrollY.current && currentY > 120) {
+      setIsCollapsed(true);  // rolando para baixo → colapsa
+    } else if (currentY < lastScrollY.current) {
+      setIsCollapsed(false); // rolando para cima → expande
+    }
+    lastScrollY.current = currentY;
+  };
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
+// Ao clicar nas abas com header colapsado → avançar automaticamente
+const handleTabClickCollapsed = () => {
+  const tabOrder = ['today', 'pending', 'ledger', 'learning'];
+  const nextIndex = (tabOrder.indexOf(tab) + 1) % tabOrder.length;
+  setTab(tabOrder[nextIndex]);
+};
+```
+
 ### Dynamic Backgrounds
 
 Use a combination of:
@@ -292,6 +402,16 @@ Use a combination of:
 - **Use `style={{ color: theme.colors.primary }}`** for accent text, overtitles, and icons (NOT Tailwind `text-primary`).
 - **Use `style={{ backgroundColor: theme.colors.primary }}`** for highlight backgrounds.
 - **Use CSS variable `--hover-color`** for group-hover effects to remain reactive.
+
+### Card Opacity & Theme Adherence Rules
+
+> 🔴 **Obrigatório** — Violações causam visual quebrado.
+
+1. **Fundo de card NUNCA completamente transparente**: Use mínimo `bg-black/40` (40% opacidade preta). Cards com `bg-black/10` ou menos ficam invisíveis sobre fundos nebulares.
+2. **Nunca use cores hardcoded (ex: `text-green-400`, `border-green-500`)** em mini-apps que têm `ThemeContext`. Sempre use `var(--theme-primary)` e `var(--theme-primary-rgb)`.
+3. **Marcas d'água de ícone**: Toda tela Labs deve ter um ícone grande de fundo (watermark) em `opacity-[0.03]` a `opacity-[0.06]`, com `rotate-12` que suaviza para `group-hover:rotate-0`.
+4. **Isolamento de App**: Mini-apps dentro de `/labs` devem remover o chatbox flutuante global e o navbar principal da plataforma, apresentando navegação própria isolada.
+5. **Glassmorphism de seção**: Blocos de controle (pipelines, headers, menus de abas) DEVEM usar `backdrop-blur-xl bg-black/40 border border-white/10` para criar o efeito de painel de vidro coeso.
 
 ## Project Setup (Path Aliases)
 
@@ -316,6 +436,7 @@ Refer to `resources/DESIGN_TOKENS.md` for all tokens. Key references:
 - **Card Hover**: `--hover-color` CSS var, `bg-[var(--hover-color)] text-black`, `duration-500`.
 - **Watermarks**: Opacity `0.05` to `0.15`, size `w-48` to `w-72`.
 - **Animations**: Standard durations — entrance `0.8s`, hover `0.5s`, watermark `0.7s`.
+- **Shimmer Speed**: `2.5s–3s` para botões de ação (loop infinito), `2s–4s` para reflexo periódico (7s interval).
 
 ## When to use this skill
 
@@ -324,3 +445,6 @@ Refer to `resources/DESIGN_TOKENS.md` for all tokens. Key references:
 - Refactoring existing pages to follow the latest Labs design system.
 - Implementing interactive theme-dependent UI.
 - Adding new card types that must follow the overtitle and hover rules.
+- Building dense information tabs (Ledger, Pending) with expand/collapse behavior.
+- Implementing sticky headers with auto-collapse on scroll.
+- Adding mouse-tracking neon borders to primary CTA buttons.

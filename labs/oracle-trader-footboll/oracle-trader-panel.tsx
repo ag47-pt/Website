@@ -38,6 +38,64 @@ const today = () => new Date().toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const getTimestamp = () => Date.now();
 
+const isResultTimeReleased = (pred: any) => {
+  try {
+    const dateStr = pred.match?.date; // "YYYY-MM-DD"
+    const kickoffStr = pred.match?.kickoff; // "HH:MM"
+    if (!dateStr || !kickoffStr) return { released: true };
+
+    const matchDateTime = new Date(`${dateStr}T${kickoffStr}:00`);
+    if (isNaN(matchDateTime.getTime())) return { released: true };
+
+    // Verifica se a fase é eliminatória (mata-mata, copa, playoff, final, etc.)
+    const stage = (pred.match?.stage || "").toLowerCase();
+    const isElimination = stage.includes("mata") || stage.includes("copa") || stage.includes("playoff") || stage.includes("final") || stage.includes("eliminatória");
+
+    // Acréscimo em minutos: 2h15 (135 min) ou 2h45 (165 min)
+    const offsetMinutes = isElimination ? 165 : 135;
+    const earliestTime = new Date(matchDateTime.getTime() + offsetMinutes * 60 * 1000);
+
+    const now = new Date();
+    const released = now >= earliestTime;
+
+    return {
+      released,
+      earliestTimeStr: earliestTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      earliestDateStr: earliestTime.toLocaleDateString([], { day: '2-digit', month: '2-digit' })
+    };
+  } catch (e) {
+    return { released: true };
+  }
+};
+
+const evaluateScoreAccuracy = (pick: any, real: any) => {
+  if (!pick || !real || typeof pick.home !== 'number' || typeof pick.away !== 'number' || typeof real.homeScore !== 'number' || typeof real.awayScore !== 'number') {
+    return null;
+  }
+  const pHome = Number(pick.home);
+  const pAway = Number(pick.away);
+  const rHome = Number(real.homeScore);
+  const rAway = Number(real.awayScore);
+
+  if (pHome === rHome && pAway === rAway) {
+    return { level: 3, text: "Placar Exato", score: 10 };
+  }
+
+  const pickWinner = pHome > pAway ? 1 : pHome < pAway ? -1 : 0;
+  const realWinner = rHome > rAway ? 1 : rHome < rAway ? -1 : 0;
+
+  if (pickWinner === realWinner) {
+    const pickDiff = pHome - pAway;
+    const realDiff = rHome - rAway;
+    if (pickDiff === realDiff) {
+      return { level: 2, text: "Vencedor + Saldo", score: 5 };
+    }
+    return { level: 1, text: "Vencedor", score: 3 };
+  }
+
+  return { level: 0, text: "Errou", score: 0 };
+};
+
 const AI_MODELS = [
   {
     group: 'Anthropic',
@@ -94,6 +152,15 @@ export default function OracleTraderPanel() {
   const [editingPred, setEditingPred] = useState<any | null>(null);
   const [manualLearning, setManualLearning] = useState('');
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+  const [isLedgerExpanded, setIsLedgerExpanded] = useState(false);
+  const [isLearningsExpanded, setIsLearningsExpanded] = useState(false);
+  const [selectedLedgerDate, setSelectedLedgerDate] = useState('Todas');
+  const [selectedGlueDate, setSelectedGlueDate] = useState<string>('');
+  const [selectedLeague, setSelectedLeague] = useState<string>('Todas');
+  const [webhookUrl, setWebhookUrl] = useState<string>('');
+  const [lastBackupTime, setLastBackupTime] = useState<number | null>(null);
+  const [lastBackupCount, setLastBackupCount] = useState<number>(0);
+  const [chartView, setChartView] = useState<'hitrate' | 'calibration'>('hitrate');
   const [showPasteModal, setShowPasteModal] = useState<'oracle_predictions' | 'oracle_learnings' | null>(null);
   const [pasteJsonText, setPasteJsonText] = useState('');
   const [activeDetailPred, setActiveDetailPred] = useState<any | null>(null);
@@ -103,6 +170,7 @@ export default function OracleTraderPanel() {
   const [showHistoryDashboard, setShowHistoryDashboard] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
+  const ledgerBtnRef = useRef<HTMLButtonElement>(null);
   const [isSticky, setIsSticky] = useState(false);
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(true);
   const [borderPulse, setBorderPulse] = useState(false);
@@ -115,14 +183,24 @@ export default function OracleTraderPanel() {
   }, []);
 
   useEffect(() => {
+    // Hysteresis thresholds prevent navbar from bouncing when layout changes
+    // shift the scroll position near the activation boundary
+    const STICKY_ON  = 240; // activate sticky after scrolling past this
+    const STICKY_OFF = 180; // only deactivate after scrolling back above this
+
     const handleScroll = () => {
-      const shouldStick = window.scrollY > 220;
-      setIsSticky(shouldStick);
-      if (!shouldStick) {
-        setIsMenuCollapsed(true);
-        setShowModelDropdown(false);
-      }
+      setIsSticky(prev => {
+        const y = window.scrollY;
+        if (!prev && y > STICKY_ON)  return true;
+        if (prev  && y < STICKY_OFF) {
+          setIsMenuCollapsed(true);
+          setShowModelDropdown(false);
+          return false;
+        }
+        return prev;
+      });
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -143,6 +221,16 @@ export default function OracleTraderPanel() {
 
   const handleSearchBtnMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     const btn = searchBtnRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    btn.style.setProperty('--mouse-x', `${x}px`);
+    btn.style.setProperty('--mouse-y', `${y}px`);
+  };
+
+  const handleLedgerBtnMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const btn = ledgerBtnRef.current;
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -295,6 +383,35 @@ export default function OracleTraderPanel() {
     return () => clearTimeout(t);
   }, [loadData]);
 
+  useEffect(() => {
+    const backupTime = localStorage.getItem('oracle_last_backup_timestamp');
+    const backupCount = localStorage.getItem('oracle_backup_last_count');
+    const savedWebhook = localStorage.getItem('oracle_webhook_url');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (backupTime) setLastBackupTime(parseInt(backupTime));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (backupCount) setLastBackupCount(parseInt(backupCount));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (savedWebhook) setWebhookUrl(savedWebhook);
+  }, []);
+
+  const showBackupBanner = useMemo(() => {
+    const resolvedCount = preds.filter(p => p.status === 'resolved' || p.exPost || p.result).length;
+    if (resolvedCount === 0) return false;
+    
+    // (a) nunca houve backup e há >= 3 previsões resolvidas
+    if (lastBackupTime === null) {
+      return resolvedCount >= 3;
+    }
+    
+    // (b) último backup há >= 7 dias e houve mudanças
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    // eslint-disable-next-line react-hooks/purity
+    const isStale = (Date.now() - lastBackupTime) >= sevenDaysMs;
+    const hasUnsavedChanges = resolvedCount !== lastBackupCount;
+    return isStale && hasUnsavedChanges;
+  }, [preds, lastBackupTime, lastBackupCount]);
+
   const savePred = useCallback(async (p: any) => {
     try {
       await setDoc(doc(db, 'oracle_predictions', p.id), p);
@@ -310,6 +427,117 @@ export default function OracleTraderPanel() {
       setPreds(prev => prev.filter(x => x.id !== id));
     } catch (e: any) { setError("Falha ao deletar: " + e.message); }
   }, []);
+
+  const handleCopyDailyGlue = useCallback(() => {
+    if (!selectedGlueDate) {
+      alert("Nenhuma data selecionada.");
+      return;
+    }
+    const gamesOfDay = preds.filter(p => (p.status === 'resolved' || p.exPost || p.result) && p.match?.date === selectedGlueDate);
+    if (gamesOfDay.length === 0) {
+      alert("Nenhum jogo resolvido nesta data.");
+      return;
+    }
+
+    let md = `# 📅 DIÁRIO ORACLE TRADER - ${selectedGlueDate}\n\n`;
+    
+    gamesOfDay.forEach((p, idx) => {
+      const isBet = p.track === 'bet' || p.exAnte?.track === 'bet';
+      const userAcc = evaluateScoreAccuracy(p.userScorePrediction, p.result);
+      const oracleAcc = evaluateScoreAccuracy(p.exAnte?.scorePrediction, p.result);
+      const userPredictionStr = p.userScorePrediction ? `${p.userScorePrediction.home}x${p.userScorePrediction.away}` : "N/A";
+      const oraclePredictionStr = p.exAnte?.scorePrediction ? `${p.exAnte.scorePrediction.home}x${p.exAnte.scorePrediction.away}` : "N/A";
+      const realStr = p.result ? `${p.result.homeScore}x${p.result.awayScore}` : "N/A";
+      
+      md += `### Jogo ${idx + 1}: ${p.match?.home} vs ${p.match?.away}\n`;
+      md += `- **Placar Real:** ${realStr}\n`;
+      md += `- **Palpite Usuário:** ${userPredictionStr} (${userAcc ? userAcc.text : 'Sem palpite'})\n`;
+      md += `- **Palpite Oracle (IA):** ${oraclePredictionStr} (${oracleAcc ? oracleAcc.text : 'Sem palpite'})\n`;
+      md += `- **Mercado / Aposta Sugerida:** [${isBet ? 'APOSTA REAL' : 'CALIBRAÇÃO'}] ${p.exAnte?.suggestedBet || p.exAnte?.market || 'Match Winner'}\n`;
+      if (p.exAnte?.oddsTaken?.odds) {
+        md += `- **Odds Capturadas:** @${p.exAnte.oddsTaken.odds} (Fechamento: @${p.result?.closingOdds || 'N/A'})\n`;
+      }
+      if (p.exPost?.classification) {
+        const meta = CLASS_META[p.exPost.classification] || { label: 'N/A' };
+        md += `- **Diagnóstico Causal:** ${meta.label}\n`;
+      }
+      if (p.exPost?.causalAnalysis) {
+        md += `- **Análise Ex-Post:** ${p.exPost.causalAnalysis}\n`;
+      }
+      md += `\n`;
+    });
+
+    navigator.clipboard.writeText(md);
+    alert(`Cola do dia ${selectedGlueDate} copiada para a área de transferência!`);
+  }, [selectedGlueDate, preds]);
+
+  const handleExportWebhook = useCallback(async () => {
+    if (!selectedGlueDate) {
+      alert("Nenhuma data selecionada.");
+      return;
+    }
+    const gamesOfDay = preds.filter(p => (p.status === 'resolved' || p.exPost || p.result) && p.match?.date === selectedGlueDate);
+    if (gamesOfDay.length === 0) return;
+
+    if (!webhookUrl) {
+      const url = prompt("Cole a URL do Webhook (Make.com, n8n, Zapier) para exportar para o Google Docs:");
+      if (!url) return;
+      localStorage.setItem('oracle_webhook_url', url);
+      setWebhookUrl(url);
+      setTimeout(() => {
+        alert("Webhook configurado! Clique novamente para exportar.");
+      }, 100);
+      return;
+    }
+
+    let md = `# 📅 DIÁRIO ORACLE TRADER - ${selectedGlueDate}\n\n`;
+    gamesOfDay.forEach((p, idx) => {
+      const isBet = p.track === 'bet' || p.exAnte?.track === 'bet';
+      const userAcc = evaluateScoreAccuracy(p.userScorePrediction, p.result);
+      const oracleAcc = evaluateScoreAccuracy(p.exAnte?.scorePrediction, p.result);
+      const userPredictionStr = p.userScorePrediction ? `${p.userScorePrediction.home}x${p.userScorePrediction.away}` : "N/A";
+      const oraclePredictionStr = p.exAnte?.scorePrediction ? `${p.exAnte.scorePrediction.home}x${p.exAnte.scorePrediction.away}` : "N/A";
+      const realStr = p.result ? `${p.result.homeScore}x${p.result.awayScore}` : "N/A";
+      
+      md += `### Jogo ${idx + 1}: ${p.match?.home} vs ${p.match?.away}\n`;
+      md += `- **Placar Real:** ${realStr}\n`;
+      md += `- **Palpite Usuário:** ${userPredictionStr} (${userAcc ? userAcc.text : 'Sem palpite'})\n`;
+      md += `- **Palpite Oracle (IA):** ${oraclePredictionStr} (${oracleAcc ? oracleAcc.text : 'Sem palpite'})\n`;
+      md += `- **Mercado / Aposta Sugerida:** [${isBet ? 'APOSTA REAL' : 'CALIBRAÇÃO'}] ${p.exAnte?.suggestedBet || p.exAnte?.market || 'Match Winner'}\n`;
+      if (p.exAnte?.oddsTaken?.odds) {
+        md += `- **Odds Capturadas:** @${p.exAnte.oddsTaken.odds} (Fechamento: @${p.result?.closingOdds || 'N/A'})\n`;
+      }
+      if (p.exPost?.classification) {
+        const meta = CLASS_META[p.exPost.classification] || { label: 'N/A' };
+        md += `- **Diagnóstico Causal:** ${meta.label}\n`;
+      }
+      if (p.exPost?.causalAnalysis) {
+        md += `- **Análise Ex-Post:** ${p.exPost.causalAnalysis}\n`;
+      }
+      md += `\n`;
+    });
+
+    try {
+      const payload = {
+        date: selectedGlueDate,
+        content: md,
+        gamesCount: gamesOfDay.length,
+        timestamp: new Date().toISOString()
+      };
+      
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!res.ok) throw new Error("Erro na requisição POST");
+      alert("Cola Diária exportada com sucesso via Webhook!");
+    } catch (e) {
+      console.error(e);
+      alert("Falha ao exportar para o Webhook. Verifique o console. (Talvez o CORS esteja bloqueando no navegador)");
+    }
+  }, [selectedGlueDate, preds, webhookUrl]);
 
   const callOracleAPI = useCallback(async (prompt: string, withSearch = true, useSkill = false, learnings: any[] = []) => {
     const [provider, model] = aiEngine.split(':');
@@ -898,7 +1126,7 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
 
         {/* Etiqueta Perfect Predict */}
         {isPerfectPredict && (
-          <div className="absolute top-0 right-0 z-20 bg-[color:var(--theme-primary)] text-black px-4 py-1.5 rounded-bl-2xl font-mono text-[10px] font-black tracking-widest shadow-[-4px_4px_20px_rgb(var(--theme-primary-rgb)_/_0.4)] flex items-center gap-1.5">
+          <div className="absolute bottom-0 right-0 z-20 bg-[color:var(--theme-primary)] text-black px-4 py-1.5 rounded-tl-2xl font-mono text-[10px] font-black tracking-widest shadow-[-4px_-4px_20px_rgb(var(--theme-primary-rgb)_/_0.4)] flex items-center gap-1.5">
             <span>🎯</span> PERFECT PREDICT <span>⚽</span>
           </div>
         )}
@@ -911,7 +1139,10 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
               <div className="p-2.5 bg-black/50 border border-white/10 rounded-xl inline-block text-[color:var(--theme-primary)]">
                 <Brain className="w-5 h-5" />
               </div>
-              <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-[color:var(--theme-primary)]">
+              <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-[color:var(--theme-primary)] flex items-center gap-2">
+                {p.match.competition && (
+                  <span className="bg-[color:var(--theme-primary)] text-black px-1.5 py-0.5 rounded-sm">{p.match.competition}</span>
+                )}
                 {p.match.stage || p.match.date}
               </div>
               <span className={`text-[9px] px-2.5 py-1 rounded-md border font-mono tracking-widest uppercase ${isBet
@@ -922,10 +1153,72 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
               </span>
 
               {isResolved && p.result && (
-                <span className="bg-zinc-950 border border-zinc-800 px-2.5 py-1 rounded-md text-[10px] text-zinc-300 font-mono tracking-widest">
-                  {p.result.homeScore}-{p.result.awayScore}
+                <span className="bg-zinc-950 border border-zinc-800 px-2.5 py-1 rounded-md text-[10px] text-zinc-300 font-mono tracking-widest flex items-center gap-1.5">
+                  <span>{p.result.homeScore}-{p.result.awayScore}</span>
+                  {p.result.verifiedBySearch && (
+                    <span className="text-[9px] text-[color:var(--theme-primary)] flex items-center gap-0.5" title="Resultado verificado via busca na web">
+                      <Check className="w-2.5 h-2.5" /> verificado
+                    </span>
+                  )}
                 </span>
               )}
+
+              {/* CLV & Odds Movement Badges */}
+              {isResolved && (() => {
+                const oddsExAnte = p.exAnte?.oddsTaken?.odds;
+                const oddsClosing = p.result?.closingOdds;
+                if (typeof oddsExAnte === 'number' && typeof oddsClosing === 'number' && oddsClosing > 0) {
+                  const clv = ((oddsExAnte / oddsClosing) - 1) * 100;
+                  const isPositive = clv >= 0;
+                  
+                  const isSteam = oddsExAnte > oddsClosing;
+                  const isDrift = oddsExAnte < oddsClosing;
+
+                  return (
+                    <>
+                      <span className={`px-2.5 py-1 rounded-md border font-mono text-[9px] font-bold tracking-wider flex items-center gap-1 ${
+                        isPositive 
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                          : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                      }`}>
+                        {isPositive ? '▲' : '▼'} {clv.toFixed(1)}% CLV
+                      </span>
+                      
+                      {(isSteam || isDrift) && (
+                        <span className={`px-2.5 py-1 rounded-md border font-mono text-[9px] font-bold tracking-wider flex items-center gap-1 ${
+                          isSteam 
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                            : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                        }`} title={`Odd Capturada: @${oddsExAnte.toFixed(2)} → Closing: @${oddsClosing.toFixed(2)}`}>
+                          {isSteam ? 'STEAM ▼' : 'DRIFT ▲'}
+                        </span>
+                      )}
+                    </>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* Stake & P&L Badge */}
+              {isResolved && isBet && (() => {
+                const oddsExAnte = p.exAnte?.oddsTaken?.odds;
+                const units = p.exAnte?.stake?.units ?? 1.0;
+                if (typeof oddsExAnte === 'number') {
+                  const isHit = p.exPost?.hit === true || p.exPost?.classification === 'correct_read' || p.exPost?.classification === 'lucky_win';
+                  const pnl = isHit ? units * (oddsExAnte - 1) : -units;
+                  const isPositive = pnl >= 0;
+                  return (
+                    <span className={`px-2.5 py-1 rounded-md border font-mono text-[9px] font-bold tracking-wider flex items-center gap-1 ${
+                      isPositive 
+                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' 
+                        : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                    }`}>
+                      {isPositive ? '+' : ''}{pnl.toFixed(2)}u P&L
+                    </span>
+                  );
+                }
+                return null;
+              })()}
 
               {isResolved && meta && (
                 <span className={`text-[9px] px-2.5 py-1 rounded-md border tracking-widest uppercase ${meta.bg} ${meta.border} ${meta.text}`}>
@@ -959,6 +1252,20 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
               <span className="text-zinc-300 font-medium">{p.exAnte.probability}%</span>
               <span>•</span>
               <span>{renderStars(p.exAnte.confidence)}</span>
+              {p.exAnte.oddsTaken?.odds && (
+                <>
+                  <span>•</span>
+                  <span className="text-emerald-400" title={`Odd obtida na ${p.exAnte.oddsTaken.bookmaker || 'casa'}`}>
+                    @{p.exAnte.oddsTaken.odds} ({p.exAnte.oddsTaken.bookmaker || 'N/A'})
+                  </span>
+                </>
+              )}
+              {p.exAnte.stake?.units && (
+                <>
+                  <span>•</span>
+                  <span className="text-zinc-300">Stake: {p.exAnte.stake.units}u</span>
+                </>
+              )}
               {p.exAnte.correctionApplied?.applied && (
                 <>
                   <span>•</span>
@@ -988,6 +1295,82 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
 
             {/* Checklists Realizados (Ledger apenas) */}
             {isResolved && getOutcomeBadges(p)}
+
+            {/* FASE 3: Input de Palpite do Usuário no Card Pendente */}
+            {!isResolved && (
+              <div className="flex items-center gap-2 bg-zinc-950/40 px-3 py-1.5 rounded-xl border border-white/5 mt-3 text-xs w-fit" onClick={e => e.stopPropagation()}>
+                <span className="font-mono text-zinc-400">Seu Palpite:</span>
+                <input
+                  type="number"
+                  placeholder="Casa"
+                  value={p.userScorePrediction?.home ?? ''}
+                  onChange={async e => {
+                    const val = parseInt(e.target.value);
+                    const updated = {
+                      ...p,
+                      userScorePrediction: {
+                        ...(p.userScorePrediction || {}),
+                        home: isNaN(val) ? 0 : val
+                      }
+                    };
+                    await savePred(updated);
+                  }}
+                  className="w-12 bg-white/5 border border-white/10 rounded-md px-1.5 py-0.5 text-center text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)] text-xs font-mono"
+                />
+                <span className="text-zinc-500 font-mono">×</span>
+                <input
+                  type="number"
+                  placeholder="Fora"
+                  value={p.userScorePrediction?.away ?? ''}
+                  onChange={async e => {
+                    const val = parseInt(e.target.value);
+                    const updated = {
+                      ...p,
+                      userScorePrediction: {
+                        ...(p.userScorePrediction || {}),
+                        away: isNaN(val) ? 0 : val
+                      }
+                    };
+                    await savePred(updated);
+                  }}
+                  className="w-12 bg-white/5 border border-white/10 rounded-md px-1.5 py-0.5 text-center text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)] text-xs font-mono"
+                />
+              </div>
+            )}
+
+            {/* FASE 3: Comparação de Palpites do Bolão no Card Resolvido */}
+            {isResolved && p.userScorePrediction && p.exAnte?.scorePrediction && p.result && (() => {
+              const userAcc = evaluateScoreAccuracy(p.userScorePrediction, p.result);
+              const oracleAcc = evaluateScoreAccuracy(p.exAnte.scorePrediction, p.result);
+              if (!userAcc || !oracleAcc) return null;
+              
+              let comparisonText = "";
+              let comparisonColor = "";
+              if (userAcc.score > oracleAcc.score) {
+                comparisonText = "Você venceu a IA 👤🏆";
+                comparisonColor = "text-emerald-400 bg-emerald-500/5 border-emerald-500/20";
+              } else if (userAcc.score < oracleAcc.score) {
+                comparisonText = "A IA venceu você 🤖🏆";
+                comparisonColor = "text-amber-400 bg-amber-500/5 border-amber-500/20";
+              } else {
+                comparisonText = "Empate com a IA 🤝";
+                comparisonColor = "text-zinc-400 bg-white/5 border-white/10";
+              }
+
+              return (
+                <div className={`mt-3 p-3 rounded-xl border text-[11px] font-mono flex items-center justify-between gap-3 ${comparisonColor}`}>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-bold uppercase tracking-wider">Palpite do Bolão</span>
+                    <span className="text-[10px] opacity-75">
+                      Você: {p.userScorePrediction.home}x{p.userScorePrediction.away} ({userAcc.text}) | IA: {p.exAnte.scorePrediction.home}x{p.exAnte.scorePrediction.away} ({oracleAcc.text})
+                    </span>
+                  </div>
+                  <span className="font-black uppercase tracking-widest text-[9px] bg-black/40 px-2 py-1 rounded border border-white/5 whitespace-nowrap">
+                    {comparisonText}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Botões de Ação do Card */}
@@ -1141,6 +1524,31 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
                   </div>
                 )}
 
+                {/* 4.5. Detalhes de Odds & Stake */}
+                {(p.exAnte.oddsTaken?.odds || p.exAnte.stake?.units || p.result?.closingOdds) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-zinc-950/20 border border-zinc-800/60 p-4 rounded-xl font-mono text-xs text-zinc-300">
+                    {p.exAnte.oddsTaken?.odds && (
+                      <div>
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider mb-0.5">Odd Capturada (Ex-Ante)</span>
+                        <span className="font-bold text-zinc-200">@{p.exAnte.oddsTaken.odds}</span>
+                        {p.exAnte.oddsTaken.bookmaker && <span className="text-zinc-500 text-[10px] ml-1">({p.exAnte.oddsTaken.bookmaker})</span>}
+                      </div>
+                    )}
+                    {p.result?.closingOdds && (
+                      <div>
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider mb-0.5">Odd de Fechamento</span>
+                        <span className="font-bold text-zinc-200">@{p.result.closingOdds}</span>
+                      </div>
+                    )}
+                    {p.exAnte.stake?.units && (
+                      <div>
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider mb-0.5">Stake Sugerida</span>
+                        <span className="font-bold text-zinc-200">{p.exAnte.stake.units}u</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* 5. Análise Ex-Post */}
                 {isResolved && p.result && (
                   <div className="pt-4 border-t border-zinc-800/80 space-y-3">
@@ -1186,7 +1594,7 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
         </AnimatePresence>
       </div>
     );
-  }, [expandedIds, toggleExpand, handleSaveToLearnings, renderStars, getOutcomeBadges, busy, fetchResult, removePred]);
+  }, [expandedIds, toggleExpand, handleSaveToLearnings, renderStars, getOutcomeBadges, busy, fetchResult, removePred, savePred]);
 
   // Processar dados do gráfico
   const pending = useMemo(() => preds.filter(p => p.status === 'pending' || (!p.status && !p.exPost && !p.result)), [preds]);
@@ -1206,80 +1614,297 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
     });
   }, [resolved]);
 
-  // Renderizador do gráfico SVG Customizado
-  const renderChart = useCallback(() => {
-    if (chartData.length === 0) return null;
+  const stats = useMemo(() => {
+    let totalPnl = 0;
+    let totalStakes = 0;
+    let clvSum = 0;
+    let clvCount = 0;
+    let brierSum = 0;
+    let brierCount = 0;
+    let totalBets = 0;
+
+    // Comparação de palpites do Bolão vs IA
+    let userAccCount = 0;
+    let oracleAccCount = 0;
+    let totalPicks = 0;
+
+    resolved.forEach(p => {
+      const isHit = p.exPost?.hit === true || p.exPost?.classification === 'correct_read' || p.exPost?.classification === 'lucky_win';
+      const outcomeVal = isHit ? 1 : 0;
+
+      // Brier Score calculation
+      const prob = p.exAnte?.probability;
+      if (typeof prob === 'number') {
+        brierSum += Math.pow((prob / 100) - outcomeVal, 2);
+        brierCount++;
+      }
+
+      // CLV calculation
+      const oddsExAnte = p.exAnte?.oddsTaken?.odds;
+      const oddsClosing = p.result?.closingOdds;
+      if (typeof oddsExAnte === 'number' && typeof oddsClosing === 'number' && oddsClosing > 0) {
+        const clv = ((oddsExAnte / oddsClosing) - 1) * 100;
+        clvSum += clv;
+        clvCount++;
+      }
+
+      // P&L and ROI (only for track = 'bet')
+      const isBetVal = p.track === 'bet' || p.exAnte?.track === 'bet';
+      if (isBetVal) {
+        const units = p.exAnte?.stake?.units ?? 1.0;
+        const odds = oddsExAnte ?? 1.0;
+        const pnl = isHit ? units * (odds - 1) : -units;
+        totalPnl += pnl;
+        totalStakes += units;
+        totalBets++;
+      }
+
+      // Bolão vs IA count
+      if (p.userScorePrediction && p.exAnte?.scorePrediction && p.result) {
+        const userAcc = evaluateScoreAccuracy(p.userScorePrediction, p.result);
+        const oracleAcc = evaluateScoreAccuracy(p.exAnte.scorePrediction, p.result);
+        if (userAcc && oracleAcc) {
+          if (userAcc.score > 0) userAccCount++;
+          if (oracleAcc.score > 0) oracleAccCount++;
+          totalPicks++;
+        }
+      }
+    });
+
+    const brierScore = brierCount > 0 ? brierSum / brierCount : null;
+    const avgClv = clvCount > 0 ? clvSum / clvCount : null;
+    const roi = totalStakes > 0 ? (totalPnl / totalStakes) * 100 : null;
+
+    return {
+      totalPnl,
+      totalStakes,
+      roi,
+      avgClv,
+      brierScore,
+      totalBets,
+      userAccCount,
+      oracleAccCount,
+      totalPicks
+    };
+  }, [resolved]);
+
+  const calibrationData = useMemo(() => {
+    const buckets = [
+      { min: 50, max: 60, label: '50-60%' },
+      { min: 60, max: 70, label: '60-70%' },
+      { min: 70, max: 80, label: '70-80%' },
+      { min: 80, max: 90, label: '80-90%' },
+      { min: 90, max: 100, label: '90-100%' }
+    ];
+
+    return buckets.map(b => {
+      const matchesInBucket = resolved.filter(p => {
+        const prob = p.exAnte?.probability;
+        if (typeof prob !== 'number') return false;
+        if (b.max === 100) {
+          return prob >= b.min && prob <= b.max;
+        }
+        return prob >= b.min && prob < b.max;
+      });
+
+      const total = matchesInBucket.length;
+      const hits = matchesInBucket.filter(p => {
+        return p.exPost?.hit === true || p.exPost?.classification === 'correct_read' || p.exPost?.classification === 'lucky_win';
+      }).length;
+
+      const actualFrequency = total > 0 ? Math.round((hits / total) * 100) : 0;
+      const expectedFrequency = (b.min + b.max) / 2;
+
+      return {
+        label: b.label,
+        total,
+        hits,
+        actualFrequency,
+        expectedFrequency
+      };
+    });
+  }, [resolved]);
+
+  const resolvedDates = useMemo(() => {
+    const dates = new Set<string>();
+    resolved.forEach(p => {
+      if (p.match?.date) {
+        dates.add(p.match.date);
+      }
+    });
+    return Array.from(dates).sort((a, b) => b.localeCompare(a));
+  }, [resolved]);
+
+  useEffect(() => {
+    if (resolvedDates.length > 0 && !selectedGlueDate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedGlueDate(resolvedDates[0]);
+    }
+  }, [resolvedDates, selectedGlueDate]);
+
+  const filteredResolved = useMemo(() => {
+    if (selectedLedgerDate === 'Todas') return resolved;
+    return resolved.filter(p => p.match?.date === selectedLedgerDate);
+  }, [resolved, selectedLedgerDate]);
+
+  const visibleResolved = useMemo(() => {
+    if (isLedgerExpanded) return filteredResolved;
+    return filteredResolved.slice(0, 0);
+  }, [filteredResolved, isLedgerExpanded]);
+
+  const visibleLearnings = useMemo(() => {
+    if (isLearningsExpanded) return learnings;
+    return learnings.slice(0, 0);
+  }, [learnings, isLearningsExpanded]);
+
+  // Renderizador do gráfico SVG Customizado (Hitrate ou Calibração)
+  const renderChart = useCallback((type: 'hitrate' | 'calibration') => {
+    if (filteredResolved.length === 0) return null;
 
     const width = 800;
-    const height = 140;
-    const paddingLeft = 40;
+    const height = 180;
+    const paddingLeft = 45;
     const paddingRight = 40;
-    const paddingTop = 20;
-    const paddingBottom = 25;
+    const paddingTop = 25;
+    const paddingBottom = 30;
 
     const chartWidth = width - paddingLeft - paddingRight;
     const chartHeight = height - paddingTop - paddingBottom;
 
-    const points = chartData.map((d, i) => {
-      const x = paddingLeft + (chartData.length > 1 ? (i / (chartData.length - 1)) * chartWidth : chartWidth / 2);
-      const y = paddingTop + chartHeight - (d.y / 100) * chartHeight;
-      return { x, y, val: d.y, label: d.x };
-    });
+    if (type === 'hitrate') {
+      if (chartData.length === 0) return null;
+      const points = chartData.map((d, i) => {
+        const x = paddingLeft + (chartData.length > 1 ? (i / (chartData.length - 1)) * chartWidth : chartWidth / 2);
+        const y = paddingTop + chartHeight - (d.y / 100) * chartHeight;
+        return { x, y, val: d.y, label: d.x };
+      });
 
-    let pathD = '';
-    if (points.length > 0) {
-      pathD = `M ${points[0].x} ${points[0].y} ` + points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
-    }
-    const areaD = pathD ? `${pathD} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z` : '';
+      let pathD = '';
+      if (points.length > 0) {
+        pathD = `M ${points[0].x} ${points[0].y} ` + points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
+      }
+      const areaD = pathD ? `${pathD} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z` : '';
 
-    return (
-      <div className="bg-white/5 border border-white/5 rounded-xl p-5 backdrop-blur-md mb-6">
-        <h3 className="text-xs font-semibold text-zinc-400 mb-4 flex items-center gap-2 font-mono">
-          <Activity className="w-4 h-4 text-[color:var(--theme-primary)]" /> Hit rate cumulativo
-        </h3>
-        <div className="relative w-full h-[140px] overflow-x-auto no-scrollbar">
-          <div className="w-full min-w-[650px] h-full">
-            <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${width} ${height}`}>
-            <defs>
-              <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--theme-primary)" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
+      return (
+        <div className="bg-white/5 border border-white/5 rounded-xl p-5 backdrop-blur-md h-full flex flex-col">
+          <h3 className="text-xs font-semibold text-zinc-400 mb-4 flex items-center gap-2 font-mono">
+            <Activity className="w-4 h-4 text-[color:var(--theme-primary)]" /> Hit rate cumulativo
+          </h3>
+          <div className="relative w-full h-[180px] overflow-x-auto no-scrollbar">
+            <div className="w-full min-w-[650px] h-full">
+              <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${width} ${height}`}>
+                <defs>
+                  <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--theme-primary)" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="var(--theme-primary)" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
 
-            {/* Grid */}
-            {[0, 25, 50, 75, 100].map(val => {
-              const y = paddingTop + chartHeight - (val / 100) * chartHeight;
-              return (
-                <g key={val} className="opacity-20">
-                  <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#fff" strokeWidth="1" strokeDasharray="3 3" />
-                  <text x={paddingLeft - 8} y={y + 4} textAnchor="end" className="text-[10px] fill-zinc-400 font-mono font-medium">{val}</text>
-                </g>
-              );
-            })}
+                {/* Grid */}
+                {[0, 25, 50, 75, 100].map(val => {
+                  const y = paddingTop + chartHeight - (val / 100) * chartHeight;
+                  return (
+                    <g key={val} className="opacity-20">
+                      <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#fff" strokeWidth="1" strokeDasharray="3 3" />
+                      <text x={paddingLeft - 8} y={y + 4} textAnchor="end" className="text-[10px] fill-zinc-400 font-mono font-medium">{val}%</text>
+                    </g>
+                  );
+                })}
 
-            {/* Linha/Área */}
-            {pathD && (
-              <>
-                <path d={areaD} fill="url(#chart-grad)" />
-                <path d={pathD} fill="none" stroke="var(--theme-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </>
-            )}
+                {/* Linha/Área */}
+                {pathD && (
+                  <>
+                    <path d={areaD} fill="url(#chart-grad)" />
+                    <path d={pathD} fill="none" stroke="var(--theme-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </>
+                )}
 
-            {/* Pontos */}
-            {points.map((p, idx) => (
-              <g key={idx}>
-                <circle cx={p.x} cy={p.y} r="4" className="fill-[color:var(--theme-primary)] stroke-zinc-950 stroke-[2px]" />
-                <text x={p.x} y={p.y - 8} textAnchor="middle" className="text-[9px] fill-[color:var(--theme-primary)] font-bold font-mono">{p.val}%</text>
-                <text x={p.x} y={height - paddingBottom + 14} textAnchor="middle" className="text-[9px] fill-zinc-500 font-mono">{p.label}</text>
-              </g>
-            ))}
-          </svg>
+                {/* Pontos */}
+                {points.map((p, idx) => (
+                  <g key={idx}>
+                    <circle cx={p.x} cy={p.y} r="4" className="fill-[color:var(--theme-primary)] stroke-zinc-950 stroke-[2px]" />
+                    <text x={p.x} y={p.y - 8} textAnchor="middle" className="text-[9px] fill-[color:var(--theme-primary)] font-bold font-mono">{p.val}%</text>
+                    <text x={p.x} y={height - paddingBottom + 14} textAnchor="middle" className="text-[9px] fill-zinc-500 font-mono">{p.label}</text>
+                  </g>
+                ))}
+              </svg>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}, [chartData]);
+      );
+    } else {
+      // Gráfico de Calibração
+      const points = calibrationData.map((d, i) => {
+        const x = paddingLeft + (i / 4) * chartWidth;
+        const y = paddingTop + chartHeight - (d.actualFrequency / 100) * chartHeight;
+        return { x, y, ...d };
+      });
+
+      let actualPathD = '';
+      const activePoints = points.filter(p => p.total > 0);
+      if (activePoints.length > 0) {
+        actualPathD = `M ${activePoints[0].x} ${activePoints[0].y} ` + activePoints.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
+      }
+
+      // Linha ideal (de 50% a 100%)
+      const idealPathD = `M ${paddingLeft} ${paddingTop + chartHeight - 0.5 * chartHeight} L ${width - paddingRight} ${paddingTop}`;
+
+      return (
+        <div className="bg-white/5 border border-white/5 rounded-xl p-5 backdrop-blur-md h-full flex flex-col">
+          <h3 className="text-xs font-semibold text-zinc-400 mb-4 flex items-center justify-between gap-2 font-mono">
+            <span className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[color:var(--theme-primary)]" /> Calibração de Probabilidade (Estimada vs Real)
+            </span>
+            <span className="text-[9px] text-zinc-500">Ideal: diagonal tracejada</span>
+          </h3>
+          <div className="relative w-full h-[180px] overflow-x-auto no-scrollbar">
+            <div className="w-full min-w-[650px] h-full">
+              <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${width} ${height}`}>
+                {/* Grid */}
+                {[0, 20, 40, 60, 80, 100].map(val => {
+                  const y = paddingTop + chartHeight - (val / 100) * chartHeight;
+                  return (
+                    <g key={val} className="opacity-20">
+                      <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="#fff" strokeWidth="1" strokeDasharray="3 3" />
+                      <text x={paddingLeft - 8} y={y + 4} textAnchor="end" className="text-[10px] fill-zinc-400 font-mono font-medium">{val}%</text>
+                    </g>
+                  );
+                })}
+
+                {/* Linha de Calibração Perfeita (Ideal) */}
+                <path d={idealPathD} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeDasharray="4 4" />
+
+                {/* Linha dos Dados Reais */}
+                {actualPathD && (
+                  <path d={actualPathD} fill="none" stroke="var(--theme-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                )}
+
+                {/* Pontos e Rótulos */}
+                {points.map((p, idx) => {
+                  const hasData = p.total > 0;
+                  return (
+                    <g key={idx}>
+                      {/* Ponto real */}
+                      {hasData && (
+                        <>
+                          <circle cx={p.x} cy={p.y} r="5" className="fill-[color:var(--theme-primary)] stroke-zinc-950 stroke-[2px]" />
+                          <text x={p.x} y={p.y - 10} textAnchor="middle" className="text-[10px] fill-[color:var(--theme-primary)] font-bold font-mono">{p.actualFrequency}%</text>
+                        </>
+                      )}
+                      
+                      {/* Legenda X */}
+                      <text x={p.x} y={height - paddingBottom + 14} textAnchor="middle" className="text-[9px] fill-zinc-400 font-mono font-bold">{p.label}</text>
+                      <text x={p.x} y={height - paddingBottom + 25} textAnchor="middle" className="text-[8px] fill-zinc-500 font-mono">({p.total} jogos)</text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }, [chartData, calibrationData, filteredResolved]);
 
   return (
     <div className="min-h-screen text-white p-4 md:p-8 font-sans selection:bg-[rgb(var(--theme-primary-rgb)_/_0.3)]" style={{ '--accent': primaryColor, '--theme-primary': primaryColor, '--theme-primary-rgb': primaryRgb, '--theme-secondary': secondaryColor, '--theme-secondary-rgb': secondaryRgb } as React.CSSProperties}>
@@ -1410,7 +2035,7 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-3 w-64 bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-2 z-50 overflow-hidden"
+                    className="absolute left-0 sm:left-auto sm:right-0 top-full mt-3 w-64 bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-2 z-50 overflow-hidden"
                   >
                     <div className="px-3 py-3 border-b border-white/10 mb-2">
                       <p className="text-sm font-bold text-white truncate">{auth.currentUser?.displayName || "Operador Oracle"}</p>
@@ -1588,7 +2213,7 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.98 }}
                 transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-                className="flex flex-col gap-3"
+                className={`flex flex-col gap-3 ${isSticky ? 'absolute top-[calc(100%+8px)] left-0 w-full bg-black/90 backdrop-blur-3xl border border-[rgb(var(--theme-primary-rgb)_/_0.25)] p-4 md:p-6 rounded-[2rem] shadow-[0_24px_50px_rgba(0,0,0,0.8)] z-50' : ''}`}
               >
               {/* Botão recolher (só aparece no sticky expandido) */}
               {isSticky && !isMenuCollapsed && (
@@ -1866,54 +2491,274 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
 
           {tab === 'ledger' && (
             <motion.div key="ledger" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
-              {renderChart()}
-
-              {/* Botões de Ação do Histórico */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-white/10">
-                <div>
-                  <div className="text-[9px] font-mono tracking-[0.2em] uppercase text-[color:var(--theme-primary)]/60 mb-0.5">./oracle/ledger</div>
-                  <h3 className="text-sm font-black tracking-tighter text-white">Histórico <span className="text-white/30 font-normal">({resolved.length})</span></h3>
-                </div>
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mb-1 w-full max-w-full">
-                  <input type="file" ref={importPredsRef} accept=".json" onChange={e => handleImportJSON(e, 'oracle_predictions')} className="hidden" />
-                  <button onClick={() => importPredsRef.current?.click()} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
-                    <Upload className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Importar
-                  </button>
-                  <button onClick={() => setShowPasteModal('oracle_predictions')} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
-                    <Plus className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Colar JSON
-                  </button>
-                  <button onClick={() => downloadJSON(resolved, 'oracle_predictions.json')} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
-                    <Download className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Baixar JSON
-                  </button>
-                  <button onClick={() => copyToClipboard(JSON.stringify(resolved, null, 2))} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
-                    <Copy className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Copiar JSON
-                  </button>
-                  <button onClick={() => setShowJsonModal(resolved)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
-                    <Eye className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Ver JSON
-                  </button>
-                  <button onClick={() => {
-                    const blob = new Blob([getMarkdownSummary(resolved)], { type: 'text/markdown' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'oracle_ledger.md';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
-                    <FileText className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Baixar MD
-                  </button>
-                  <button onClick={() => copyToClipboard(getMarkdownSummary(resolved))} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
-                    <Copy className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Copiar MD
+              {showBackupBanner && (
+                <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-400 backdrop-blur-md mb-4" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-2.5">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 animate-pulse" />
+                    <span>
+                      {lastBackupTime === null 
+                        ? "Você ainda não fez nenhum backup dos seus dados. Recomendamos baixar o backup para proteger seu histórico."
+                        : "Seu último backup foi feito há mais de 7 dias e você possui novos registros. Faça o backup para garantir a integridade dos dados."
+                      }
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleGlobalExport}
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold rounded-lg transition-colors whitespace-nowrap self-end sm:self-auto"
+                  >
+                    Fazer Backup
                   </button>
                 </div>
-              </div>
+              )}
 
+              {/* ⚽ Botão toggle — sempre visível no topo */}
+              {filteredResolved.length > 0 && (
+                <div className="flex justify-center pt-4 pb-2">
+                  <button
+                    ref={ledgerBtnRef}
+                    onMouseMove={handleLedgerBtnMouseMove}
+                    onClick={() => setIsLedgerExpanded(!isLedgerExpanded)}
+                    className="group relative flex items-center gap-3 px-5 py-2.5 bg-black/40 hover:bg-black/40 border-transparent rounded-2xl transition-all duration-400 backdrop-blur-md overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.25)] hover:shadow-[0_8px_28px_rgb(var(--theme-primary-rgb)_/_0.15)] active:scale-95"
+                    style={{
+                      border: '1px solid transparent',
+                      backgroundImage: 'linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), radial-gradient(circle 100px at var(--mouse-x, 0px) var(--mouse-y, 0px), var(--theme-primary), var(--theme-secondary), transparent)',
+                      backgroundOrigin: 'border-box',
+                      backgroundClip: 'padding-box, border-box',
+                      boxShadow: '0 0 15px rgba(var(--theme-primary-rgb), 0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+                    } as React.CSSProperties}
+                  >
+                    {/* Estilo local para animação do reflexo */}
+                    <style>{`
+                      @keyframes glass-shine-btn {
+                        0% { transform: translateX(-150%) skewX(-25deg); }
+                        30% { transform: translateX(150%) skewX(-25deg); }
+                        100% { transform: translateX(150%) skewX(-25deg); }
+                      }
+                    `}</style>
+                    
+                    {/* Reflexo Espelhado Periódico */}
+                    <span className="absolute inset-0 overflow-hidden pointer-events-none rounded-2xl">
+                      <span 
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full"
+                        style={{
+                          animation: 'glass-shine-btn 7s infinite ease-in-out'
+                        }}
+                      />
+                    </span>
 
-              {/* Lista do Ledger do App Real */}
-              <div className="space-y-4">
-                {resolved.map(p => renderPredictionCard(p, true))}
-              </div>
-              {resolved.length === 0 && <div className="text-zinc-500 text-center py-12 font-sans">Nenhuma previsão resolvida no ledger.</div>}
+                    <span className="relative z-10 flex items-center gap-3 w-full">
+                      <span className="relative flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
+                        <span className={`absolute inset-0 rounded-full transition-all duration-500 ${
+                          isLedgerExpanded
+                            ? 'shadow-[0_0_14px_4px_rgb(var(--theme-primary-rgb)_/_0.35)] bg-[rgb(var(--theme-primary-rgb)_/_0.08)]'
+                            : 'shadow-[0_0_0px_0px_transparent] group-hover:shadow-[0_0_12px_3px_rgb(var(--theme-primary-rgb)_/_0.2)]'
+                        }`} />
+                        <motion.span
+                          animate={{ y: [0, -3, 0, -2, 0], rotate: isLedgerExpanded ? [0, -360] : [0, 360] }}
+                          transition={{
+                            y: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
+                            rotate: { duration: isLedgerExpanded ? 0.5 : 4, repeat: Infinity, ease: 'linear' },
+                          }}
+                          className="text-base leading-none select-none"
+                        >
+                          ⚽
+                        </motion.span>
+                      </span>
+                      <span className="text-[11px] font-mono font-bold tracking-[0.12em] uppercase text-white/40 group-hover:text-[color:var(--theme-primary)] transition-colors duration-300">
+                        {!isLedgerExpanded ? `Ver Previsões (${filteredResolved.length})` : 'Recolher Previsões'}
+                      </span>
+                      {!isLedgerExpanded && (
+                        <span className="text-[9px] font-mono font-black tabular-nums px-1.5 py-0.5 rounded-md bg-[rgb(var(--theme-primary-rgb)_/_0.1)] text-[color:var(--theme-primary)]/70 border border-[rgb(var(--theme-primary-rgb)_/_0.15)]">
+                          {filteredResolved.length}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                </div>
+              )}
+
+              {/* Conteúdo expandido: gráficos + histórico + filtros + cards */}
+              <AnimatePresence>
+                {isLedgerExpanded && (
+                  <motion.div
+                    key="ledger-content"
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                    className="space-y-4"
+                  >
+                    {/* Cartões de Estatísticas Avançadas */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
+                      <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--theme-primary-rgb)_/_0.05)] to-transparent pointer-events-none" />
+                        <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider mb-1">P&L TOTAL</p>
+                        <p className={`text-2xl font-bold font-mono ${stats.totalPnl >= 0 ? 'text-[color:var(--theme-primary)]' : 'text-red-400'}`}>
+                          {stats.totalPnl >= 0 ? '+' : ''}{stats.totalPnl.toFixed(2)}u
+                        </p>
+                        <p className="text-[9px] text-zinc-500 font-mono mt-0.5">{stats.totalBets} apostas registradas</p>
+                      </div>
+
+                      <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--theme-primary-rgb)_/_0.05)] to-transparent pointer-events-none" />
+                        <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider mb-1">ROI ACUMULADO</p>
+                        <p className={`text-2xl font-bold font-mono ${stats.roi === null ? 'text-zinc-500' : stats.roi >= 0 ? 'text-[color:var(--theme-primary)]' : 'text-red-400'}`}>
+                          {stats.roi === null ? '0.00%' : `${stats.roi >= 0 ? '+' : ''}${stats.roi.toFixed(2)}%`}
+                        </p>
+                        <p className="text-[9px] text-zinc-500 font-mono mt-0.5">Retorno sobre unidades</p>
+                      </div>
+
+                      <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--theme-primary-rgb)_/_0.05)] to-transparent pointer-events-none" />
+                        <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider mb-1">CLV MÉDIO (EDGE)</p>
+                        <p className={`text-2xl font-bold font-mono ${stats.avgClv === null ? 'text-zinc-500' : stats.avgClv >= 0 ? 'text-[color:var(--theme-primary)]' : 'text-red-400'}`}>
+                          {stats.avgClv === null ? '0.00%' : `${stats.avgClv >= 0 ? '+' : ''}${stats.avgClv.toFixed(2)}%`}
+                        </p>
+                        <p className="text-[9px] text-zinc-500 font-mono mt-0.5">Edge contra fechamento</p>
+                      </div>
+
+                      <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--theme-primary-rgb)_/_0.05)] to-transparent pointer-events-none" />
+                        <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider mb-1">BRIER SCORE</p>
+                        <p className="text-2xl font-bold font-mono text-zinc-200">
+                          {stats.brierScore === null ? '0.000' : stats.brierScore.toFixed(3)}
+                        </p>
+                        <p className="text-[9px] text-zinc-500 font-mono mt-0.5">
+                          {stats.brierScore === null ? 'Sem dados' : stats.brierScore <= 0.25 ? '🎯 Calibrado' : '⚠️ Subcalibrado'}
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--theme-primary-rgb)_/_0.05)] to-transparent pointer-events-none" />
+                        <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider mb-1">BOLÃO × ORACLE</p>
+                        <p className="text-2xl font-bold font-mono text-zinc-200">
+                          👤 {stats.totalPicks > 0 ? Math.round((stats.userAccCount / stats.totalPicks) * 100) : 0}% <span className="text-zinc-500 text-xs font-normal font-sans">vs</span> 🤖 {stats.totalPicks > 0 ? Math.round((stats.oracleAccCount / stats.totalPicks) * 100) : 0}%
+                        </p>
+                        <p className="text-[9px] text-zinc-500 font-mono mt-0.5">{stats.totalPicks} palpites comparados</p>
+                      </div>
+                    </div>
+
+                    {/* Gráficos em Grid */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+                      {renderChart('hitrate')}
+                      {renderChart('calibration')}
+                    </div>
+
+                    {/* Botões de Ação do Histórico */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-white/10">
+                      <div>
+                        <div className="text-[9px] font-mono tracking-[0.2em] uppercase text-[color:var(--theme-primary)]/60 mb-0.5">./oracle/ledger</div>
+                        <h3 className="text-sm font-black tracking-tighter text-white">Histórico <span className="text-white/30 font-normal">({resolved.length})</span></h3>
+                      </div>
+                      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mb-1 w-full max-w-full">
+                        
+                        {/* Daily Glue Select and Copy */}
+                        {resolvedDates.length > 0 && (
+                          <div className="flex items-center gap-1.5 border border-white/10 rounded-lg p-1 bg-white/5 flex-shrink-0">
+                            <select
+                              value={selectedGlueDate}
+                              onChange={e => setSelectedGlueDate(e.target.value)}
+                              className="bg-transparent text-xs text-zinc-350 border-none outline-none focus:ring-0 cursor-pointer py-0.5 font-mono"
+                            >
+                              {resolvedDates.map(d => (
+                                <option key={d} value={d} className="bg-zinc-950 text-white">{d}</option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={handleCopyDailyGlue}
+                              className="flex items-center gap-1.5 px-2.5 py-1 bg-[color:var(--theme-primary)] hover:opacity-90 text-zinc-950 font-bold rounded-md text-xs transition"
+                            >
+                              <Copy className="w-3.5 h-3.5 text-zinc-950" /> Copiar Cola
+                            </button>
+                            <button
+                              onClick={handleExportWebhook}
+                              className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-md text-xs transition"
+                              title="Exportar Relatório Diário via Webhook (Make/n8n/Docs)"
+                            >
+                              <FileText className="w-3.5 h-3.5" /> Webhook
+                            </button>
+                          </div>
+                        )}
+
+                        <input type="file" ref={importPredsRef} accept=".json" onChange={e => handleImportJSON(e, 'oracle_predictions')} className="hidden" />
+                        <button onClick={() => importPredsRef.current?.click()} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
+                          <Upload className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Importar
+                        </button>
+                        <button onClick={() => setShowPasteModal('oracle_predictions')} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
+                          <Plus className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Colar JSON
+                        </button>
+                        <button onClick={() => downloadJSON(resolved, 'oracle_predictions.json')} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
+                          <Download className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Baixar JSON
+                        </button>
+                        <button onClick={() => copyToClipboard(JSON.stringify(resolved, null, 2))} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
+                          <Copy className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Copiar JSON
+                        </button>
+                        <button onClick={() => setShowJsonModal(resolved)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
+                          <Eye className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Ver JSON
+                        </button>
+                        <button onClick={() => {
+                          const blob = new Blob([getMarkdownSummary(resolved)], { type: 'text/markdown' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'oracle_ledger.md';
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
+                          <FileText className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Baixar MD
+                        </button>
+                        <button onClick={() => copyToClipboard(getMarkdownSummary(resolved))} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-zinc-300 transition">
+                          <Copy className="w-3.5 h-3.5 text-[color:var(--theme-primary)]" /> Copiar MD
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Filtro por Data */}
+                    {resolvedDates.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2 mb-6 bg-white/[0.02] border border-white/5 p-3 rounded-2xl backdrop-blur-md">
+                        <span className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase flex items-center gap-1.5 px-2">
+                          <Calendar className="w-3.5 h-3.5 text-[color:var(--theme-primary)]/70" /> Filtrar Dia:
+                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() => setSelectedLedgerDate('Todas')}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all duration-300 ${
+                              selectedLedgerDate === 'Todas'
+                                ? 'bg-[rgb(var(--theme-primary-rgb)_/_0.15)] border border-[rgb(var(--theme-primary-rgb)_/_0.3)] text-[color:var(--theme-primary)] shadow-[0_0_15px_rgb(var(--theme-primary-rgb)_/_0.1)]'
+                                : 'bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                            }`}
+                          >
+                            Todos
+                          </button>
+                          {resolvedDates.map(date => {
+                            const [yr, mo, dy] = date.split('-');
+                            const formatted = dy && mo ? `${dy}/${mo}` : date;
+                            return (
+                              <button
+                                key={date}
+                                onClick={() => setSelectedLedgerDate(date)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all duration-300 ${
+                                  selectedLedgerDate === date
+                                    ? 'bg-[rgb(var(--theme-primary-rgb)_/_0.15)] border border-[rgb(var(--theme-primary-rgb)_/_0.3)] text-[color:var(--theme-primary)] shadow-[0_0_15px_rgb(var(--theme-primary-rgb)_/_0.1)]'
+                                    : 'bg-white/5 border border-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                                }`}
+                              >
+                                {formatted}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Lista do Ledger */}
+                    <div className="space-y-4">
+                      {visibleResolved.map(p => renderPredictionCard(p, true))}
+                    </div>
+                    {filteredResolved.length === 0 && <div className="text-zinc-500 text-center py-12 font-sans">Nenhuma previsão resolvida no ledger.</div>}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
 
@@ -1957,7 +2802,7 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
 
               {/* Lista de Aprendizados */}
               <div className="space-y-3">
-                {learnings.map((l, index) => {
+                {visibleLearnings.map((l, index) => {
                   const srcMeta = CLASS_META[l.source?.classification] || CLASS_META.correct_read;
                   return (
                     <div key={l.id} className="group bg-white/[0.04] hover:bg-white/[0.07] border border-white/8 hover:border-white/15 rounded-2xl p-4 flex gap-4 items-start transition-all duration-300 backdrop-blur-xl relative shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
@@ -1996,6 +2841,60 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
                 })}
                 {learnings.length === 0 && <div className="text-zinc-500 text-center py-12">Nenhum aprendizado acumulado.</div>}
               </div>
+
+              {learnings.length > 0 && (
+                <div className="flex justify-center pt-8 pb-6">
+                  <button
+                    onClick={() => setIsLearningsExpanded(!isLearningsExpanded)}
+                    className="group relative flex items-center gap-3 overflow-hidden"
+                    style={{
+                      padding: 0,
+                      background: 'none',
+                      border: 'none',
+                    }}
+                  >
+                    {/* Pill container */}
+                    <div className="relative flex items-center gap-3 px-5 py-2.5 bg-black/40 hover:bg-[rgb(var(--theme-primary-rgb)_/_0.08)] border border-white/10 hover:border-[rgb(var(--theme-primary-rgb)_/_0.35)] rounded-2xl transition-all duration-400 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.25)] hover:shadow-[0_8px_28px_rgb(var(--theme-primary-rgb)_/_0.15)] active:scale-95">
+                      {/* Shine sweep on hover */}
+                      <span className="pointer-events-none absolute inset-0 rounded-2xl overflow-hidden">
+                        <span className="absolute top-0 left-[-75%] h-full w-[50%] bg-gradient-to-r from-transparent via-white/8 to-transparent skew-x-[-20deg] group-hover:left-[130%] transition-all duration-700 ease-in-out" />
+                      </span>
+                      {/* Animated brain ball */}
+                      <span className="relative flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
+                        {/* Glow ring */}
+                        <span className={`absolute inset-0 rounded-full transition-all duration-500 ${
+                          isLearningsExpanded
+                            ? 'shadow-[0_0_14px_4px_rgb(var(--theme-primary-rgb)_/_0.35)] bg-[rgb(var(--theme-primary-rgb)_/_0.08)]'
+                            : 'shadow-[0_0_0px_0px_transparent] group-hover:shadow-[0_0_12px_3px_rgb(var(--theme-primary-rgb)_/_0.2)]'
+                        }`} />
+                        <motion.span
+                          animate={{
+                            y: [0, -3, 0, -2, 0],
+                            scale: isLearningsExpanded ? [1, 1.15, 1] : 1,
+                          }}
+                          transition={{
+                            y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+                            scale: { duration: 0.4, repeat: Infinity, repeatDelay: 1.6 },
+                          }}
+                          className="text-base leading-none select-none"
+                        >
+                          🧠
+                        </motion.span>
+                      </span>
+                      {/* Text */}
+                      <span className="text-[11px] font-mono font-bold tracking-[0.12em] uppercase text-white/40 group-hover:text-[color:var(--theme-primary)] transition-colors duration-300">
+                        {!isLearningsExpanded ? `Ver Aprendizados (${learnings.length})` : 'Recolher Aprendizados'}
+                      </span>
+                      {/* Count badge (only when collapsed) */}
+                      {!isLearningsExpanded && (
+                        <span className="text-[9px] font-mono font-black tabular-nums px-1.5 py-0.5 rounded-md bg-[rgb(var(--theme-primary-rgb)_/_0.1)] text-[color:var(--theme-primary)]/70 border border-[rgb(var(--theme-primary-rgb)_/_0.15)]">
+                          {learnings.length}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -2396,6 +3295,120 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
                         result: { ...(editingPred.result || {}), awayScore: parseInt(e.target.value) || 0, found: true }
                       })}
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)]"
+                    />
+                  </div>
+                </div>
+
+                {/* FASE 2: Formulários de Odds e Stake no Modal */}
+                <div className="space-y-3 pt-2">
+                  <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-white/30 border-b border-white/5 pb-1">Odds & Gestão de Banca</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-mono text-zinc-400 mb-1">Tipo de Trilha</label>
+                      <select
+                        value={editingPred.track || editingPred.exAnte?.track || 'calibration'}
+                        onChange={e => setEditingPred({
+                          ...editingPred,
+                          track: e.target.value,
+                          exAnte: { ...(editingPred.exAnte || {}), track: e.target.value }
+                        })}
+                        className="w-full bg-zinc-850 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)] cursor-pointer"
+                      >
+                        <option value="calibration">Calibração</option>
+                        <option value="bet">Aposta Real</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono text-zinc-400 mb-1">Stake (Unidades)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={editingPred.exAnte?.stake?.units ?? ''}
+                        onChange={e => setEditingPred({
+                          ...editingPred,
+                          exAnte: {
+                            ...(editingPred.exAnte || {}),
+                            stake: {
+                              ...(editingPred.exAnte?.stake || {}),
+                              units: parseFloat(e.target.value) || 0
+                            }
+                          }
+                        })}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)]"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-mono text-zinc-400 mb-1">Odd Ex-Ante</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editingPred.exAnte?.oddsTaken?.odds ?? ''}
+                        onChange={e => setEditingPred({
+                          ...editingPred,
+                          exAnte: {
+                            ...(editingPred.exAnte || {}),
+                            oddsTaken: {
+                              ...(editingPred.exAnte?.oddsTaken || {}),
+                              odds: parseFloat(e.target.value) || 0
+                            }
+                          }
+                        })}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono text-zinc-400 mb-1">Odd Fechamento</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editingPred.result?.closingOdds ?? ''}
+                        onChange={e => setEditingPred({
+                          ...editingPred,
+                          result: {
+                            ...(editingPred.result || {}),
+                            closingOdds: parseFloat(e.target.value) || 0
+                          }
+                        })}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono text-zinc-400 mb-1">Bookmaker</label>
+                      <input
+                        type="text"
+                        value={editingPred.exAnte?.oddsTaken?.bookmaker ?? ''}
+                        onChange={e => setEditingPred({
+                          ...editingPred,
+                          exAnte: {
+                            ...(editingPred.exAnte || {}),
+                            oddsTaken: {
+                              ...(editingPred.exAnte?.oddsTaken || {}),
+                              bookmaker: e.target.value
+                            }
+                          }
+                        })}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono text-zinc-400 mb-1">Mercado Recomendado</label>
+                    <input
+                      type="text"
+                      value={editingPred.exAnte?.oddsTaken?.market ?? ''}
+                      onChange={e => setEditingPred({
+                        ...editingPred,
+                        exAnte: {
+                          ...(editingPred.exAnte || {}),
+                          oddsTaken: {
+                            ...(editingPred.exAnte?.oddsTaken || {}),
+                            market: e.target.value
+                          }
+                        }
+                      })}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[rgb(var(--theme-primary-rgb)_/_0.4)]"
                     />
                   </div>
                 </div>
