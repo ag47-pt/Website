@@ -22,7 +22,7 @@ export default function OracleAuthWrapper() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0d0d0d]">
+      <div className="min-h-[85vh] flex items-center justify-center relative z-10">
         <Loader2 className="w-8 h-8 text-zinc-500 animate-spin" />
       </div>
     );
