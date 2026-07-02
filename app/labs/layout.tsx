@@ -13,10 +13,8 @@ import { Menu, X, ChevronRight, LayoutGrid, Terminal, Presentation, Utensils, Ho
 
 export default function LabsLayout({
   children,
-  bgImage = "/imgs/universo-nebuloso.webp",
 }: {
   children: React.ReactNode;
-  bgImage?: string;
 }) {
   const pathname = usePathname();
   const { theme, themeName, toggleTheme } = useTheme();
@@ -63,7 +61,7 @@ export default function LabsLayout({
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute inset-0 opacity-50">
             <Image
-              src={pathname.includes('/oracle-trader') ? '/imgs/estadio-universo.webp' : bgImage}
+              src={pathname.includes('/oracle-trader') ? '/imgs/estadio-universo.webp' : "/imgs/universo-nebuloso.webp"}
               alt="Background"
               fill
               className="object-cover"
