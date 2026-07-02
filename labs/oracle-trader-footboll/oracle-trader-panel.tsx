@@ -8,10 +8,11 @@ import {
   Trophy, Search, Sparkles, RefreshCw, Trash2, Calendar, Activity,
   Brain, Target, AlertTriangle, Loader2, Plus, BarChart3, GraduationCap,
   ArrowRight, Lightbulb, Edit, Copy, Download, Eye, FileText, Upload,
-  ChevronDown, ChevronUp, ChevronRight, Check, X, Minus
+  ChevronDown, ChevronUp, ChevronRight, Check, X, Minus, User, LogOut, History, XCircle
 } from 'lucide-react';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 // Tipagens e Metadados
 const CLASS_META: Record<string, any> = {
@@ -98,6 +99,9 @@ export default function OracleTraderPanel() {
   const [activeDetailPred, setActiveDetailPred] = useState<any | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showHistoryDashboard, setShowHistoryDashboard] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const [isSticky, setIsSticky] = useState(false);
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(true);
@@ -152,6 +156,9 @@ export default function OracleTraderPanel() {
     const handleClick = (e: MouseEvent) => {
       if (modelDropdownRef.current && !modelDropdownRef.current.contains(e.target as Node)) {
         setShowModelDropdown(false);
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -1379,8 +1386,62 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
             </div>
           </div>
 
-          {/* Botões de Backup Global */}
-          <div className="flex items-center gap-2 relative z-10">
+          {/* Botões de Backup Global e Menu de Perfil */}
+          <div className="flex items-center gap-3 relative z-10">
+            
+            {/* User Profile Dropdown */}
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-900 border border-white/10 hover:border-[rgb(var(--theme-primary-rgb)_/_0.5)] overflow-hidden transition-colors"
+                title={auth.currentUser?.email || "Perfil"}
+              >
+                {auth.currentUser?.photoURL ? (
+                  <img src={auth.currentUser.photoURL} alt="User avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-4 h-4 text-zinc-400" />
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-full mt-3 w-64 bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-2 z-50 overflow-hidden"
+                  >
+                    <div className="px-3 py-3 border-b border-white/10 mb-2">
+                      <p className="text-sm font-bold text-white truncate">{auth.currentUser?.displayName || "Operador Oracle"}</p>
+                      <p className="text-xs text-zinc-500 truncate">{auth.currentUser?.email}</p>
+                    </div>
+                    
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        setShowHistoryDashboard(true);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      <History className="w-4 h-4 text-[color:var(--theme-primary)]" />
+                      Histórico de Ciclos
+                    </button>
+                    
+                    <button
+                      onClick={() => signOut(auth)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-sm font-medium text-zinc-300 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Encerrar Sessão
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="h-6 w-px bg-white/10"></div>
+
             <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
             <input
               ref={importGlobalRef}
@@ -2419,6 +2480,103 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
             </div>
           </div>
         )}
+
+        {/* --- MODAL HISTÓRICO DE CICLOS (GLOBAL) --- */}
+        <AnimatePresence>
+          {showHistoryDashboard && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+              onClick={() => setShowHistoryDashboard(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="relative w-full max-w-4xl bg-zinc-950 border border-white/10 rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]"
+                onClick={e => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setShowHistoryDashboard(false)}
+                  className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+
+                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+                  <div className="p-3 bg-[rgb(var(--theme-primary-rgb)_/_0.1)] border border-[rgb(var(--theme-primary-rgb)_/_0.2)] rounded-xl">
+                    <History className="w-6 h-6 text-[color:var(--theme-primary)]" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white font-mono tracking-tight">Histórico de Ciclos</h2>
+                    <p className="text-sm text-zinc-400">Desempenho e acurácia global da base de dados</p>
+                  </div>
+                </div>
+
+                {(() => {
+                  const resolvedAll = preds.filter(p => p.status === 'resolved');
+                  const total = resolvedAll.length;
+                  if (total === 0) return <div className="text-center py-10 text-zinc-500 font-mono">Sem dados históricos resolvidos suficientes.</div>;
+
+                  const correct = resolvedAll.filter(p => p.exPost?.classification === 'correct_read').length;
+                  const variance = resolvedAll.filter(p => ['lucky_win', 'variance_loss'].includes(p.exPost?.classification || '')).length;
+                  const misreads = resolvedAll.filter(p => p.exPost?.classification === 'misread').length;
+                  const missingInfo = resolvedAll.filter(p => p.exPost?.classification === 'missing_info').length;
+                  
+                  const hitRate = Math.round((correct / total) * 100);
+                  const errorRate = Math.round(((misreads + missingInfo) / total) * 100);
+
+                  return (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="p-4 bg-white/5 border border-white/10 rounded-xl relative overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--theme-primary-rgb)_/_0.1)] to-transparent pointer-events-none" />
+                          <p className="text-xs text-zinc-400 font-mono uppercase tracking-wider mb-1">Total de Jogos</p>
+                          <p className="text-3xl font-bold text-white">{total}</p>
+                        </div>
+                        <div className="p-4 bg-[rgb(var(--theme-primary-rgb)_/_0.05)] border border-[rgb(var(--theme-primary-rgb)_/_0.2)] rounded-xl relative overflow-hidden">
+                          <p className="text-xs text-[color:var(--theme-primary)] font-mono uppercase tracking-wider mb-1">Hit Rate (Leitura Correta)</p>
+                          <p className="text-3xl font-bold text-[color:var(--theme-primary)]">{hitRate}%</p>
+                        </div>
+                        <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
+                          <p className="text-xs text-red-400 font-mono uppercase tracking-wider mb-1">Taxa de Erro (Fundamento)</p>
+                          <p className="text-3xl font-bold text-red-400">{errorRate}%</p>
+                        </div>
+                        <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl">
+                          <p className="text-xs text-blue-400 font-mono uppercase tracking-wider mb-1">Ruído / Variância</p>
+                          <p className="text-3xl font-bold text-blue-400">{Math.round((variance/total)*100)}%</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 p-5 rounded-xl">
+                        <h3 className="text-sm font-bold text-zinc-300 font-mono uppercase tracking-wider mb-4 border-b border-white/5 pb-2">Distribuição Causal</h3>
+                        <div className="space-y-3">
+                          {[
+                            { label: 'Leitura Correta', count: correct, color: 'bg-[color:var(--theme-primary)]' },
+                            { label: 'Erro de Leitura', count: misreads, color: 'bg-red-500' },
+                            { label: 'Informação Faltante', count: missingInfo, color: 'bg-purple-500' },
+                            { label: 'Sorte / Variância', count: variance, color: 'bg-blue-500' },
+                          ].map((item, i) => (
+                            <div key={i} className="flex items-center gap-4 text-sm font-mono">
+                              <span className="w-40 text-zinc-400 truncate">{item.label}</span>
+                              <div className="flex-1 h-3 bg-white/5 rounded-full overflow-hidden">
+                                <div className={`h-full ${item.color}`} style={{ width: `${(item.count/total)*100}%` }} />
+                              </div>
+                              <span className="w-16 text-right text-zinc-300 font-bold">{item.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );
