@@ -11,8 +11,18 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Evita erro de build no Vercel quando variáveis de ambiente ainda não estão setadas
+const safeConfig = firebaseConfig.apiKey ? firebaseConfig : {
+  apiKey: 'dummy-key-to-bypass-build-error',
+  authDomain: 'dummy-domain',
+  projectId: 'dummy-project',
+  storageBucket: 'dummy-bucket',
+  messagingSenderId: 'dummy-sender',
+  appId: '1:123456789:web:abcdef',
+};
+
 // Inicializa o Firebase apenas se ele já não tiver sido inicializado (evita erros em dev)
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = !getApps().length ? initializeApp(safeConfig) : getApp();
 
 // Inicializa e exporta o Cloud Firestore
 export const db = getFirestore(app);
