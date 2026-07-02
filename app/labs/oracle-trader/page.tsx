@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import OracleTraderPanel from '@/labs/oracle-trader-footboll/oracle-trader-panel';
+import OracleAuthWrapper from '@/labs/oracle-trader-footboll/oracle-auth-wrapper';
 
 export const metadata: Metadata = {
   title: 'Oracle Trader Footbol | Agência 47 Labs',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function OracleTraderPage() {
-  return <OracleTraderPanel />;
+  return <OracleAuthWrapper />;
 }
