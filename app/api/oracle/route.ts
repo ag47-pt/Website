@@ -2,6 +2,27 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+const MODEL_LABELS: Record<string, string> = {
+  'claude-3-7-sonnet-20250219': 'Claude 3.7 Sonnet',
+  'claude-3-5-haiku-20241022': 'Claude 3.5 Haiku',
+  'gemini-2.5-pro': 'Gemini 2.5 Pro',
+  'gemini-2.5-flash': 'Gemini 2.5 Flash',
+  'deepseek-chat': 'DeepSeek Chat',
+  'deepseek-reasoner': 'DeepSeek Reasoner',
+  'openai/gpt-4o': 'GPT-4o',
+  'meta-llama/llama-3.3-70b-instruct': 'LLaMA 3.3 70B',
+  'qwen/qwen-2.5-72b-instruct': 'Qwen 2.5 72B',
+};
+
+function buildLLMStamp(provider: string, model: string) {
+  return {
+    provider,
+    model,
+    label: MODEL_LABELS[model] || model,
+    timestamp: Date.now(),
+  };
+}
+
 async function performGoogleSearch(query: string, apiKey: string): Promise<string> {
   try {
     const body = {
@@ -184,7 +205,7 @@ export async function POST(req: Request) {
       if (!response.ok) throw new Error(data.error?.message || "Anthropic API Error");
 
       const text = data.content?.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n') || "";
-      return NextResponse.json({ content: [{ type: "text", text }] });
+      return NextResponse.json({ content: [{ type: "text", text }], llmStamp: buildLLMStamp(finalProvider, finalModel) });
     }
     
     // ==========================================
@@ -230,7 +251,7 @@ export async function POST(req: Request) {
       if (!response.ok) throw new Error(data.error?.message || "Google API Error");
 
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      return NextResponse.json({ content: [{ type: "text", text }] });
+      return NextResponse.json({ content: [{ type: "text", text }], llmStamp: buildLLMStamp(finalProvider, finalModel) });
     }
 
     // ==========================================
@@ -269,7 +290,7 @@ export async function POST(req: Request) {
       if (!response.ok) throw new Error(data.error?.message || "DeepSeek API Error");
 
       const text = data.choices?.[0]?.message?.content || "";
-      return NextResponse.json({ content: [{ type: "text", text }] });
+      return NextResponse.json({ content: [{ type: "text", text }], llmStamp: buildLLMStamp(finalProvider, finalModel) });
     }
 
     // ==========================================
@@ -310,7 +331,7 @@ export async function POST(req: Request) {
       if (!response.ok) throw new Error(data.error?.message || "OpenRouter API Error");
 
       const text = data.choices?.[0]?.message?.content || "";
-      return NextResponse.json({ content: [{ type: "text", text }] });
+      return NextResponse.json({ content: [{ type: "text", text }], llmStamp: buildLLMStamp(finalProvider, finalModel) });
     }
 
     throw new Error(`Unsupported provider: ${provider}`);

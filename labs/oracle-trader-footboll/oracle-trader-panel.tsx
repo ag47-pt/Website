@@ -539,7 +539,7 @@ export default function OracleTraderPanel() {
     }
   }, [selectedGlueDate, preds, webhookUrl]);
 
-  const callOracleAPI = useCallback(async (prompt: string, withSearch = true, useSkill = false, learnings: any[] = []) => {
+  const callOracleAPI = useCallback(async (prompt: string, withSearch = true, useSkill = false, learnings: any[] = []): Promise<{ json: any; llmStamp: any }> => {
     const [provider, model] = aiEngine.split(':');
     const res = await fetch('/api/oracle', {
       method: 'POST',
@@ -549,12 +549,14 @@ export default function OracleTraderPanel() {
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || "Erro na API do Oracle");
 
+    const llmStamp = data.llmStamp || { provider: 'unknown', model: 'unknown', label: 'Desconhecido', timestamp: Date.now() };
+
     let text = data.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
     let cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
 
-    try { return JSON.parse(cleaned); } catch { }
+    try { return { json: JSON.parse(cleaned), llmStamp }; } catch { }
     const s = cleaned.indexOf('{'), e = cleaned.lastIndexOf('}');
-    if (s !== -1 && e > s) { try { return JSON.parse(cleaned.slice(s, e + 1)); } catch { } }
+    if (s !== -1 && e > s) { try { return { json: JSON.parse(cleaned.slice(s, e + 1)), llmStamp }; } catch { } }
     throw new Error("JSON inválido na resposta do modelo");
   }, [aiEngine]);
 
@@ -567,7 +569,7 @@ export default function OracleTraderPanel() {
 Retorne APENAS JSON: {"matches":[{"home":"Brasil","away":"Argentina","kickoff":"16:00","stage":"Eliminatórias","venue":"Maracanã"}]}
 Se não houver jogos: {"matches":[]}. Não inclua nada sobre criptomoedas. Foco 100% esportes/futebol.`;
 
-      const json = await callOracleAPI(prompt, true);
+      const { json } = await callOracleAPI(prompt, true);
       setTodayMatches(json.matches || []);
     } catch (e: any) { setError("Erro buscando jogos: " + e.message); }
     finally { setBusyK('today', false); }
@@ -582,12 +584,12 @@ Fase: ${match.stage}
 Horário previsto: ${match.kickoff}
 Data: ${today()}`;
 
-      const exAnte = await callOracleAPI(matchPrompt, true, true, learnings);
+      const { json: exAnte, llmStamp } = await callOracleAPI(matchPrompt, true, true, learnings);
 
       await savePred({
         id: uid(), createdAt: getTimestamp(),
         track: exAnte.track === 'bet' ? 'bet' : 'calibration',
-        match: { ...match, date: today() }, exAnte, status: 'pending', learned: false
+        match: { ...match, date: today() }, exAnte: { ...exAnte, llmStamp }, status: 'pending', learned: false
       });
       setTodayMatches(m => m.filter(x => !(x.home === match.home && x.away === match.away)));
     } catch (e: any) { setError("Erro gerando previsão: " + e.message); }
@@ -599,7 +601,7 @@ Data: ${today()}`;
     setBusyK(key, true); setError(null);
     try {
       const resPrompt = `Use web_search para o resultado FINAL do jogo de futebol: ${pred.match.home} x ${pred.match.away} (${pred.match.date}). Retorne APENAS JSON: {"found":true,"homeScore":2,"awayScore":1,"matchSummary":"..."}. Se não finalizou: {"found":false}.`;
-      const result = await callOracleAPI(resPrompt, true);
+      const { json: result, llmStamp: resultStamp } = await callOracleAPI(resPrompt, true);
 
       if (!result.found) { setError(`${pred.match.home} x ${pred.match.away} não finalizado.`); return; }
 
@@ -609,9 +611,9 @@ Placar Real: ${result.homeScore}x${result.awayScore}
 Categorias (retorne apenas uma no JSON): correct_read, lucky_win, variance_loss, misread, missing_info.
 Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"motivo..."}`;
 
-      const exPost = await callOracleAPI(classPrompt, false);
+      const { json: exPost, llmStamp: exPostStamp } = await callOracleAPI(classPrompt, false);
 
-      await savePred({ ...pred, status: 'resolved', result, exPost: { ...exPost, resolvedAt: getTimestamp() } });
+      await savePred({ ...pred, status: 'resolved', result: { ...result, llmStamp: resultStamp }, exPost: { ...exPost, llmStamp: exPostStamp, resolvedAt: getTimestamp() } });
     } catch (e: any) { setError("Erro buscando resultado: " + e.message); }
     finally { setBusyK(key, false); }
   }, [callOracleAPI, savePred]);
@@ -664,7 +666,8 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
         date: p.match.date ? p.match.date.slice(5).replace('-', '/') : '',
         classification: p.exPost.classification || "correct_read",
         predId: p.id
-      }
+      },
+      ...(p.exPost?.llmStamp ? { llmStamp: p.exPost.llmStamp } : {})
     };
     try {
       // 1. Salvar na coleção de aprendizados
@@ -1229,6 +1232,13 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
               {p.learned && (
                 <span className="bg-[rgb(var(--theme-primary-rgb)_/_0.2)] border border-[rgb(var(--theme-primary-rgb)_/_0.4)] text-[color:var(--theme-primary)] text-[9px] px-2.5 py-1 rounded-md flex items-center gap-1 font-mono tracking-widest uppercase">
                   🎓 APRENDIDO
+                </span>
+              )}
+
+              {/* LLM Stamp Badge */}
+              {p.exAnte?.llmStamp?.label && (
+                <span className="bg-zinc-900/80 border border-zinc-700/50 text-zinc-400 text-[8px] px-2 py-0.5 rounded-md font-mono tracking-wider flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity" title={`Gerado por ${p.exAnte.llmStamp.label} (${p.exAnte.llmStamp.provider})`}>
+                  🤖 {p.exAnte.llmStamp.label}
                 </span>
               )}
             </div>
@@ -2827,6 +2837,12 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
                             <>
                               <span>•</span>
                               <span className={`${srcMeta.text} font-bold`}>{srcMeta.label}</span>
+                            </>
+                          )}
+                          {l.llmStamp?.label && (
+                            <>
+                              <span>•</span>
+                              <span className="text-zinc-500" title={`Gerado por ${l.llmStamp.label}`}>🤖 {l.llmStamp.label}</span>
                             </>
                           )}
                         </div>
