@@ -13,10 +13,8 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/oracle': ['./labs/oracle-trader-footboll/oracle-trader-footbol-skill.md'],
-    },
+  outputFileTracingIncludes: {
+    '/api/oracle': ['./labs/oracle-trader-footboll/oracle-trader-footbol-skill.md'],
   },
   async headers() {
     return [
