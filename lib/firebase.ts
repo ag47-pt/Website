@@ -12,7 +12,12 @@ const firebaseConfig = {
 };
 
 // Evita erro de build no Vercel quando variáveis de ambiente ainda não estão setadas
-const safeConfig = firebaseConfig.apiKey ? firebaseConfig : {
+const isConfigValid = !!firebaseConfig.apiKey;
+if (!isConfigValid) {
+  console.warn('⚠️ FIREBASE API KEY MISSING! Using dummy config. Please check Vercel Environment Variables.');
+}
+
+const safeConfig = isConfigValid ? firebaseConfig : {
   apiKey: 'dummy-key-to-bypass-build-error',
   authDomain: 'dummy-domain',
   projectId: 'dummy-project',
