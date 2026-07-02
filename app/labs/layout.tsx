@@ -63,7 +63,7 @@ export default function LabsLayout({
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute inset-0 opacity-50">
             <Image
-              src={bgImage}
+              src={pathname.includes('/oracle-trader') ? '/imgs/estadio-universo.webp' : bgImage}
               alt="Background"
               fill
               className="object-cover"
@@ -83,7 +83,8 @@ export default function LabsLayout({
       )}
 
       {/* Optimized Header (Navbar) - Following Homepage Pattern */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/5 backdrop-blur-xl shadow-2xl transition-all duration-300">
+      {!pathname.includes('/oracle-trader') && (
+        <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/5 backdrop-blur-xl shadow-2xl transition-all duration-300">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-0 h-full w-[150%] bg-gradient-to-r from-transparent via-white/5 to-transparent animate-glass-shine mix-blend-overlay"></div>
         </div>
@@ -199,11 +200,12 @@ export default function LabsLayout({
         </AnimatePresence>
 
         <ScrollProgressBar />
-      </header>
+        </header>
+      )}
 
       {/* Main Content Area - Adjusted PT for new header height */}
       {/* Main Content Area - Adjusted PT for new header height */}
-      <main className="relative pt-20 md:pt-32 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+      <main className={`relative pb-20 px-4 sm:px-6 max-w-7xl mx-auto ${pathname.includes('/oracle-trader') ? 'pt-8' : 'pt-20 md:pt-32'}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

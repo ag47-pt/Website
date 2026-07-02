@@ -1,0 +1,203 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return signedIn() && me().role == 'super_admin';
+    }
+
+    function isTenantOwner() {
+      return signedIn() && me().role == 'tenant_owner';
+    }
+
+    function sameTenant(tenantId) {
+      return signedIn() && me().tenantId == tenantId;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function canManageReservation(restaurantId) {
+      return signedIn() && (isAdmin() || sameTenant(restaurantId));
+    }
+
+    function canManageRestaurantData(restaurantId) {
+      return signedIn() && (isAdmin() || (isTenantOwner() && sameTenant(restaurantId)));
+    }
+
+    // Public restaurants
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update, delete: if canManageRestaurantData(resource.data.id) || (isAdmin() && request.resource.data.ownerId == resource.data.ownerId);
+    }
+
+    // legacy restaurant collection rule from local firestore.rules
+    match /restaurantes/{restaurantId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    // User profile
+    match /users/{userId} {
+      allow read, update: if isSelf(userId) || isAdmin();
+      allow create: if isSelf(userId);
+      allow delete: if isAdmin();
+    }
+
+    // Profiles
+    match /profiles/{profileId} {
+      allow read, update: if signedIn() && (request.auth.uid == profileId || isAdmin());
+      allow create: if signedIn() && request.auth.uid == profileId;
+    }
+
+    // Reservations
+    match /reservations/{reservationId} {
+      allow read: if signedIn() && (
+        resource.data.customerId == request.auth.uid ||
+        canManageReservation(resource.data.restaurantId) ||
+        isAdmin()
+      );
+
+      allow create: if signedIn() && (
+        request.resource.data.customerId == request.auth.uid ||
+        canManageReservation(request.resource.data.restaurantId) ||
+        isAdmin()
+      );
+
+      allow update, delete: if signedIn() && (
+        canManageReservation(resource.data.restaurantId) ||
+        isAdmin()
+      ) &&
+      request.resource.data.restaurantId == resource.data.restaurantId &&
+      request.resource.data.customerId == resource.data.customerId &&
+      request.resource.data.customerEmail == resource.data.customerEmail &&
+      request.resource.data.customerName == resource.data.customerName &&
+      request.resource.data.date == resource.data.date &&
+      request.resource.data.time == resource.data.time &&
+      request.resource.data.partySize == resource.data.partySize &&
+      request.resource.data.reservationCode == resource.data.reservationCode &&
+      request.resource.data.source == resource.data.source &&
+      request.resource.data.depositAmount == resource.data.depositAmount &&
+      request.resource.data.orderItems == resource.data.orderItems &&
+      request.resource.data.orderTotal == resource.data.orderTotal &&
+      request.resource.data.notes == resource.data.notes;
+    }
+
+    // legacy reservation collection rule from local firestore.rules
+    match /reservas/{reservaId} {
+      allow create: if true;
+      allow read: if signedIn();
+      allow update: if signedIn();
+    }
+
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
+      allow update, delete: if signedIn() && (
+        resource.data.customerId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // Staff roster
+    match /staff/{staffId} {
+      allow read: if signedIn() && (
+        sameTenant(resource.data.restaurantId) ||
+        isAdmin()
+      );
+
+      allow create, update, delete: if signedIn() && canManageRestaurantData(request.resource.data.restaurantId);
+    }
+
+    // Menu items
+    match /menuItems/{menuItemId} {
+      allow read: if true;
+      allow create, update, delete: if signedIn() && canManageRestaurantData(request.resource.data.restaurantId);
+    }
+
+    // Admin logs
+    match /auditLog/{entryId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Google Maps sync history
+    match /restaurant-sync-history/{docId} {
+      allow read: if signedIn() && (
+        isAdmin() ||
+        (isTenantOwner() && sameTenant(resource.data.restaurantId))
+      );
+      allow write: if isAdmin();
+    }
+
+    // Restaurant alerts
+    match /restaurant-alerts/{docId} {
+      allow read: if signedIn() && (
+        isAdmin() ||
+        (isTenantOwner() && sameTenant(resource.data.restaurantId))
+      );
+      allow create: if isAdmin();
+      allow update: if signedIn() && (
+        isAdmin() ||
+        (isTenantOwner() && sameTenant(resource.data.restaurantId))
+      ) && request.resource.data.keys().hasOnly(["isRead", "readAt"]);
+      allow delete: if isAdmin();
+    }
+
+    // User favourites
+    match /restaurant-favorites/{docId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow update: if false; // immutable
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if signedIn();
+    }
+
+    // Pedidos (legacy collection matches code createOrder)
+    match /pedidos/{pedidoId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if signedIn();
+    }
+
+    // Waiter calls
+    match /waiter_calls/{callId} {
+      allow create: if true;
+      allow read: if true;
+      allow update, delete: if signedIn();
+    }
+
+    // Restaurant metrics
+    match /restaurants_metrics/{slug} {
+      allow create, update: if true;
+      allow read: if true;
+    }
+
+    match /oracle_predictions/{docId} {
+      allow read, write: if true;
+    }
+
+    match /oracle_learnings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

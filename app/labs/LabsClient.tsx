@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Terminal, Code2, Presentation, Cpu, TrendingUp } from 'lucide-react';
+import { Terminal, Code2, Presentation, Cpu, TrendingUp, Brain } from 'lucide-react';
 import { LabHero, LabCallCard } from './components';
 
 export function LabsClient() {
@@ -13,6 +13,14 @@ export function LabsClient() {
       description: 'Sinais e previsões semanais, mensais e anuais do mercado de BTC com IA proprietária.',
       icon: <TrendingUp className="w-8 h-8" />,
       path: '/labs/apex',
+      status: 'BETA_LIVE',
+    },
+    {
+      id: 'oracle-trader',
+      title: 'Oracle Trader',
+      description: 'Análise de mercado e trader quantitativo de futebol com cognição preditiva e calibração de edge.',
+      icon: <Brain className="w-8 h-8" />,
+      path: '/labs/oracle-trader',
       status: 'BETA_LIVE',
     },
     {
