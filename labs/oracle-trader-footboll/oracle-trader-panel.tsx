@@ -569,8 +569,12 @@ export default function OracleTraderPanel() {
 Retorne APENAS JSON: {"matches":[{"home":"Brasil","away":"Argentina","kickoff":"16:00","stage":"Eliminatórias","venue":"Maracanã"}]}
 Se não houver jogos: {"matches":[]}. Não inclua nada sobre criptomoedas. Foco 100% esportes/futebol.`;
 
-      const { json } = await callOracleAPI(prompt, true);
-      setTodayMatches(json.matches || []);
+      const { json, llmStamp } = await callOracleAPI(prompt, true);
+      const matchesWithStamp = (json.matches || []).map((m: any) => ({
+        ...m,
+        llmStamp
+      }));
+      setTodayMatches(matchesWithStamp);
     } catch (e: any) { setError("Erro buscando jogos: " + e.message); }
     finally { setBusyK('today', false); }
   }, [callOracleAPI]);
@@ -2469,6 +2473,11 @@ Retorne JSON: {"hit":true,"classification":"correct_read","causalAnalysis":"moti
                         <div className="text-[10px] font-mono tracking-[0.2em] uppercase text-[color:var(--theme-primary)]">
                           {m.stage}
                         </div>
+                        {m.llmStamp?.label && (
+                          <span className="bg-zinc-900/80 border border-zinc-700/50 text-zinc-400 text-[8px] px-2 py-0.5 rounded-md font-mono tracking-wider flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity" title={`Gerado por ${m.llmStamp.label} (${m.llmStamp.provider})`}>
+                            🤖 {m.llmStamp.label}
+                          </span>
+                        )}
                       </div>
 
                       <div className="space-y-1">
