@@ -1,0 +1,3 @@
+"""AG47 Altcoin Radar backend package."""
+
+__version__ = "0.1.0"

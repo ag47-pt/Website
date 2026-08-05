@@ -1,0 +1,20 @@
+export const pt = {
+  product: "AG47 Altcoin Radar",
+  sprint: "Sprint 1 • MVP",
+  demo: "Modo demonstração",
+  partial: "Dados parciais",
+  stale: "Dados desatualizados",
+  unknown: "Desconhecido",
+  unavailable: "Provider indisponível",
+  noData: "Aguardando dados",
+  navigation: {
+    dashboard: "Dashboard",
+    opportunities: "Oportunidades",
+    alerts: "Alertas",
+    social: "Social",
+    risk: "Risco",
+    watchlist: "Watchlist",
+    logs: "Logs",
+    settings: "Configurações",
+  },
+} as const;

@@ -1,0 +1,709 @@
+"use client";
+
+import {
+  type ColumnDef,
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  SlidersHorizontal,
+  Star,
+} from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useOpportunities, useWatchlistMutation } from "@/lib/api/query";
+import type { Opportunity, OpportunityFilters } from "@/lib/api/schemas";
+import {
+  formatAge,
+  formatClassification,
+  formatCurrency,
+  formatDateTime,
+  formatNumber,
+  formatPercent,
+  formatScore,
+  getErrorMessage,
+  shortenAddress,
+} from "@/lib/format";
+import { ChainBadge } from "@/components/shared/chain-badge";
+import { DataBadges } from "@/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
+import { useRadarState } from "@/components/radar-state";
+
+interface OpportunityTableProps {
+  selectedTokenId: string | null;
+  onSelect: (opportunity: Opportunity) => void;
+  onRowsLoaded?: (opportunities: Opportunity[]) => void;
+  compact?: boolean;
+}
+
+interface AdvancedFilters {
+  minScore: string;
+  maxRisk: string;
+  maxPairAgeHours: string;
+  minLiquidity: string;
+}
+
+const DEFAULT_FILTERS: AdvancedFilters = {
+  minScore: "",
+  maxRisk: "",
+  maxPairAgeHours: "",
+  minLiquidity: "",
+};
+
+const sortingMap: Record<string, string> = {
+  price: "price",
+  change1h: "price_change_1h",
+  liquidity: "liquidity",
+  volume1h: "volume_1h",
+  volume24h: "volume_24h",
+  age: "pair_age",
+  score: "score",
+  updated: "updated_at",
+};
+
+function numericFilter(value: string) {
+  if (!value) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function changeTone(value: number | null) {
+  if (value === null) return "text-radar-subtle";
+  if (value > 0) return "text-radar-positive";
+  if (value < 0) return "text-radar-critical";
+  return "text-radar-muted";
+}
+
+function scoreTone(value: number | null) {
+  if (value === null) return "border-radar-border bg-[#101b24] text-radar-subtle";
+  if (value >= 8) return "border-radar-positive/25 bg-[#133a28] text-radar-positive";
+  if (value >= 6.5) return "border-radar-neutral/25 bg-[#142b47] text-radar-neutral";
+  if (value >= 5) return "border-radar-warning/25 bg-[#3c2c0e] text-radar-warning";
+  return "border-radar-critical/25 bg-[#3d191e] text-radar-critical";
+}
+
+function statusTone(classification: string | null) {
+  const normalized = classification?.toLowerCase() ?? "";
+  if (normalized.includes("forte"))
+    return "border-radar-positive/25 bg-[#133a28] text-radar-positive";
+  if (normalized.includes("observar"))
+    return "border-radar-neutral/25 bg-[#142b47] text-radar-neutral";
+  if (normalized.includes("especul"))
+    return "border-radar-warning/25 bg-[#3c2c0e] text-radar-warning";
+  return "border-radar-critical/25 bg-[#3d191e] text-radar-critical";
+}
+
+function SortableHeader({
+  label,
+  column,
+}: {
+  label: string;
+  column: {
+    getIsSorted: () => false | "asc" | "desc";
+    toggleSorting: (descending?: boolean) => void;
+  };
+}) {
+  const direction = column.getIsSorted();
+  const Icon = direction === "asc" ? ArrowUp : direction === "desc" ? ArrowDown : ArrowUpDown;
+  return (
+    <button
+      className="flex items-center gap-1 whitespace-nowrap text-[0.61rem] font-bold text-radar-muted hover:text-radar-ink"
+      onClick={() => column.toggleSorting(direction === "asc")}
+      type="button"
+    >
+      {label} <Icon className="size-3" />
+    </button>
+  );
+}
+
+function buildColumns(toggleWatchlist: (row: Opportunity) => void): ColumnDef<Opportunity>[] {
+  return [
+    {
+      id: "favorite",
+      header: () => <span className="sr-only">Favorito</span>,
+      cell: ({ row }) => (
+        <button
+          aria-label={
+            row.original.watchlisted
+              ? `Remover ${row.original.token.symbol} da watchlist`
+              : `Adicionar ${row.original.token.symbol} à watchlist`
+          }
+          aria-pressed={row.original.watchlisted}
+          data-testid={`watchlist-toggle-${row.original.token.symbol.toLowerCase()}`}
+          className={`grid size-7 place-items-center rounded-md hover:bg-white/5 ${row.original.watchlisted ? "text-radar-warning" : "text-radar-subtle"}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleWatchlist(row.original);
+          }}
+          type="button"
+        >
+          <Star className="size-3.5" fill={row.original.watchlisted ? "currentColor" : "none"} />
+        </button>
+      ),
+      size: 40,
+      enableSorting: false,
+    },
+    {
+      id: "token",
+      accessorFn: (row) => row.token.symbol,
+      header: "Token",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="flex min-w-28 items-center gap-2">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full border border-radar-neutral/30 bg-[#122843] text-xs font-extrabold text-radar-neutral">
+            {row.original.token.symbol.slice(0, 1)}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-[0.7rem] font-extrabold text-radar-ink">
+              {row.original.token.symbol}
+            </span>
+            <span className="block max-w-24 truncate text-[0.59rem] text-radar-subtle">
+              {row.original.token.name}
+            </span>
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: "address",
+      header: "Contrato",
+      cell: ({ row }) => (
+        <span className="mono text-[0.6rem] text-radar-subtle">
+          {shortenAddress(row.original.token.contract_address)}
+        </span>
+      ),
+      enableSorting: false,
+    },
+    {
+      id: "chain",
+      accessorFn: (row) => row.token.chain,
+      header: "Chain",
+      enableSorting: false,
+      cell: ({ row }) => <ChainBadge chain={row.original.token.chain} />,
+    },
+    {
+      id: "price",
+      accessorFn: (row) => row.market?.price_usd,
+      header: ({ column }) => <SortableHeader label="Preço" column={column} />,
+      cell: ({ row }) => (
+        <span className="mono text-[0.65rem] font-semibold">
+          {formatCurrency(row.original.market?.price_usd ?? null)}
+        </span>
+      ),
+    },
+    {
+      id: "change1h",
+      accessorFn: (row) => row.market?.price_change_1h,
+      header: ({ column }) => <SortableHeader label="Var. 1h" column={column} />,
+      cell: ({ row }) => (
+        <span
+          className={`mono text-[0.65rem] font-bold ${changeTone(row.original.market?.price_change_1h ?? null)}`}
+        >
+          {formatPercent(row.original.market?.price_change_1h ?? null, true)}
+        </span>
+      ),
+    },
+    {
+      id: "liquidity",
+      accessorFn: (row) => row.market?.liquidity_usd,
+      header: ({ column }) => <SortableHeader label="Liquidez" column={column} />,
+      cell: ({ row }) => (
+        <span className="mono text-[0.65rem]">
+          {formatCurrency(row.original.market?.liquidity_usd ?? null, true)}
+        </span>
+      ),
+    },
+    {
+      id: "volume1h",
+      accessorFn: (row) => row.market?.volume_1h,
+      header: ({ column }) => <SortableHeader label="Volume 1h" column={column} />,
+      cell: ({ row }) => (
+        <span className="mono text-[0.65rem]">
+          {formatCurrency(row.original.market?.volume_1h ?? null, true)}
+        </span>
+      ),
+    },
+    {
+      id: "volume24h",
+      accessorFn: (row) => row.market?.volume_24h,
+      header: ({ column }) => <SortableHeader label="Volume 24h" column={column} />,
+      cell: ({ row }) => (
+        <span className="mono text-[0.65rem]">
+          {formatCurrency(row.original.market?.volume_24h ?? null, true)}
+        </span>
+      ),
+    },
+    {
+      id: "age",
+      accessorFn: (row) => row.pair.created_at,
+      header: ({ column }) => <SortableHeader label="Idade do par" column={column} />,
+      cell: ({ row }) => (
+        <span className="mono text-[0.64rem] text-radar-muted">
+          {formatAge(row.original.pair.created_at)}
+        </span>
+      ),
+    },
+    {
+      id: "holders",
+      accessorFn: (row) => row.holders_count,
+      header: "Holders",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span className="mono text-[0.65rem]">
+          {formatNumber(row.original.holders_count, true)}
+        </span>
+      ),
+    },
+    {
+      id: "score",
+      accessorFn: (row) => row.score?.final_score,
+      header: ({ column }) => <SortableHeader label="Score" column={column} />,
+      cell: ({ row }) => (
+        <span
+          className={`mono inline-flex min-w-10 justify-center rounded-md border px-2 py-1 text-[0.65rem] font-extrabold ${scoreTone(row.original.score?.final_score ?? null)}`}
+        >
+          {formatScore(row.original.score?.final_score ?? null)}
+        </span>
+      ),
+    },
+    {
+      id: "status",
+      accessorFn: (row) => row.score?.classification,
+      header: "Status",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span
+          className={`inline-flex whitespace-nowrap rounded-md border px-2 py-1 text-[0.6rem] font-extrabold ${statusTone(row.original.score?.classification ?? null)}`}
+        >
+          {formatClassification(row.original.score?.classification ?? null)}
+        </span>
+      ),
+    },
+    {
+      id: "updated",
+      accessorFn: (row) => row.updated_at,
+      header: ({ column }) => <SortableHeader label="Atualizado" column={column} />,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap text-[0.59rem] text-radar-subtle">
+          {formatDateTime(row.original.updated_at)}
+        </span>
+      ),
+    },
+  ];
+}
+
+function MobileOpportunityCard({
+  row,
+  selected,
+  onSelect,
+  onToggle,
+}: {
+  row: Opportunity;
+  selected: boolean;
+  onSelect: () => void;
+  onToggle: () => void;
+}) {
+  return (
+    <article
+      className={`rounded-xl border p-3 ${selected ? "border-radar-positive/60 bg-[#0e251d]" : "border-radar-border bg-[#0a161f]"}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <button className="min-w-0 flex-1 text-left" onClick={onSelect} type="button">
+          <div className="flex items-center gap-2">
+            <span className="grid size-8 place-items-center rounded-full bg-[#142c49] font-extrabold text-radar-neutral">
+              {row.token.symbol[0]}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-extrabold">{row.token.symbol}</span>
+              <span className="mono block truncate text-[0.58rem] text-radar-subtle">
+                {shortenAddress(row.token.contract_address, 7)}
+              </span>
+            </span>
+            <ChainBadge chain={row.token.chain} />
+          </div>
+        </button>
+        <button
+          aria-label={row.watchlisted ? "Remover da watchlist" : "Adicionar à watchlist"}
+          className={row.watchlisted ? "text-radar-warning" : "text-radar-subtle"}
+          onClick={onToggle}
+          type="button"
+        >
+          <Star className="size-5" fill={row.watchlisted ? "currentColor" : "none"} />
+        </button>
+      </div>
+      <button
+        className="mt-3 grid w-full grid-cols-3 gap-x-3 gap-y-2 text-left"
+        onClick={onSelect}
+        type="button"
+      >
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Preço</span>
+          <span className="mono text-[0.65rem] font-bold">
+            {formatCurrency(row.market?.price_usd ?? null)}
+          </span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Variação 1h</span>
+          <span
+            className={`mono text-[0.65rem] font-bold ${changeTone(row.market?.price_change_1h ?? null)}`}
+          >
+            {formatPercent(row.market?.price_change_1h ?? null, true)}
+          </span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Score</span>
+          <span
+            className={`mono text-[0.68rem] font-extrabold ${changeTone(row.score?.final_score ?? null)}`}
+          >
+            {formatScore(row.score?.final_score ?? null)}
+          </span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Liquidez</span>
+          <span className="mono text-[0.63rem]">
+            {formatCurrency(row.market?.liquidity_usd ?? null, true)}
+          </span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Vol. 24h</span>
+          <span className="mono text-[0.63rem]">
+            {formatCurrency(row.market?.volume_24h ?? null, true)}
+          </span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Risco</span>
+          <span className="mono text-[0.63rem]">
+            {row.risk?.risk_score === null || row.risk === null
+              ? "N/D"
+              : `${formatScore(row.risk.risk_score)}/10`}
+          </span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Idade</span>
+          <span className="mono text-[0.63rem]">{formatAge(row.pair.created_at)}</span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Holders</span>
+          <span className="mono text-[0.63rem]">{formatNumber(row.holders_count, true)}</span>
+        </span>
+        <span>
+          <span className="block text-[0.56rem] uppercase text-radar-subtle">Atualizado</span>
+          <span className="text-[0.59rem] text-radar-muted">{formatDateTime(row.updated_at)}</span>
+        </span>
+      </button>
+    </article>
+  );
+}
+
+export function OpportunityTable({
+  selectedTokenId,
+  onSelect,
+  onRowsLoaded,
+  compact = false,
+}: OpportunityTableProps) {
+  const { search, chains } = useRadarState();
+  const deferredSearch = useDeferredValue(search.trim());
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(compact ? 5 : 10);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "score", desc: true }]);
+  const [filters, setFilters] = useState<AdvancedFilters>(DEFAULT_FILTERS);
+  const [showFilters, setShowFilters] = useState(false);
+  const watchlist = useWatchlistMutation();
+
+  const queryFilters: OpportunityFilters = {
+    q: deferredSearch || undefined,
+    chains: chains.length ? chains : undefined,
+    minScore: numericFilter(filters.minScore),
+    maxRisk: numericFilter(filters.maxRisk),
+    maxPairAgeHours: numericFilter(filters.maxPairAgeHours),
+    minLiquidity: numericFilter(filters.minLiquidity),
+    sortBy: sorting[0] ? sortingMap[sorting[0].id] : undefined,
+    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    page,
+    pageSize,
+  };
+  const opportunities = useOpportunities(queryFilters);
+
+  useEffect(() => {
+    if (opportunities.data?.items.length) onRowsLoaded?.(opportunities.data.items);
+  }, [onRowsLoaded, opportunities.data?.items]);
+
+  const columns = useMemo(
+    () =>
+      buildColumns((row) => {
+        watchlist.mutate({ tokenId: row.token.id, isWatchlisted: row.watchlisted });
+      }),
+    [watchlist],
+  );
+
+  // TanStack Table intentionally returns imperative getters that React Compiler does not memoize.
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const table = useReactTable({
+    data: opportunities.data?.items ?? [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    manualSorting: true,
+    pageCount: opportunities.data?.pages ?? -1,
+    onSortingChange: (updater) => {
+      setSorting(updater);
+      setPage(1);
+    },
+    state: { sorting },
+  });
+
+  function updateFilter(key: keyof AdvancedFilters, value: string) {
+    setFilters((current) => ({ ...current, [key]: value }));
+    setPage(1);
+  }
+
+  function resetFilters() {
+    setFilters(DEFAULT_FILTERS);
+    setSorting([{ id: "score", desc: true }]);
+    setPage(1);
+  }
+
+  return (
+    <section
+      className="panel min-w-0 overflow-hidden"
+      aria-labelledby="opportunities-title"
+      data-testid="opportunities-panel"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-radar-border px-3.5 py-3">
+        <div>
+          <p className="eyebrow">Descoberta e observação</p>
+          <h2 id="opportunities-title" className="mt-1 text-sm font-extrabold">
+            Oportunidades em destaque
+          </h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <DataBadges
+            demo={opportunities.data?.demo_mode}
+            partial={opportunities.data?.partial}
+            stale={opportunities.data?.stale}
+          />
+          <button
+            aria-expanded={showFilters}
+            className={`inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[0.65rem] font-bold ${showFilters ? "border-radar-positive/40 bg-[#10251f] text-radar-positive" : "border-radar-border bg-[#0b1821] text-radar-muted"}`}
+            onClick={() => setShowFilters((current) => !current)}
+            type="button"
+          >
+            <SlidersHorizontal className="size-3.5" /> Filtros
+          </button>
+        </div>
+      </div>
+
+      {showFilters && (
+        <div className="grid gap-2 border-b border-radar-border bg-black/10 p-3 sm:grid-cols-2 xl:grid-cols-4">
+          <label className="text-[0.6rem] font-bold text-radar-muted">
+            Score mínimo
+            <select
+              className="mt-1 h-9 w-full rounded-lg border border-radar-border bg-[#09151e] px-2 text-xs text-radar-ink"
+              data-testid="score-filter"
+              onChange={(event) => updateFilter("minScore", event.target.value)}
+              value={filters.minScore}
+            >
+              <option value="">Qualquer score</option>
+              <option value="5">5+</option>
+              <option value="6.5">6,5+</option>
+              <option value="8">8+</option>
+            </select>
+          </label>
+          <label className="text-[0.6rem] font-bold text-radar-muted">
+            Risco máximo
+            <select
+              className="mt-1 h-9 w-full rounded-lg border border-radar-border bg-[#09151e] px-2 text-xs text-radar-ink"
+              data-testid="risk-filter"
+              onChange={(event) => updateFilter("maxRisk", event.target.value)}
+              value={filters.maxRisk}
+            >
+              <option value="">Qualquer risco</option>
+              <option value="3">Até 3</option>
+              <option value="5">Até 5</option>
+              <option value="7">Até 7</option>
+            </select>
+          </label>
+          <label className="text-[0.6rem] font-bold text-radar-muted">
+            Idade máxima do par
+            <select
+              className="mt-1 h-9 w-full rounded-lg border border-radar-border bg-[#09151e] px-2 text-xs text-radar-ink"
+              onChange={(event) => updateFilter("maxPairAgeHours", event.target.value)}
+              value={filters.maxPairAgeHours}
+            >
+              <option value="">Qualquer idade</option>
+              <option value="1">1 hora</option>
+              <option value="24">24 horas</option>
+              <option value="168">7 dias</option>
+              <option value="720">30 dias</option>
+            </select>
+          </label>
+          <label className="text-[0.6rem] font-bold text-radar-muted">
+            Liquidez mínima (USD)
+            <div className="mt-1 flex gap-1.5">
+              <input
+                className="h-9 min-w-0 flex-1 rounded-lg border border-radar-border bg-[#09151e] px-2 text-xs text-radar-ink placeholder:text-radar-subtle"
+                inputMode="decimal"
+                min="0"
+                onChange={(event) => updateFilter("minLiquidity", event.target.value)}
+                placeholder="Ex.: 100000"
+                type="number"
+                value={filters.minLiquidity}
+              />
+              <button
+                aria-label="Limpar filtros"
+                className="grid size-9 shrink-0 place-items-center rounded-lg border border-radar-border text-radar-muted hover:text-radar-ink"
+                onClick={resetFilters}
+                type="button"
+              >
+                <RotateCcw className="size-3.5" />
+              </button>
+            </div>
+          </label>
+        </div>
+      )}
+
+      {watchlist.isError && (
+        <p
+          className="border-b border-radar-critical/20 bg-[#35171d] px-3 py-2 text-[0.64rem] text-radar-critical"
+          role="alert"
+        >
+          Não foi possível atualizar a watchlist: {getErrorMessage(watchlist.error)}
+        </p>
+      )}
+
+      {opportunities.isLoading ? (
+        <PanelSkeleton rows={compact ? 5 : 8} />
+      ) : opportunities.isError ? (
+        <ErrorState
+          message={getErrorMessage(opportunities.error)}
+          retry={() => void opportunities.refetch()}
+        />
+      ) : !opportunities.data?.items.length ? (
+        <EmptyState
+          title="Nenhuma oportunidade encontrada"
+          message="A busca e os filtros não encontraram tokens monitorados neste recorte."
+        />
+      ) : (
+        <>
+          <div className="hidden overflow-x-auto md:block">
+            <table
+              className="w-full min-w-[1320px] border-collapse text-left"
+              data-testid="opportunities-table"
+            >
+              <thead className="bg-[#0b1720]">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="border-b border-radar-border px-2.5 py-2.5 text-[0.61rem] font-bold text-radar-muted"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => {
+                  const isSelected = row.original.token.id === selectedTokenId;
+                  return (
+                    <tr
+                      key={row.id}
+                      aria-selected={isSelected}
+                      data-testid={`opportunity-row-${row.original.token.symbol.toLowerCase()}`}
+                      className={`border-b border-radar-border/70 transition-colors last:border-0 ${isSelected ? "bg-[#10291f] shadow-[inset_2px_0_0_#55df8a]" : "hover:bg-white/[0.025]"}`}
+                      onClick={() => onSelect(row.original)}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="whitespace-nowrap px-2.5 py-2.5 align-middle">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="space-y-2 p-2.5 md:hidden">
+            {opportunities.data.items.map((row) => (
+              <MobileOpportunityCard
+                key={row.token.id}
+                row={row}
+                selected={row.token.id === selectedTokenId}
+                onSelect={() => onSelect(row)}
+                onToggle={() =>
+                  watchlist.mutate({ tokenId: row.token.id, isWatchlisted: row.watchlisted })
+                }
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-radar-border px-3.5 py-2.5">
+        <p className="text-[0.63rem] text-radar-muted">
+          {opportunities.data
+            ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, opportunities.data.total)} de ${opportunities.data.total}`
+            : "Aguardando dados"}
+        </p>
+        <div className="flex items-center gap-1.5">
+          {!compact && (
+            <label className="mr-2 text-[0.61rem] text-radar-muted">
+              <span className="sr-only">Linhas por página</span>
+              <select
+                className="h-8 rounded-md border border-radar-border bg-[#09151e] px-2 text-[0.62rem]"
+                onChange={(event) => {
+                  setPageSize(Number(event.target.value));
+                  setPage(1);
+                }}
+                value={pageSize}
+              >
+                <option value="10">10 / página</option>
+                <option value="20">20 / página</option>
+                <option value="50">50 / página</option>
+              </select>
+            </label>
+          )}
+          <button
+            aria-label="Página anterior"
+            className="grid size-8 place-items-center rounded-md border border-radar-border text-radar-muted disabled:opacity-35"
+            disabled={page <= 1 || opportunities.isFetching}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            type="button"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <span className="mono min-w-14 text-center text-[0.63rem] text-radar-muted">
+            {page} / {Math.max(1, opportunities.data?.pages ?? 1)}
+          </span>
+          <button
+            aria-label="Página seguinte"
+            className="grid size-8 place-items-center rounded-md border border-radar-border text-radar-muted disabled:opacity-35"
+            disabled={page >= (opportunities.data?.pages ?? 1) || opportunities.isFetching}
+            onClick={() => setPage((current) => current + 1)}
+            type="button"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+      </footer>
+      {opportunities.isFetching && !opportunities.isLoading && (
+        <div className="h-0.5 overflow-hidden bg-radar-border">
+          <span className="block h-full w-1/3 animate-pulse bg-radar-positive" />
+        </div>
+      )}
+    </section>
+  );
+}

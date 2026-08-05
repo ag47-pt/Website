@@ -1,0 +1,50 @@
+:root {
+  color-scheme: dark;
+
+  --radar-ink: #edf4f8;
+  --radar-ink-muted: #8fa4b2;
+  --radar-ink-subtle: #627786;
+  --radar-canvas: #050b10;
+  --radar-canvas-raised: #08121a;
+  --radar-surface: #0b1720;
+  --radar-surface-raised: #0e1c27;
+  --radar-surface-hover: #112532;
+  --radar-border: #203340;
+  --radar-border-strong: #304957;
+  --radar-positive: #55df8a;
+  --radar-positive-dim: #153f2d;
+  --radar-warning: #f4b941;
+  --radar-warning-dim: #4b3511;
+  --radar-critical: #f26a6a;
+  --radar-critical-dim: #4b1d23;
+  --radar-neutral: #62a4ff;
+  --radar-neutral-dim: #152d4a;
+  --radar-secondary: #9b8cf4;
+  --radar-secondary-dim: #29234b;
+  --radar-focus: #83ebb0;
+
+  --radar-radius-xs: 0.38rem;
+  --radar-radius-sm: 0.55rem;
+  --radar-radius-md: 0.78rem;
+  --radar-radius-lg: 1rem;
+  --radar-shadow: 0 18px 48px rgb(0 0 0 / 0.18);
+  --radar-sidebar-width: 13.5rem;
+  --radar-header-height: 4.8rem;
+}
+
+@theme inline {
+  --font-sans: "Manrope Variable", "Aptos", sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
+  --color-radar-ink: var(--radar-ink);
+  --color-radar-muted: var(--radar-ink-muted);
+  --color-radar-subtle: var(--radar-ink-subtle);
+  --color-radar-canvas: var(--radar-canvas);
+  --color-radar-surface: var(--radar-surface);
+  --color-radar-raised: var(--radar-surface-raised);
+  --color-radar-border: var(--radar-border);
+  --color-radar-positive: var(--radar-positive);
+  --color-radar-warning: var(--radar-warning);
+  --color-radar-critical: var(--radar-critical);
+  --color-radar-neutral: var(--radar-neutral);
+  --color-radar-secondary: var(--radar-secondary);
+}

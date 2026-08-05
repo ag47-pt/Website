@@ -1,0 +1,35 @@
+{
+  "name": "ag47-altcoin-radar",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c green,blue \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:api": "cd apps/api && python -m uvicorn ag47_radar.main:app --reload --port 8000",
+    "lint": "npm run lint:web && npm run lint:api",
+    "lint:web": "npm --prefix apps/web run lint",
+    "lint:api": "cd apps/api && python -m ruff check src tests",
+    "format": "prettier --write . && cd apps/api && python -m ruff format src tests",
+    "format:check": "prettier --check . && cd apps/api && python -m ruff format --check src tests",
+    "typecheck": "npm run typecheck:web && npm run typecheck:api",
+    "typecheck:web": "npm --prefix apps/web run typecheck",
+    "typecheck:api": "cd apps/api && python -m mypy src/ag47_radar",
+    "test": "npm run test:web && npm run test:api",
+    "test:web": "npm --prefix apps/web run test:run",
+    "test:api": "cd apps/api && python -m pytest",
+    "test:e2e": "npm --prefix apps/web run test:e2e",
+    "build": "npm run build:web && npm run build:api",
+    "build:web": "npm --prefix apps/web run build",
+    "build:api": "cd apps/api && python -m compileall -q src",
+    "db:migrate": "cd apps/api && python -m alembic upgrade head",
+    "db:seed": "cd apps/api && python -m ag47_radar.cli seed",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.4",
+    "prettier": "^3.9.6"
+  }
+}

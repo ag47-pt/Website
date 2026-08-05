@@ -1,0 +1,36 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+apps/api/data/*.db
+apps/api/data/*.db-*
+
+# Node / Next
+node_modules/
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+apps/web/coverage/
+apps/web/test-results/
+apps/web/playwright-report/
+*.tsbuildinfo
+next-env.d.ts
+
+# Tooling
+.DS_Store
+Thumbs.db
+*.log
+
+
+# Root-level stray DB
+data/

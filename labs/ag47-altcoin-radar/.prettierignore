@@ -1,0 +1,10 @@
+**/.next/**
+**/node_modules/**
+**/coverage/**
+**/playwright-report/**
+**/test-results/**
+**/.venv/**
+**/__pycache__/**
+apps/api/alembic/versions/**
+package-lock.json
+
