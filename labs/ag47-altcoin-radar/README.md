@@ -110,8 +110,8 @@ scripts           automação local
 - GeckoTerminal keyless é uma API beta de baixo volume; uso comercial exige revisão de licença e capacidade.
 - Os termos da DexScreener devem ser revistos antes de lançar um produto comercial potencialmente concorrente.
 - O histórico real é acumulado por snapshots persistidos; o modo demo contém apenas histórico explicitamente fictício.
-- Social, Telegram, holders e risco de contrato ainda não possuem provider autorizado real.
+- Social, Telegram e holders ainda não possuem provider autorizado real; risco de contrato usa GoPlus (EVM) quando AG47_DEMO_MODE=false.
 - O scheduler em processo é adequado ao MVP de uma réplica, não a execução distribuída.
 - Não há autenticação de utilizadores no Sprint 1; CORS e rate limiting reduzem a superfície local, mas não substituem autenticação futura.
 
-Consulte [arquitetura](docs/architecture.md), [scoring](docs/scoring-model.md), [providers](docs/data-providers.md), [escopo do sprint](docs/sprint-01.md) e [próximos sprints](docs/next-sprints.md).
+Consulte o [mapa de uso diário](docs/fluxo-diario.md), [arquitetura](docs/architecture.md), [scoring](docs/scoring-v1.md), [backtesting](docs/backtesting.md), [providers](docs/data-providers.md), [escopo do sprint](docs/sprint-01.md) e [próximos sprints](docs/next-sprints.md).
