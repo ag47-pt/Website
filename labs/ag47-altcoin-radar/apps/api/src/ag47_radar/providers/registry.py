@@ -13,6 +13,7 @@ from ag47_radar.providers.demo import (
 )
 from ag47_radar.providers.dexscreener import DexScreenerMarketProvider
 from ag47_radar.providers.geckoterminal import GeckoTerminalDiscoveryProvider
+from ag47_radar.providers.goplus import GoPlusContractRiskProvider
 from ag47_radar.schemas import ProviderStatusRead
 
 
@@ -23,7 +24,11 @@ class ProviderRegistry:
         self.market = DexScreenerMarketProvider(settings)
         self.blockchain = UnavailableBlockchainProvider()
         self.holders = UnavailableHolderProvider()
-        self.risk = DemoContractRiskProvider()
+        self.risk: DemoContractRiskProvider | GoPlusContractRiskProvider = (
+            DemoContractRiskProvider()
+            if settings.demo_mode
+            else GoPlusContractRiskProvider(settings)
+        )
         self.social = DemoSocialProvider()
         self.alert_delivery = LogOnlyAlertDeliveryProvider()
 
@@ -67,14 +72,16 @@ class ProviderRegistry:
             ),
             ProviderStatusRead(
                 id=self.risk.provider_id,
-                name="Risk fixture",
+                name="Risk fixture" if self.settings.demo_mode else "GoPlus Security",
                 kind="contract_risk",
-                status=ProviderStatus.ACTIVE
-                if self.settings.demo_mode
-                else ProviderStatus.DISABLED,
-                mode=SourceMode.DEMO,
+                status=ProviderStatus.ACTIVE,
+                mode=self.risk.mode,
                 last_checked_at=now if self.settings.demo_mode else None,
-                detail="Fixture explícito; campos desconhecidos permanecem desconhecidos.",
+                detail=(
+                    "Fixture explícito; campos desconhecidos permanecem desconhecidos."
+                    if self.settings.demo_mode
+                    else "Provider público GoPlus (EVM); Solana ainda não suportada."
+                ),
             ),
             ProviderStatusRead(
                 id=self.blockchain.provider_id,
@@ -106,3 +113,5 @@ class ProviderRegistry:
     async def close(self) -> None:
         await self.discovery.close()
         await self.market.close()
+        if isinstance(self.risk, GoPlusContractRiskProvider):
+            await self.risk.close()

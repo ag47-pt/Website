@@ -62,3 +62,12 @@ Campos de APIs externas são opcionais. Preço, liquidez, volume, FDV e market c
 3. Adicionar testes de contrato com transporte mockado, campos ausentes e rate limit.
 4. Tornar a seleção explícita por configuração; nunca habilitar mistura demo/live implícita.
 5. Executar uma integração opt-in de baixo volume e registrar a data da verificação.
+
+## GoPlus Security (risco de contrato — real)
+
+- Endpoint público `https://api.gopluslabs.io/api/v1/token_security/{chain_id}`, sem chave, com os mesmos mecanismos de resiliência (retry, cache TTL, circuit breaker).
+- Ativo quando `AG47_DEMO_MODE=false`; em demo o fixture explícito continua a ser usado.
+- Chains suportadas: Ethereum (1) e BSC (56). Solana usa um schema incompatível na GoPlus e é reportada explicitamente como `chain_unsupported` — nunca parcialmente normalizada.
+- O `risk_score` é derivado por regras determinísticas versionadas (`goplus-rules-v1`), registradas campo a campo em `flags` para auditabilidade: honeypot (10), selfdestruct (4), hidden owner (3), retomada de ownership (2.5), mintable/blacklist (2), código não verificado (2), taxas ≥10% (2), taxa mutável/proxy (1.5), concentração de holders ≥50% (1.5), liquidez não bloqueada (1). Score limitado a 10.
+- Campos desconhecidos permanecem `null`; nada é inferido.
+- O tier keyless da GoPlus é limitado em volume; produção comercial requer revisão de plano e termos.

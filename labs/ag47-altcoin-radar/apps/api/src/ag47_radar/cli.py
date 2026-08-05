@@ -8,6 +8,7 @@ from typing import Any
 from ag47_radar.config import get_settings
 from ag47_radar.db import close_database, create_schema, get_session_factory
 from ag47_radar.providers.registry import ProviderRegistry
+from ag47_radar.services.backtest import run_backtest
 from ag47_radar.services.ingestion import run_ingestion_cycle
 from ag47_radar.services.seed import seed_demo_data, seed_global_rules
 
@@ -45,6 +46,45 @@ async def _ingest(limit: int) -> None:
         await close_database()
 
 
+async def _backtest(horizon_hours: float, tolerance_hours: float, include_demo: bool) -> None:
+    try:
+        async with get_session_factory()() as session:
+            report = await run_backtest(
+                session,
+                horizon_hours=horizon_hours,
+                tolerance_hours=tolerance_hours,
+                include_demo=include_demo,
+            )
+        print(
+            json.dumps(
+                {
+                    "version": report.version,
+                    "horizon_hours": report.horizon_hours,
+                    "tolerance_hours": report.tolerance_hours,
+                    "total_scores": report.total_scores,
+                    "evaluated": report.evaluated,
+                    "skipped_no_entry": report.skipped_no_entry,
+                    "skipped_no_exit": report.skipped_no_exit,
+                    "score_return_correlation": report.score_return_correlation,
+                    "by_classification": {
+                        name: {
+                            "samples": summary.samples,
+                            "hit_rate": summary.hit_rate,
+                            "mean_return_pct": summary.mean_return_pct,
+                            "median_return_pct": summary.median_return_pct,
+                        }
+                        for name, summary in report.by_classification.items()
+                    },
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                indent=2,
+            )
+        )
+    finally:
+        await close_database()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="AG47 Altcoin Radar API operations")
     subcommands = parser.add_subparsers(dest="command", required=True)
@@ -56,6 +96,12 @@ def build_parser() -> argparse.ArgumentParser:
     subcommands.add_parser("seed", help="Idempotently seed explicit demo fixtures")
     ingest = subcommands.add_parser("ingest", help="Run one real provider ingestion cycle")
     ingest.add_argument("--limit", type=int, default=10)
+    backtest = subcommands.add_parser(
+        "backtest", help="Evaluate persisted scores against observed forward returns"
+    )
+    backtest.add_argument("--horizon-hours", type=float, default=24.0)
+    backtest.add_argument("--tolerance-hours", type=float, default=6.0)
+    backtest.add_argument("--include-demo", action="store_true")
     return parser
 
 
@@ -76,6 +122,10 @@ def main(argv: list[str] | None = None) -> Any:
         return asyncio.run(_seed())
     if args.command == "ingest":
         return asyncio.run(_ingest(args.limit))
+    if args.command == "backtest":
+        return asyncio.run(
+            _backtest(args.horizon_hours, args.tolerance_hours, args.include_demo)
+        )
     raise RuntimeError("Unknown command")
 
 
