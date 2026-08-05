@@ -30,29 +30,29 @@ async def process_signals_and_learn(
     """
     hypotheses_data = registry.infer_all(signals)
     created_hypotheses = []
-    
+
     for h_data in hypotheses_data:
         h_data["token_id"] = token_id
         h_data["is_demo"] = is_demo
-        
+
         # Gerar hash para evitar duplicação (idempotência)
         caused_by_hash = _generate_hash(h_data["caused_by"])
         h_data["caused_by_hash"] = caused_by_hash
-        
+
         # Verificar se já existe
         stmt = select(TokenHypothesis).where(
             TokenHypothesis.token_id == token_id,
             TokenHypothesis.hypothesis_type == h_data["hypothesis_type"],
             TokenHypothesis.rule_version == h_data["rule_version"],
-            TokenHypothesis.caused_by_hash == caused_by_hash
+            TokenHypothesis.caused_by_hash == caused_by_hash,
         )
         existing = (await db.execute(stmt)).scalars().first()
         if existing:
             continue
-            
+
         hypothesis = TokenHypothesis(**h_data)
         db.add(hypothesis)
         created_hypotheses.append(hypothesis)
-        
+
     await db.commit()
     return created_hypotheses

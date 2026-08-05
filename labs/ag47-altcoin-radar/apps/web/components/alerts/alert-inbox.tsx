@@ -8,7 +8,7 @@ import {
   Check,
   Clock,
   TrendingUp,
-  X
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -47,14 +47,22 @@ function severityTone(severity: number | null) {
   return "border-radar-neutral/25 bg-[#132943] text-radar-neutral";
 }
 
-function AlertRow({ alert, mutateAlert }: { alert: Alert, mutateAlert: (alertId: string, status: "read" | "acknowledged" | "dismissed") => void }) {
+function AlertRow({
+  alert,
+  mutateAlert,
+}: {
+  alert: Alert;
+  mutateAlert: (alertId: string, status: "read" | "acknowledged" | "dismissed") => void;
+}) {
   const Icon = alertIcons[alert.rule_id as keyof typeof alertIcons] ?? Bell;
   const title = alertTitles[alert.rule_id] ?? alert.rule_id;
   const message = alertMessages[alert.rule_id] ?? `Detectado evento na regra ${alert.rule_id}`;
   const isUnread = alert.status === "unread";
-  
+
   return (
-    <article className={`grid grid-cols-[3rem_2.2rem_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-radar-border/70 px-3.5 py-3 last:border-0 sm:grid-cols-[4.5rem_2.4rem_minmax(0,1fr)_auto] transition-colors ${isUnread ? "bg-white/[0.02]" : "opacity-80 grayscale-[0.2]"}`}>
+    <article
+      className={`grid grid-cols-[3rem_2.2rem_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-radar-border/70 px-3.5 py-3 last:border-0 sm:grid-cols-[4.5rem_2.4rem_minmax(0,1fr)_auto] transition-colors ${isUnread ? "bg-white/[0.02]" : "opacity-80 grayscale-[0.2]"}`}
+    >
       <time
         className="mono text-[0.62rem] text-radar-muted"
         dateTime={alert.triggered_at}
@@ -77,10 +85,8 @@ function AlertRow({ alert, mutateAlert }: { alert: Alert, mutateAlert: (alertId:
             </span>
           )}
         </p>
-        <p className="mt-0.5 line-clamp-2 text-[0.61rem] leading-4 text-radar-subtle">
-          {message}
-        </p>
-        
+        <p className="mt-0.5 line-clamp-2 text-[0.61rem] leading-4 text-radar-subtle">{message}</p>
+
         {/* Actions */}
         <div className="mt-2 flex items-center gap-2">
           {isUnread && (
@@ -121,7 +127,7 @@ function AlertRow({ alert, mutateAlert }: { alert: Alert, mutateAlert: (alertId:
 export function AlertInbox() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<"all" | "unread">("all");
-  
+
   const alerts = useAlerts(page, 20);
   const mutation = useAlertMutation();
 
@@ -147,12 +153,8 @@ export function AlertInbox() {
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-radar-border px-3.5 py-3">
         <div>
           <p className="eyebrow">Gestão de Alertas</p>
-          <h2
-            id="inbox-title"
-            className="mt-1 flex items-center gap-2 text-sm font-extrabold"
-          >
-            <Bell className="size-4 text-radar-muted" />{" "}
-            Inbox
+          <h2 id="inbox-title" className="mt-1 flex items-center gap-2 text-sm font-extrabold">
+            <Bell className="size-4 text-radar-muted" /> Inbox
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">

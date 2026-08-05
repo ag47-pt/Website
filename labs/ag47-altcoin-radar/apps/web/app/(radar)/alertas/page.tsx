@@ -10,8 +10,8 @@ export default function AlertsPage() {
         <p className="eyebrow">Mudanças relevantes</p>
         <h1 className="mt-1 text-xl font-extrabold tracking-[-0.04em]">Inbox</h1>
         <p className="mt-1 max-w-2xl text-xs leading-5 text-radar-muted">
-          Gerencie os alertas determinísticos gerados pelo motor do Radar.
-          Marque como lido, confirme ciência ou dispense os avisos.
+          Gerencie os alertas determinísticos gerados pelo motor do Radar. Marque como lido,
+          confirme ciência ou dispense os avisos.
         </p>
       </header>
       <AlertInbox />

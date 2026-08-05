@@ -11,27 +11,108 @@ from ag47_radar.api.dependencies import enforce_mutation_rate_limit, get_provide
 from ag47_radar.config import Settings, get_settings
 from ag47_radar.db import database_is_healthy, get_session
 from ag47_radar.enums import Chain, ProviderStatus
-from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.evolution import EVOLUTION_STATUS
+from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.schemas import (
+    ActionableInsightRead,
+    EdgeAnalysisRead,
     EvolutionStatusRead,
     GlobalKnowledgeRead,
     HealthResponse,
     MarketHistoryResponse,
+    MicrostructureResponse,
     OpportunityItem,
     OpportunityScoreRead,
     PaginatedResponse,
+    ReactionRead,
     RiskAssessmentRead,
     SocialResponse,
+    StructureRead,
+    SystemCalibrationResponse,
     SystemMetrics,
     SystemStatusResponse,
     TimelineItem,
     TokenAlertRead,
     TokenAlertUpdate,
     TokenDetailResponse,
+    TokenTruthRead,
+    TruthSummaryRead,
     WatchlistCreate,
     WatchlistRead,
 )
+
+health_router = APIRouter(tags=["system"])
+api_router = APIRouter()
+
+
+@api_router.get(
+    "/tokens/{token_id}/microstructure",
+    response_model=MicrostructureResponse,
+    tags=["tokens"],
+    summary="Microstructure reaction, intent detection and tier evaluation",
+)
+async def token_microstructure(
+    token_id: Annotated[str, Path(min_length=36, max_length=36)],
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> MicrostructureResponse:
+    from sqlalchemy import select
+
+    from ag47_radar.models import MarketSnapshot, TradingPair
+    from ag47_radar.services.microstructure import evaluate_microstructure
+    from ag47_radar.services.queries import get_score
+
+    score = await get_score(session, settings, token_id)
+    snapshots = (
+        await session.scalars(
+            select(MarketSnapshot)
+            .join(TradingPair, TradingPair.id == MarketSnapshot.pair_id)
+            .where(TradingPair.token_id == token_id)
+            .order_by(MarketSnapshot.captured_at)
+        )
+    ).all()
+
+    result = evaluate_microstructure(
+        token_id=token_id,
+        final_score=score.final_score,
+        confidence=score.confidence,
+        snapshots=snapshots,
+    )
+    return MicrostructureResponse(
+        token_id=result.token_id,
+        priority_tier=result.priority_tier,  # type: ignore
+        tracking_frequency_minutes=result.tracking_frequency_minutes,
+        reaction=ReactionRead(**result.reaction.__dict__),
+        structure=StructureRead(**result.structure.__dict__),
+        evaluated_at=result.evaluated_at,
+    )
+
+
+@api_router.get(
+    "/system/calibration",
+    response_model=SystemCalibrationResponse,
+    tags=["system"],
+    summary="Dynamic scoring weight calibration status",
+    description="Exibe os pesos calibrados pelo histórico de backtest de 24h e a correlação de acerto observada.",
+)
+async def system_calibration(
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> SystemCalibrationResponse:
+    from ag47_radar.services.backtest import run_backtest
+    from ag47_radar.services.scoring import SCORING_VERSION, WEIGHTS
+
+    report = await run_backtest(session, include_demo=settings.demo_mode)
+    return SystemCalibrationResponse(
+        scoring_version=SCORING_VERSION,
+        base_weights=WEIGHTS,
+        calibrated_weights=report.calibrated_weights or WEIGHTS,
+        sample_count=report.evaluated,
+        correlation=report.score_return_correlation,
+        generated_at=datetime.now(UTC),
+    )
+
+
 from ag47_radar.services.queries import (
     OpportunitySort,
     get_market_history,
@@ -46,9 +127,6 @@ from ag47_radar.services.queries import (
     system_metrics,
 )
 from ag47_radar.services.watchlist import add_to_watchlist, remove_from_watchlist
-
-health_router = APIRouter(tags=["system"])
-api_router = APIRouter()
 
 
 @health_router.get(
@@ -131,6 +209,7 @@ async def system_knowledge(
     settings: Settings = Depends(get_settings),
 ) -> list[GlobalKnowledgeRead]:
     from ag47_radar.services.queries import list_global_knowledge
+
     return await list_global_knowledge(session, settings)
 
 
@@ -256,9 +335,7 @@ async def token_timeline(
     session: AsyncSession = Depends(get_session),
     settings: Settings = Depends(get_settings),
 ) -> PaginatedResponse[TimelineItem]:
-    return await get_token_timeline(
-        session, settings, token_id, page=page, page_size=page_size
-    )
+    return await get_token_timeline(session, settings, token_id, page=page, page_size=page_size)
 
 
 @api_router.get(
@@ -284,6 +361,7 @@ async def alerts(
         page_size=page_size,
     )
 
+
 @api_router.patch(
     "/alerts/{alert_id}",
     response_model=TokenAlertRead,
@@ -304,11 +382,13 @@ async def update_alert(
     from ag47_radar.services.queries import ensure_utc
 
     alert = await session.scalar(
-        select(TokenAlert).where(TokenAlert.id == alert_id, TokenAlert.is_demo.is_(settings.demo_mode))
+        select(TokenAlert).where(
+            TokenAlert.id == alert_id, TokenAlert.is_demo.is_(settings.demo_mode)
+        )
     )
     if not alert:
         raise ResourceNotFoundError("Alert not found")
-        
+
     now = datetime.now(UTC)
     if update_data.status == "read" and alert.status == "unread":
         alert.read_at = now
@@ -316,13 +396,13 @@ async def update_alert(
         alert.acknowledged_at = now
     elif update_data.status == "dismissed":
         alert.dismissed_at = now
-        
+
     alert.status = update_data.status
     await session.commit()
     await session.refresh(alert)
-    
+
     token = await session.scalar(select(Token.symbol).where(Token.id == alert.token_id))
-    
+
     return TokenAlertRead(
         id=alert.id,
         rule_id=alert.rule_id,
@@ -391,3 +471,140 @@ async def delete_watchlist_entry(
     settings: Settings = Depends(get_settings),
 ) -> None:
     await remove_from_watchlist(session, settings, token_id)
+
+
+@api_router.get(
+    "/truths/summary",
+    response_model=TruthSummaryRead,
+    tags=["knowledge"],
+    summary="Global empirical truth evaluation summary",
+    description="Exibe métricas globais do Truth Engine: total de hipóteses validadas, acertos, taxa de acerto (%) e drawdown médio.",
+)
+async def truth_summary(
+    session: AsyncSession = Depends(get_session),
+) -> TruthSummaryRead:
+    from ag47_radar.services.truth_engine import get_truth_summary
+
+    summary = await get_truth_summary(session)
+    return TruthSummaryRead(
+        total_validated=summary.total_validated,
+        success_count=summary.success_count,
+        failure_count=summary.failure_count,
+        neutral_count=summary.neutral_count,
+        hit_rate_pct=summary.hit_rate_pct,
+        avg_gain_pct=summary.avg_gain_pct,
+        avg_drawdown_pct=summary.avg_drawdown_pct,
+    )
+
+
+@api_router.get(
+    "/tokens/{token_id}/truths",
+    response_model=list[TokenTruthRead],
+    tags=["tokens"],
+    summary="Empirical truth history for a token",
+)
+async def token_truths(
+    token_id: Annotated[str, Path(min_length=36, max_length=36)],
+    session: AsyncSession = Depends(get_session),
+) -> list[TokenTruthRead]:
+    from sqlalchemy import select
+
+    from ag47_radar.models import TokenTruth
+
+    truths = (
+        await session.scalars(
+            select(TokenTruth)
+            .where(TokenTruth.token_id == token_id)
+            .order_by(TokenTruth.created_at.desc())
+        )
+    ).all()
+    return [
+        TokenTruthRead(
+            id=t.id,
+            token_id=t.token_id,
+            hypothesis_id=t.hypothesis_id,
+            expected_outcome=t.expected_outcome or {},
+            observed_outcome=t.observed_outcome or {},
+            gain=t.gain,
+            loss=t.loss,
+            accuracy_score=t.accuracy_score,
+            status=t.status,
+            created_at=t.created_at,
+        )
+        for t in truths
+    ]
+
+
+@api_router.get(
+    "/performance/edge",
+    response_model=EdgeAnalysisRead,
+    tags=["knowledge"],
+    summary="Empirical edge performance analysis across score and confidence buckets",
+    description="Calcula a vantagem estatística real (Win Rate, Retorno, Drawdown, Profit Factor) por buckets de score e valida a estabilidade da zona ideal em amostragem Out-of-Sample.",
+)
+async def performance_edge_analysis(
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> EdgeAnalysisRead:
+    from ag47_radar.services.performance_analysis import generate_edge_analysis_report
+
+    return await generate_edge_analysis_report(session, is_demo=settings.demo_mode)
+
+
+@api_router.get(
+    "/tokens/{token_id}/insight",
+    response_model=ActionableInsightRead,
+    tags=["tokens"],
+    summary="Actionable insight synthesized from score, risk and empirical truth history",
+)
+async def token_insight(
+    token_id: Annotated[str, Path(min_length=36, max_length=36)],
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> ActionableInsightRead:
+    from ag47_radar.services.performance_analysis import (
+        analyze_score_buckets,
+        fetch_truths_with_score_context,
+    )
+    from ag47_radar.services.queries import get_score
+    from ag47_radar.services.truth_engine import get_truth_summary
+
+    score = await get_score(session, settings, token_id)
+    truth_summary_data = await get_truth_summary(session)
+    truth_records = await fetch_truths_with_score_context(session, is_demo=settings.demo_mode)
+    score_buckets = analyze_score_buckets(truth_records)
+
+    current_bucket = next(
+        (b for b in score_buckets if b.min_score <= score.final_score <= b.max_score), None
+    )
+
+    if score.critical_gate_applied:
+        action = "avoid"
+        reason = "Gatilho de risco crítico acionado (honeypot, taxas elevadas ou mintável)."
+        risk_level = "critical"
+    elif current_bucket and current_bucket.is_statistically_profitable:
+        action = "buy_watch"
+        reason = f"Bucket [{current_bucket.bucket_label}] apresenta Edge Estatístico verificado ({current_bucket.win_rate_pct}% acerto, PF {current_bucket.profit_factor})."
+        risk_level = "low" if score.safety_score >= 8.0 else "moderate"
+    elif score.final_score >= 7.5:
+        action = "buy_watch"
+        reason = "Score de oportunidade elevado com momentum e liquidez consistentes."
+        risk_level = "low" if score.safety_score >= 8.0 else "moderate"
+    elif score.final_score >= 5.0:
+        action = "monitor"
+        reason = "Sinais moderados detectados. Acompanhar confirmações de volume."
+        risk_level = "moderate"
+    else:
+        action = "caution"
+        reason = "Score insuficiente para recomendação de monitoramento ativo."
+        risk_level = "high"
+
+    return ActionableInsightRead(
+        action=action,  # type: ignore[arg-type]
+        reason=reason,
+        empirical_confidence=score.confidence,
+        risk_level=risk_level,
+        historical_hit_rate_pct=truth_summary_data.hit_rate_pct
+        if truth_summary_data.total_validated > 0
+        else None,
+    )

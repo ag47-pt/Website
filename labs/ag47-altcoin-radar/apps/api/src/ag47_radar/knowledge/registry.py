@@ -10,6 +10,7 @@ class PatternRegistry:
     Manages all knowledge patterns. Eliminates the need for 4000 lines of if/else logic
     in the inference engine.
     """
+
     def __init__(self) -> None:
         self._patterns: dict[str, Pattern] = {}
 
@@ -19,7 +20,7 @@ class PatternRegistry:
     def disable(self, pattern_id: str) -> None:
         if pattern_id in self._patterns:
             del self._patterns[pattern_id]
-            
+
     def get_all_patterns(self) -> list[Pattern]:
         return list(self._patterns.values())
 
@@ -36,22 +37,24 @@ class PatternRegistry:
                         "kind": "signal",
                         "id": s.id,
                         "type": s.signal_type,
-                        "timestamp": s.created_at.isoformat()
+                        "timestamp": s.created_at.isoformat(),
                     }
                     for s in signals
                 ]
-                
-                hypotheses.append({
-                    "hypothesis_type": pattern.hypothesis_type,
-                    "confidence": pattern.base_confidence, # Será ajustado pelo histórico
-                    "metadata_json": {
-                        "pattern_id": pattern.id,
-                        "pattern_version": pattern.version,
-                        "expected_outcome": pattern.expected_outcome.model_dump()
-                    },
-                    "caused_by": caused_by,
-                    "rule_version": f"hypotheses-{pattern.version}"
-                })
+
+                hypotheses.append(
+                    {
+                        "hypothesis_type": pattern.hypothesis_type,
+                        "confidence": pattern.base_confidence,  # Será ajustado pelo histórico
+                        "metadata_json": {
+                            "pattern_id": pattern.id,
+                            "pattern_version": pattern.version,
+                            "expected_outcome": pattern.expected_outcome.model_dump(),
+                        },
+                        "caused_by": caused_by,
+                        "rule_version": f"hypotheses-{pattern.version}",
+                    }
+                )
         return hypotheses
 
 
@@ -62,8 +65,10 @@ registry = PatternRegistry()
 # Registrando os primeiros padrões baseados na arquitetura nova
 # -------------------------------------------------------------------------
 
+
 def check_liquidity_expansion(signals: list[TokenSignal]) -> bool:
     return any(s.signal_type == "liquidity_volume_expansion" for s in signals)
+
 
 registry.register(
     Pattern(
@@ -76,8 +81,8 @@ registry.register(
             type="price_change",
             target_value=5.0,  # Esperamos +5%
             target_operator=">",
-            timeframe_hours=24
+            timeframe_hours=24,
         ),
-        base_confidence=65.0
+        base_confidence=65.0,
     )
 )

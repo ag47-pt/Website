@@ -9,13 +9,13 @@ from __future__ import annotations
 from ag47_radar.schemas import EvolutionStatusRead
 
 EVOLUTION_STATUS = EvolutionStatusRead(
-    phase="Sprint 5",
-    phase_title="Alertas Determinísticos",
+    phase="Sprint 7",
+    phase_title="Infraestrutura de Produção e Ingestão Contínua",
     now=(
-        "Alertas acionados apenas após verificação de confiança dos sinais, "
-        "com inbox e timeline explicável."
+        "Configuração de suporte PostgreSQL, ativação do background scheduler e "
+        "loop autônomo de ingestão/TruthEngine."
     ),
-    completed_steps=4,
-    total_steps=5,
+    completed_steps=6,
+    total_steps=8,
     goal="Lóbulo Observacional do Organismo Cognitivo",
 )

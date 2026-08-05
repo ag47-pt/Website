@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  Bell,
-  ChevronLeft,
-  ChevronRight,
-  TrendingUp,
-} from "lucide-react";
+import { AlertTriangle, Bell, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAlerts } from "@/lib/api/query";
@@ -48,7 +42,7 @@ function AlertRow({ alert, compact }: { alert: Alert; compact?: boolean }) {
   const Icon = alertIcons[alert.rule_id as keyof typeof alertIcons] ?? Bell;
   const title = alertTitles[alert.rule_id] ?? alert.rule_id;
   const message = alertMessages[alert.rule_id] ?? `Detectado evento na regra ${alert.rule_id}`;
-  
+
   return (
     <article className="grid grid-cols-[3rem_2.2rem_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-radar-border/70 px-3.5 py-2.5 last:border-0 sm:grid-cols-[4.5rem_2.4rem_minmax(0,1fr)_auto]">
       <time

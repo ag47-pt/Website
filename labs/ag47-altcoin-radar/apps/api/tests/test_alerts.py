@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ag47_radar.config import Settings
 from ag47_radar.enums import AlertSeverity, AlertType
-from ag47_radar.models import Alert
 from ag47_radar.services.alerts import AlertCommand, build_deduplication_key, create_alert_if_new
 
 
@@ -105,7 +104,9 @@ async def test_alert_allowed_after_window(db_session: AsyncSession, test_setting
     assert created1
 
     # modify created_at to simulate time passing
-    alert1.created_at = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=test_settings.alert_deduplication_window_minutes + 1)
+    alert1.created_at = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
+        minutes=test_settings.alert_deduplication_window_minutes + 1
+    )
     db_session.add(alert1)
     await db_session.commit()
 

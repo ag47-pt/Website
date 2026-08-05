@@ -143,7 +143,7 @@ export const radarApi = {
       {
         method: "PATCH",
         body: JSON.stringify({ status }),
-      }
+      },
     );
   },
   getWatchlist(page = 1, pageSize = 50, signal?: AbortSignal) {

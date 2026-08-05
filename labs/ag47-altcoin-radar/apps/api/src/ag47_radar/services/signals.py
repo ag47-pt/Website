@@ -48,7 +48,9 @@ def generate_signals(
                 strength=strength,
                 confidence=confidence,
                 rule_version=rule_version,
-                metadata_json={"description": "High volume spike accompanied by liquidity addition"},
+                metadata_json={
+                    "description": "High volume spike accompanied by liquidity addition"
+                },
                 caused_by=causes,
                 caused_by_hash=cb_hash,
                 is_demo=is_demo,
@@ -64,7 +66,7 @@ def generate_signals(
         vol_increase = float(e_vol.metadata_json.get("increase_percentage", 200)) / 100.0
 
         # Strength: 0 to 1
-        liq_strength = min(liq_drop / 1.0, 1.0) # max 100% drop
+        liq_strength = min(liq_drop / 1.0, 1.0)  # max 100% drop
         vol_strength = min(vol_increase / 10.0, 1.0)
         strength = Decimal(str(round((liq_strength + vol_strength) / 2.0, 2)))
 

@@ -303,7 +303,7 @@ async def seed_global_rules(session: AsyncSession | None = None) -> dict[str, in
             "source_type": "liquidity_drop",
             "cooldown_minutes": 30,
             "rule_version": "v1",
-        }
+        },
     ]
 
     from ag47_radar.models import AlertRule
@@ -320,7 +320,6 @@ async def seed_global_rules(session: AsyncSession | None = None) -> dict[str, in
     finally:
         if owns_session:
             await session.close()
-
 
 
 def _alert_fixture(

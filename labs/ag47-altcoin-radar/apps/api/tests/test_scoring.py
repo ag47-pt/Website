@@ -123,3 +123,38 @@ def test_negative_factors_include_missing_data():
     )
     score = calculate_score(components)
     assert len(score.negative_factors) > 0
+
+
+def test_calculate_discrepancy_function():
+    from ag47_radar.services.scoring import calculate_discrepancy
+
+    assert calculate_discrepancy(100.0, 75.0) == 0.25
+    assert calculate_discrepancy(100.0, 100.0) == 0.0
+    assert calculate_discrepancy(None, 50.0) is None
+
+
+def test_discrepancy_penalty_applied_when_above_15_percent():
+    components = ScoreComponentsInput(
+        momentum_score=8.0,
+        liquidity_score=8.0,
+        community_score=8.0,
+        distribution_score=8.0,
+        safety_score=8.0,
+        data_quality_score=8.0,
+    )
+    normal_score = calculate_score(components)
+    penalized_score = calculate_score(components, discrepancy_ratio=0.25)
+
+    assert penalized_score.confidence < normal_score.confidence
+    assert any("Discrepância" in n for n in penalized_score.negative_factors)
+
+
+def test_no_discrepancy_penalty_when_below_15_percent():
+    components = ScoreComponentsInput(
+        momentum_score=8.0,
+        liquidity_score=8.0,
+    )
+    normal_score = calculate_score(components)
+    unpenalized_score = calculate_score(components, discrepancy_ratio=0.10)
+
+    assert unpenalized_score.confidence == normal_score.confidence

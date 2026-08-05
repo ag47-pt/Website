@@ -8,27 +8,28 @@ Abaixo está o registro histórico da nossa cadência e as tarefas já mapeadas 
 - **Sprint 2**: Timeline, Event Sourcing, Ingestion loop e Isolamento de Componentes (Endurecimento).
 - **Sprint 3**: Auditoria de Performance, Invariantes, Idempotência e Testes de Concorrência sob carga.
 - **Sprint 4**: Motor Epistemológico Invisível (`Knowledge Engine`, `Hypothesis`, `Validation`).
+- **Sprint 5**: Motor de Edge Estatístico & Performance Analytics (buckets de score, confiança, out-of-sample).
+- **Sprint 6**: Conectividade Live & Real Providers (Integração real RugCheck, Helius RPC, GoPlus EVM Holders e Telegram Bot API).
 
 ---
 
-## Próximos Sprints (Fila)
+## Próximos Sprints (Fila de Execução)
 
-### Sprint 5: Alertas Determinísticos (O Foco Atual)
-- Construir a infraestrutura dos Alertas que dependem do `Knowledge Engine`.
-- Alertas acionados **apenas** após verificação de Confidence/Força dos Sinais.
-- Regras configuráveis e entrega básica em Interface Web/Webhooks.
-- Criação dos layouts de "Caixa de Entrada" (Inbox de Sinais Fortes) e timeline explicável para o usuário.
+### Sprint 7: Infraestrutura de Produção e Ingestão Contínua (Próximo Ciclo)
 
-### Sprints Futuros: Expansão de Inteligência
-- Telegram real com credenciais autorizadas, consentimento e limites documentados.
-- Análise avançada de bytecode/contratos por chain.
-- Integrar _Holder Provider_ real, mapenado clusters de carteiras baleia.
-- Plugar Job Scheduler real via `apscheduler` e filas.
-- Calibração avançada do score a longo prazo.
+> **Objetivo:** Garantir concorrência, persistência resiliente e execução autônoma.
 
-### Sprints Futuros: Plataforma
-- Autenticação, perfis, RBAC e preferências por operador.
-- Observabilidade, SLOs, métricas e tracing (Grafana, Sentry, Prometheus).
-- Integração plena da camada do Radar à interface de orquestrador do **Organismo Cognitivo** (consumo Cross-LLM da base de Knowledge).
+- Migração do banco de dados de SQLite para **PostgreSQL + `asyncpg`**.
+- Ativação do Job Scheduler em background (`AG47_SCHEDULER_ENABLED=true`, ciclo de 300s).
+- Coleta automática contínua de pares, pontuação, geração de hipóteses e auditoria pelo Truth Engine.
 
-> *Lembrete Crítico:* Nenhum item desta lista autoriza armazenamento de seed phrase, chave privada ou automação de disparo e execução autônoma de trades. O radar é um Lóbulo Observacional, nunca um robô de ordens de mercado.
+### Sprint 8: Alertas Determinísticos de Edge & Inbox do Operador
+
+> **Objetivo:** Entregar sinais acionáveis baseados estritamente em Edge provado.
+
+- Disparo de alertas acionados **exclusivamente** quando a taxa de acerto estatística histórica do bucket for $\ge 65\%$ com drawdown aceitável.
+- UI: Painel de "Inbox de Oportunidades com Edge" e Matriz de Correlação Score vs Resultado Real.
+
+---
+
+> _Lembrete Crítico:_ Nenhum item desta lista autoriza armazenamento de seed phrase, chave privada ou automação de disparo e execução autônoma de trades. O radar é um Lóbulo Observacional, nunca um robô de ordens de mercado.

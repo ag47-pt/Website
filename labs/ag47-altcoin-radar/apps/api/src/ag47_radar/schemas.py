@@ -75,6 +75,40 @@ class EvolutionStatusRead(ApiModel):
     goal: str
 
 
+class SystemCalibrationResponse(ApiModel):
+    scoring_version: str
+    base_weights: dict[str, float]
+    calibrated_weights: dict[str, float]
+    sample_count: int
+    correlation: float | None
+    generated_at: datetime
+
+
+class ReactionRead(ApiModel):
+    return_1m: float | None
+    return_5m: float | None
+    return_15m: float | None
+    return_30m: float | None
+
+
+class StructureRead(ApiModel):
+    held_above_entry: bool
+    pullback_strength: str
+    continuation: bool
+    fake_move: bool
+    intent_type: str
+    strength_score: float
+
+
+class MicrostructureResponse(ApiModel):
+    token_id: str
+    priority_tier: Literal["Tier 1", "Tier 2", "Tier 3"]
+    tracking_frequency_minutes: int
+    reaction: ReactionRead
+    structure: StructureRead
+    evaluated_at: datetime
+
+
 class SystemMetrics(ApiModel):
     tokens_monitored: int
     alerts_today: int
@@ -502,3 +536,72 @@ class TokenTruthRead(ApiModel):
     status: str
     created_at: datetime
 
+
+class TruthSummaryRead(ApiModel):
+    total_validated: int
+    success_count: int
+    failure_count: int
+    neutral_count: int
+    hit_rate_pct: float
+    avg_gain_pct: float
+    avg_drawdown_pct: float
+
+
+class ActionableInsightRead(ApiModel):
+    action: Literal["buy_watch", "monitor", "caution", "avoid"]
+    reason: str
+    empirical_confidence: float
+    risk_level: str
+    historical_hit_rate_pct: float | None = None
+
+
+class BucketPerformanceRead(ApiModel):
+    bucket_label: str
+    min_score: float
+    max_score: float
+    total_samples: int
+    success_count: int
+    win_rate_pct: float
+    avg_return_pct: float
+    avg_drawdown_pct: float
+    profit_factor: float
+    is_statistically_profitable: bool
+
+
+class ConfidenceBucketRead(ApiModel):
+    bucket_label: str
+    min_confidence: float
+    max_confidence: float
+    total_samples: int
+    win_rate_pct: float
+    avg_return_pct: float
+    avg_drawdown_pct: float
+    calibration_delta: float
+
+
+class DrawdownDistributionRead(ApiModel):
+    max_drawdown_overall_pct: float
+    drawdown_p50_pct: float
+    drawdown_p90_pct: float
+    win_to_drawdown_ratio: float
+
+
+class EdgeZoneRead(ApiModel):
+    optimal_score_min: float
+    optimal_confidence_min: float
+    in_sample_win_rate_pct: float
+    out_of_sample_win_rate_pct: float
+    avg_expected_return_pct: float
+    avg_max_drawdown_pct: float
+    is_edge_verified: bool
+    edge_verdict: str
+
+
+class EdgeAnalysisRead(ApiModel):
+    evaluated_at: datetime
+    total_hypotheses_evaluated: int
+    score_buckets: list[BucketPerformanceRead]
+    confidence_buckets: list[ConfidenceBucketRead]
+    drawdown_profile: DrawdownDistributionRead
+    optimal_edge_zone: EdgeZoneRead
+    demo_mode: bool

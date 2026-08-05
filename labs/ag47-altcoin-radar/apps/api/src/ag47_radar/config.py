@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     api_prefix: str = "/api/v1"
 
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
+    helius_api_key: str | None = None
+
     database_url: str = "sqlite+aiosqlite:///./data/ag47_radar.db"
     auto_create_schema: bool = True
     auto_seed_demo: bool = True

@@ -81,3 +81,53 @@ def test_correlation_requires_minimum_samples():
     prices = series("tok-1", [(0, 1.0), (24, 1.1)])
     report = evaluate_scores(scores, prices, horizon_hours=24)
     assert report.score_return_correlation is None
+
+
+def test_dynamic_weight_calibration():
+    scores = [
+        ScoreObservation(
+            "a",
+            "AAA",
+            8.0,
+            "oportunidade_forte",
+            T0,
+            "v1.0.0",
+            False,
+            momentum_score=9.0,
+            liquidity_score=3.0,
+        ),
+        ScoreObservation(
+            "b",
+            "BBB",
+            6.0,
+            "observar",
+            T0,
+            "v1.0.0",
+            False,
+            momentum_score=6.0,
+            liquidity_score=4.0,
+        ),
+        ScoreObservation(
+            "c",
+            "CCC",
+            4.0,
+            "especulativa",
+            T0,
+            "v1.0.0",
+            False,
+            momentum_score=3.0,
+            liquidity_score=7.0,
+        ),
+    ]
+    prices = {
+        **series("a", [(0, 1.0), (24, 1.5)]),
+        **series("b", [(0, 1.0), (24, 1.2)]),
+        **series("c", [(0, 1.0), (24, 0.8)]),
+    }
+    report = evaluate_scores(scores, prices, horizon_hours=24)
+    assert report.evaluated == 3
+    assert report.calibrated_weights is not None
+    assert (
+        report.calibrated_weights["momentum_score"] > report.calibrated_weights["liquidity_score"]
+    )
+    assert round(sum(report.calibrated_weights.values()), 4) == 1.0

@@ -4,12 +4,12 @@ import math
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, overload
 
-from sqlalchemy import and_, func, literal, null, or_, select, text
+from sqlalchemy import and_, func, literal, null, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
 from ag47_radar.config import Settings
-from ag47_radar.enums import Chain, OpportunityClassification, SourceMode
+from ag47_radar.enums import Chain, DataQuality, OpportunityClassification, SourceMode
 from ag47_radar.errors import ResourceNotFoundError
 from ag47_radar.models import (
     Alert,
@@ -374,7 +374,7 @@ async def get_market_history(
                 volume_usd=float(item.volume_1h) if item.volume_1h is not None else None,
                 liquidity_usd=float(item.liquidity_usd) if item.liquidity_usd is not None else None,
                 source=item.source,
-                data_quality=item.data_quality,
+                data_quality=DataQuality(item.data_quality) if item.data_quality else DataQuality.UNKNOWN,
             )
             for item in snapshots
         ],
@@ -457,7 +457,7 @@ async def list_alerts(
         statement = statement.where(TokenAlert.token_id == token_id)
     if status:
         statement = statement.where(TokenAlert.status == status)
-        
+
     total = await session.scalar(select(func.count()).select_from(statement.subquery())) or 0
     rows = (
         await session.execute(
@@ -466,7 +466,7 @@ async def list_alerts(
             .limit(page_size)
         )
     ).all()
-    
+
     items = [
         TokenAlertRead(
             id=alert.id,
@@ -502,10 +502,12 @@ async def list_global_knowledge(
     settings: Settings,
 ) -> list[GlobalKnowledgeRead]:
     from ag47_radar.models import GlobalKnowledge
-    
-    stmt = select(GlobalKnowledge).order_by(GlobalKnowledge.pattern_name.asc(), GlobalKnowledge.market_regime.asc())
+
+    stmt = select(GlobalKnowledge).order_by(
+        GlobalKnowledge.pattern_name.asc(), GlobalKnowledge.market_regime.asc()
+    )
     results = (await session.execute(stmt)).scalars().all()
-    
+
     return [GlobalKnowledgeRead.model_validate(r) for r in results]
 
 
@@ -517,9 +519,7 @@ async def list_watchlist(
         .join(Token, Token.id == WatchlistEntry.token_id)
         .where(Token.is_demo.is_(settings.demo_mode))
     )
-    total = (
-        await session.scalar(select(func.count()).select_from(base_statement.subquery())) or 0
-    )
+    total = await session.scalar(select(func.count()).select_from(base_statement.subquery())) or 0
     rows = (
         await session.execute(
             base_statement.order_by(WatchlistEntry.created_at.desc())
@@ -571,9 +571,7 @@ async def system_metrics(
     session: AsyncSession, settings: Settings
 ) -> tuple[SystemMetrics, datetime | None]:
     token_filter = Token.is_demo.is_(settings.demo_mode)
-    tokens_monitored = (
-        await session.scalar(select(func.count(Token.id)).where(token_filter)) or 0
-    )
+    tokens_monitored = await session.scalar(select(func.count(Token.id)).where(token_filter)) or 0
     start_today = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
     alerts_today = (
         await session.scalar(
@@ -624,8 +622,9 @@ async def get_token_timeline(
     session: AsyncSession, settings: Settings, token_id: str, *, page: int, page_size: int
 ) -> PaginatedResponse[TimelineItem]:
     await _get_token(session, settings, token_id)
-    
+
     from sqlalchemy import Numeric, String
+
     event_stmt = select(
         TokenEvent.id,
         TokenEvent.event_type.label("type"),
@@ -633,11 +632,11 @@ async def get_token_timeline(
         TokenEvent.metadata_json,
         TokenEvent.rule_version,
         TokenEvent.caused_by,
-        func.cast(null(), Numeric(4,2)).label("strength"),
-        func.cast(null(), Numeric(4,2)).label("confidence"),
-        func.cast(literal("event"), String).label("kind")
+        func.cast(null(), Numeric(4, 2)).label("strength"),
+        func.cast(null(), Numeric(4, 2)).label("confidence"),
+        func.cast(literal("event"), String).label("kind"),
     ).where(TokenEvent.token_id == token_id)
-    
+
     signal_stmt = select(
         TokenSignal.id,
         TokenSignal.signal_type.label("type"),
@@ -647,21 +646,21 @@ async def get_token_timeline(
         TokenSignal.caused_by,
         TokenSignal.strength,
         TokenSignal.confidence,
-        func.cast(literal("signal"), String).label("kind")
+        func.cast(literal("signal"), String).label("kind"),
     ).where(TokenSignal.token_id == token_id)
-    
+
     union_stmt = event_stmt.union_all(signal_stmt)
     subq = union_stmt.subquery()
-    
+
     stmt = select(subq).order_by(subq.c.created_at.desc(), subq.c.id.desc())
-    
+
     total = await session.scalar(select(func.count()).select_from(subq)) or 0
     rows = (await session.execute(stmt.offset((page - 1) * page_size).limit(page_size))).all()
-    
+
     items: list[TimelineItem] = []
     for row in rows:
         meta = row.metadata_json or {}
-        
+
         if row.kind == "event":
             title = ""
             desc = ""
@@ -674,20 +673,22 @@ async def get_token_timeline(
             elif row.type == "volume_spike":
                 title = f"Volume aumentou {meta.get('increase_percentage', 0)}%"
                 desc = f"O volume passou de US$ {meta.get('previous', 0):,.2f} para US$ {meta.get('new', 0):,.2f}."
-                
-            items.append(TimelineEventRead(
-                id=row.id,
-                kind="event",
-                type=row.type,
-                occurred_at=ensure_utc(row.created_at),
-                title=title,
-                description=desc,
-                rule_version=row.rule_version,
-                caused_by=row.caused_by,
-                severity=None,
-                strength=None,
-                confidence=None,
-            ))
+
+            items.append(
+                TimelineEventRead(
+                    id=row.id,
+                    kind="event",
+                    type=row.type,
+                    occurred_at=ensure_utc(row.created_at),
+                    title=title,
+                    description=desc,
+                    rule_version=row.rule_version,
+                    caused_by=row.caused_by,
+                    severity=None,
+                    strength=None,
+                    confidence=None,
+                )
+            )
         else:
             title = ""
             desc = ""
@@ -697,19 +698,21 @@ async def get_token_timeline(
             elif row.type == "high_volume_liquidity_contraction":
                 title = "Forte volume com contração de liquidez"
                 desc = "A liquidez foi removida durante um pico de volume."
-            
-            items.append(TimelineSignalRead(
-                id=row.id,
-                kind="signal",
-                type=row.type,
-                occurred_at=ensure_utc(row.created_at),
-                title=title,
-                description=desc,
-                rule_version=row.rule_version,
-                caused_by=row.caused_by,
-                strength=float(row.strength) if row.strength is not None else 0.0,
-                confidence=float(row.confidence) if row.confidence is not None else 0.0,
-            ))
+
+            items.append(
+                TimelineSignalRead(
+                    id=row.id,
+                    kind="signal",
+                    type=row.type,
+                    occurred_at=ensure_utc(row.created_at),
+                    title=title,
+                    description=desc,
+                    rule_version=row.rule_version,
+                    caused_by=row.caused_by,
+                    strength=float(row.strength) if row.strength is not None else 0.0,
+                    confidence=float(row.confidence) if row.confidence is not None else 0.0,
+                )
+            )
 
     return PaginatedResponse[TimelineItem](
         items=items,

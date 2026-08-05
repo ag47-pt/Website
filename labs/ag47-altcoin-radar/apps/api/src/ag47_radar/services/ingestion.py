@@ -21,7 +21,7 @@ from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.schemas import ScoreComponentsInput
 from ag47_radar.services.alerts import AlertCommand, create_alert_if_new, process_alert_rules
 from ag47_radar.services.events import generate_market_events
-from ag47_radar.services.scoring import calculate_score
+from ag47_radar.services.scoring import calculate_score, safety_from_risk
 from ag47_radar.services.signals import generate_signals
 
 
@@ -115,7 +115,7 @@ async def run_ingestion_cycle(
             .order_by(MarketSnapshot.captured_at.desc())
             .limit(1)
         )
-        
+
         new_snapshot = MarketSnapshot(
             pair_id=pair.id,
             price_usd=market.price_usd,
@@ -136,77 +136,100 @@ async def run_ingestion_cycle(
         )
         session.add(new_snapshot)
         await session.flush()
-        
+
         events = generate_market_events(old_snapshot, new_snapshot, token.id)
         if events:
             event_hashes = [e.caused_by_hash for e in events]
             existing_events_result = await session.scalars(
-                select(TokenEvent.caused_by_hash)
-                .where(
-                    TokenEvent.token_id == token.id,
-                    TokenEvent.caused_by_hash.in_(event_hashes)
+                select(TokenEvent.caused_by_hash).where(
+                    TokenEvent.token_id == token.id, TokenEvent.caused_by_hash.in_(event_hashes)
                 )
             )
             existing_hashes = set(existing_events_result.all())
             new_events = [e for e in events if e.caused_by_hash not in existing_hashes]
-            
+
             if new_events:
                 session.add_all(new_events)
                 await session.flush()
-                
+
                 signals = generate_signals(new_events, token.id)
                 if signals:
                     signal_hashes = [s.caused_by_hash for s in signals]
                     existing_signals_result = await session.scalars(
-                        select(TokenSignal.caused_by_hash)
-                        .where(
+                        select(TokenSignal.caused_by_hash).where(
                             TokenSignal.token_id == token.id,
-                            TokenSignal.caused_by_hash.in_(signal_hashes)
+                            TokenSignal.caused_by_hash.in_(signal_hashes),
                         )
                     )
                     existing_sig_hashes = set(existing_signals_result.all())
-                    new_signals = [s for s in signals if s.caused_by_hash not in existing_sig_hashes]
-                    
+                    new_signals = [
+                        s for s in signals if s.caused_by_hash not in existing_sig_hashes
+                    ]
+
                     if new_signals:
                         session.add_all(new_signals)
                         await session.flush()
-                        
+
                         from ag47_radar.knowledge.learning import process_signals_and_learn
-                        await process_signals_and_learn(session, token.id, new_signals, is_demo=False)
-                        
+
+                        await process_signals_and_learn(
+                            session, token.id, new_signals, is_demo=False
+                        )
+
                         for sig in new_signals:
                             await process_alert_rules(
-                                session, settings,
+                                session,
+                                settings,
                                 source_kind="signal",
                                 source_id=sig.id,
                                 token_id=token.id,
                                 source_type=sig.signal_type,
                                 strength=float(sig.strength) if sig.strength is not None else None,
-                                confidence=float(sig.confidence) if sig.confidence is not None else None,
-                                payload=sig.metadata_json
+                                confidence=float(sig.confidence)
+                                if sig.confidence is not None
+                                else None,
+                                payload=sig.metadata_json,
                             )
-                
-                for ev in new_events:
-                    await process_alert_rules(
-                        session, settings,
-                        source_kind="event",
-                        source_id=ev.id,
-                        token_id=token.id,
-                        source_type=ev.event_type,
-                        strength=None,
-                        confidence=None,
-                        payload=ev.metadata_json
-                    )
+
+        critical_flags: list[str] = []
+        safety_score_val: float | None = None
+        risk_result = await providers.risk.assess(market.chain, market.contract_address)
+        if risk_result and risk_result.data:
+            risk = risk_result.data
+            raw_risk_score = getattr(risk, "risk_score", None)
+            if isinstance(raw_risk_score, (int, float)):
+                safety_score_val = safety_from_risk(float(raw_risk_score))
+
+            if getattr(risk, "honeypot_status", None) == "honeypot":
+                critical_flags.append("honeypot_detectado")
+            if getattr(risk, "mintable", None) is True:
+                critical_flags.append("contrato_mintavel")
+            buy_tax = getattr(risk, "buy_tax", None)
+            sell_tax = getattr(risk, "sell_tax", None)
+            if (isinstance(buy_tax, (int, float)) and buy_tax > 10.0) or (
+                isinstance(sell_tax, (int, float)) and sell_tax > 10.0
+            ):
+                critical_flags.append("taxa_de_transacao_elevada")
+            if getattr(risk, "blacklist_capability", None) is True:
+                critical_flags.append("capacidade_de_blacklist")
+            flags = getattr(risk, "flags", [])
+            if isinstance(flags, list):
+                for flag in flags:
+                    if isinstance(flag, dict) and flag.get("level") in ("critical", "CRITICAL"):
+                        critical_flags.append(str(flag.get("code") or "risco_critico"))
+
         calculated = calculate_score(
             ScoreComponentsInput(
                 momentum_score=_momentum_score(market.price_change_1h, market.volume_1h),
                 liquidity_score=_liquidity_score(market.liquidity_usd),
                 community_score=None,
                 distribution_score=None,
-                safety_score=None,
+                safety_score=safety_score_val,
                 data_quality_score=(8.0 if market_result.quality == DataQuality.HIGH else 6.0),
-            )
+            ),
+            critical_flags=critical_flags,
         )
+
         session.add(
             OpportunityScore(
                 token_id=token.id,
@@ -233,9 +256,10 @@ async def run_ingestion_cycle(
                 deduplication_window_minutes=settings.alert_deduplication_window_minutes,
             )
         summary.persisted += 1
-        
-    from ag47_radar.knowledge.validation import validate_historical_hypotheses
-    await validate_historical_hypotheses(session)
-    
+
+    from ag47_radar.services.truth_engine import run_truth_engine
+
+    await run_truth_engine(session)
+
     await session.commit()
     return summary

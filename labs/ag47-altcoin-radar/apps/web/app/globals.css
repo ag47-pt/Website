@@ -103,7 +103,9 @@ button:disabled {
 }
 
 .panel:hover {
-  box-shadow: var(--radar-shadow-hover), 0 0 32px rgb(78 229 154 / 0.05);
+  box-shadow:
+    var(--radar-shadow-hover),
+    0 0 32px rgb(78 229 154 / 0.05);
 }
 
 .panel:hover {
@@ -119,10 +121,18 @@ button:disabled {
   animation: radar-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.rise-1 { animation-delay: 0.05s; }
-.rise-2 { animation-delay: 0.12s; }
-.rise-3 { animation-delay: 0.19s; }
-.rise-4 { animation-delay: 0.26s; }
+.rise-1 {
+  animation-delay: 0.05s;
+}
+.rise-2 {
+  animation-delay: 0.12s;
+}
+.rise-3 {
+  animation-delay: 0.19s;
+}
+.rise-4 {
+  animation-delay: 0.26s;
+}
 
 @keyframes radar-rise {
   from {

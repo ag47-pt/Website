@@ -1,0 +1,89 @@
+{
+  "token": {
+    "id": "10000000-0000-4000-8000-000000000001",
+    "chain": "bsc",
+    "contract_address": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+    "symbol": "CAKE",
+    "name": "PancakeSwap Token",
+    "decimals": 18,
+    "created_at": "2026-08-01T12:00:00Z",
+    "first_seen_at": "2026-08-01T12:05:00Z",
+    "metadata": {
+      "verified": true,
+      "website": "https://pancakeswap.finance"
+    },
+    "source": "geckoterminal",
+    "is_demo": false
+  },
+  "pair": {
+    "id": "20000000-0000-4000-8000-000000000001",
+    "token_id": "10000000-0000-4000-8000-000000000001",
+    "pair_address": "0x0ed7e52944161450477ee417de9cd3a859b14fd0",
+    "quote_token": "WBNB",
+    "dex": "pancakeswap_v2",
+    "created_at": "2026-08-01T12:00:00Z",
+    "first_seen_at": "2026-08-01T12:05:00Z",
+    "source": "dexscreener",
+    "source_url": "https://dexscreener.com/bsc/0x0ed7e52944161450477ee417de9cd3a859b14fd0",
+    "is_demo": false
+  },
+  "market": {
+    "id": "30000000-0000-4000-8000-000000000001",
+    "pair_id": "20000000-0000-4000-8000-000000000001",
+    "price_usd": 2.45,
+    "liquidity_usd": 15200000.0,
+    "volume_5m": 45000.0,
+    "volume_1h": 620000.0,
+    "volume_24h": 14800000.0,
+    "price_change_5m": 0.42,
+    "price_change_1h": 2.15,
+    "price_change_24h": 8.75,
+    "market_cap": 680000000.0,
+    "fdv": 950000000.0,
+    "buyers": 340,
+    "sellers": 210,
+    "captured_at": "2026-08-05T09:00:00Z",
+    "source": "dexscreener",
+    "data_quality": "high",
+    "is_demo": false
+  },
+  "risk": {
+    "risk_score": 1.5,
+    "critical_flags": [],
+    "captured_at": "2026-08-05T09:00:00Z",
+    "source": "goplus",
+    "data_quality": "high",
+    "is_demo": false
+  },
+  "score": {
+    "id": "40000000-0000-4000-8000-000000000001",
+    "token_id": "10000000-0000-4000-8000-000000000001",
+    "momentum_score": 8.5,
+    "liquidity_score": 9.2,
+    "community_score": 7.8,
+    "distribution_score": 8.0,
+    "safety_score": 8.5,
+    "data_quality_score": 9.0,
+    "final_score": 8.51,
+    "classification": "oportunidade_forte",
+    "confidence": 0.95,
+    "signals_available": 6,
+    "explanation": "Score 8.51/10 calculado pelos seis componentes ponderados da versão 1.",
+    "positive_factors": [
+      "Momentum: 8.5/10",
+      "Liquidez: 9.2/10",
+      "Comunidade: 7.8/10",
+      "Distribuição: 8.0/10",
+      "Segurança: 8.5/10",
+      "Qualidade dos dados: 9.0/10"
+    ],
+    "negative_factors": [],
+    "critical_gate_applied": false,
+    "calculated_at": "2026-08-05T09:00:00Z",
+    "scoring_version": "v1.0.0",
+    "is_demo": false
+  },
+  "holders_count": 142500,
+  "watchlisted": true,
+  "updated_at": "2026-08-05T09:00:00Z"
+}

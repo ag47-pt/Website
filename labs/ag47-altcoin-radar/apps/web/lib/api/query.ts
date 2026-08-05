@@ -111,8 +111,13 @@ export function useAlertMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ alertId, status }: { alertId: string; status: "unread" | "read" | "acknowledged" | "dismissed" }) =>
-      radarApi.updateAlert(alertId, status),
+    mutationFn: ({
+      alertId,
+      status,
+    }: {
+      alertId: string;
+      status: "unread" | "read" | "acknowledged" | "dismissed";
+    }) => radarApi.updateAlert(alertId, status),
     onSuccess: () => {
       return queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },

@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ag47_radar.models import MarketSnapshot, OpportunityScore, Token, TradingPair
+from ag47_radar.services.scoring import WEIGHTS
 
 BACKTEST_VERSION = "backtest-v1"
 
@@ -35,6 +36,8 @@ class ScoreObservation:
     calculated_at: datetime
     scoring_version: str
     is_demo: bool
+    momentum_score: float | None = None
+    liquidity_score: float | None = None
 
 
 @dataclass(frozen=True)
@@ -48,6 +51,8 @@ class BacktestSample:
     exit_price: float
     forward_return_pct: float
     is_demo: bool
+    momentum_score: float | None = None
+    liquidity_score: float | None = None
 
 
 @dataclass
@@ -70,6 +75,58 @@ class BacktestReport:
     score_return_correlation: float | None = None
     by_classification: dict[str, ClassificationSummary] = field(default_factory=dict)
     samples: list[BacktestSample] = field(default_factory=list)
+    calibrated_weights: dict[str, float] | None = None
+
+
+def calibrate_dynamic_weights(
+    samples: Sequence[BacktestSample],
+    base_weights: Mapping[str, float] | None = None,
+) -> dict[str, float]:
+    """Statistically calibrate weights of momentum_score vs liquidity_score based on 24h forward returns.
+
+    Preserves total weight sum = 1.0. If sample size is insufficient (< 3 evaluated samples),
+    returns base_weights without modification.
+    """
+
+    weights = dict(base_weights or WEIGHTS)
+    valid_samples = [
+        s for s in samples if s.momentum_score is not None and s.liquidity_score is not None
+    ]
+    if len(valid_samples) < 3:
+        return weights
+
+    mom_scores = [s.momentum_score for s in valid_samples if s.momentum_score is not None]
+    liq_scores = [s.liquidity_score for s in valid_samples if s.liquidity_score is not None]
+    returns = [s.forward_return_pct for s in valid_samples]
+
+    mom_corr = _pearson(mom_scores, returns) or 0.0
+    liq_corr = _pearson(liq_scores, returns) or 0.0
+
+    total_combined = round(
+        weights.get("momentum_score", 0.25) + weights.get("liquidity_score", 0.20), 4
+    )
+
+    if mom_corr <= 0 and liq_corr <= 0:
+        return weights
+
+    mom_power = max(0.01, mom_corr)
+    liq_power = max(0.01, liq_corr)
+    ratio = mom_power / (mom_power + liq_power)
+
+    new_mom = round(total_combined * ratio, 4)
+    new_liq = round(total_combined - new_mom, 4)
+
+    # Clamp to prevent extreme skew
+    new_mom = max(0.10, min(0.35, new_mom))
+    new_liq = max(0.10, min(0.30, new_liq))
+
+    sub_total = new_mom + new_liq
+    new_mom = round(total_combined * (new_mom / sub_total), 4)
+    new_liq = round(total_combined - new_mom, 4)
+
+    weights["momentum_score"] = new_mom
+    weights["liquidity_score"] = new_liq
+    return weights
 
 
 def _nearest_at_or_before(
@@ -149,6 +206,8 @@ def evaluate_scores(
                 exit_price=exit_point.price_usd,
                 forward_return_pct=forward,
                 is_demo=score.is_demo,
+                momentum_score=score.momentum_score,
+                liquidity_score=score.liquidity_score,
             )
         )
     report.evaluated = len(report.samples)
@@ -156,6 +215,7 @@ def evaluate_scores(
     report.score_return_correlation = _pearson(
         [sample.final_score for sample in report.samples], returns
     )
+    report.calibrated_weights = calibrate_dynamic_weights(report.samples)
     buckets: dict[str, list[float]] = {}
     for sample in report.samples:
         buckets.setdefault(sample.classification, []).append(sample.forward_return_pct)
@@ -173,7 +233,17 @@ async def load_backtest_inputs(
     session: AsyncSession, *, include_demo: bool = False
 ) -> tuple[list[ScoreObservation], dict[str, list[PricePoint]]]:
     score_query = (
-        select(OpportunityScore, Token.symbol)
+        select(
+            OpportunityScore.token_id,
+            Token.symbol,
+            OpportunityScore.final_score,
+            OpportunityScore.classification,
+            OpportunityScore.calculated_at,
+            OpportunityScore.scoring_version,
+            OpportunityScore.is_demo,
+            OpportunityScore.momentum_score,
+            OpportunityScore.liquidity_score,
+        )
         .join(Token, Token.id == OpportunityScore.token_id)
         .order_by(OpportunityScore.calculated_at)
     )
@@ -182,13 +252,15 @@ async def load_backtest_inputs(
     score_rows = (await session.execute(score_query)).all()
     scores = [
         ScoreObservation(
-            token_id=row.OpportunityScore.token_id,
+            token_id=row.token_id,
             token_symbol=row.symbol,
-            final_score=float(row.OpportunityScore.final_score),
-            classification=row.OpportunityScore.classification,
-            calculated_at=row.OpportunityScore.calculated_at,
-            scoring_version=row.OpportunityScore.scoring_version,
-            is_demo=row.OpportunityScore.is_demo,
+            final_score=float(row.final_score),
+            classification=row.classification,
+            calculated_at=row.calculated_at,
+            scoring_version=row.scoring_version,
+            is_demo=row.is_demo,
+            momentum_score=float(row.momentum_score) if row.momentum_score is not None else None,
+            liquidity_score=float(row.liquidity_score) if row.liquidity_score is not None else None,
         )
         for row in score_rows
     ]

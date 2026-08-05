@@ -286,9 +286,7 @@ class OpportunityScore(Base):
 
 class Alert(Base):
     __tablename__ = "alerts"
-    __table_args__ = (
-        UniqueConstraint("deduplication_key", "is_demo", name="uq_alert_dedup"),
-    )
+    __table_args__ = (UniqueConstraint("deduplication_key", "is_demo", name="uq_alert_dedup"),)
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     token_id: Mapped[str] = mapped_column(
@@ -388,7 +386,13 @@ class WatchlistEntry(Base):
 class TokenEvent(Base):
     __tablename__ = "token_events"
     __table_args__ = (
-        UniqueConstraint("token_id", "event_type", "rule_version", "caused_by_hash", name="uq_token_events_idempotency"),
+        UniqueConstraint(
+            "token_id",
+            "event_type",
+            "rule_version",
+            "caused_by_hash",
+            name="uq_token_events_idempotency",
+        ),
         Index("ix_events_token_created", "token_id", "created_at"),
         Index("ix_events_type_created", "event_type", "created_at"),
     )
@@ -413,7 +417,13 @@ class TokenEvent(Base):
 class TokenSignal(Base):
     __tablename__ = "token_signals"
     __table_args__ = (
-        UniqueConstraint("token_id", "signal_type", "rule_version", "caused_by_hash", name="uq_token_signals_idempotency"),
+        UniqueConstraint(
+            "token_id",
+            "signal_type",
+            "rule_version",
+            "caused_by_hash",
+            name="uq_token_signals_idempotency",
+        ),
         Index("ix_signals_token_created", "token_id", "created_at"),
         Index("ix_signals_type_created", "signal_type", "created_at"),
     )
@@ -439,9 +449,7 @@ class TokenSignal(Base):
 
 class TokenKnowledge(Base):
     __tablename__ = "token_knowledge"
-    __table_args__ = (
-        Index("ix_knowledge_token_created", "token_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_knowledge_token_created", "token_id", "created_at"),)
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     token_id: Mapped[str] = mapped_column(
@@ -466,7 +474,13 @@ class TokenKnowledge(Base):
 class TokenHypothesis(Base):
     __tablename__ = "token_hypotheses"
     __table_args__ = (
-        UniqueConstraint("token_id", "hypothesis_type", "rule_version", "caused_by_hash", name="uq_token_hypotheses_idempotency"),
+        UniqueConstraint(
+            "token_id",
+            "hypothesis_type",
+            "rule_version",
+            "caused_by_hash",
+            name="uq_token_hypotheses_idempotency",
+        ),
         Index("ix_hypotheses_token_created", "token_id", "created_at"),
         Index("ix_hypotheses_type_created", "hypothesis_type", "created_at"),
     )
@@ -493,22 +507,28 @@ class TokenHypothesis(Base):
 class GlobalKnowledge(Base):
     __tablename__ = "global_knowledge"
     __table_args__ = (
-        UniqueConstraint("pattern_name", "validation_window", "market_regime", "chain", name="uq_global_knowledge_context"),
+        UniqueConstraint(
+            "pattern_name",
+            "validation_window",
+            "market_regime",
+            "chain",
+            name="uq_global_knowledge_context",
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     pattern_name: Mapped[str] = mapped_column(String(80), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    
+
     # Context dimensions
     market_regime: Mapped[str] = mapped_column(String(32), nullable=False, default="all")
     chain: Mapped[str] = mapped_column(String(32), nullable=False, default="all")
-    
+
     total_occurrences: Mapped[int] = mapped_column(Integer, default=0)
     success_count: Mapped[int] = mapped_column(Integer, default=0)
     failure_count: Mapped[int] = mapped_column(Integer, default=0)
     neutral_count: Mapped[int] = mapped_column(Integer, default=0)
-    historical_confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4), default=Decimal('0.0000'))
+    historical_confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4), default=Decimal("0.0000"))
     validation_window: Mapped[str] = mapped_column(String(20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
@@ -532,17 +552,17 @@ class TokenTruth(Base):
     hypothesis_id: Mapped[str] = mapped_column(
         ForeignKey("token_hypotheses.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    
+
     expected_outcome: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     observed_outcome: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    
+
     gain: Mapped[float | None] = mapped_column(Float, nullable=True)
     loss: Mapped[float | None] = mapped_column(Float, nullable=True)
     accuracy_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-    
+
     # success, partial, failure, neutral
     status: Mapped[str] = mapped_column(String(20), nullable=False)
-    
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
     )
@@ -550,4 +570,3 @@ class TokenTruth(Base):
 
     token: Mapped[Token] = relationship(back_populates="truths")
     hypothesis: Mapped[TokenHypothesis] = relationship(back_populates="truth")
-

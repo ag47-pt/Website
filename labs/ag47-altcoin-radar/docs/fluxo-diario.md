@@ -4,12 +4,12 @@
 > Toda modificação no software que altere qualquer etapa abaixo **deve** atualizar este
 > documento na mesma mudança (ver [Registro de impacto](#-registro-de-impacto-no-fluxo)).
 
-| | |
-|---|---|
-| **Versão do fluxo** | `fluxo-v1.0` |
-| **Última revisão** | 2026-08-05 |
-| **Modo coberto** | Demo e Live (diferenças sinalizadas com 🎭 / 🔴) |
-| **Escopo** | Observacional e read-only — sem carteiras, sem trades |
+|                     |                                                       |
+| ------------------- | ----------------------------------------------------- |
+| **Versão do fluxo** | `fluxo-v1.0`                                          |
+| **Última revisão**  | 2026-08-05                                            |
+| **Modo coberto**    | Demo e Live (diferenças sinalizadas com 🎭 / 🔴)      |
+| **Escopo**          | Observacional e read-only — sem carteiras, sem trades |
 
 ---
 
@@ -37,11 +37,11 @@ Com o ambiente Python ativo, na raiz do produto:
 npm run dev
 ```
 
-| Serviço | URL | Verificar |
-|---|---|---|
-| Web | <http://localhost:3000> | Shell carrega sem erros |
-| API | <http://localhost:8000/health> | `status: ok` |
-| OpenAPI | <http://localhost:8000/docs> | Endpoints v1 listados |
+| Serviço | URL                            | Verificar               |
+| ------- | ------------------------------ | ----------------------- |
+| Web     | <http://localhost:3000>        | Shell carrega sem erros |
+| API     | <http://localhost:8000/health> | `status: ok`            |
+| OpenAPI | <http://localhost:8000/docs>   | Endpoints v1 listados   |
 
 **Modo ativo** — a API decide pelo `apps/api/.env` (prefixo `AG47_`):
 
@@ -77,12 +77,12 @@ npm run dev
 
 **Classificações e ação padrão:**
 
-| Classificação | Score | Ação diária |
-|---|---|---|
-| 🟢 `oportunidade_forte` | ≥ 8.0 | Análise completa + considerar watchlist |
-| 🟡 `observar` | ≥ 6.5 | Revisar breakdown; aguardar confirmação |
-| 🟠 `especulativo` | ≥ 5.0 | Só analisar se houver sinal social/evento |
-| 🔴 `risco_elevado` | < 5.0 ou gate crítico | Não perseguir; entender o porquê no breakdown |
+| Classificação           | Score                 | Ação diária                                   |
+| ----------------------- | --------------------- | --------------------------------------------- |
+| 🟢 `oportunidade_forte` | ≥ 8.0                 | Análise completa + considerar watchlist       |
+| 🟡 `observar`           | ≥ 6.5                 | Revisar breakdown; aguardar confirmação       |
+| 🟠 `especulativo`       | ≥ 5.0                 | Só analisar se houver sinal social/evento     |
+| 🔴 `risco_elevado`      | < 5.0 ou gate crítico | Não perseguir; entender o porquê no breakdown |
 
 > O score é **explicável**: nunca aceitar o número sem ler os fatores positivos/negativos
 > e a **confiança** (dados faltantes reduzem confiança, não são inventados).
@@ -159,12 +159,12 @@ python -m ag47_radar.cli backtest --horizon-hours 24
 
 ## 🧭 Cadências além do diário
 
-| Frequência | Ação |
-|---|---|
-| **Semanal** | Rodar `npm run verify` (lint + types + testes + build); revisar backtest agregado |
-| **Semanal** | Podar watchlist e alertas arquivados |
-| **A cada mudança de código** | Atualizar este documento se o fluxo for impactado (obrigatório) |
-| **A cada novo provider** | Registrar em `docs/data-providers.md` + atualizar passo 3 e 6 aqui |
+| Frequência                   | Ação                                                                              |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| **Semanal**                  | Rodar `npm run verify` (lint + types + testes + build); revisar backtest agregado |
+| **Semanal**                  | Podar watchlist e alertas arquivados                                              |
+| **A cada mudança de código** | Atualizar este documento se o fluxo for impactado (obrigatório)                   |
+| **A cada novo provider**     | Registrar em `docs/data-providers.md` + atualizar passo 3 e 6 aqui                |
 
 ---
 
@@ -182,6 +182,6 @@ python -m ag47_radar.cli backtest --horizon-hours 24
 > do fluxo incrementada quando a mudança for estrutural (novo passo, passo removido,
 > mudança de semântica de um passo).
 
-| Data | Versão | Mudança no software | Impacto no fluxo |
-|---|---|---|---|
+| Data       | Versão       | Mudança no software                                                        | Impacto no fluxo                                                                |
+| ---------- | ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | 2026-08-05 | `fluxo-v1.0` | Documento criado; GoPlus (risco EVM real) e comando `backtest` adicionados | Baseline: passo 3 passa a ter risco real em live; passo 7 (encerramento) criado |

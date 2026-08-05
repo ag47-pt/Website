@@ -1,0 +1,144 @@
+AG47 Altcoin Radar — Project Directory Tree
+Root: /labs/ag47-altcoin-radar
+
+ag47-altcoin-radar/
+│
+├── .env.example
+├── .gitignore
+├── .prettierignore
+├── .prettierrc.json
+├── AGENTS.md
+├── README.md
+├── ag47-altcoin-radar-sprint-01.md
+├── docker-compose.yml
+├── package-lock.json
+├── package.json
+│
+├── docs/
+│   ├── architecture.md
+│   ├── backtesting.md
+│   ├── data-providers.md
+│   ├── epistemology.md
+│   ├── fluxo-diario.md
+│   ├── next-sprints.md
+│   ├── scoring-v1.md
+│   ├── sprint-01.md
+│   ├── sprint-2-audit.md
+│   ├── sprint-2-plan.md
+│   ├── sprint-2-report.md
+│   ├── sprint-3-plan.md
+│   ├── sprint-3-report.md
+│   └── sprint-4-report.md
+│
+└── apps/
+    ├── api/
+    │   ├── .env.example
+    │   ├── alembic.ini
+    │   ├── pyproject.toml
+    │   ├── uv.lock
+    │   │
+    │   ├── alembic/
+    │   │   ├── env.py
+    │   │   ├── script.py.mako
+    │   │   └── versions/
+    │   │       ├── 20260804_0001_initial_schema.py
+    │   │       ├── 421139be736d_add_knowledge_engine_models.py
+    │   │       ├── 61fa9384fdb0_add_strength_confidence_and_rule_.py
+    │   │       ├── a3f3998a6ece_add_event_signal_knowledge_models.py
+    │   │       ├── ca71b6cd625d_add_alert_models.py
+    │   │       ├── cc08cc58355e_add_caused_by_hash_and_idempotency_.py
+    │   │       └── e398a6ae4278_add_tokentruth_and_globalknowledge_.py
+    │   │
+    │   ├── src/
+    │   │   └── ag47_radar/
+    │   │       ├── __init__.py
+    │   │       ├── cli.py
+    │   │       ├── config.py
+    │   │       ├── db.py
+    │   │       ├── enums.py
+    │   │       ├── errors.py
+    │   │       ├── evolution.py
+    │   │       ├── fixtures.py
+    │   │       ├── logging.py
+    │   │       ├── main.py
+    │   │       ├── models.py
+    │   │       ├── scheduler.py
+    │   │       ├── schemas.py
+    │   │       │
+    │   │       ├── api/
+    │   │       │   ├── __init__.py
+    │   │       │   ├── dependencies.py
+    │   │       │   └── routes.py
+    │   │       │
+    │   │       ├── knowledge/
+    │   │       │   ├── __init__.py
+    │   │       │   ├── confidence.py
+    │   │       │   ├── learning.py
+    │   │       │   ├── registry.py
+    │   │       │   ├── types.py
+    │   │       │   └── validation.py
+    │   │       │
+    │   │       ├── providers/
+    │   │       │   ├── __init__.py
+    │   │       │   ├── contracts.py
+    │   │       │   ├── demo.py
+    │   │       │   ├── dexscreener.py
+    │   │       │   ├── geckoterminal.py
+    │   │       │   ├── goplus.py
+    │   │       │   ├── registry.py
+    │   │       │   └── resilience.py
+    │   │       │
+    │   │       └── services/
+    │   │           ├── __init__.py
+    │   │           ├── alerts.py
+    │   │           ├── backtest.py
+    │   │           ├── events.py
+    │   │           ├── ingestion.py
+    │   │           ├── microstructure.py
+    │   │           ├── queries.py
+    │   │           ├── scoring.py
+    │   │           ├── seed.py
+    │   │           ├── signals.py
+    │   │           └── watchlist.py
+    │   │
+    │   └── tests/
+    │       ├── __init__.py
+    │       ├── conftest.py
+    │       ├── test_alerts.py
+    │       ├── test_api_endpoints.py
+    │       ├── test_backtest.py
+    │       ├── test_events_signals.py
+    │       ├── test_goplus.py
+    │       ├── test_invariants.py
+    │       ├── test_knowledge_engine.py
+    │       ├── test_microstructure.py
+    │       ├── test_performance_load.py
+    │       ├── test_resilience.py
+    │       ├── test_scoring.py
+    │       └── test_timeline.py
+    │
+    └── web/
+        ├── .env.example
+        ├── eslint.config.mjs
+        ├── next.config.ts
+        ├── package.json
+        ├── playwright.config.ts
+        ├── postcss.config.mjs
+        ├── tsconfig.json
+        ├── vitest.config.ts
+        │
+        └── src/
+            ├── app/
+            │   ├── layout.tsx
+            │   ├── page.tsx
+            │   ├── alerts/
+            │   ├── opportunities/
+            │   ├── tokens/
+            │   └── watchlist/
+            ├── components/
+            │   ├── layout/
+            │   ├── ui/
+            │   └── views/
+            └── lib/
+                ├── api.ts
+                └── utils.ts

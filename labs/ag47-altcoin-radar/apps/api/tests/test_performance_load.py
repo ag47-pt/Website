@@ -1,22 +1,21 @@
 import time
 import tracemalloc
-from decimal import Decimal
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ag47_radar.config import Settings
+from ag47_radar.enums import Chain, DataQuality, SourceMode
 from ag47_radar.providers.contracts import (
-    PairDiscoveryProvider,
     DiscoveredPair,
     MarketDataProvider,
     MarketPairData,
-    ProviderResult
+    PairDiscoveryProvider,
+    ProviderResult,
 )
 from ag47_radar.providers.registry import ProviderRegistry
-from ag47_radar.enums import Chain, DataQuality, SourceMode
 from ag47_radar.services.ingestion import run_ingestion_cycle
 
 
@@ -24,34 +23,36 @@ from ag47_radar.services.ingestion import run_ingestion_cycle
 def mock_load_providers():
     discovery = AsyncMock(spec=PairDiscoveryProvider)
     discovery.provider_id = "test_discovery"
-    
+
     # Generate 100 tokens
     tokens = []
     for i in range(100):
-        tokens.append(DiscoveredPair(
-            chain=Chain.SOLANA,
-            contract_address=f"token_{i}",
-            token_name=f"Token {i}",
-            token_symbol=f"TKN{i}",
-            pair_address=f"pair_{i}",
-            quote_token="SOL",
-            dex="raydium",
-            decimals=9
-        ))
-        
+        tokens.append(
+            DiscoveredPair(
+                chain=Chain.SOLANA,
+                contract_address=f"token_{i}",
+                token_name=f"Token {i}",
+                token_symbol=f"TKN{i}",
+                pair_address=f"pair_{i}",
+                quote_token="SOL",
+                dex="raydium",
+                decimals=9,
+            )
+        )
+
     discovery.discover.return_value = ProviderResult(
         data=tokens,
         source="test",
-        collected_at=datetime.now(timezone.utc),
+        collected_at=datetime.now(UTC),
         quality=DataQuality.HIGH,
         mode=SourceMode.REAL,
         duration_ms=10.0,
-        partial_errors=[]
+        partial_errors=[],
     )
 
     market = AsyncMock(spec=MarketDataProvider)
     market.provider_id = "test_market"
-    
+
     async def get_pair_mock(chain, pair_address):
         idx = pair_address.split("_")[1]
         return ProviderResult(
@@ -79,13 +80,13 @@ def mock_load_providers():
                 pair_created_at=None,
             ),
             source="test",
-            collected_at=datetime.now(timezone.utc),
+            collected_at=datetime.now(UTC),
             quality=DataQuality.HIGH,
             mode=SourceMode.REAL,
             duration_ms=10.0,
-            partial_errors=[]
+            partial_errors=[],
         )
-    
+
     market.get_pair.side_effect = get_pair_mock
 
     registry = ProviderRegistry(Settings())
@@ -97,26 +98,27 @@ def mock_load_providers():
 
 
 @pytest.mark.asyncio
-async def test_ingestion_load_performance(db_session: AsyncSession, mock_load_providers, test_settings: Settings):
+async def test_ingestion_load_performance(
+    db_session: AsyncSession, mock_load_providers, test_settings: Settings
+):
     test_settings.demo_mode = False
-    
+
     tracemalloc.start()
     start_time = time.monotonic()
-    
+
     # Run ingestion for 100 tokens
     summary = await run_ingestion_cycle(db_session, test_settings, mock_load_providers, limit=100)
-    
+
     end_time = time.monotonic()
     current_mem, peak_mem = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    
+
     duration = end_time - start_time
-    
-    print(f"\n[Load Test] Ingestion of 100 tokens:")
+
+    print("\n[Load Test] Ingestion of 100 tokens:")
     print(f"Time taken: {duration:.2f} seconds")
     print(f"Peak memory: {peak_mem / 1024 / 1024:.2f} MB")
-    
+
     assert summary.persisted == 100
     # Let's say we expect 100 tokens to process under 5 seconds (just an arbitrary baseline for testing)
     assert duration < 10.0, f"Ingestion is too slow: {duration:.2f} seconds"
-

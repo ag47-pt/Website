@@ -4,13 +4,13 @@
  */
 export const evolution = {
   /** Fase em curso */
-  phase: "Sprint 5",
-  phaseTitle: "Alertas Determinísticos",
+  phase: "Sprint 7",
+  phaseTitle: "Infraestrutura de Produção e Ingestão Contínua",
   /** O que estamos a fazer agora */
-  now: "Alertas acionados apenas após verificação de confiança dos sinais, com inbox e timeline explicável.",
+  now: "Configuração de suporte PostgreSQL, ativação do background scheduler e loop autônomo de ingestão/TruthEngine.",
   /** Sprints concluídos / total mapeado da fase fundacional */
-  completedSteps: 4,
-  totalSteps: 5,
+  completedSteps: 6,
+  totalSteps: 8,
   /** O norte final do projeto */
   goal: "Lóbulo Observacional do Organismo Cognitivo",
 } as const;

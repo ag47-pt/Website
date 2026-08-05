@@ -68,8 +68,18 @@ def test_generate_market_events_volume_spike():
 
 def test_generate_signals_contraction():
     events = [
-        TokenEvent(id="e1", event_type="liquidity_drop", is_demo=False, metadata_json={"drop_percentage": 30.0}),
-        TokenEvent(id="e2", event_type="volume_spike", is_demo=False, metadata_json={"increase_percentage": 300.0}),
+        TokenEvent(
+            id="e1",
+            event_type="liquidity_drop",
+            is_demo=False,
+            metadata_json={"drop_percentage": 30.0},
+        ),
+        TokenEvent(
+            id="e2",
+            event_type="volume_spike",
+            is_demo=False,
+            metadata_json={"increase_percentage": 300.0},
+        ),
     ]
     signals = generate_signals(events, "test-token-id")
     assert len(signals) == 1
@@ -83,8 +93,18 @@ def test_generate_signals_contraction():
 
 def test_generate_signals_expansion():
     events = [
-        TokenEvent(id="e1", event_type="liquidity_spike", is_demo=False, metadata_json={"spike_percentage": 50.0}),
-        TokenEvent(id="e2", event_type="volume_spike", is_demo=False, metadata_json={"increase_percentage": 200.0}),
+        TokenEvent(
+            id="e1",
+            event_type="liquidity_spike",
+            is_demo=False,
+            metadata_json={"spike_percentage": 50.0},
+        ),
+        TokenEvent(
+            id="e2",
+            event_type="volume_spike",
+            is_demo=False,
+            metadata_json={"increase_percentage": 200.0},
+        ),
     ]
     signals = generate_signals(events, "test-token-id")
     assert len(signals) == 1
@@ -97,7 +117,7 @@ def test_generate_signals_expansion():
 
 
 def test_events_idempotency():
-    # If the situation remains the same (prices stay identically high), 
+    # If the situation remains the same (prices stay identically high),
     # the delta between T_0 and T_1 is zero, thus no additional events generated.
     t_minus_1 = MarketSnapshot(
         id="t-minus-1",
@@ -108,17 +128,17 @@ def test_events_idempotency():
     t_0 = MarketSnapshot(
         id="t-0",
         liquidity_usd=Decimal("160000"),  # spike occurred
-        volume_5m=Decimal("16000"),       # spike occurred
+        volume_5m=Decimal("16000"),  # spike occurred
         is_demo=False,
     )
     events_t0 = generate_market_events(t_minus_1, t_0, "test")
-    assert len(events_t0) == 2 # both spikes
-    
+    assert len(events_t0) == 2  # both spikes
+
     t_1 = MarketSnapshot(
         id="t-1",
         liquidity_usd=Decimal("160000"),  # same as t_0
-        volume_5m=Decimal("16000"),       # same as t_0
+        volume_5m=Decimal("16000"),  # same as t_0
         is_demo=False,
     )
     events_t1 = generate_market_events(t_0, t_1, "test")
-    assert len(events_t1) == 0 # Idempotent!
+    assert len(events_t1) == 0  # Idempotent!

@@ -28,13 +28,10 @@
   --radar-radius-md: 0.85rem;
   --radar-radius-lg: 1.1rem;
   --radar-shadow:
-    0 1px 0 rgb(255 255 255 / 0.03) inset,
-    0 1px 2px rgb(0 0 0 / 0.35),
+    0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.35),
     0 16px 40px rgb(0 0 0 / 0.28);
   --radar-shadow-hover:
-    0 1px 0 rgb(255 255 255 / 0.05) inset,
-    0 2px 6px rgb(0 0 0 / 0.4),
-    0 24px 56px rgb(0 0 0 / 0.38);
+    0 1px 0 rgb(255 255 255 / 0.05) inset, 0 2px 6px rgb(0 0 0 / 0.4), 0 24px 56px rgb(0 0 0 / 0.38);
   --radar-glow-positive: 0 0 24px rgb(78 229 154 / 0.18);
   --radar-sidebar-width: 13.5rem;
   --radar-header-height: 4.8rem;

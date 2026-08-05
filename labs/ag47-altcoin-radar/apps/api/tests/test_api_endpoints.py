@@ -20,6 +20,17 @@ async def test_system_status(api_client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_system_calibration(api_client: AsyncClient):
+    response = await api_client.get("/api/v1/system/calibration")
+    assert response.status_code == 200
+    data = response.json()
+    assert "scoring_version" in data
+    assert "base_weights" in data
+    assert "calibrated_weights" in data
+    assert data["base_weights"]["momentum_score"] == 0.25
+
+
+@pytest.mark.asyncio
 async def test_opportunities_empty(api_client: AsyncClient):
     response = await api_client.get("/api/v1/opportunities")
     assert response.status_code == 200

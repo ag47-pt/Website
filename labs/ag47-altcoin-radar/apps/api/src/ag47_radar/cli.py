@@ -17,6 +17,7 @@ async def _init_db() -> None:
     await create_schema()
     await close_database()
 
+
 async def _seed() -> None:
     counts = await seed_demo_data()
     rule_counts = await seed_global_rules()
@@ -123,9 +124,7 @@ def main(argv: list[str] | None = None) -> Any:
     if args.command == "ingest":
         return asyncio.run(_ingest(args.limit))
     if args.command == "backtest":
-        return asyncio.run(
-            _backtest(args.horizon_hours, args.tolerance_hours, args.include_demo)
-        )
+        return asyncio.run(_backtest(args.horizon_hours, args.tolerance_hours, args.include_demo))
     raise RuntimeError("Unknown command")
 
 
