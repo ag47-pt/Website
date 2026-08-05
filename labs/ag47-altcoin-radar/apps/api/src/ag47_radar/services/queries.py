@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from datetime import UTC, datetime, timedelta
-from typing import Any, Literal
+from typing import Any, Literal, overload
 
 from sqlalchemy import and_, func, literal, null, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,6 +59,14 @@ OpportunitySort = Literal[
     "pair_age",
     "updated_at",
 ]
+
+
+@overload
+def ensure_utc(value: datetime) -> datetime: ...
+
+
+@overload
+def ensure_utc(value: None) -> None: ...
 
 
 def ensure_utc(value: datetime | None) -> datetime | None:
@@ -204,7 +212,7 @@ async def list_opportunities(
     sort_column = sort_columns[sort_by]
     order_expression = sort_column.asc() if sort_order == "asc" else sort_column.desc()
     statement = statement.order_by(order_expression.nulls_last(), Token.symbol.asc())
-    total = int(
+    total = (
         await session.scalar(select(func.count()).select_from(statement.order_by(None).subquery()))
         or 0
     )
@@ -450,7 +458,7 @@ async def list_alerts(
     if status:
         statement = statement.where(TokenAlert.status == status)
         
-    total = int(await session.scalar(select(func.count()).select_from(statement.subquery())) or 0)
+    total = await session.scalar(select(func.count()).select_from(statement.subquery())) or 0
     rows = (
         await session.execute(
             statement.order_by(TokenAlert.triggered_at.desc())
@@ -509,7 +517,7 @@ async def list_watchlist(
         .join(Token, Token.id == WatchlistEntry.token_id)
         .where(Token.is_demo.is_(settings.demo_mode))
     )
-    total = int(
+    total = (
         await session.scalar(select(func.count()).select_from(base_statement.subquery())) or 0
     )
     rows = (
@@ -563,11 +571,11 @@ async def system_metrics(
     session: AsyncSession, settings: Settings
 ) -> tuple[SystemMetrics, datetime | None]:
     token_filter = Token.is_demo.is_(settings.demo_mode)
-    tokens_monitored = int(
+    tokens_monitored = (
         await session.scalar(select(func.count(Token.id)).where(token_filter)) or 0
     )
     start_today = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
-    alerts_today = int(
+    alerts_today = (
         await session.scalar(
             select(func.count(Alert.id))
             .join(Token, Token.id == Alert.token_id)
@@ -647,7 +655,7 @@ async def get_token_timeline(
     
     stmt = select(subq).order_by(subq.c.created_at.desc(), subq.c.id.desc())
     
-    total = int(await session.scalar(select(func.count()).select_from(subq)) or 0)
+    total = await session.scalar(select(func.count()).select_from(subq)) or 0
     rows = (await session.execute(stmt.offset((page - 1) * page_size).limit(page_size))).all()
     
     items: list[TimelineItem] = []

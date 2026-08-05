@@ -7,9 +7,15 @@ O Radar é um produto independente dentro de `labs` para preservar o site Ag47.p
 ### Filosofia: O Lóbulo Especializado (Organismo Cognitivo)
 
 O Radar não é um sistema monolítico desenhado para saber de tudo; ele é um **lóbulo especializado** (o "cardiologista" de altcoins) que alimentará um futuro **Organismo Cognitivo AG47**.
-Ele não mistura geopolítica ou economia com crypto. A arquitetura é construída para que o Radar extraia, processe e normalize **Conhecimento** (via Histórico -> Eventos -> Signals -> Confidence) e sirva esse conhecimento estruturado via API. No futuro, um LLM integrador fará o raciocínio cruzado consumindo a interface pública deste e de outros lóbulos.
+Ele não mistura geopolítica ou economia com crypto. A arquitetura é construída para que o Radar extraia, processe e normalize **Conhecimento** e sirva esse conhecimento estruturado via API. No futuro, um LLM integrador fará o raciocínio cruzado consumindo a interface pública deste e de outros lóbulos.
 
-A UI nunca acessa providers externos diretamente. FastAPI concentra normalização, persistência, scoring, explicabilidade (confidence/signals), alertas e proteção de segredos.
+### Princípio Epistemológico
+Nenhuma informação é descartada. Todo dado observado deve evoluir para conhecimento reutilizável. O fluxo de dados opera com separação estrita entre observação empírica e interpretação:
+```text
+Snapshot (O que é) -> Event (O que mudou) -> Signal (Significado básico) -> Hypothesis (Conclusão provável) -> Validation (Avaliação) -> Knowledge (Padrão comprovado)
+```
+
+A UI nunca acessa providers externos diretamente. FastAPI concentra normalização, persistência, explicabilidade, validação de hipóteses e proteção de segredos.
 
 ```mermaid
 flowchart LR
@@ -19,10 +25,10 @@ flowchart LR
     Ingestion --> Discovery[GeckoTerminal discovery]
     Ingestion --> Market[DexScreener market]
     Ingestion --> DB
-    Ingestion --> Score[Scoring v1]
-    Score --> Alerts[Alert engine]
-    Alerts --> DB
-    Demo[Demo social/risk providers] --> Ingestion
+    Ingestion --> Knowledge[Knowledge Engine]
+    Knowledge --> DB
+    Knowledge --> Alerts[Alert engine]
+    Demo[Demo providers] --> Ingestion
 ```
 
 ## Componentes

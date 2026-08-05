@@ -11,7 +11,6 @@ from .registry import registry
 from .validation import validate_historical_hypotheses
 
 __all__ = [
-    "infer_hypotheses",
     "process_signals_and_learn",
     "validate_historical_hypotheses",
 ]

@@ -1,6 +1,7 @@
 import { ZodError, type ZodType } from "zod";
 import {
   alertsResponseSchema,
+  evolutionStatusSchema,
   marketHistorySchema,
   opportunitiesResponseSchema,
   riskSchema,
@@ -93,6 +94,9 @@ function buildOpportunitySearch(filters: OpportunityFilters) {
 export const radarApi = {
   getSystemStatus(signal?: AbortSignal) {
     return apiRequest("/api/v1/system/status", systemStatusSchema, { signal });
+  },
+  getEvolution(signal?: AbortSignal) {
+    return apiRequest("/api/v1/system/evolution", evolutionStatusSchema, { signal });
   },
   getOpportunities(filters: OpportunityFilters, signal?: AbortSignal) {
     return apiRequest(

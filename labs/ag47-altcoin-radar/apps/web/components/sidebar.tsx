@@ -5,6 +5,8 @@ import {
   ChartNoAxesCombined,
   FileClock,
   Gauge,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings2,
   ShieldAlert,
   Star,
@@ -13,8 +15,60 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEvolution } from "@/lib/api/query";
+import { evolution as evolutionFallback } from "@/lib/evolution";
 import { LogoMark } from "./logo-mark";
 import { useRadarState } from "./radar-state";
+
+function EvolutionCard() {
+  const { data } = useEvolution();
+  const evolution = data
+    ? {
+        phase: data.phase,
+        phaseTitle: data.phase_title,
+        now: data.now,
+        completedSteps: data.completed_steps,
+        totalSteps: data.total_steps,
+        goal: data.goal,
+      }
+    : evolutionFallback;
+  const progress = Math.round((evolution.completedSteps / evolution.totalSteps) * 100);
+  return (
+    <div
+      data-testid="evolution-card"
+      className="rounded-xl border border-radar-border bg-gradient-to-b from-[#0d1d29]/80 to-[#0a1620]/80 p-3.5 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.03)] backdrop-blur-md"
+    >
+      <p className="eyebrow text-[0.58rem]">Motor de evolução</p>
+      <div className="mt-1.5 flex items-center gap-2 text-xs font-bold text-radar-ink">
+        <span className="size-2 animate-pulse rounded-full bg-radar-positive shadow-[0_0_0_4px_rgb(78_229_154_/_0.12),0_0_12px_rgb(78_229_154_/_0.5)]" />
+        {evolution.phase} • {evolution.phaseTitle}
+      </div>
+      <p className="mt-1.5 text-[0.68rem] leading-4.5 text-radar-muted">{evolution.now}</p>
+      <div
+        role="progressbar"
+        aria-label="Progresso da fase fundacional"
+        aria-valuenow={evolution.completedSteps}
+        aria-valuemin={0}
+        aria-valuemax={evolution.totalSteps}
+        className="mt-2.5 h-1 overflow-hidden rounded-full bg-white/[0.06]"
+      >
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-radar-positive/60 to-radar-positive shadow-[0_0_8px_rgb(78_229_154_/_0.5)] transition-[width] duration-700"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="mt-1 flex items-center justify-between text-[0.58rem] font-bold text-radar-subtle">
+        <span>
+          {evolution.completedSteps}/{evolution.totalSteps} sprints
+        </span>
+        <span className="mono">{progress}%</span>
+      </div>
+      <p className="mt-2 border-t border-white/[0.05] pt-2 text-[0.6rem] leading-4 text-radar-subtle">
+        <span className="font-bold text-radar-muted">Norte:</span> {evolution.goal}
+      </p>
+    </div>
+  );
+}
 
 const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: Gauge },
@@ -27,7 +81,7 @@ const navigation = [
   { href: "/configuracoes", label: "Configurações", icon: Settings2 },
 ] as const;
 
-function NavigationLinks() {
+function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = usePathname();
   const { setNavigationOpen } = useRadarState();
 
@@ -40,23 +94,27 @@ function NavigationLinks() {
             key={href}
             aria-current={isActive ? "page" : undefined}
             data-testid={`nav-${href.slice(1)}`}
-            className={`group relative flex min-h-11 items-center gap-3 rounded-lg px-3.5 text-[0.83rem] font-semibold transition-colors ${
+            title={collapsed ? label : undefined}
+            className={`group relative flex min-h-11 items-center gap-3 rounded-lg text-[0.83rem] font-semibold transition-all duration-200 ${
+              collapsed ? "justify-center px-0" : "px-3.5"
+            } ${
               isActive
-                ? "bg-[#0e2a2b] text-radar-ink"
+                ? "bg-gradient-to-r from-[#0d2c26] to-[#0a1e22] text-radar-ink shadow-[inset_0_1px_0_rgb(255_255_255_/_0.04),0_0_18px_rgb(78_229_154_/_0.06)] ring-1 ring-radar-positive/15"
                 : "text-radar-muted hover:bg-white/[0.035] hover:text-radar-ink"
-            }`}
+            } ${!isActive && !collapsed ? "hover:translate-x-0.5" : ""}`}
             href={href}
             onClick={() => setNavigationOpen(false)}
           >
             {isActive && (
-              <span className="absolute inset-y-2 -left-3.5 w-0.5 rounded-full bg-radar-positive" />
+              <span className="absolute inset-y-2 -left-3.5 w-0.5 rounded-full bg-radar-positive shadow-[0_0_10px_rgb(78_229_154_/_0.6)]" />
             )}
             <Icon
               aria-hidden="true"
-              className={`size-[1.18rem] ${isActive ? "text-radar-positive" : "text-radar-subtle group-hover:text-radar-muted"}`}
+              className={`size-[1.18rem] shrink-0 ${isActive ? "text-radar-positive" : "text-radar-subtle group-hover:text-radar-muted"}`}
               strokeWidth={1.8}
             />
-            {label}
+            {!collapsed && label}
+            {collapsed && <span className="sr-only">{label}</span>}
           </Link>
         );
       })}
@@ -82,25 +140,44 @@ function SidebarContent({ mobile = false }: { mobile?: boolean }) {
         )}
       </div>
       <NavigationLinks />
-      <div className="rounded-xl border border-radar-border bg-[#0c1a24] p-3.5">
-        <div className="mb-2 flex items-center gap-2 text-xs font-bold text-radar-ink">
-          <span className="size-2 rounded-full bg-radar-positive shadow-[0_0_0_4px_rgb(85_223_138_/_0.1)]" />
-          Sprint 1 • Read-only
-        </div>
-        <p className="text-[0.7rem] leading-5 text-radar-muted">
-          Descoberta, score explicável e alertas. Sem execução de operações.
-        </p>
-      </div>
+      <EvolutionCard />
     </>
   );
 }
 
 export function Sidebar() {
-  const { isNavigationOpen, setNavigationOpen } = useRadarState();
+  const { isNavigationOpen, setNavigationOpen, isSidebarCollapsed, toggleSidebar } =
+    useRadarState();
+  const ToggleIcon = isSidebarCollapsed ? PanelLeftOpen : PanelLeftClose;
+
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[var(--radar-sidebar-width)] border-r border-radar-border bg-[#07111a]/95 p-4 xl:flex xl:flex-col">
-        <SidebarContent />
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 hidden w-[var(--radar-sidebar-width)] border-r border-radar-border bg-gradient-to-b from-[#08131d]/90 to-[#050d14]/90 backdrop-blur-2xl transition-[width] duration-300 xl:flex xl:flex-col ${
+          isSidebarCollapsed ? "items-center p-3" : "p-4"
+        }`}
+      >
+        {isSidebarCollapsed ? (
+          <>
+            <LogoMark compact />
+            <NavigationLinks collapsed />
+          </>
+        ) : (
+          <SidebarContent />
+        )}
+        <button
+          aria-label={isSidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+          aria-expanded={!isSidebarCollapsed}
+          data-testid="sidebar-toggle"
+          className={`mt-3 flex min-h-10 items-center justify-center gap-2 rounded-lg border border-radar-border bg-white/[0.02] text-[0.72rem] font-bold text-radar-subtle transition-colors hover:border-radar-border-strong hover:text-radar-ink ${
+            isSidebarCollapsed ? "w-10" : "w-full"
+          }`}
+          onClick={toggleSidebar}
+          type="button"
+        >
+          <ToggleIcon className="size-4" strokeWidth={1.8} />
+          {!isSidebarCollapsed && "Recolher"}
+        </button>
       </aside>
       {isNavigationOpen && (
         <div className="fixed inset-0 z-50 xl:hidden">

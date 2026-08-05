@@ -41,7 +41,7 @@ function MetricCard({
   isLoading,
 }: MetricCardProps) {
   return (
-    <article className="panel min-h-28 p-3.5 @container">
+    <article className="panel panel-lift min-h-28 p-3.5 @container">
       <div className="flex items-start gap-3">
         <span
           className={`grid size-10 shrink-0 place-items-center rounded-xl border ${tones[tone]}`}
@@ -131,7 +131,7 @@ export function MetricsGrid() {
   ];
 
   return (
-    <section aria-labelledby="overview-title">
+    <section aria-labelledby="overview-title" className="rise rise-1">
       <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="eyebrow">Visão operacional</p>

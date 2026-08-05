@@ -1,6 +1,7 @@
 import asyncio
 import os
 from datetime import timedelta
+from decimal import Decimal
 
 from sqlalchemy import select
 
@@ -35,9 +36,9 @@ async def run_integration():
             # Ingestion 1 is at T-26h
             snapshots = (await session.execute(select(MarketSnapshot))).scalars().all()
             for snap in snapshots:
-                snap.price_usd = float(snap.price_usd) * 0.5 if snap.price_usd else 1.0  # Price was 50% lower
-                snap.volume_5m = float(snap.volume_5m or 1000) / 10  # Volume was 10x smaller
-                snap.liquidity_usd = float(snap.liquidity_usd or 1000) / 10  # Liquidity was 10x smaller
+                snap.price_usd = Decimal(str(float(snap.price_usd) * 0.5)) if snap.price_usd else Decimal("1.0")
+                snap.volume_5m = Decimal(str(float(snap.volume_5m or 1000) / 10))
+                snap.liquidity_usd = Decimal(str(float(snap.liquidity_usd or 1000) / 10))
                 snap.captured_at = snap.captured_at - timedelta(hours=26)
             await session.commit()
             

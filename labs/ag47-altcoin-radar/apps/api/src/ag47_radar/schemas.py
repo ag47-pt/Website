@@ -66,6 +66,15 @@ class ProviderStatusRead(ApiModel):
     detail: str | None = None
 
 
+class EvolutionStatusRead(ApiModel):
+    phase: str
+    phase_title: str
+    now: str
+    completed_steps: int
+    total_steps: int
+    goal: str
+
+
 class SystemMetrics(ApiModel):
     tokens_monitored: int
     alerts_today: int

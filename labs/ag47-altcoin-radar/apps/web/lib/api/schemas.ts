@@ -173,6 +173,15 @@ export const providerSchema = z.object({
   detail: z.string().nullable(),
 });
 
+export const evolutionStatusSchema = z.object({
+  phase: z.string().min(1),
+  phase_title: z.string().min(1),
+  now: z.string().min(1),
+  completed_steps: z.number().int().nonnegative(),
+  total_steps: z.number().int().positive(),
+  goal: z.string().min(1),
+});
+
 export const systemStatusSchema = z.object({
   status: z.enum(["operational", "degraded"]),
   demo_mode: z.boolean(),
@@ -292,6 +301,7 @@ export type Chain = z.infer<typeof chainSchema>;
 export type TokenId = z.infer<typeof tokenIdSchema>;
 export type Opportunity = z.infer<typeof opportunitySchema>;
 export type SystemStatus = z.infer<typeof systemStatusSchema>;
+export type EvolutionStatus = z.infer<typeof evolutionStatusSchema>;
 export type TokenDetail = z.infer<typeof tokenDetailSchema>;
 export type MarketHistory = z.infer<typeof marketHistorySchema>;
 export type SocialResponse = z.infer<typeof socialResponseSchema>;

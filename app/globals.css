@@ -255,3 +255,88 @@ body {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
+/* ============================================================
+   Gemini Glow & Animated Borders
+   ============================================================ */
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spin {
+  from { --angle: 0deg; }
+  to { --angle: 360deg; }
+}
+
+/* Mask-composite based glow border (hollow inside) */
+.gemini-glow-border {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+  padding: inherit;
+  
+  /* Masking to draw a hollow border */
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  
+  animation: inherit;
+  animation-play-state: inherit;
+}
+
+.gemini-glow-border::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  z-index: -1;
+  background: conic-gradient(
+    from var(--angle),
+    var(--gemini-glow-colors, #4285f4, #9b51e0, #e91e63, #3b82f6, #4285f4)
+  );
+  animation: inherit;
+  animation-play-state: inherit;
+}
+
+/* Glow blur backdrop effect */
+.gemini-glow-blur {
+  position: absolute;
+  inset: -1.5px;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: -2;
+  background: conic-gradient(
+    from var(--angle),
+    var(--gemini-glow-colors, #4285f4, #9b51e0, #e91e63, #3b82f6, #4285f4)
+  );
+  filter: blur(16px);
+  opacity: 0.6;
+  animation: inherit;
+  animation-play-state: inherit;
+}
+
+/* Border Beam Line Masking Class */
+.border-beam-line {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+  
+  /* Masking to draw a hollow border */
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+}
+
+
+

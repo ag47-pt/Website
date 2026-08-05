@@ -27,7 +27,7 @@ export function DashboardView() {
     <div className="space-y-3">
       <MetricsGrid />
 
-      <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,.92fr)] 2xl:grid-cols-[minmax(500px,1.12fr)_minmax(460px,1fr)_minmax(245px,.52fr)]">
+      <div className="rise rise-2 grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,.92fr)] 2xl:grid-cols-[minmax(500px,1.12fr)_minmax(460px,1fr)_minmax(245px,.52fr)]">
         <div className="min-w-0">
           <OpportunityTable
             key={tableKey}

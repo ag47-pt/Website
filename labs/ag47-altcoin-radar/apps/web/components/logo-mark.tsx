@@ -3,7 +3,7 @@ import { RadioTower } from "lucide-react";
 export function LogoMark({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-radar-positive/35 bg-[#0b2119] text-radar-positive">
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-radar-positive/35 bg-gradient-to-br from-[#0d281d] to-[#081a15] text-radar-positive shadow-[0_0_18px_rgb(78_229_154_/_0.18),inset_0_1px_0_rgb(255_255_255_/_0.06)]">
         <RadioTower aria-hidden="true" className="size-6" strokeWidth={1.8} />
       </span>
       {!compact && (

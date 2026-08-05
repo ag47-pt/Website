@@ -12,7 +12,9 @@ from ag47_radar.config import Settings, get_settings
 from ag47_radar.db import database_is_healthy, get_session
 from ag47_radar.enums import Chain, ProviderStatus
 from ag47_radar.providers.registry import ProviderRegistry
+from ag47_radar.evolution import EVOLUTION_STATUS
 from ag47_radar.schemas import (
+    EvolutionStatusRead,
     GlobalKnowledgeRead,
     HealthResponse,
     MarketHistoryResponse,
@@ -104,6 +106,17 @@ async def system_status(
         metrics=metrics,
         providers=statuses,
     )
+
+
+@api_router.get(
+    "/system/evolution",
+    response_model=EvolutionStatusRead,
+    tags=["system"],
+    summary="Evolution engine status",
+    description="Fase atual do Motor de Evolução da plataforma: onde estamos, o que fazemos e o norte final.",
+)
+async def system_evolution() -> EvolutionStatusRead:
+    return EVOLUTION_STATUS
 
 
 @api_router.get(
@@ -317,8 +330,8 @@ async def update_alert(
         token_symbol=token,
         source_kind=alert.source_kind,
         source_id=alert.source_id,
-        severity=float(alert.severity) if alert.severity is not None else None,
-        confidence=float(alert.confidence) if alert.confidence is not None else None,
+        severity=alert.severity,
+        confidence=alert.confidence,
         status=alert.status,
         triggered_at=ensure_utc(alert.triggered_at),
         read_at=ensure_utc(alert.read_at),

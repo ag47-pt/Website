@@ -20,7 +20,7 @@ export function Header() {
   const monitoringActive = status.data?.monitoring_active === true;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-radar-border bg-[#050c12]/92 px-3 py-3 backdrop-blur-xl sm:px-5">
+    <header className="sticky top-0 z-20 border-b border-radar-border bg-[#050c12]/70 px-3 py-3 shadow-[0_1px_0_rgb(255_255_255_/_0.04),0_12px_32px_rgb(0_0_0_/_0.35)] backdrop-blur-2xl sm:px-5">
       <div className="mx-auto flex max-w-[1720px] items-center gap-2.5">
         <button
           aria-label="Abrir menu"
@@ -40,7 +40,7 @@ export function Header() {
           <Search className="pointer-events-none absolute left-3.5 top-1/2 size-[1.05rem] -translate-y-1/2 text-radar-subtle" />
           <input
             data-testid="global-search"
-            className="h-11 w-full rounded-xl border border-radar-border bg-[#0a151e] pl-10 pr-10 text-[0.78rem] text-radar-ink placeholder:text-radar-subtle hover:border-radar-border-strong focus:border-radar-positive/70 focus:outline-none"
+            className="h-11 w-full rounded-xl border border-radar-border bg-[#0a151e] pl-10 pr-10 text-[0.78rem] text-radar-ink placeholder:text-radar-subtle transition-all duration-200 hover:border-radar-border-strong focus:border-radar-positive/70 focus:shadow-[0_0_0_3px_rgb(78_229_154_/_0.12),0_0_24px_rgb(78_229_154_/_0.08)] focus:outline-none"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Buscar token, símbolo, contrato ou par…"
             type="search"
@@ -110,7 +110,7 @@ export function Header() {
             <ChevronDown className="size-3.5" />
           </button>
           {isProviderPanelOpen && (
-            <div className="panel absolute right-0 top-[calc(100%+0.55rem)] w-[min(88vw,22rem)] p-3.5">
+            <div className="panel absolute right-0 top-[calc(100%+0.55rem)] z-50 w-[min(88vw,22rem)] p-3.5">
               <div className="mb-3 flex items-start justify-between gap-4">
                 <div>
                   <p className="eyebrow">Estado dos providers</p>

@@ -15,7 +15,7 @@ class ExpectedOutcome(BaseModel):
     """
     type: str = Field(..., description="The metric to validate, e.g. 'price_change', 'volume_change'")
     target_value: float = Field(..., description="The target threshold, e.g. 5.0 for +5%")
-    target_operator: Literal[">", "<", ">=", "<=", "=="] = Field(default=">")
+    target_operator: Literal[">", "<", ">=", "<=", "=="] = ">"
     timeframe_hours: int = Field(default=24)
 
 

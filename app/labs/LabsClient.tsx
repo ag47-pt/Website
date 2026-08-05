@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Terminal, Code2, Presentation, Cpu, TrendingUp, Brain } from 'lucide-react';
+import { Terminal, Code2, Presentation, Cpu, TrendingUp, Brain, Sparkles } from 'lucide-react';
 import { LabHero, LabCallCard } from './components';
 
 export function LabsClient() {
@@ -48,6 +48,14 @@ export function LabsClient() {
       status: 'SYSTEM_ACTIVE',
     },
     {
+      id: 'gemini-glow',
+      title: 'Gemini Border Glow',
+      description: 'Experimento com bordas animadas e brilhantes inspiradas no Google Gemini usando CSS Houdini.',
+      icon: <Sparkles className="w-8 h-8" />,
+      path: '/labs/gemini-glow',
+      status: 'NEW_EXPERIMENT',
+    },
+    {
       id: 'agent-doc',
       title: 'Exemple I.A-47 Agent.md',
       description: 'Documentação e protótipo de agente autônomo especializado em processos Ag47.',
@@ -56,6 +64,7 @@ export function LabsClient() {
       status: 'DOC_DRIVEN',
     }
   ];
+
 
   return (
     <div className="space-y-12">

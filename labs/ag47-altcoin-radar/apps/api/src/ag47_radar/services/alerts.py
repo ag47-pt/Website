@@ -87,7 +87,7 @@ def evaluate_condition(condition: dict[str, Any], payload: dict[str, Any]) -> bo
         elif operator == "lte":
             return bool(actual_value <= target_value)
         elif operator == "in" and isinstance(target_value, list):
-            return bool(actual_value in target_value)
+            return actual_value in target_value
     except TypeError:
         return False
         

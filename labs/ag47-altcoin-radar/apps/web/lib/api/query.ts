@@ -6,6 +6,7 @@ import type { OpportunityFilters } from "./schemas";
 
 export const queryKeys = {
   status: ["system-status"] as const,
+  evolution: ["system-evolution"] as const,
   opportunities: (filters: OpportunityFilters) => ["opportunities", filters] as const,
   token: (tokenId: string) => ["token", tokenId] as const,
   history: (tokenId: string, interval: string) => ["history", tokenId, interval] as const,
@@ -23,6 +24,15 @@ export function useSystemStatus() {
     queryFn: ({ signal }) => radarApi.getSystemStatus(signal),
     refetchInterval: 30_000,
     staleTime: 15_000,
+  });
+}
+
+export function useEvolution() {
+  return useQuery({
+    queryKey: queryKeys.evolution,
+    queryFn: ({ signal }) => radarApi.getEvolution(signal),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
 }
 

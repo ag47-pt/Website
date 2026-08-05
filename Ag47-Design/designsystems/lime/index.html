@@ -54,6 +54,32 @@
     --z-modal: 1000; --z-toast: 1100; --z-tooltip: 1200;
   }
   * { box-sizing: border-box; }
+
+  /* ===== CUSTOM SCROLLBARS ===== */
+  ::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-track {
+    background: var(--surface);
+  }
+  ::-webkit-scrollbar-thumb,
+  *::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+    border: 1px solid var(--surface);
+  }
+  ::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--lime);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--surface);
+  }
+
   html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
   body {
     background: var(--bg); color: var(--text);
@@ -1271,9 +1297,18 @@
   .search-result {
     display: flex; align-items: center; gap: 12px; padding: 12px 14px;
     border-radius: 10px; cursor: pointer; color: var(--text); text-decoration: none;
-    transition: background var(--motion-instant) var(--ease-standard);
+    transition: all var(--motion-normal) var(--ease-emphasized);
+    border-left: 3px solid transparent;
   }
-  .search-result:hover, .search-result.focused { background: var(--surface2); }
+  .search-result:hover, .search-result.focused {
+    background: var(--surface2);
+    border-left-color: var(--lime);
+    color: var(--lime);
+    padding-left: 17px;
+  }
+  .search-result:hover .search-result-title {
+    color: var(--lime);
+  }
   .search-result-num { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--lime); font-weight: 700; width: 24px; }
   .search-result-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; font-weight: 600; flex: 1; }
   .search-result-cat { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--subtle); font-weight: 600; padding: 3px 8px; border-radius: 999px; background: var(--surface2); }
@@ -1386,10 +1421,149 @@
     .badge { border: 1px solid #ccc !important; }
   }
 
+  /* ===== RESPONSIVE MENU & UTILITIES ===== */
+  .menu-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--motion-instant) var(--ease-standard);
+  }
+  .menu-toggle:hover {
+    background: var(--surface2);
+    color: var(--lime);
+  }
+  .hide-mobile {
+    display: inline !important;
+  }
+
+  /* ===== MOBILE BOTTOM SHEET MENU ===== */
+  .mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: flex-end; /* Alinha o menu no rodapé */
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-slow) var(--ease-standard);
+  }
+  .mobile-menu-overlay:not([hidden]) {
+    display: flex;
+  }
+  .mobile-menu-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .mobile-menu-drawer {
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 24px 24px 0 0;
+    padding: 16px 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transform: translateY(100%); /* Desliza de baixo para cima */
+    transition: transform var(--motion-slow) var(--ease-emphasized);
+  }
+  .mobile-menu-overlay.open .mobile-menu-drawer {
+    transform: translateY(0);
+  }
+  .mobile-menu-drag-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    margin: 0 auto;
+    flex-shrink: 0;
+  }
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-menu-close {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--motion-instant) var(--ease-standard);
+  }
+  .mobile-menu-close:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .mobile-menu-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    transition: all var(--motion-normal) var(--ease-standard);
+  }
+  .mobile-menu-item:hover, .mobile-menu-item.active {
+    border-color: var(--lime);
+    color: var(--lime);
+    background: color-mix(in srgb, var(--lime) 5%, var(--surface2));
+  }
+  .mobile-menu-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--subtle);
+  }
+  .mobile-menu-item:hover .mobile-menu-num, .mobile-menu-item.active .mobile-menu-num {
+    color: var(--lime);
+  }
+  .mobile-menu-title {
+    font-family: 'Hanken Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 900px) {
-    .nav { padding: 16px 24px; }
-    .nav-links { display: none; }
+    .nav { padding: 16px 24px; gap: 12px; }
+    .nav-links { display: none !important; }
+    .menu-toggle { display: flex !important; }
+    .mini-toc { display: none !important; }
+    .hide-mobile { display: none !important; }
+    .theme-toggle { padding: 8px; border-radius: 50%; aspect-ratio: 1; }
+    .nav-search-hint { padding: 8px; border-radius: 50%; aspect-ratio: 1; }
     .hero { padding: 60px 24px; }
     .container { padding: 0 24px; }
     .hero-showcase { grid-template-columns: 1fr; }
@@ -1408,7 +1582,7 @@
     .z-stack-demo { height: 380px; }
     .z-layer { width: 220px; }
     .cta { padding: 40px 24px; }
-    section { padding: 60px 0; }
+    section { padding: 60px 0; scroll-margin-top: 72px; }
   }
 </style>
 </head>
@@ -1446,12 +1620,15 @@
   </div>
   <button class="nav-search-hint" id="navSearchBtn" aria-label="Buscar">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-    Buscar
-    <kbd style="font-family: 'Space Grotesk'; font-size: 10px; padding: 1px 4px; border: 1px solid var(--border); border-radius: 3px; margin-left: 2px;">⌘K</kbd>
+    <span class="hide-mobile">Buscar</span>
+    <kbd class="hide-mobile" style="font-family: 'Space Grotesk'; font-size: 10px; padding: 1px 4px; border: 1px solid var(--border); border-radius: 3px; margin-left: 2px;">⌘K</kbd>
   </button>
   <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
     <span class="dot"></span>
-    <span id="themeLabel">Dark</span>
+    <span id="themeLabel" class="hide-mobile">Dark</span>
+  </button>
+  <button class="menu-toggle" id="menuToggleBtn" aria-label="Abrir Menu">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
   </button>
 </nav>
 
@@ -3092,7 +3269,38 @@
   </div>
 </div>
 
+<!-- ===== MOBILE MENU OVERLAY & DRAWER ===== -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay" hidden>
+  <div class="mobile-menu-drawer">
+    <div class="mobile-menu-drag-handle"></div>
+    <div class="mobile-menu-header">
+      <span class="logo-text" style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px;">Navegação</span>
+      <button class="mobile-menu-close" id="mobileMenuCloseBtn" aria-label="Fechar Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="mobile-menu-links" id="mobileMenuLinks"></div>
+  </div>
+</div>
+
 <script>
+  // ===== SCROLL LOCK UTILITY =====
+  function toggleScrollLock(lock) {
+    const root = document.documentElement;
+    const body = document.body;
+    if (lock) {
+      body.style.overflow = 'hidden';
+      root.style.overflow = 'hidden';
+      body.style.height = '100vh';
+      root.style.height = '100vh';
+    } else {
+      body.style.overflow = '';
+      root.style.overflow = '';
+      body.style.height = '';
+      root.style.height = '';
+    }
+  }
+
   // ===== THEME =====
   (function() {
     const root = document.documentElement;
@@ -3175,7 +3383,7 @@
     if (!modalOverlay) return;
     modalOverlay.hidden = false;
     modalOverlay.removeAttribute('hidden');
-    document.body.style.overflow = 'hidden'; // prevent scroll behind
+    toggleScrollLock(true); // prevent scroll behind
     // Focus the close button for keyboard users
     setTimeout(() => { if (closeModalBtn) closeModalBtn.focus(); }, 50);
   }
@@ -3183,7 +3391,7 @@
     if (!modalOverlay) return;
     modalOverlay.hidden = true;
     modalOverlay.setAttribute('hidden', '');
-    document.body.style.overflow = '';
+    toggleScrollLock(false);
     // Return focus to the trigger
     if (openModal) openModal.focus();
   }
@@ -3324,11 +3532,13 @@
 
     function open() {
       overlay.hidden = false;
+      toggleScrollLock(true);
       setTimeout(() => input.focus(), 50);
       render('');
     }
     function close() {
       overlay.hidden = true;
+      toggleScrollLock(false);
       input.value = '';
     }
 
@@ -3744,6 +3954,84 @@
     entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('in-view'); });
   }, { threshold: 0.3 });
   document.querySelectorAll('.motion-item').forEach(el => observer.observe(el));
+
+  // ===== MOBILE MENU DRAWER (BOTTOM SHEET) =====
+  (function() {
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const mobileMenuCloseBtn = document.getElementById('mobileMenuCloseBtn');
+    const mobileMenuLinks = document.getElementById('mobileMenuLinks');
+
+    if (!menuToggleBtn || !mobileMenuOverlay || !mobileMenuCloseBtn) return;
+
+    // Gerar os links dinamicamente com base nas seções reais da página
+    if (mobileMenuLinks) {
+      mobileMenuLinks.innerHTML = '';
+      const sections = Array.from(document.querySelectorAll('section[id]'));
+      sections.forEach(sec => {
+        const num = sec.querySelector('.section-num')?.textContent;
+        const title = sec.querySelector('.section-title')?.textContent;
+        if (!num || !title) return;
+        const a = document.createElement('a');
+        a.className = 'mobile-menu-item';
+        a.href = '#' + sec.id;
+        a.innerHTML = `<span class="mobile-menu-num">${num}</span><span class="mobile-menu-title">${title}</span>`;
+        mobileMenuLinks.appendChild(a);
+      });
+    }
+
+    function openMobileMenu() {
+      mobileMenuOverlay.hidden = false;
+      mobileMenuOverlay.removeAttribute('hidden');
+      toggleScrollLock(true);
+      
+      // Destacar o link da seção atualmente visível ao abrir
+      const activeLink = document.querySelector('.nav-links a.active');
+      if (activeLink && mobileMenuLinks) {
+        const targetHref = activeLink.getAttribute('href');
+        mobileMenuLinks.querySelectorAll('.mobile-menu-item').forEach(item => {
+          item.classList.toggle('active', item.getAttribute('href') === targetHref);
+        });
+      }
+
+      mobileMenuOverlay.offsetHeight;
+      mobileMenuOverlay.classList.add('open');
+    }
+
+    function closeMobileMenu() {
+      mobileMenuOverlay.classList.remove('open');
+      toggleScrollLock(false);
+      setTimeout(() => {
+        if (!mobileMenuOverlay.classList.contains('open')) {
+          mobileMenuOverlay.hidden = true;
+          mobileMenuOverlay.setAttribute('hidden', '');
+        }
+      }, 280);
+    }
+
+    menuToggleBtn.addEventListener('click', openMobileMenu);
+    mobileMenuCloseBtn.addEventListener('click', closeMobileMenu);
+    mobileMenuOverlay.addEventListener('click', (e) => {
+      if (e.target === mobileMenuOverlay) closeMobileMenu();
+    });
+
+    // Fechar menu ao clicar em links com scroll suave
+    if (mobileMenuLinks) {
+      mobileMenuLinks.querySelectorAll('.mobile-menu-item').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeMobileMenu();
+          const targetId = link.getAttribute('href').slice(1);
+          const target = document.getElementById(targetId);
+          if (target) {
+            setTimeout(() => {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300); // Aguarda fechar a bottomsheet para iniciar o scroll
+          }
+        });
+      });
+    }
+  })();
 </script>
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0b62a32f9a95910',t:'MTc4MTQwNjg2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
