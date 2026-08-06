@@ -1,4 +1,4 @@
-import { ZodError, type ZodType } from "zod";
+import { ZodError, type ZodType, z } from "zod";
 import {
   alertsResponseSchema,
   evolutionStatusSchema,
@@ -13,6 +13,9 @@ import {
   watchlistItemSchema,
   watchlistResponseSchema,
   operatorInboxResponseSchema,
+  userNotificationSettingsSchema,
+  notificationDeliveryDetailSchema,
+  paginatedSchema,
   type OpportunityFilters,
 } from "./schemas";
 
@@ -181,4 +184,42 @@ export const radarApi = {
       throw new ApiError(`Não foi possível remover o token (${response.status}).`, response.status);
     }
   },
+  resetProviderCircuit(providerId: string) {
+    return apiRequest(
+      `/api/v1/system/providers/${encodeURIComponent(providerId)}/reset-circuit`,
+      z.object({ success: z.boolean() }),
+      {
+        method: "POST",
+      },
+    );
+  },
+  getUserNotificationSettings() {
+    return apiRequest(
+      "/api/v1/system/notification-settings",
+      userNotificationSettingsSchema
+    );
+  },
+  updateUserNotificationSettings(payload: { min_severity: number; min_confidence: number; allowed_chains: string[] }) {
+    return apiRequest(
+      "/api/v1/system/notification-settings",
+      userNotificationSettingsSchema,
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }
+    );
+  },
+  getSystemNotifications(page = 1, pageSize = 20, status?: string) {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      page_size: pageSize.toString(),
+    });
+    if (status) params.set("status", status);
+    
+    return apiRequest(
+      `/api/v1/system/notifications?${params.toString()}`,
+      paginatedSchema(notificationDeliveryDetailSchema)
+    );
+  },
 };
+

@@ -57,6 +57,21 @@ async def run_ingestion_cycle(
 
     if settings.demo_mode:
         raise ProviderModeError("Real ingestion is disabled while demo mode is active")
+
+    confirmed_alerts_to_dispatch = []
+
+    from sqlalchemy import func
+    from ag47_radar.models import TokenTruth
+    from ag47_radar.services.queries import get_latest_scoring_weights
+
+    dynamic_weights = None
+    try:
+        truth_count = await session.scalar(select(func.count(TokenTruth.id))) or 0
+        if truth_count >= 100:
+            dynamic_weights = await get_latest_scoring_weights(session)
+    except Exception:
+        pass
+
     discovery = await providers.discovery.discover(list(Chain), limit=limit)
     if discovery.mode.value != "real":
         raise ProviderModeError("Discovery provider returned non-real data in real mode")
@@ -177,7 +192,7 @@ async def run_ingestion_cycle(
                         )
 
                         for sig in new_signals:
-                            await process_alert_rules(
+                            new_alerts = await process_alert_rules(
                                 session,
                                 settings,
                                 source_kind="signal",
@@ -190,6 +205,15 @@ async def run_ingestion_cycle(
                                 else None,
                                 payload=sig.metadata_json,
                             )
+                            for a in new_alerts:
+                                if a.confidence_level == "confirmado":
+                                    confirmed_alerts_to_dispatch.append((
+                                        a.id,
+                                        token.symbol,
+                                        sig.signal_type,
+                                        float(a.severity) if a.severity is not None else 0.0,
+                                        float(a.confidence) if a.confidence is not None else 0.0,
+                                    ))
 
         critical_flags: list[str] = []
         safety_score_val: float | None = None
@@ -228,6 +252,7 @@ async def run_ingestion_cycle(
                 data_quality_score=(8.0 if market_result.quality == DataQuality.HIGH else 6.0),
             ),
             critical_flags=critical_flags,
+            weights=dynamic_weights,
         )
 
         session.add(
@@ -262,4 +287,23 @@ async def run_ingestion_cycle(
     await run_truth_engine(session)
 
     await session.commit()
+
+    if confirmed_alerts_to_dispatch:
+        import asyncio
+        from ag47_radar.db import get_session_factory
+        from ag47_radar.services.alerts import dispatch_telegram_alert_bg
+        session_factory = get_session_factory()
+        for alert_id, symbol, sig_type, severity, confidence in confirmed_alerts_to_dispatch:
+            asyncio.create_task(
+                dispatch_telegram_alert_bg(
+                    session_factory,
+                    settings,
+                    alert_id,
+                    symbol,
+                    sig_type,
+                    severity,
+                    confidence,
+                )
+            )
+
     return summary

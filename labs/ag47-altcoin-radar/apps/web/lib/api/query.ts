@@ -164,3 +164,42 @@ export function useWatchlistMutation() {
     },
   });
 }
+
+export function useResetCircuitMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (providerId: string) => radarApi.resetProviderCircuit(providerId),
+    onSuccess: () => {
+      return queryClient.invalidateQueries({ queryKey: queryKeys.status });
+    },
+  });
+}
+
+export function useUserNotificationSettings() {
+  return useQuery({
+    queryKey: ["notification-settings"],
+    queryFn: () => radarApi.getUserNotificationSettings(),
+  });
+}
+
+export function useUpdateUserNotificationSettingsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { min_severity: number; min_confidence: number; allowed_chains: string[] }) =>
+      radarApi.updateUserNotificationSettings(payload),
+    onSuccess: () => {
+      return queryClient.invalidateQueries({ queryKey: ["notification-settings"] });
+    },
+  });
+}
+
+export function useSystemNotifications(page = 1, pageSize = 20, status?: string) {
+  return useQuery({
+    queryKey: ["system-notifications", page, pageSize, status],
+    queryFn: () => radarApi.getSystemNotifications(page, pageSize, status),
+  });
+}
+
+

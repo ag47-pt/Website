@@ -126,3 +126,52 @@ async def test_validation_error_format(api_client: AsyncClient):
     assert data["error"]["code"] == "validation_error"
     assert "details" in data["error"]
     assert "fields" in data["error"]["details"]
+
+
+@pytest.mark.asyncio
+async def test_reset_provider_circuit(api_client: AsyncClient):
+    response = await api_client.post("/api/v1/system/providers/geckoterminal/reset-circuit")
+    assert response.status_code == 200
+    data = response.json()
+    assert "success" in data
+    assert isinstance(data["success"], bool)
+
+
+@pytest.mark.asyncio
+async def test_notification_settings_crud(api_client: AsyncClient):
+    # GET default settings
+    response = await api_client.get("/api/v1/system/notification-settings")
+    assert response.status_code == 200
+    data = response.json()
+    assert "min_severity" in data
+    assert "min_confidence" in data
+    assert "allowed_chains" in data
+    assert data["min_severity"] == 0.0
+
+    # POST updates
+    update_response = await api_client.post(
+        "/api/v1/system/notification-settings",
+        json={"min_severity": 0.5, "min_confidence": 0.6, "allowed_chains": ["solana"]}
+    )
+    assert update_response.status_code == 200
+    updated_data = update_response.json()
+    assert updated_data["min_severity"] == 0.5
+    assert updated_data["min_confidence"] == 0.6
+    assert updated_data["allowed_chains"] == ["solana"]
+
+    # GET updated settings
+    response2 = await api_client.get("/api/v1/system/notification-settings")
+    assert response2.status_code == 200
+    data2 = response2.json()
+    assert data2["min_severity"] == 0.5
+    assert data2["allowed_chains"] == ["solana"]
+
+
+@pytest.mark.asyncio
+async def test_get_notifications_history(api_client: AsyncClient, seeded_db):
+    response = await api_client.get("/api/v1/system/notifications")
+    assert response.status_code == 200
+    data = response.json()
+    assert "items" in data
+    assert isinstance(data["items"], list)
+

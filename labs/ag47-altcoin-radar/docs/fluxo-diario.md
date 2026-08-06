@@ -6,8 +6,8 @@
 
 |                     |                                                       |
 | ------------------- | ----------------------------------------------------- |
-| **Versão do fluxo** | `fluxo-v1.0`                                          |
-| **Última revisão**  | 2026-08-05                                            |
+| **Versão do fluxo** | `fluxo-v1.5`                                          |
+| **Última revisão**  | 2026-08-06                                            |
 | **Modo coberto**    | Demo e Live (diferenças sinalizadas com 🎭 / 🔴)      |
 | **Escopo**          | Observacional e read-only — sem carteiras, sem trades |
 
@@ -124,6 +124,8 @@ No detalhe do token, seguir sempre a mesma ordem:
 
 > 🔴 **Entrega Externa (Telegram):** Os alertas são entregues em tempo real para o canal configurado via Telegram Bot API em modo live (`AG47_DEMO_MODE=false`), desde que `AG47_TELEGRAM_BOT_TOKEN` e `AG47_TELEGRAM_CHAT_ID` estejam presentes no `.env`. Em modo demo, eles vivem apenas na UI e logs internos.
 
+> 🛡️ **Filtros do Operador (Sprint 10):** O despacho respeita os `UserNotificationSettings` configurados em `/configuracoes`: severidade mínima, confiança mínima e redes permitidas. Alertas que não satisfaçam os limites são ignorados silenciosamente, sem gerar ruído.
+
 ---
 
 ## 🧠 6. Logs & Sistema — saúde (~2 min)
@@ -132,6 +134,8 @@ No detalhe do token, seguir sempre a mesma ordem:
 
 - Conferir status dos providers (ativo/degradado/desativado) e o modo (demo/real).
 - Circuit breaker aberto em algum provider real → aguardar cooldown (45 s) antes de re-testar.
+- **Filtros de Notificação (Sprint 10):** Ajustar severidade mínima, confiança e redes permitidas na aba "Filtros de Notificação" do painel `/configuracoes`.
+- **Histórico de Entregas (Sprint 10):** Inspecionar a aba "Histórico de Entregas" no `system-workspace.tsx` — exibe payload, canal, timestamp no fuso do utilizador e erros HTTP.
 
 ---
 
@@ -180,3 +184,7 @@ No detalhe do token, seguir sempre a mesma ordem:
 | ---------- | ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | 2026-08-05 | `fluxo-v1.0` | Documento criado; GoPlus (risco EVM real) e comando `backtest` adicionados | Baseline: passo 3 passa a ter risco real em live; passo 7 (encerramento) criado |
 | 2026-08-05 | `fluxo-v1.1` | Integração do Telegram Bot (Sprint 6) e Scheduler em background (Sprint 7) | Passo 5 atualizado com entrega Telegram. Passo 7 atualizado para ingestão contínua em background via scheduler e persistência PostgreSQL. |
+| 2026-08-06 | `fluxo-v1.2` | Sprint 8 — Alertas Determinísticos de Edge & Inbox do Operador | Passo 5: alertas filtrados por Edge estatístico (win rate ≥ 65%, amostra ≥ 30); tags de confiança `Edge Confirmado`, `Cold Start`, `Drawdown Suspenso`. Inbox exibe Heatmap de Correlação Score×Resultado por bucket de score (CSS Grid). |
+| 2026-08-06 | `fluxo-v1.3` | Sprint 9 — Calibração Dinâmica de Scoring & Fila de Notificações de Produção | Passo 7: scheduler adiciona job de calibração de pesos a cada 12 h (backtest dinâmico → `ScoringWeights`). Passo 5: alertas "Edge Confirmado" disparam notificação Telegram em background (retry exponencial, 3 tentativas) com log em `NotificationDelivery`. Passo 6: UI expõe estado de circuit breakers (OPEN/CLOSED/HALF-OPEN) com botão de reset manual. |
+| 2026-08-06 | `fluxo-v1.4` | Sprint 10 — Filtros Avançados de Alerta e Explicabilidade de Score | Passo 5: despacho Telegram filtrado por `UserNotificationSettings` (severidade mínima, confiança mínima, redes permitidas). Inbox (`alert-inbox.tsx`) exibe breakdown expansível do score por componente (DexScreener, GoPlus, RugCheck, Holders, Liquidez/Volume) em barras de progresso HSL. |
+| 2026-08-06 | `fluxo-v1.5` | Sprint 10 — Histórico de Entregas de Notificações | Passo 6: nova aba "Histórico de Entregas" no `system-workspace.tsx` com listagem paginada de `NotificationDelivery` (payload JSON, canal, tentativas, erros HTTP, timestamp no fuso do utilizador). Nova aba "Filtros de Notificação" para configurar preferências de despacho. |

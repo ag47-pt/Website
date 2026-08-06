@@ -171,6 +171,10 @@ export const providerSchema = z.object({
   mode: z.enum(["real", "demo"]),
   last_checked_at: z.string().nullable(),
   detail: z.string().nullable(),
+  circuit_state: z.enum(["closed", "open", "half-open"]).nullable().optional(),
+  consecutive_failures: z.number().int().nonnegative().optional(),
+  latency_ms: z.number().nullable().optional(),
+  remaining_cooldown: z.number().nullable().optional(),
 });
 
 export const evolutionStatusSchema = z.object({
@@ -252,6 +256,8 @@ export const alertSchema = z.object({
   dismissed_at: z.string().nullable(),
   deduplication_key: z.string().min(1),
   is_demo: z.boolean(),
+  score_components: z.record(z.string(), z.number()).nullable().optional(),
+  score_weights: z.record(z.string(), z.number()).nullable().optional(),
 });
 
 export const alertsResponseSchema = paginatedSchema(alertSchema);
@@ -344,3 +350,25 @@ export interface OpportunityFilters {
   page?: number;
   pageSize?: number;
 }
+
+export const userNotificationSettingsSchema = z.object({
+  min_severity: z.number(),
+  min_confidence: z.number(),
+  allowed_chains: z.array(z.string()),
+  updated_at: timestampSchema,
+});
+
+export const notificationDeliveryDetailSchema = z.object({
+  id: z.string(),
+  alert_id: z.string(),
+  channel: z.string(),
+  status: z.string(),
+  provider_response: z.record(z.string(), z.unknown()).nullable(),
+  created_at: timestampSchema,
+  updated_at: timestampSchema,
+  token_symbol: z.string().nullable(),
+});
+
+export type UserNotificationSettings = z.infer<typeof userNotificationSettingsSchema>;
+export type NotificationDeliveryDetail = z.infer<typeof notificationDeliveryDetailSchema>;
+

@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import logging
 from dataclasses import dataclass
@@ -10,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ag47_radar.config import Settings
 from ag47_radar.enums import AlertSeverity, AlertType
-from ag47_radar.models import Alert, AlertRule, TokenAlert
+from ag47_radar.models import Alert, AlertRule, TokenAlert, NotificationDelivery
 
 logger = logging.getLogger(__name__)
 
@@ -321,3 +322,124 @@ async def process_alert_rules(
             pass
 
     return generated_alerts
+
+
+async def dispatch_telegram_alert_bg(
+    session_factory: Any,
+    settings: Settings,
+    alert_id: str,
+    token_symbol: str,
+    source_type: str,
+    severity: float,
+    confidence: float,
+) -> None:
+    from ag47_radar.providers.registry import ProviderRegistry
+    from ag47_radar.models import NotificationDelivery
+    
+    # 1. Create a NotificationDelivery record in DB as pending after checking filters
+    async with session_factory() as session:
+        from sqlalchemy import select
+        from ag47_radar.models import UserNotificationSettings, TokenAlert, Token
+
+        # Get chain information for the token
+        token_info = await session.execute(
+            select(Token.chain)
+            .join(TokenAlert, TokenAlert.token_id == Token.id)
+            .where(TokenAlert.id == alert_id)
+        )
+        token_chain_row = token_info.first()
+        token_chain = token_chain_row[0] if token_chain_row else "all"
+
+        user_settings = await session.scalar(select(UserNotificationSettings))
+        if user_settings:
+            if severity < user_settings.min_severity:
+                logger.info(
+                    "telegram_delivery_skipped",
+                    reason="severity_below_minimum",
+                    severity=severity,
+                    minimum=user_settings.min_severity,
+                )
+                return
+
+            if confidence < user_settings.min_confidence:
+                logger.info(
+                    "telegram_delivery_skipped",
+                    reason="confidence_below_minimum",
+                    confidence=confidence,
+                    minimum=user_settings.min_confidence,
+                )
+                return
+
+            allowed = user_settings.allowed_chains
+            if allowed and "all" not in allowed and token_chain not in allowed:
+                logger.info(
+                    "telegram_delivery_skipped",
+                    reason="chain_not_allowed",
+                    chain=token_chain,
+                    allowed=allowed,
+                )
+                return
+
+        delivery = NotificationDelivery(
+            alert_id=alert_id,
+            channel="telegram",
+            status="pending",
+        )
+        session.add(delivery)
+        await session.commit()
+        delivery_id = delivery.id
+
+
+    # 2. Get the provider registry
+    providers = ProviderRegistry(settings)
+    provider = providers.alert_delivery
+    
+    title = f"Alerta de Oportunidade: {token_symbol}"
+    message = (
+        f"Alerta confirmado com Edge Estatístico!\n\n"
+        f"• Token: {token_symbol}\n"
+        f"• Sinal: {source_type}\n"
+        f"• Severidade: {severity:.2f}/1.0\n"
+        f"• Confiança: {confidence:.2f}/1.0\n"
+    )
+
+    max_tries = 3
+    success = False
+    response_data = None
+    error_msg = None
+    
+    for attempt in range(max_tries):
+        try:
+            result = await provider.deliver(
+                alert_id=alert_id,
+                title=title,
+                message=message,
+                payload={"token_symbol": token_symbol, "source_type": source_type}
+            )
+            if result.data.accepted:
+                success = True
+                response_data = {"external_id": result.data.external_id, "duration_ms": result.duration_ms}
+                break
+            else:
+                err_msg = result.partial_errors[0].message if result.partial_errors else "unknown error"
+                error_msg = f"Delivery rejected: {err_msg}"
+        except Exception as e:
+            error_msg = str(e)
+        
+        if attempt < max_tries - 1:
+            await asyncio.sleep(2 ** attempt)
+
+    # 3. Update the NotificationDelivery status
+    async with session_factory() as session:
+        from sqlalchemy import update
+        status = "success" if success else "failed"
+        provider_resp = response_data if success else {"error": error_msg}
+        stmt = (
+            update(NotificationDelivery)
+            .where(NotificationDelivery.id == delivery_id)
+            .values(status=status, provider_response=provider_resp)
+        )
+        await session.execute(stmt)
+        await session.commit()
+
+    await providers.close()

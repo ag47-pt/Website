@@ -64,6 +64,10 @@ class ProviderStatusRead(ApiModel):
     mode: SourceMode
     last_checked_at: datetime | None = None
     detail: str | None = None
+    circuit_state: Literal["closed", "open", "half-open"] | None = None
+    consecutive_failures: int = 0
+    latency_ms: float | None = None
+    remaining_cooldown: float | None = None
 
 
 class EvolutionStatusRead(ApiModel):
@@ -387,6 +391,9 @@ class TokenAlertRead(BaseModel):
     dismissed_at: datetime | None = None
     deduplication_key: str
     is_demo: bool = False
+    score_components: dict[str, float] | None = None
+    score_weights: dict[str, float] | None = None
+
 
 
 class TokenAlertUpdate(BaseModel):
@@ -622,3 +629,28 @@ class CorrelationBucket(ApiModel):
 class OperatorInboxResponse(ApiModel):
     alerts: PaginatedResponse[TokenAlertRead]
     correlation_matrix: list[CorrelationBucket]
+
+
+class UserNotificationSettingsRead(ApiModel):
+    min_severity: float
+    min_confidence: float
+    allowed_chains: list[str]
+    updated_at: datetime
+
+
+class UserNotificationSettingsUpdate(ApiModel):
+    min_severity: float | None = Field(default=None, ge=0.0, le=1.0)
+    min_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    allowed_chains: list[str] | None = Field(default=None)
+
+
+class NotificationDeliveryDetailRead(ApiModel):
+    id: str
+    alert_id: str
+    channel: str
+    status: str
+    provider_response: dict[str, Any] | None = None
+    created_at: datetime
+    updated_at: datetime
+    token_symbol: str | None = None
+

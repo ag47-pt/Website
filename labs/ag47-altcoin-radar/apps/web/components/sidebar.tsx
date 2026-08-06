@@ -2,6 +2,7 @@
 
 import {
   Bell,
+  BellRing,
   ChartNoAxesCombined,
   FileClock,
   Gauge,
@@ -77,6 +78,7 @@ const navigation = [
   { href: "/social", label: "Social", icon: UsersRound },
   { href: "/risco", label: "Risco", icon: ShieldAlert },
   { href: "/watchlist", label: "Watchlist", icon: Star },
+  { href: "/notificacoes", label: "Notificações", icon: BellRing },
   { href: "/logs", label: "Logs", icon: FileClock },
   { href: "/configuracoes", label: "Configurações", icon: Settings2 },
 ] as const;

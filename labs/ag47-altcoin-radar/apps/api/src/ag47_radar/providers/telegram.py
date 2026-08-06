@@ -40,10 +40,9 @@ class TelegramAlertDeliveryProvider(AlertDeliveryProvider):
     async def deliver(
         self, *, alert_id: str, title: str, message: str, payload: dict[str, Any]
     ) -> ProviderResult[DeliveryReceipt]:
-        started = perf_counter()
-        collected_at = datetime.now(UTC)
-
         if not self.token or not self.chat_id:
+            started = perf_counter()
+            collected_at = datetime.now(UTC)
             return self._empty_result(
                 started,
                 collected_at,
@@ -64,6 +63,10 @@ class TelegramAlertDeliveryProvider(AlertDeliveryProvider):
             "text": html_text,
             "parse_mode": "HTML",
         }
+
+        await self.http.circuit.before_request()
+        started = perf_counter()
+        collected_at = datetime.now(UTC)
 
         try:
             res = await self.http.client.post(url, json=req_payload)
@@ -86,17 +89,24 @@ class TelegramAlertDeliveryProvider(AlertDeliveryProvider):
                 external_id=str(message_id) if message_id else None,
             )
 
+            await self.http.circuit.record_success()
+            duration_ms = (perf_counter() - started) * 1000
+            self.http.last_latency_ms = duration_ms
+
             return ProviderResult(
                 data=receipt,
                 source=self.provider_id,
                 collected_at=collected_at,
                 quality=DataQuality.HIGH,
                 partial_errors=[],
-                duration_ms=(perf_counter() - started) * 1000,
+                duration_ms=duration_ms,
                 mode=self.mode,
             )
 
         except Exception as exc:
+            await self.http.circuit.record_failure()
+            duration_ms = (perf_counter() - started) * 1000
+            self.http.last_latency_ms = duration_ms
             return self._empty_result(
                 started,
                 collected_at,

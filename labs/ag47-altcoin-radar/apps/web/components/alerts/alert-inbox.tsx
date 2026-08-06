@@ -87,6 +87,7 @@ function AlertRow({
   alert: Alert;
   mutateAlert: (alertId: string, status: "read" | "acknowledged" | "dismissed") => void;
 }) {
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const Icon = alertIcons[alert.rule_id as keyof typeof alertIcons] ?? Bell;
   const title = alertTitles[alert.rule_id] ?? alert.rule_id;
   const message = alertMessages[alert.rule_id] ?? `Detectado evento na regra ${alert.rule_id}`;
@@ -115,6 +116,16 @@ function AlertRow({
             {title}
           </p>
           {getConfidenceBadge(alert.confidence_level)}
+          {alert.score_components && (
+            <button
+              onClick={() => setShowBreakdown(!showBreakdown)}
+              className="inline-flex items-center gap-1 rounded bg-[#102331] hover:bg-[#18364b] border border-radar-border px-1.5 py-0.5 text-[0.55rem] font-extrabold text-radar-ink transition-colors"
+              title="Clique para ver o breakdown do score"
+            >
+              <Activity className="size-3 text-radar-positive" />
+              Score: {alert.score_components.final_score.toFixed(1)}
+            </button>
+          )}
           {isUnread && (
             <span className="inline-flex items-center rounded-full bg-blue-500/20 px-1.5 py-0.5 text-[0.55rem] font-medium text-blue-400">
               Novo
@@ -123,8 +134,40 @@ function AlertRow({
         </div>
         <p className="mt-1 line-clamp-2 text-[0.61rem] leading-4 text-radar-subtle">{message}</p>
 
+        {/* Breakdown section */}
+        {showBreakdown && alert.score_components && (
+          <div className="mt-3.5 border border-radar-border/50 pt-2.5 px-3 py-3 rounded-lg bg-[#070f15]/90 space-y-2">
+            <div className="font-extrabold text-radar-ink text-[0.58rem] flex justify-between items-center">
+              <span>EXPLICAÇÃO DO SCORE (PESO PONDERADO)</span>
+              <span className="text-[0.6rem] text-radar-positive bg-radar-positive/10 px-1.5 py-0.5 rounded font-black">
+                Calculado: {alert.score_components.final_score.toFixed(2)}/10
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[0.56rem]">
+              {Object.entries(alert.score_components).map(([key, value]) => {
+                if (key === "final_score") return null;
+                const cleanName = key.replace("_score", "").replace("_", " ");
+                const weightVal = alert.score_weights?.[key];
+                const weightStr = weightVal !== undefined ? `${(weightVal * 100).toFixed(0)}%` : "N/A";
+                
+                let colorClass = "text-radar-ink";
+                if (value >= 7.0) colorClass = "text-radar-positive";
+                else if (value >= 5.0) colorClass = "text-[#ff8a67]";
+                else colorClass = "text-radar-critical";
+
+                return (
+                  <div key={key} className="bg-white/[0.02] p-2 rounded border border-radar-border/40">
+                    <span className="text-radar-muted capitalize block text-[0.52rem] mb-0.5">{cleanName} ({weightStr})</span>
+                    <span className={`font-black text-[0.62rem] ${colorClass}`}>{value.toFixed(1)}/10</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2.5 flex items-center gap-2">
           {isUnread && (
             <button
               onClick={() => mutateAlert(alert.id, "read")}

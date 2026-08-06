@@ -81,6 +81,23 @@ class CircuitBreaker:
             if self.failure_count >= self.failure_threshold:
                 self.opened_at = monotonic()
 
+    async def reset(self) -> None:
+        async with self._lock:
+            self.failure_count = 0
+            self.opened_at = None
+
+    def get_state_and_cooldown(self) -> tuple[str, float | None]:
+        if self.opened_at is None:
+            if self.failure_count == self.failure_threshold - 1:
+                return "half-open", None
+            return "closed", None
+
+        elapsed = monotonic() - self.opened_at
+        remaining = max(0.0, self.cooldown_seconds - elapsed)
+        if remaining <= 0:
+            return "half-open", None
+        return "open", remaining
+
 
 @dataclass(slots=True)
 class JsonResponse:
@@ -115,6 +132,11 @@ class ResilientJsonClient:
             headers={"Accept": "application/json", **(headers or {})},
         )
         self.log = get_logger(component="provider_http", provider=provider_id)
+        self.last_latency_ms: float | None = None
+
+    async def reset(self) -> None:
+        await self.circuit.reset()
+        self.last_latency_ms = None
 
     async def get_json(self, url: str, *, params: dict[str, Any] | None = None) -> JsonResponse:
         safe_params = tuple(sorted((str(key), str(value)) for key, value in (params or {}).items()))
@@ -164,6 +186,7 @@ class ResilientJsonClient:
                         await self.circuit.record_success()
                         await self.cache.set(cache_key, payload)
                         duration_ms = (perf_counter() - started) * 1000
+                        self.last_latency_ms = duration_ms
                         self.log.info(
                             "provider_request_completed",
                             status_code=response.status_code,
@@ -177,6 +200,7 @@ class ResilientJsonClient:
 
         await self.circuit.record_failure()
         duration_ms = (perf_counter() - started) * 1000
+        self.last_latency_ms = duration_ms
         self.log.warning(
             "provider_request_failed",
             duration_ms=round(duration_ms, 2),

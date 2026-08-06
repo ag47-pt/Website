@@ -572,3 +572,29 @@ class TokenTruth(Base):
 
     token: Mapped[Token] = relationship(back_populates="truths")
     hypothesis: Mapped[TokenHypothesis] = relationship(back_populates="truth")
+
+
+class ScoringWeights(Base):
+    __tablename__ = "scoring_weights"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    calibrated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    weights_json: Mapped[dict[str, float]] = mapped_column("weights", JSON, nullable=False)
+    sample_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    correlation: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class UserNotificationSettings(Base):
+    __tablename__ = "user_notification_settings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    min_severity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    min_confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    allowed_chains: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )
+
+

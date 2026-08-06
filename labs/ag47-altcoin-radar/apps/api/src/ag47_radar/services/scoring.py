@@ -58,6 +58,7 @@ def calculate_score(
     *,
     critical_flags: list[str] | None = None,
     discrepancy_ratio: float | None = None,
+    weights: dict[str, float] | None = None,
 ) -> ScoreCalculationResult:
     """Calculate deterministic v1 score.
 
@@ -66,16 +67,20 @@ def calculate_score(
     If provider data exhibits a discrepancy ratio above 0.15 (15%), confidence is penalized.
     """
 
+    active_weights = WEIGHTS.copy()
+    if weights:
+        active_weights.update(weights)
+
     raw = (
         components.model_dump()
         if isinstance(components, ScoreComponentsInput)
         else dict(components)
     )
-    available = {name: raw.get(name) for name in WEIGHTS if raw.get(name) is not None}
+    available = {name: raw.get(name) for name in active_weights if raw.get(name) is not None}
     normalized = {
-        name: round(min(10.0, max(0.0, float(raw.get(name) or 0.0))), 2) for name in WEIGHTS
+        name: round(min(10.0, max(0.0, float(raw.get(name) or 0.0))), 2) for name in active_weights
     }
-    final_score = round(sum(normalized[name] * weight for name, weight in WEIGHTS.items()), 2)
+    final_score = round(sum(normalized[name] * weight for name, weight in active_weights.items()), 2)
     classification = classify_score(final_score)
     critical = sorted(set(critical_flags or []))
     critical_gate_applied = bool(critical)
@@ -83,7 +88,7 @@ def calculate_score(
         classification = OpportunityClassification.HIGH_RISK
 
     signals_available = len(available)
-    completeness = signals_available / len(WEIGHTS)
+    completeness = signals_available / len(active_weights)
     quality = float(available.get("data_quality_score") or 0.0) / 10
     base_confidence = completeness * (0.5 + 0.5 * quality)
 
@@ -99,7 +104,7 @@ def calculate_score(
         for name, value in normalized.items()
         if name in available and value >= 7
     ]
-    negatives = [f"{LABELS[name]}: aguardando dados" for name in WEIGHTS if name not in available]
+    negatives = [f"{LABELS[name]}: aguardando dados" for name in active_weights if name not in available]
     negatives.extend(
         f"{LABELS[name]}: {value:.1f}/10"
         for name, value in normalized.items()
@@ -117,9 +122,9 @@ def calculate_score(
             f"Score numérico {final_score:.2f}/10, mas a classificação foi bloqueada por "
             f"{len(critical)} sinal(is) crítico(s)."
         )
-    elif signals_available < len(WEIGHTS):
+    elif signals_available < len(active_weights):
         explanation = (
-            f"Score {final_score:.2f}/10 com {signals_available}/{len(WEIGHTS)} componentes; "
+            f"Score {final_score:.2f}/10 com {signals_available}/{len(active_weights)} componentes; "
             "dados ausentes contam como zero e reduzem a confiança."
         )
     else:

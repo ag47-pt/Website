@@ -29,6 +29,30 @@ async def _scheduled_ingestion(settings: Settings, providers: ProviderRegistry) 
         log.warning("ingestion_cycle_failed", error_type=type(exc).__name__)
 
 
+async def _scheduled_calibration(settings: Settings) -> None:
+    try:
+        from ag47_radar.models import ScoringWeights
+        from ag47_radar.services.backtest import run_backtest
+
+        async with get_session_factory()() as session:
+            report = await run_backtest(session, include_demo=settings.demo_mode)
+            if report.calibrated_weights:
+                weights_entry = ScoringWeights(
+                    weights_json=report.calibrated_weights,
+                    sample_count=report.evaluated,
+                    correlation=report.score_return_correlation,
+                )
+                session.add(weights_entry)
+                await session.commit()
+                log.info(
+                    "calibration_completed",
+                    evaluated=report.evaluated,
+                    correlation=report.score_return_correlation,
+                )
+    except Exception as exc:
+        log.warning("calibration_failed", error_type=type(exc).__name__, error_msg=str(exc))
+
+
 def start_scheduler(settings: Settings, providers: ProviderRegistry) -> Any | None:
     if not settings.scheduler_enabled:
         return None
@@ -47,6 +71,16 @@ def start_scheduler(settings: Settings, providers: ProviderRegistry) -> Any | No
         seconds=settings.scheduler_interval_seconds,
         args=[settings, providers],
         id="market-ingestion",
+        coalesce=True,
+        max_instances=1,
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _scheduled_calibration,
+        trigger="interval",
+        hours=12,
+        args=[settings],
+        id="scoring-calibration",
         coalesce=True,
         max_instances=1,
         replace_existing=True,

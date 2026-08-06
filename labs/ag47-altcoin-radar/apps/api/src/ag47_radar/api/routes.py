@@ -40,6 +40,9 @@ from ag47_radar.schemas import (
     TruthSummaryRead,
     WatchlistCreate,
     WatchlistRead,
+    UserNotificationSettingsRead,
+    UserNotificationSettingsUpdate,
+    NotificationDeliveryDetailRead,
 )
 
 health_router = APIRouter(tags=["system"])
@@ -186,6 +189,20 @@ async def system_status(
         metrics=metrics,
         providers=statuses,
     )
+
+
+@api_router.post(
+    "/system/providers/{provider_id}/reset-circuit",
+    tags=["system"],
+    summary="Reset a provider's circuit breaker manually",
+)
+async def reset_provider_circuit(
+    provider_id: str,
+    providers: ProviderRegistry = Depends(get_provider_registry),
+) -> dict[str, bool]:
+    success = await providers.reset_circuit(provider_id)
+    return {"success": success}
+
 
 
 @api_router.get(
@@ -637,3 +654,126 @@ async def token_insight(
         if truth_summary_data.total_validated > 0
         else None,
     )
+
+
+@api_router.get(
+    "/system/notification-settings",
+    response_model=UserNotificationSettingsRead,
+    tags=["system"],
+    summary="Get user notification settings",
+)
+async def get_user_notification_settings(
+    session: AsyncSession = Depends(get_session),
+) -> UserNotificationSettingsRead:
+    from sqlalchemy import select
+    from ag47_radar.models import UserNotificationSettings
+
+    settings = await session.scalar(select(UserNotificationSettings))
+    if not settings:
+        settings = UserNotificationSettings(
+            min_severity=0.0,
+            min_confidence=0.0,
+            allowed_chains=["all"],
+        )
+        session.add(settings)
+        await session.commit()
+        await session.refresh(settings)
+    return settings
+
+
+@api_router.post(
+    "/system/notification-settings",
+    response_model=UserNotificationSettingsRead,
+    tags=["system"],
+    summary="Update user notification settings",
+)
+async def update_user_notification_settings(
+    payload: UserNotificationSettingsUpdate,
+    session: AsyncSession = Depends(get_session),
+) -> UserNotificationSettingsRead:
+    from sqlalchemy import select
+    from ag47_radar.models import UserNotificationSettings
+
+    settings = await session.scalar(select(UserNotificationSettings))
+    if not settings:
+        settings = UserNotificationSettings(
+            min_severity=0.0,
+            min_confidence=0.0,
+            allowed_chains=["all"],
+        )
+        session.add(settings)
+        await session.commit()
+        await session.refresh(settings)
+
+    if payload.min_severity is not None:
+        settings.min_severity = payload.min_severity
+    if payload.min_confidence is not None:
+        settings.min_confidence = payload.min_confidence
+    if payload.allowed_chains is not None:
+        settings.allowed_chains = payload.allowed_chains
+
+    await session.commit()
+    await session.refresh(settings)
+    return settings
+
+
+@api_router.get(
+    "/system/notifications",
+    response_model=PaginatedResponse[NotificationDeliveryDetailRead],
+    tags=["system"],
+    summary="Get recent notification deliveries",
+)
+async def get_system_notifications(
+    status: Annotated[str | None, Query()] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> PaginatedResponse[NotificationDeliveryDetailRead]:
+    from sqlalchemy import select, func
+    from ag47_radar.models import NotificationDelivery, TokenAlert, Token
+
+    offset = (page - 1) * page_size
+    query = (
+        select(NotificationDelivery, Token.symbol)
+        .join(TokenAlert, NotificationDelivery.alert_id == TokenAlert.id)
+        .join(Token, TokenAlert.token_id == Token.id)
+    )
+    if status:
+        query = query.where(NotificationDelivery.status == status)
+
+    query = query.order_by(NotificationDelivery.created_at.desc())
+
+    # Count total
+    count_query = select(func.count()).select_from(query.subquery())
+    total = await session.scalar(count_query) or 0
+
+    results = (await session.execute(query.offset(offset).limit(page_size))).all()
+
+    items = []
+    for delivery, token_symbol in results:
+        items.append(
+            NotificationDeliveryDetailRead(
+                id=delivery.id,
+                alert_id=delivery.alert_id,
+                channel=delivery.channel,
+                status=delivery.status,
+                provider_response=delivery.provider_response or {},
+                created_at=delivery.created_at,
+                updated_at=delivery.updated_at,
+                token_symbol=token_symbol,
+            )
+        )
+
+    import math
+    pages = math.ceil(total / page_size) if total > 0 else 0
+
+    return PaginatedResponse(
+        items=items,
+        page=page,
+        page_size=page_size,
+        total=total,
+        pages=pages,
+        demo_mode=settings.demo_mode,
+    )
+

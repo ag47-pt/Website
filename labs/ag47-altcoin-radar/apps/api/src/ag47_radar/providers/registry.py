@@ -50,6 +50,33 @@ class RoutingContractRiskProvider(ContractRiskProvider):
         await self.evm_risk.close()
 
 
+def _extract_circuit_details(provider: object) -> dict[str, Any]:
+    if not hasattr(provider, "http") or provider.http is None:
+        return {
+            "circuit_state": "closed",
+            "consecutive_failures": 0,
+            "latency_ms": None,
+            "remaining_cooldown": None,
+        }
+    
+    http_client = provider.http
+    if not hasattr(http_client, "circuit") or http_client.circuit is None:
+        return {
+            "circuit_state": "closed",
+            "consecutive_failures": 0,
+            "latency_ms": None,
+            "remaining_cooldown": None,
+        }
+        
+    state, remaining = http_client.circuit.get_state_and_cooldown()
+    return {
+        "circuit_state": state,
+        "consecutive_failures": http_client.circuit.failure_count,
+        "latency_ms": getattr(http_client, "last_latency_ms", None),
+        "remaining_cooldown": remaining,
+    }
+
+
 class ProviderRegistry:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
@@ -73,95 +100,157 @@ class ProviderRegistry:
 
     def statuses(self) -> list[ProviderStatusRead]:
         now = datetime.now(UTC)
-        real_status = ProviderStatus.DISABLED if self.settings.demo_mode else ProviderStatus.ACTIVE
-        real_detail = (
-            "Implementado; chamadas externas desativadas enquanto AG47_DEMO_MODE=true."
-            if self.settings.demo_mode
-            else "Provider público configurado; saúde é confirmada na próxima coleta."
-        )
-        return [
-            ProviderStatusRead(
-                id=self.discovery.provider_id,
-                name="GeckoTerminal",
-                kind="pair_discovery",
-                status=real_status,
-                mode=SourceMode.REAL,
-                last_checked_at=None,
-                detail=real_detail,
-            ),
-            ProviderStatusRead(
-                id=self.market.provider_id,
-                name="DexScreener",
-                kind="market_data",
-                status=real_status,
-                mode=SourceMode.REAL,
-                last_checked_at=None,
-                detail=real_detail,
-            ),
-            ProviderStatusRead(
-                id=self.social.provider_id,
-                name="Social fixture",
-                kind="social_data",
-                status=ProviderStatus.ACTIVE
-                if self.settings.demo_mode
-                else ProviderStatus.DISABLED,
-                mode=SourceMode.DEMO,
-                last_checked_at=now if self.settings.demo_mode else None,
-                detail="Fixture explicitamente identificado; não representa Telegram real.",
-            ),
-            ProviderStatusRead(
-                id=self.risk.provider_id,
-                name="Risk fixture" if self.settings.demo_mode else "MultiChain Risk Router",
-                kind="contract_risk",
-                status=ProviderStatus.ACTIVE,
-                mode=self.risk.mode,
-                last_checked_at=now if self.settings.demo_mode else None,
-                detail=(
-                    "Fixture explícito; campos desconhecidos permanecem desconhecidos."
-                    if self.settings.demo_mode
-                    else "Provider roteador inteligente ativo (RugCheck em Solana, GoPlus em EVM)."
+        
+        # If in demo mode, return the static statuses as before to keep compatibility
+        if self.settings.demo_mode:
+            real_status = ProviderStatus.DISABLED
+            real_detail = "Implementado; chamadas externas desativadas enquanto AG47_DEMO_MODE=true."
+            return [
+                ProviderStatusRead(
+                    id=self.discovery.provider_id,
+                    name="GeckoTerminal",
+                    kind="pair_discovery",
+                    status=real_status,
+                    mode=SourceMode.REAL,
+                    last_checked_at=None,
+                    detail=real_detail,
                 ),
-            ),
-            ProviderStatusRead(
-                id=self.blockchain.provider_id,
-                name="Blockchain metadata",
-                kind="blockchain_data",
-                status=ProviderStatus.DISABLED,
-                mode=SourceMode.REAL,
-                detail="Contrato pronto; provider real adiado.",
-            ),
-            ProviderStatusRead(
-                id=self.holders.provider_id,
-                name="Holder analytics fixture"
-                if self.settings.demo_mode
-                else "MultiChain Holder Router",
-                kind="holder_data",
-                status=ProviderStatus.DISABLED
-                if self.settings.demo_mode
-                else ProviderStatus.ACTIVE,
-                mode=self.holders.mode,
-                detail=(
-                    "Contrato pronto; provider real adiado."
-                    if self.settings.demo_mode
-                    else "Roteador ativo (Helius em Solana, GoPlus/Eetherscan em EVM)."
+                ProviderStatusRead(
+                    id=self.market.provider_id,
+                    name="DexScreener",
+                    kind="market_data",
+                    status=real_status,
+                    mode=SourceMode.REAL,
+                    last_checked_at=None,
+                    detail=real_detail,
                 ),
-            ),
-            ProviderStatusRead(
-                id=self.alert_delivery.provider_id,
-                name="Structured log delivery"
-                if isinstance(self.alert_delivery, LogOnlyAlertDeliveryProvider)
-                else "Telegram Bot Delivery",
-                kind="alert_delivery",
-                status=ProviderStatus.ACTIVE,
-                mode=self.alert_delivery.mode,
-                last_checked_at=now,
-                detail=(
-                    "Entrega externa não configurada; eventos permanecem internos."
-                    if isinstance(self.alert_delivery, LogOnlyAlertDeliveryProvider)
-                    else "Entrega ativa para Telegram Chat ID configurado."
+                ProviderStatusRead(
+                    id=self.social.provider_id,
+                    name="Social fixture",
+                    kind="social_data",
+                    status=ProviderStatus.ACTIVE,
+                    mode=SourceMode.DEMO,
+                    last_checked_at=now,
+                    detail="Fixture explicitamente identificado; não representa Telegram real.",
                 ),
-            ),
-        ]
+                ProviderStatusRead(
+                    id=self.risk.provider_id,
+                    name="Risk fixture",
+                    kind="contract_risk",
+                    status=ProviderStatus.ACTIVE,
+                    mode=self.risk.mode,
+                    last_checked_at=now,
+                    detail="Fixture explícito; campos desconhecidos permanecem desconhecidos.",
+                ),
+                ProviderStatusRead(
+                    id=self.blockchain.provider_id,
+                    name="Blockchain metadata",
+                    kind="blockchain_data",
+                    status=ProviderStatus.DISABLED,
+                    mode=SourceMode.REAL,
+                    detail="Contrato pronto; provider real adiado.",
+                ),
+                ProviderStatusRead(
+                    id=self.holders.provider_id,
+                    name="Holder analytics fixture",
+                    kind="holder_data",
+                    status=ProviderStatus.DISABLED,
+                    mode=self.holders.mode,
+                    detail="Contrato pronto; provider real adiado.",
+                ),
+                ProviderStatusRead(
+                    id=self.alert_delivery.provider_id,
+                    name="Structured log delivery",
+                    kind="alert_delivery",
+                    status=ProviderStatus.ACTIVE,
+                    mode=self.alert_delivery.mode,
+                    last_checked_at=now,
+                    detail="Entrega externa não configurada; eventos permanecem internos.",
+                ),
+            ]
+            
+        # Real Mode: Map actual active providers and extract their circuit status
+        result_list = []
+        
+        # Helper to build status dynamically
+        def add_provider_status(provider_obj: any, name: str, kind: str):
+            details = _extract_circuit_details(provider_obj)
+            status_val = ProviderStatus.ACTIVE
+            if details["circuit_state"] == "open":
+                status_val = ProviderStatus.DEGRADED
+            
+            result_list.append(
+                ProviderStatusRead(
+                    id=provider_obj.provider_id,
+                    name=name,
+                    kind=kind,
+                    status=status_val,
+                    mode=provider_obj.mode,
+                    last_checked_at=now if details["latency_ms"] is not None else None,
+                    detail=f"Circuito {details['circuit_state'].upper()}. Falhas: {details['consecutive_failures']}.",
+                    **details,
+                )
+            )
+
+        # 1. GeckoTerminal Discovery
+        add_provider_status(self.discovery, "GeckoTerminal", "pair_discovery")
+        
+        # 2. DexScreener Market Data
+        add_provider_status(self.market, "DexScreener", "market_data")
+        
+        # 3. GoPlus Risk (EVM) and RugCheck (Solana)
+        from ag47_radar.providers.registry import RoutingContractRiskProvider
+        if isinstance(self.risk, RoutingContractRiskProvider):
+            add_provider_status(self.risk.evm_risk, "GoPlus Security", "contract_risk")
+            add_provider_status(self.risk.solana_risk, "RugCheck Solana", "contract_risk")
+            
+        # 4. Routing Holders
+        from ag47_radar.providers.holders import RoutingHolderProvider
+        if isinstance(self.holders, RoutingHolderProvider):
+            add_provider_status(self.holders.solana_provider, "Helius Holders", "holder_data")
+            add_provider_status(self.holders.evm_provider, "Etherscan Holders", "holder_data")
+            
+        # 5. Alert Delivery (Telegram Bot or Log Delivery)
+        from ag47_radar.providers.telegram import TelegramAlertDeliveryProvider
+        if isinstance(self.alert_delivery, TelegramAlertDeliveryProvider):
+            add_provider_status(self.alert_delivery, "Telegram Bot API", "alert_delivery")
+        else:
+            result_list.append(
+                ProviderStatusRead(
+                    id=self.alert_delivery.provider_id,
+                    name="Structured Log Delivery",
+                    kind="alert_delivery",
+                    status=ProviderStatus.ACTIVE,
+                    mode=self.alert_delivery.mode,
+                    last_checked_at=now,
+                    detail="Telegram não configurado; logs estruturados ativos.",
+                    circuit_state="closed",
+                    consecutive_failures=0,
+                    latency_ms=None,
+                    remaining_cooldown=None,
+                )
+            )
+            
+        return result_list
+
+    async def reset_circuit(self, provider_id: str) -> bool:
+        providers_to_check = [self.discovery, self.market, self.alert_delivery]
+        
+        from ag47_radar.providers.registry import RoutingContractRiskProvider
+        if isinstance(self.risk, RoutingContractRiskProvider):
+            providers_to_check.extend([self.risk.evm_risk, self.risk.solana_risk])
+            
+        from ag47_radar.providers.holders import RoutingHolderProvider
+        if isinstance(self.holders, RoutingHolderProvider):
+            providers_to_check.extend([self.holders.solana_provider, self.holders.evm_provider])
+            
+        for p in providers_to_check:
+            if hasattr(p, "provider_id") and p.provider_id == provider_id:
+                if hasattr(p, "http") and p.http is not None:
+                    if hasattr(p.http, "reset"):
+                        await p.http.reset()
+                        return True
+        return False
 
     async def close(self) -> None:
         await self.discovery.close()

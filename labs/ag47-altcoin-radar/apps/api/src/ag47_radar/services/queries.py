@@ -16,6 +16,7 @@ from ag47_radar.models import (
     MarketSnapshot,
     OpportunityScore,
     RiskAssessment,
+    ScoringWeights,
     SocialSnapshot,
     Token,
     TokenAlert,
@@ -469,27 +470,63 @@ async def list_alerts(
         )
     ).all()
 
-    items = [
-        TokenAlertRead(
-            id=alert.id,
-            rule_id=alert.rule_id,
-            token_id=alert.token_id,
-            token_symbol=symbol,
-            source_kind=alert.source_kind,
-            source_id=alert.source_id,
-            severity=float(alert.severity) if alert.severity is not None else None,
-            confidence=float(alert.confidence) if alert.confidence is not None else None,
-            status=alert.status,
-            confidence_level=alert.confidence_level,
-            triggered_at=ensure_utc(alert.triggered_at),
-            read_at=ensure_utc(alert.read_at),
-            acknowledged_at=ensure_utc(alert.acknowledged_at),
-            dismissed_at=ensure_utc(alert.dismissed_at),
-            deduplication_key=alert.deduplication_key,
-            is_demo=alert.is_demo,
+    # Batch load latest score components for the token IDs
+    token_ids = {alert.token_id for alert, symbol in rows}
+    latest_scores = {}
+    if token_ids:
+        from ag47_radar.models import OpportunityScore
+        scores_stmt = (
+            select(OpportunityScore)
+            .where(
+                OpportunityScore.token_id.in_(list(token_ids)),
+                OpportunityScore.is_demo.is_(settings.demo_mode)
+            )
+            .order_by(OpportunityScore.token_id, OpportunityScore.calculated_at.desc())
         )
-        for alert, symbol in rows
-    ]
+        scores_result = (await session.scalars(scores_stmt)).all()
+        for sc in scores_result:
+            if sc.token_id not in latest_scores:
+                latest_scores[sc.token_id] = sc
+
+    from ag47_radar.services.scoring import WEIGHTS
+    active_weights = await get_latest_scoring_weights(session) or WEIGHTS
+
+    items = []
+    for alert, symbol in rows:
+        sc = latest_scores.get(alert.token_id)
+        score_components = None
+        if sc:
+            score_components = {
+                "momentum_score": float(sc.momentum_score),
+                "liquidity_score": float(sc.liquidity_score),
+                "community_score": float(sc.community_score),
+                "distribution_score": float(sc.distribution_score),
+                "safety_score": float(sc.safety_score),
+                "data_quality_score": float(sc.data_quality_score),
+                "final_score": float(sc.final_score),
+            }
+        items.append(
+            TokenAlertRead(
+                id=alert.id,
+                rule_id=alert.rule_id,
+                token_id=alert.token_id,
+                token_symbol=symbol,
+                source_kind=alert.source_kind,
+                source_id=alert.source_id,
+                severity=float(alert.severity) if alert.severity is not None else None,
+                confidence=float(alert.confidence) if alert.confidence is not None else None,
+                status=alert.status,
+                confidence_level=alert.confidence_level,
+                triggered_at=ensure_utc(alert.triggered_at),
+                read_at=ensure_utc(alert.read_at),
+                acknowledged_at=ensure_utc(alert.acknowledged_at),
+                dismissed_at=ensure_utc(alert.dismissed_at),
+                deduplication_key=alert.deduplication_key,
+                is_demo=alert.is_demo,
+                score_components=score_components,
+                score_weights={k: float(v) for k, v in active_weights.items()},
+            )
+        )
     return PaginatedResponse[TokenAlertRead](
         items=items,
         page=page,
@@ -498,6 +535,7 @@ async def list_alerts(
         pages=_pages(total, page_size),
         demo_mode=settings.demo_mode,
     )
+
 
 
 async def list_global_knowledge(
@@ -759,27 +797,64 @@ async def list_edge_alerts(
         )
     ).all()
 
-    alert_items = [
-        TokenAlertRead(
-            id=alert.id,
-            rule_id=alert.rule_id,
-            token_id=alert.token_id,
-            token_symbol=symbol,
-            source_kind=alert.source_kind,
-            source_id=alert.source_id,
-            severity=float(alert.severity) if alert.severity is not None else None,
-            confidence=float(alert.confidence) if alert.confidence is not None else None,
-            status=alert.status,
-            confidence_level=alert.confidence_level,
-            triggered_at=ensure_utc(alert.triggered_at),
-            read_at=ensure_utc(alert.read_at),
-            acknowledged_at=ensure_utc(alert.acknowledged_at),
-            dismissed_at=ensure_utc(alert.dismissed_at),
-            deduplication_key=alert.deduplication_key,
-            is_demo=alert.is_demo,
+    # Batch load latest score components for the token IDs
+    token_ids = {alert.token_id for alert, symbol in rows}
+    latest_scores = {}
+    if token_ids:
+        from ag47_radar.models import OpportunityScore
+        scores_stmt = (
+            select(OpportunityScore)
+            .where(
+                OpportunityScore.token_id.in_(list(token_ids)),
+                OpportunityScore.is_demo.is_(settings.demo_mode)
+            )
+            .order_by(OpportunityScore.token_id, OpportunityScore.calculated_at.desc())
         )
-        for alert, symbol in rows
-    ]
+        scores_result = (await session.scalars(scores_stmt)).all()
+        for sc in scores_result:
+            if sc.token_id not in latest_scores:
+                latest_scores[sc.token_id] = sc
+
+    from ag47_radar.services.scoring import WEIGHTS
+    active_weights = await get_latest_scoring_weights(session) or WEIGHTS
+
+    alert_items = []
+    for alert, symbol in rows:
+        sc = latest_scores.get(alert.token_id)
+        score_components = None
+        if sc:
+            score_components = {
+                "momentum_score": float(sc.momentum_score),
+                "liquidity_score": float(sc.liquidity_score),
+                "community_score": float(sc.community_score),
+                "distribution_score": float(sc.distribution_score),
+                "safety_score": float(sc.safety_score),
+                "data_quality_score": float(sc.data_quality_score),
+                "final_score": float(sc.final_score),
+            }
+        alert_items.append(
+            TokenAlertRead(
+                id=alert.id,
+                rule_id=alert.rule_id,
+                token_id=alert.token_id,
+                token_symbol=symbol,
+                source_kind=alert.source_kind,
+                source_id=alert.source_id,
+                severity=float(alert.severity) if alert.severity is not None else None,
+                confidence=float(alert.confidence) if alert.confidence is not None else None,
+                status=alert.status,
+                confidence_level=alert.confidence_level,
+                triggered_at=ensure_utc(alert.triggered_at),
+                read_at=ensure_utc(alert.read_at),
+                acknowledged_at=ensure_utc(alert.acknowledged_at),
+                dismissed_at=ensure_utc(alert.dismissed_at),
+                deduplication_key=alert.deduplication_key,
+                is_demo=alert.is_demo,
+                score_components=score_components,
+                score_weights={k: float(v) for k, v in active_weights.items()},
+            )
+        )
+
     paginated_alerts = PaginatedResponse[TokenAlertRead](
         items=alert_items,
         page=page,
@@ -868,3 +943,12 @@ async def list_edge_alerts(
         alerts=paginated_alerts,
         correlation_matrix=correlation_matrix,
     )
+
+
+async def get_latest_scoring_weights(session: AsyncSession) -> dict[str, float] | None:
+    stmt = select(ScoringWeights).order_by(ScoringWeights.calibrated_at.desc()).limit(1)
+    result = await session.scalar(stmt)
+    if result:
+        return result.weights_json
+    return None
+
