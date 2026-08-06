@@ -31,9 +31,28 @@ async def process_signals_and_learn(
     hypotheses_data = registry.infer_all(signals)
     created_hypotheses = []
 
+    # Get the latest OpportunityScore for the token
+    from ag47_radar.models import OpportunityScore
+    score_stmt = (
+        select(OpportunityScore)
+        .where(
+            OpportunityScore.token_id == token_id,
+            OpportunityScore.is_demo == is_demo
+        )
+        .order_by(OpportunityScore.calculated_at.desc())
+        .limit(1)
+    )
+    score_obj = (await db.execute(score_stmt)).scalars().first()
+    score_val = float(score_obj.final_score) if score_obj else 5.0
+
     for h_data in hypotheses_data:
         h_data["token_id"] = token_id
         h_data["is_demo"] = is_demo
+        
+        # Save score in metadata_json
+        if "metadata_json" not in h_data:
+            h_data["metadata_json"] = {}
+        h_data["metadata_json"]["score"] = score_val
 
         # Gerar hash para evitar duplicação (idempotência)
         caused_by_hash = _generate_hash(h_data["caused_by"])

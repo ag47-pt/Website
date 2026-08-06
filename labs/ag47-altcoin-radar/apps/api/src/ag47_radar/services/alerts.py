@@ -215,6 +215,88 @@ async def process_alert_rules(
         dedup_key = generate_alert_dedup_key(rule.id, source_kind, source_id, rule.rule_version)
         severity = calculate_severity(source_kind, source_type, strength or 0.0, confidence or 0.0)
 
+        # Identify OpportunityScore and score bucket
+        from ag47_radar.models import OpportunityScore, GlobalKnowledge, TokenTruth, TokenHypothesis
+        from ag47_radar.knowledge.confidence import calculate_historical_confidence
+        
+        score_stmt = (
+            select(OpportunityScore)
+            .where(
+                OpportunityScore.token_id == token_id,
+                OpportunityScore.is_demo.is_(settings.demo_mode),
+            )
+            .order_by(OpportunityScore.calculated_at.desc())
+            .limit(1)
+        )
+        score_obj = await session.scalar(score_stmt)
+        score_val = float(score_obj.final_score) if score_obj else 5.0
+
+        SCORE_BUCKETS = [
+            (0.0, 4.0),
+            (4.0, 6.0),
+            (6.0, 7.0),
+            (7.0, 8.0),
+            (8.0, 9.0),
+            (9.0, 10.0),
+        ]
+        bucket = next(
+            (b for b in SCORE_BUCKETS if (b[0] <= score_val < b[1] if b[1] < 10.0 else b[0] <= score_val <= b[1])),
+            (5.0, 6.0)
+        )
+        bucket_pattern_name = f"score_bucket_{bucket[0]}_{bucket[1]}"
+
+        # Query GlobalKnowledge stats for this score bucket
+        gk_stmt = select(GlobalKnowledge).where(GlobalKnowledge.pattern_name == bucket_pattern_name)
+        gks = (await session.execute(gk_stmt)).scalars().all()
+        
+        total_occurrences = sum(gk.total_occurrences for gk in gks)
+        success_count = sum(gk.success_count for gk in gks)
+        failure_count = sum(gk.failure_count for gk in gks)
+        neutral_count = sum(gk.neutral_count for gk in gks)
+
+        hist_conf = float(calculate_historical_confidence(success_count, failure_count, neutral_count))
+
+        # Check drawdown suspension
+        drawdown_suspended = False
+        if total_occurrences >= 30:
+            # Check the last 3 resolved truths in this bucket
+            truth_stmt = (
+                select(TokenTruth, TokenHypothesis)
+                .join(TokenHypothesis, TokenTruth.hypothesis_id == TokenHypothesis.id)
+                .order_by(TokenTruth.created_at.desc())
+                .limit(50)
+            )
+            truth_rows = (await session.execute(truth_stmt)).all()
+            
+            bucket_truths = []
+            for truth, hypothesis in truth_rows:
+                h_meta = hypothesis.metadata_json or {}
+                h_score = h_meta.get("score")
+                if h_score is not None:
+                    h_score = float(h_score)
+                    if bucket[0] <= h_score < bucket[1] if bucket[1] < 10.0 else bucket[0] <= h_score <= bucket[1]:
+                        bucket_truths.append(truth)
+                if len(bucket_truths) >= 3:
+                    break
+            
+            if len(bucket_truths) >= 3:
+                if all(t.status == "failure" for t in bucket_truths[:3]):
+                    drawdown_suspended = True
+
+        # Decide confidence level and whether to emit the alert
+        if total_occurrences >= 30:
+            if hist_conf < 65.0:
+                # Win rate below 65% for matured bucket -> Block alert entirely
+                continue
+            else:
+                if drawdown_suspended:
+                    confidence_level = "suspenso"
+                else:
+                    confidence_level = "confirmado"
+        else:
+            # Cold start -> Allow alert but tag it as indeterminada
+            confidence_level = "indeterminada"
+
         alert = TokenAlert(
             rule_id=rule.id,
             token_id=token_id,
@@ -223,6 +305,7 @@ async def process_alert_rules(
             severity=severity,
             confidence=confidence,
             status="unread",
+            confidence_level=confidence_level,
             triggered_at=now,
             deduplication_key=dedup_key,
             is_demo=settings.demo_mode,

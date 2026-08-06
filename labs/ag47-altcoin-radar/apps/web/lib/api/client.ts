@@ -12,6 +12,7 @@ import {
   tokenDetailSchema,
   watchlistItemSchema,
   watchlistResponseSchema,
+  operatorInboxResponseSchema,
   type OpportunityFilters,
 } from "./schemas";
 
@@ -133,6 +134,18 @@ export const radarApi = {
   },
   getAlerts(page = 1, pageSize = 20, signal?: AbortSignal) {
     return apiRequest(`/api/v1/alerts?page=${page}&page_size=${pageSize}`, alertsResponseSchema, {
+      signal,
+    });
+  },
+  getEdgeInboxAlerts(page = 1, pageSize = 20, confidenceLevel?: string, signal?: AbortSignal) {
+    const params = new URLSearchParams({
+      page: String(page),
+      page_size: String(pageSize),
+    });
+    if (confidenceLevel && confidenceLevel !== "all") {
+      params.set("confidence_level", confidenceLevel);
+    }
+    return apiRequest(`/api/v1/alerts/edge-inbox?${params.toString()}`, operatorInboxResponseSchema, {
       signal,
     });
   },

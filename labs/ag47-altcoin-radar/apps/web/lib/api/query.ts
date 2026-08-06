@@ -107,6 +107,14 @@ export function useAlerts(page = 1, pageSize = 20) {
   });
 }
 
+export function useEdgeInbox(page = 1, pageSize = 20, confidenceLevel?: string) {
+  return useQuery({
+    queryKey: ["edge-inbox", page, pageSize, confidenceLevel],
+    queryFn: ({ signal }) => radarApi.getEdgeInboxAlerts(page, pageSize, confidenceLevel, signal),
+    staleTime: 15_000,
+  });
+}
+
 export function useAlertMutation() {
   const queryClient = useQueryClient();
 
@@ -119,7 +127,10 @@ export function useAlertMutation() {
       status: "unread" | "read" | "acknowledged" | "dismissed";
     }) => radarApi.updateAlert(alertId, status),
     onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ["alerts"] });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["alerts"] }),
+        queryClient.invalidateQueries({ queryKey: ["edge-inbox"] }),
+      ]);
     },
   });
 }

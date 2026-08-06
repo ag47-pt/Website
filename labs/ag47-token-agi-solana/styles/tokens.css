@@ -1,0 +1,59 @@
+:root {
+  color-scheme: dark;
+
+  /* Canvas */
+  --agi-void: #000000;
+  --agi-canvas: #030309;
+  --agi-surface: #08060f;
+  --agi-raised: #0d0a18;
+
+  /* Spectrum */
+  --agi-violet: #8b5cf6;
+  --agi-plum: #c084fc;
+  --agi-indigo: #6366f1;
+  --agi-blue: #3b82f6;
+  --agi-cyan: #22d3ee;
+  --agi-slate: #64748b;
+
+  /* Ink */
+  --agi-ink: #f2f3ff;
+  --agi-muted: rgba(226, 228, 255, 0.62);
+  --agi-subtle: rgba(226, 228, 255, 0.38);
+  --agi-faint: rgba(226, 228, 255, 0.16);
+
+  /* Structure */
+  --agi-line: rgba(255, 255, 255, 0.08);
+  --agi-line-strong: rgba(255, 255, 255, 0.16);
+  --agi-glass: rgba(255, 255, 255, 0.04);
+  --agi-glass-hover: rgba(255, 255, 255, 0.07);
+
+  /* Radii */
+  --agi-radius-sm: 0.6rem;
+  --agi-radius-md: 1rem;
+  --agi-radius-lg: 1.5rem;
+  --agi-radius-xl: 2rem;
+
+  --agi-header-height: 4.25rem;
+}
+
+@theme inline {
+  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-void: var(--agi-void);
+  --color-canvas: var(--agi-canvas);
+  --color-surface: var(--agi-surface);
+  --color-raised: var(--agi-raised);
+
+  --color-violet: var(--agi-violet);
+  --color-plum: var(--agi-plum);
+  --color-indigo: var(--agi-indigo);
+  --color-blue: var(--agi-blue);
+  --color-cyan: var(--agi-cyan);
+
+  --color-ink: var(--agi-ink);
+  --color-muted: var(--agi-muted);
+  --color-subtle: var(--agi-subtle);
+  --color-faint: var(--agi-faint);
+  --color-line: var(--agi-line);
+}

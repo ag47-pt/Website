@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+* {
+  border-color: var(--agi-line);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--agi-header-height) + 2rem);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--agi-void);
+  color: var(--agi-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--agi-violet) 40%, transparent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--agi-cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Ambient grid used behind dense sections. */
+.agi-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 78%);
+}
+
+/* Hairline that fades at both ends — used as a section separator. */
+.agi-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--agi-line-strong) 20%,
+    var(--agi-line-strong) 80%,
+    transparent
+  );
+}
+
+.agi-gradient-text {
+  background: linear-gradient(96deg, var(--agi-plum) 0%, var(--agi-violet) 42%, var(--agi-cyan) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Slow drift for the ambient aurora blobs. */
+@keyframes agi-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, -3%, 0) scale(1.06);
+  }
+}
+
+.agi-drift {
+  animation: agi-drift 18s ease-in-out infinite;
+}
+
+@keyframes agi-pulse-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+.agi-pulse-ring {
+  animation: agi-pulse-ring 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes agi-dash {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+.agi-dash {
+  stroke-dasharray: 4 10;
+  animation: agi-dash 22s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .agi-drift,
+  .agi-pulse-ring,
+  .agi-dash {
+    animation: none;
+  }
+}

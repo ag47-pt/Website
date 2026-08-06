@@ -10,20 +10,13 @@ Abaixo está o registro histórico da nossa cadência e as tarefas já mapeadas 
 - **Sprint 4**: Motor Epistemológico Invisível (`Knowledge Engine`, `Hypothesis`, `Validation`).
 - **Sprint 5**: Motor de Edge Estatístico & Performance Analytics (buckets de score, confiança, out-of-sample).
 - **Sprint 6**: Conectividade Live & Real Providers (Integração real RugCheck, Helius RPC, GoPlus EVM Holders e Telegram Bot API).
+- **Sprint 7**: Infraestrutura de Produção e Ingestão Contínua (PostgreSQL + asyncpg, retries de concorrência, suite de testes de estresse com 50 requisições simultâneas e background scheduler).
 
 ---
 
 ## Próximos Sprints (Fila de Execução)
 
-### Sprint 7: Infraestrutura de Produção e Ingestão Contínua (Próximo Ciclo)
-
-> **Objetivo:** Garantir concorrência, persistência resiliente e execução autônoma.
-
-- Migração do banco de dados de SQLite para **PostgreSQL + `asyncpg`**.
-- Ativação do Job Scheduler em background (`AG47_SCHEDULER_ENABLED=true`, ciclo de 300s).
-- Coleta automática contínua de pares, pontuação, geração de hipóteses e auditoria pelo Truth Engine.
-
-### Sprint 8: Alertas Determinísticos de Edge & Inbox do Operador
+### Sprint 8: Alertas Determinísticos de Edge & Inbox do Operador (Próximo Ciclo)
 
 > **Objetivo:** Entregar sinais acionáveis baseados estritamente em Edge provado.
 
@@ -32,4 +25,6 @@ Abaixo está o registro histórico da nossa cadência e as tarefas já mapeadas 
 
 ---
 
-> _Lembrete Crítico:_ Nenhum item desta lista autoriza armazenamento de seed phrase, chave privada ou automação de disparo e execução autônoma de trades. O radar é um Lóbulo Observacional, nunca um robô de ordens de mercado.
+> _Lembrete Crítico:_ Nenhum item desta lista autoriza armazenamento de seed phrase, chave privada ou automação de disparo e execução autônoma de trades. O radar é um Lóbulo Observacional e preditivo, nunca um robô de ordens de mercado.    
+
+

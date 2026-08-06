@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     helius_api_key: str | None = None
 
     database_url: str = "sqlite+aiosqlite:///./data/ag47_radar.db"
+    database_pool_size: int = Field(default=20, ge=5, le=100)
+    database_max_overflow: int = Field(default=10, ge=0, le=50)
+    database_pool_timeout: float = Field(default=30.0, ge=1.0, le=120.0)
     auto_create_schema: bool = True
     auto_seed_demo: bool = True
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"

@@ -25,10 +25,12 @@ from ag47_radar.models import (
     WatchlistEntry,
 )
 from ag47_radar.schemas import (
+    CorrelationBucket,
     GlobalKnowledgeRead,
     MarketHistoryPoint,
     MarketHistoryResponse,
     MarketSnapshotRead,
+    OperatorInboxResponse,
     OpportunityItem,
     OpportunityRiskSummary,
     OpportunityScoreRead,
@@ -478,6 +480,7 @@ async def list_alerts(
             severity=float(alert.severity) if alert.severity is not None else None,
             confidence=float(alert.confidence) if alert.confidence is not None else None,
             status=alert.status,
+            confidence_level=alert.confidence_level,
             triggered_at=ensure_utc(alert.triggered_at),
             read_at=ensure_utc(alert.read_at),
             acknowledged_at=ensure_utc(alert.acknowledged_at),
@@ -721,4 +724,147 @@ async def get_token_timeline(
         total=total,
         pages=_pages(total, page_size),
         demo_mode=settings.demo_mode,
+    )
+
+
+async def list_edge_alerts(
+    session: AsyncSession,
+    settings: Settings,
+    *,
+    token_id: str | None = None,
+    status: str | None = None,
+    confidence_level: str | None = None,
+    page: int = 1,
+    page_size: int = 20,
+) -> OperatorInboxResponse:
+    # 1. Fetch paginated alerts
+    statement = (
+        select(TokenAlert, Token.symbol)
+        .join(Token, Token.id == TokenAlert.token_id)
+        .where(Token.is_demo.is_(settings.demo_mode), TokenAlert.is_demo.is_(settings.demo_mode))
+    )
+    if token_id:
+        statement = statement.where(TokenAlert.token_id == token_id)
+    if status:
+        statement = statement.where(TokenAlert.status == status)
+    if confidence_level:
+        statement = statement.where(TokenAlert.confidence_level == confidence_level)
+
+    total = await session.scalar(select(func.count()).select_from(statement.subquery())) or 0
+    rows = (
+        await session.execute(
+            statement.order_by(TokenAlert.triggered_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
+    ).all()
+
+    alert_items = [
+        TokenAlertRead(
+            id=alert.id,
+            rule_id=alert.rule_id,
+            token_id=alert.token_id,
+            token_symbol=symbol,
+            source_kind=alert.source_kind,
+            source_id=alert.source_id,
+            severity=float(alert.severity) if alert.severity is not None else None,
+            confidence=float(alert.confidence) if alert.confidence is not None else None,
+            status=alert.status,
+            confidence_level=alert.confidence_level,
+            triggered_at=ensure_utc(alert.triggered_at),
+            read_at=ensure_utc(alert.read_at),
+            acknowledged_at=ensure_utc(alert.acknowledged_at),
+            dismissed_at=ensure_utc(alert.dismissed_at),
+            deduplication_key=alert.deduplication_key,
+            is_demo=alert.is_demo,
+        )
+        for alert, symbol in rows
+    ]
+    paginated_alerts = PaginatedResponse[TokenAlertRead](
+        items=alert_items,
+        page=page,
+        page_size=page_size,
+        total=total,
+        pages=_pages(total, page_size),
+        demo_mode=settings.demo_mode,
+    )
+
+    # 2. Compute correlation matrix
+    from ag47_radar.services.performance_analysis import fetch_truths_with_score_context
+
+    records = await fetch_truths_with_score_context(session, is_demo=settings.demo_mode)
+
+    SCORE_BUCKETS = [
+        ("0.0 - 4.0 (Baixo)", 0.0, 4.0),
+        ("4.0 - 6.0 (Neutro)", 4.0, 6.0),
+        ("6.0 - 7.0 (Moderado)", 6.0, 7.0),
+        ("7.0 - 8.0 (Promissor)", 7.0, 8.0),
+        ("8.0 - 9.0 (Forte)", 8.0, 9.0),
+        ("9.0 - 10.0 (Excepcional)", 9.0, 10.0),
+    ]
+
+    correlation_matrix = []
+    for label, min_s, max_s in SCORE_BUCKETS:
+        matching = [
+            (t, score, conf)
+            for t, score, conf in records
+            if (min_s <= score < max_s if max_s < 10.0 else min_s <= score <= max_s)
+        ]
+        total_samples = len(matching)
+        if total_samples == 0:
+            correlation_matrix.append(
+                CorrelationBucket(
+                    score_range=label,
+                    min_score=min_s,
+                    max_score=max_s,
+                    total_samples=0,
+                    win_rate_pct=0.0,
+                    avg_return_pct=0.0,
+                    avg_drawdown_pct=0.0,
+                    is_suspended=False,
+                )
+            )
+            continue
+
+        successes = sum(1 for t, _, _ in matching if t.status == "success")
+        win_rate = (successes / total_samples) * 100.0
+
+        returns = [
+            float(t.observed_outcome.get("price_change_pct", 0.0))
+            if isinstance(t.observed_outcome, dict)
+            else 0.0
+            for t, _, _ in matching
+        ]
+        drawdowns = [
+            float(t.observed_outcome.get("max_drawdown_pct", 0.0))
+            if isinstance(t.observed_outcome, dict)
+            else 0.0
+            for t, _, _ in matching
+        ]
+
+        avg_ret = sum(returns) / total_samples
+        avg_dd = sum(drawdowns) / total_samples
+
+        sorted_matching = sorted(matching, key=lambda x: x[0].created_at, reverse=True)
+        is_suspended = False
+        if len(sorted_matching) >= 3:
+            if all(x[0].status == "failure" for x in sorted_matching[:3]):
+                is_suspended = True
+
+        correlation_matrix.append(
+            CorrelationBucket(
+                score_range=label,
+                min_score=min_s,
+                max_score=max_s,
+                total_samples=total_samples,
+                win_rate_pct=round(win_rate, 2),
+                avg_return_pct=round(avg_ret, 2),
+                avg_drawdown_pct=round(avg_dd, 2),
+                is_suspended=is_suspended,
+            )
+        )
+
+    return OperatorInboxResponse(
+        alerts=paginated_alerts,
+        correlation_matrix=correlation_matrix,
     )

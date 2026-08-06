@@ -122,8 +122,7 @@ No detalhe do token, seguir sempre a mesma ordem:
 2. Para cada alerta: abrir o token, confirmar no breakdown, e **resolver/arquivar** o alerta.
 3. Alertas duplicados são deduplicados por janela de 30 min — se aparecerem duplicatas, é bug.
 
-> Entrega externa (email/Telegram/webhook) ainda **não existe** — os alertas vivem só na UI
-> e no log estruturado. Não confiar em ser notificado fora da plataforma.
+> 🔴 **Entrega Externa (Telegram):** Os alertas são entregues em tempo real para o canal configurado via Telegram Bot API em modo live (`AG47_DEMO_MODE=false`), desde que `AG47_TELEGRAM_BOT_TOKEN` e `AG47_TELEGRAM_CHAT_ID` estejam presentes no `.env`. Em modo demo, eles vivem apenas na UI e logs internos.
 
 ---
 
@@ -136,24 +135,19 @@ No detalhe do token, seguir sempre a mesma ordem:
 
 ---
 
-## 🌙 7. Encerramento do dia — operações CLI
+## 🌙 7. Ingestão Contínua e Backtesting — operações automáticas e CLI
 
-Com o ambiente Python ativo, em `apps/api`:
-
-```bash
-python -m ag47_radar.cli ingest --limit 10
-```
-
-```bash
-python -m ag47_radar.cli backtest --horizon-hours 24
-```
-
-- **Ingest** 🔴 (live): garante um ciclo de coleta antes de fechar, acumulando snapshots.
-- **Backtest**: mede se o score previu retorno. Enquanto não houver histórico real
-  suficiente, `skipped_no_entry`/`skipped_no_exit` altos são **esperados** — registrar
-  o número e acompanhar a queda dele ao longo dos dias.
-- Semanalmente: comparar `score_return_correlation` e hit rate por classificação;
-  divergências alimentam a calibração manual dos pesos (sem ML prematuro).
+* **Ingestão automática 🔴 (live):** Com a ativação do Job Scheduler no Sprint 7 (`AG47_SCHEDULER_ENABLED=true`), a ingestão de snapshots e cálculo do Truth Engine ocorrem de forma autônoma a cada 300 segundos na API rodando em background. A ingestão manual via CLI torna-se estritamente opcional/emergencial.
+* **Ingestão manual (opcional, com o ambiente ativo em `apps/api`):**
+  ```bash
+  python -m ag47_radar.cli ingest --limit 10
+  ```
+* **Backtesting e Análise de Edge:** Execute periodicamente para avaliar a taxa de acerto e correlação histórica dos scores:
+  ```bash
+  python -m ag47_radar.cli backtest --horizon-hours 24
+  ```
+  Enquanto o histórico do PostgreSQL estiver sendo populado, taxas de `skipped_no_entry`/`skipped_no_exit` altas são normais e tendem a diminuir com o acúmulo contínuo dos snapshots pelo scheduler.
+* **Semanalmente:** Comparar `score_return_correlation` e hit rate por classificação; divergências alimentam a calibração manual dos pesos (sem ML prematuro).
 
 ---
 
@@ -185,3 +179,4 @@ python -m ag47_radar.cli backtest --horizon-hours 24
 | Data       | Versão       | Mudança no software                                                        | Impacto no fluxo                                                                |
 | ---------- | ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | 2026-08-05 | `fluxo-v1.0` | Documento criado; GoPlus (risco EVM real) e comando `backtest` adicionados | Baseline: passo 3 passa a ter risco real em live; passo 7 (encerramento) criado |
+| 2026-08-05 | `fluxo-v1.1` | Integração do Telegram Bot (Sprint 6) e Scheduler em background (Sprint 7) | Passo 5 atualizado com entrega Telegram. Passo 7 atualizado para ingestão contínua em background via scheduler e persistência PostgreSQL. |

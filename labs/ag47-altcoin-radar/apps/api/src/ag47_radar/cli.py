@@ -6,7 +6,7 @@ import json
 from typing import Any
 
 from ag47_radar.config import get_settings
-from ag47_radar.db import close_database, create_schema, get_session_factory
+from ag47_radar.db import close_database, create_schema, get_session_factory, run_transaction_with_retry
 from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.services.backtest import run_backtest
 from ag47_radar.services.ingestion import run_ingestion_cycle
@@ -30,8 +30,13 @@ async def _ingest(limit: int) -> None:
     settings = get_settings()
     providers = ProviderRegistry(settings)
     try:
-        async with get_session_factory()() as session:
-            summary = await run_ingestion_cycle(session, settings, providers, limit=limit)
+        summary = await run_transaction_with_retry(
+            get_session_factory(),
+            run_ingestion_cycle,
+            settings,
+            providers,
+            limit=limit,
+        )
         print(
             json.dumps(
                 {

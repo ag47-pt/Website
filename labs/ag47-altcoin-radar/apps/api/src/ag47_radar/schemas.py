@@ -380,6 +380,7 @@ class TokenAlertRead(BaseModel):
     severity: float | None = None
     confidence: float | None = None
     status: str
+    confidence_level: str | None = None
     triggered_at: datetime
     read_at: datetime | None = None
     acknowledged_at: datetime | None = None
@@ -605,3 +606,19 @@ class EdgeAnalysisRead(ApiModel):
     drawdown_profile: DrawdownDistributionRead
     optimal_edge_zone: EdgeZoneRead
     demo_mode: bool
+
+
+class CorrelationBucket(ApiModel):
+    score_range: str
+    min_score: float
+    max_score: float
+    total_samples: int
+    win_rate_pct: float
+    avg_return_pct: float
+    avg_drawdown_pct: float
+    is_suspended: bool
+
+
+class OperatorInboxResponse(ApiModel):
+    alerts: PaginatedResponse[TokenAlertRead]
+    correlation_matrix: list[CorrelationBucket]

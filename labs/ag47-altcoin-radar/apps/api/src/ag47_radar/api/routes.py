@@ -21,6 +21,7 @@ from ag47_radar.schemas import (
     HealthResponse,
     MarketHistoryResponse,
     MicrostructureResponse,
+    OperatorInboxResponse,
     OpportunityItem,
     OpportunityScoreRead,
     PaginatedResponse,
@@ -122,6 +123,7 @@ from ag47_radar.services.queries import (
     get_token_detail,
     get_token_timeline,
     list_alerts,
+    list_edge_alerts,
     list_opportunities,
     list_watchlist,
     system_metrics,
@@ -362,6 +364,32 @@ async def alerts(
     )
 
 
+@api_router.get(
+    "/alerts/edge-inbox",
+    response_model=OperatorInboxResponse,
+    tags=["alerts"],
+    summary="Recent alerts with verified statistical edge and score correlation data",
+)
+async def alerts_edge_inbox(
+    token_id: Annotated[str | None, Query(min_length=36, max_length=36)] = None,
+    status: Annotated[str | None, Query()] = None,
+    confidence_level: Annotated[str | None, Query()] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> OperatorInboxResponse:
+    return await list_edge_alerts(
+        session,
+        settings,
+        token_id=token_id,
+        status=status,
+        confidence_level=confidence_level,
+        page=page,
+        page_size=page_size,
+    )
+
+
 @api_router.patch(
     "/alerts/{alert_id}",
     response_model=TokenAlertRead,
@@ -413,6 +441,7 @@ async def update_alert(
         severity=alert.severity,
         confidence=alert.confidence,
         status=alert.status,
+        confidence_level=alert.confidence_level,
         triggered_at=ensure_utc(alert.triggered_at),
         read_at=ensure_utc(alert.read_at),
         acknowledged_at=ensure_utc(alert.acknowledged_at),

@@ -156,4 +156,71 @@ async def validate_historical_hypotheses(db: AsyncSession) -> None:
                 gk.success_count, gk.failure_count, gk.neutral_count
             )
 
+            # Update score bucket stats in GlobalKnowledge
+            from ag47_radar.models import OpportunityScore
+            score_val = metadata.get("score")
+            if score_val is None:
+                score_stmt = (
+                    select(OpportunityScore)
+                    .where(
+                        and_(
+                            OpportunityScore.token_id == hypothesis.token_id,
+                            OpportunityScore.calculated_at <= hypothesis.created_at,
+                        )
+                    )
+                    .order_by(OpportunityScore.calculated_at.desc())
+                    .limit(1)
+                )
+                score_obj = (await db.execute(score_stmt)).scalars().first()
+                score_val = float(score_obj.final_score) if score_obj else 5.0
+            else:
+                score_val = float(score_val)
+
+            SCORE_BUCKETS = [
+                (0.0, 4.0),
+                (4.0, 6.0),
+                (6.0, 7.0),
+                (7.0, 8.0),
+                (8.0, 9.0),
+                (9.0, 10.0),
+            ]
+            bucket = next(
+                (b for b in SCORE_BUCKETS if (b[0] <= score_val < b[1] if b[1] < 10.0 else b[0] <= score_val <= b[1])),
+                (5.0, 6.0)
+            )
+            bucket_pattern_name = f"score_bucket_{bucket[0]}_{bucket[1]}"
+
+            gk_bucket_stmt = select(GlobalKnowledge).where(
+                GlobalKnowledge.pattern_name == bucket_pattern_name,
+                GlobalKnowledge.validation_window == f"{timeframe_hours}h",
+                GlobalKnowledge.market_regime == market_regime,
+                GlobalKnowledge.chain == chain,
+            )
+            gk_bucket = (await db.execute(gk_bucket_stmt)).scalars().first()
+            if not gk_bucket:
+                gk_bucket = GlobalKnowledge(
+                    pattern_name=bucket_pattern_name,
+                    description=f"Estatisticas do bucket de score {bucket[0]} a {bucket[1]}",
+                    market_regime=market_regime,
+                    chain=chain,
+                    validation_window=f"{timeframe_hours}h",
+                    total_occurrences=0,
+                    success_count=0,
+                    failure_count=0,
+                    neutral_count=0,
+                )
+                db.add(gk_bucket)
+
+            gk_bucket.total_occurrences += 1
+            if status == "success":
+                gk_bucket.success_count += 1
+            elif status == "failure":
+                gk_bucket.failure_count += 1
+            else:
+                gk_bucket.neutral_count += 1
+
+            gk_bucket.historical_confidence = calculate_historical_confidence(
+                gk_bucket.success_count, gk_bucket.failure_count, gk_bucket.neutral_count
+            )
+
     await db.commit()

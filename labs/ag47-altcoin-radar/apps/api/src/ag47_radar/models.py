@@ -338,6 +338,7 @@ class TokenAlert(Base):
     severity: Mapped[float | None] = mapped_column(Float, nullable=True)
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="unread")
+    confidence_level: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     triggered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -543,6 +544,7 @@ class TokenTruth(Base):
     __table_args__ = (
         Index("ix_truths_token_created", "token_id", "created_at"),
         UniqueConstraint("hypothesis_id", name="uq_token_truths_hypothesis"),
+        Index("ix_truths_status_created", "status", "created_at"),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)

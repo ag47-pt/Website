@@ -167,8 +167,10 @@ async def evaluate_single_hypothesis(
     )
 
 
-async def run_truth_engine(db: AsyncSession) -> list[TokenTruth]:
-    """Runs the Truth Engine: processes all pending unvalidated hypotheses and updates GlobalKnowledge."""
+async def run_truth_engine(db: AsyncSession, token_id: str | None = None) -> list[TokenTruth]:
+    """Runs the Truth Engine: processes all pending unvalidated hypotheses
+    and updates GlobalKnowledge.
+    """
     logger.info("Executing Truth Engine empirical hypothesis validation...")
     now = utc_now()
 
@@ -177,11 +179,19 @@ async def run_truth_engine(db: AsyncSession) -> list[TokenTruth]:
         .outerjoin(TokenTruth, TokenTruth.hypothesis_id == TokenHypothesis.id)
         .where(TokenTruth.id == None)  # noqa: E711
     )
+    if token_id is not None:
+        stmt_unvalidated = stmt_unvalidated.where(TokenHypothesis.token_id == token_id)
 
     hypotheses = (await db.execute(stmt_unvalidated)).scalars().all()
     created_truths: list[TokenTruth] = []
 
     for hypothesis in hypotheses:
+        # Prevent concurrent executions from inserting duplicate truths
+        existing_stmt = select(TokenTruth).where(TokenTruth.hypothesis_id == hypothesis.id)
+        existing_truth = (await db.execute(existing_stmt)).scalars().first()
+        if existing_truth is not None:
+            continue
+
         res = await evaluate_single_hypothesis(db, hypothesis, now)
         if res is None:
             continue

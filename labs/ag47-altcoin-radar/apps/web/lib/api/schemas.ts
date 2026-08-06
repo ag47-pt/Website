@@ -245,6 +245,7 @@ export const alertSchema = z.object({
   severity: nullableNumber,
   confidence: nullableNumber,
   status: z.enum(["unread", "read", "acknowledged", "dismissed"]),
+  confidence_level: z.string().nullable().optional(),
   triggered_at: z.string(),
   read_at: z.string().nullable(),
   acknowledged_at: z.string().nullable(),
@@ -254,6 +255,22 @@ export const alertSchema = z.object({
 });
 
 export const alertsResponseSchema = paginatedSchema(alertSchema);
+
+export const correlationBucketSchema = z.object({
+  score_range: z.string(),
+  min_score: z.number(),
+  max_score: z.number(),
+  total_samples: z.number(),
+  win_rate_pct: z.number(),
+  avg_return_pct: z.number(),
+  avg_drawdown_pct: z.number(),
+  is_suspended: z.boolean(),
+});
+
+export const operatorInboxResponseSchema = z.object({
+  alerts: alertsResponseSchema,
+  correlation_matrix: z.array(correlationBucketSchema),
+});
 
 export const timelineItemBaseSchema = z.object({
   id: z.string(),
@@ -308,6 +325,8 @@ export type SocialResponse = z.infer<typeof socialResponseSchema>;
 export type Risk = z.infer<typeof riskSchema>;
 export type Score = z.infer<typeof scoreSchema>;
 export type Alert = z.infer<typeof alertSchema>;
+export type CorrelationBucket = z.infer<typeof correlationBucketSchema>;
+export type OperatorInboxResponse = z.infer<typeof operatorInboxResponseSchema>;
 export type WatchlistItem = z.infer<typeof watchlistItemSchema>;
 export type TimelineItem = z.infer<typeof timelineItemSchema>;
 export type TimelineEvent = z.infer<typeof timelineEventSchema>;

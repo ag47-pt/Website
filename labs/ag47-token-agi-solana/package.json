@@ -1,0 +1,33 @@
+{
+  "name": "@ag47/token-agi-landing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.2.6",
+    "@fontsource-variable/manrope": "^5.2.6",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "1.28.0",
+    "next": "16.2.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.2.6",
+    "prettier": "^3.7.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.9.3"
+  }
+}
