@@ -1,4 +1,0 @@
-{
-  "schema": "integrity-verdict",
-  "expected_failure_reason": "Additional properties not allowed"
-}

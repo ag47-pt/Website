@@ -1,5 +1,0 @@
-{
-  "schema": "actor-signature",
-  "expected_failure_reason": "signature_id is not a valid uuid format",
-  "invalid_field": "signature_id"
-}

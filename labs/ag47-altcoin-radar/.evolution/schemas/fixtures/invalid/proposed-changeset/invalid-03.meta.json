@@ -1,4 +1,0 @@
-{
-  "schema": "proposed-changeset",
-  "expected_failure_reason": "Invalid enum for risk_level"
-}

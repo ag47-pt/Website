@@ -1,0 +1,39 @@
+{
+  "$schema": "../../schemas/core/system-snapshot.schema.json",
+  "project_id": "ag47-altcoin-radar",
+  "timestamp": "2026-08-07T03:32:07.258730+00:00",
+  "environment": {
+    "os": "Windows",
+    "language": "python/typescript",
+    "frameworks": [
+      "nextjs",
+      "fastapi"
+    ]
+  },
+  "architecture": {
+    "directories": [
+      "apps",
+      "docs",
+      "infrastructure",
+      "scripts"
+    ],
+    "key_files": [
+      "README.md",
+      "docker-compose.yml",
+      "package.json"
+    ]
+  },
+  "state": {
+    "git_branch": "main",
+    "dirty": true
+  },
+  "metrics": {
+    "total_files": 688,
+    "excluded_files": 13,
+    "source_lines": 67032,
+    "documentation_lines": 1975,
+    "data_lines": 1242,
+    "generated_lines": 10370,
+    "lines_of_code": 67032
+  }
+}

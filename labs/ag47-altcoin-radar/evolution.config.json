@@ -1,0 +1,54 @@
+{
+  "project": {
+    "name": "ag47-altcoin-radar",
+    "root": "."
+  },
+  "version": "1.0.0",
+  "kernel": {
+    "version": "0.1",
+    "strict_mode": true
+  },
+  "inspection": {
+    "include": [
+      "apps/**",
+      "infrastructure/**",
+      "scripts/**",
+      "tests/**",
+      "docs/**",
+      "pyproject.toml",
+      "package.json",
+      "README.md",
+      "docker-compose.yml"
+    ],
+    "exclude": [
+      ".git/**",
+      ".evolution/**",
+      "evolution-kernel/**",
+      "evolution-protocol/**",
+      "evolution-playground/**",
+      "**/__pycache__/**",
+      "**/.venv/**",
+      ".venv/**",
+      "**/node_modules/**",
+      "node_modules/**",
+      ".pytest_cache/**",
+      ".mypy_cache/**",
+      ".ruff_cache/**",
+      ".claude/**",
+      "PROTOCOL_*.md",
+      "LOT_*_SCHEMA_AUDIT_REPORT.md",
+      "SCHEMA_*_REPORT.md",
+      "AG47_RADAR_DUMP/**"
+    ]
+  },
+  "agents": {
+    "override_dir": "./.evolution/agents",
+    "allow_custom_agents": true
+  },
+  "budget_defaults": {
+    "max_agent_calls": 10,
+    "max_retries": 3,
+    "max_tokens": 100000,
+    "max_execution_time_minutes": 30
+  }
+}

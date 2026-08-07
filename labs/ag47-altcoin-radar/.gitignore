@@ -34,3 +34,7 @@ Thumbs.db
 
 # Root-level stray DB
 data/
+
+# Evolution Protocol Runtime Artifacts
+.evolution/logs/
+.evolution/runtime/snapshots/*.json

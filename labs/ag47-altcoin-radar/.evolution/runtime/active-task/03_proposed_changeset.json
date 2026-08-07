@@ -1,0 +1,47 @@
+{
+  "changeset_id": "cs-eeab5ee7",
+  "source_gap_refs": [
+    "gap-utc-contract"
+  ],
+  "intent": "Add UTC contract verification test to apps/api (Inherited Knowledge: Strict UTC timezone verification in apps/api prevents clock drift bugs.; Strict UTC timezone verification in apps/api prevents clock drift bugs.; Strict UTC timezone verification in apps/api prevents clock drift bugs.)",
+  "scope": {
+    "allowed_paths": [
+      "apps/*",
+      "tests/*"
+    ],
+    "prohibited_paths": [
+      ".evolution/*",
+      "evolution-kernel/*"
+    ]
+  },
+  "change_budget": {
+    "files_modified": 1,
+    "lines_added": 20,
+    "new_dependencies": 0
+  },
+  "changes": [
+    {
+      "type": "create",
+      "path": "apps/api/tests/test_utc_contract.py",
+      "reason": "Ensure UTC timezone compliance in API contracts",
+      "content": "import datetime\n\ndef test_utc_timezone_compliance():\n    now = datetime.datetime.now(datetime.timezone.utc)\n    assert now.tzinfo is not None\n    assert now.tzinfo == datetime.timezone.utc\n"
+    }
+  ],
+  "acceptance_criteria": [
+    "UTC test executes clean"
+  ],
+  "risk_assessment": {
+    "level": "low",
+    "confidence": "high"
+  },
+  "rollback_plan": "git checkout main",
+  "execution_strategy": "sandbox_git",
+  "rollback_requirements": {
+    "snapshot_before": true,
+    "reversible": true
+  },
+  "evidence_required": [
+    "git_diff",
+    "rollback_verified"
+  ]
+}

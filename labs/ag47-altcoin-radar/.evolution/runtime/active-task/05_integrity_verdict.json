@@ -1,0 +1,8 @@
+{
+  "verdict_id": "verdict-713af370",
+  "verdict": "ALLOW",
+  "evidence": [
+    "git_diff_lines:7",
+    "rollback_verified:PASS"
+  ]
+}

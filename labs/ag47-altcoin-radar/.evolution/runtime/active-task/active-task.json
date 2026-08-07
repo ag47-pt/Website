@@ -1,0 +1,6 @@
+{
+  "task_id": "task-utc",
+  "optimization_objectives": [
+    "reliability"
+  ]
+}

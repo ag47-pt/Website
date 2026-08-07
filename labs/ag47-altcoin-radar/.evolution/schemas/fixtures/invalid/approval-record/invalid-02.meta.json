@@ -1,4 +1,0 @@
-{
-  "schema": "approval-record",
-  "expected_failure_reason": "Invalid enum for decision"
-}

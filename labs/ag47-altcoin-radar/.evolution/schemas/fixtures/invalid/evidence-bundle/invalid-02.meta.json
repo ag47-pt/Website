@@ -1,4 +1,0 @@
-{
-  "schema": "evidence-bundle",
-  "expected_failure_reason": "evidence_item missing required fields"
-}

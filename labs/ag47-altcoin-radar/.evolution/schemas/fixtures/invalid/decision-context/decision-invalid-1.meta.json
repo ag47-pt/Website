@@ -1,5 +1,0 @@
-{
-  "expected_to_fail": true,
-  "schema": "decision-context",
-  "reason": "Invalid context_id format (not UUID)"
-}

@@ -1,5 +1,0 @@
-{
-  "schema": "change-budget",
-  "expected_failure_reason": "max_cost_usd is not a number",
-  "invalid_field": "max_cost_usd"
-}

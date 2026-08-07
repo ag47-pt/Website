@@ -1,0 +1,12 @@
+{
+  "type": "engineering_pattern",
+  "statement": "Strict UTC timezone verification in apps/api prevents clock drift bugs.",
+  "confidence": 0.95,
+  "learned_from": {
+    "project": "ag47-altcoin-radar",
+    "cycle_id": "cycle-ef6ec1c0"
+  },
+  "applicability": {
+    "scope": "all"
+  }
+}

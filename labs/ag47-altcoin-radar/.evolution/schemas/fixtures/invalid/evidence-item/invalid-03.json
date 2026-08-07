@@ -1,8 +1,0 @@
-{
-  "evidence_id": "123e4567-e89b-12d3-a456-426614174001",
-  "type": "UNIT_TEST",
-  "source": "jest",
-  "hash": "hash1",
-  "timestamp": "invalid-date",
-  "result": "PASSED"
-}

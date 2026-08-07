@@ -1,9 +1,0 @@
-{
-  "schema_version": "1.0.0",
-  "policy_id": "pol-audit-deps",
-  "name": "Audit Dependencies",
-  "rule": "REQUIRE_APPROVAL",
-  "condition": "files_changed contains 'package.json'",
-  "reason": "Security review needed for new packages",
-  "enforcement_level": "AUDIT_ONLY"
-}

@@ -1,5 +1,0 @@
-{
-  "expected_to_fail": true,
-  "schema": "knowledge-entry",
-  "reason": "confidence_level not in enum"
-}

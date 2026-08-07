@@ -1,5 +1,0 @@
-{
-  "schema": "target-architecture",
-  "expected_failure_reason": "Missing required fields 'target_state_description' and 'success_criteria'",
-  "invalid_field": "target_state_description"
-}

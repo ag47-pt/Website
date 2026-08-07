@@ -1,0 +1,10 @@
+{
+  "gap_id": "gap-utc-contract",
+  "gaps": [
+    {
+      "id": "gap-utc-contract",
+      "description": "Missing UTC contract validation in apps/api"
+    }
+  ],
+  "summary": "Architecture gap identified"
+}

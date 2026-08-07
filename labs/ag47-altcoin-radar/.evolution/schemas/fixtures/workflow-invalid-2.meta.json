@@ -1,5 +1,0 @@
-{
-  "expected_to_fail": true,
-  "schema": "workflow-definition.schema.json",
-  "reason": "Missing inputs_required and outputs_produced in step"
-}

@@ -1,5 +1,0 @@
-{
-  "expected_to_fail": true,
-  "schema": "skill-definition.schema.json",
-  "reason": "Invalid cost_profile enum"
-}

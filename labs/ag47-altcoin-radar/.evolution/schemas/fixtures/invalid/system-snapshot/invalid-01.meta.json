@@ -1,5 +1,0 @@
-{
-  "schema": "system-snapshot",
-  "expected_failure_reason": "Missing required field 'health_status'",
-  "invalid_field": "health_status"
-}

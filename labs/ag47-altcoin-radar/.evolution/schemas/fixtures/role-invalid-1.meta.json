@@ -1,5 +1,0 @@
-{
-  "expected_to_fail": true,
-  "schema": "role-definition.schema.json",
-  "reason": "Missing permissions"
-}

@@ -1,9 +1,0 @@
-{
-  "signature_id": "123e4567-e89b-12d3-a456-426614174002",
-  "actor_type": "AI_AGENT",
-  "actor_id": "orchestrator",
-  "timestamp": "2026-08-06T23:00:00Z",
-  "action": "MODIFIED",
-  "target_resource": "app.py",
-  "artifact_hash": "b2c3d4e5f6g7"
-}

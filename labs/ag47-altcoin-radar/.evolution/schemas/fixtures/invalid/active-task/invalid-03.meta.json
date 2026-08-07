@@ -1,5 +1,0 @@
-{
-  "schema": "active-task",
-  "expected_failure_reason": "Additional properties are not allowed",
-  "invalid_field": "extra"
-}

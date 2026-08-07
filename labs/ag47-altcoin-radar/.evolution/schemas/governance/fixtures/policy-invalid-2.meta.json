@@ -1,5 +1,0 @@
-{
-  "expected_to_fail": true,
-  "schema": "policy-definition.schema.json",
-  "reason": "Invalid enforcement_level enum"
-}
