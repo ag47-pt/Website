@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-08-06T22:57:04.359Z",
+  "node": "v22.18.0",
+  "gates": [
+    {
+      "id": "lint",
+      "label": "Lint",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 8389
+    },
+    {
+      "id": "typecheck",
+      "label": "Typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 4317
+    },
+    {
+      "id": "build",
+      "label": "Build",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 11837
+    }
+  ]
+}

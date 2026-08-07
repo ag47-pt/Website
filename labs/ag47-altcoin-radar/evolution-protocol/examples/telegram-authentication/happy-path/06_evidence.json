@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "bundle_id": "evb-teleauth-01",
+  "report_ref": {
+    "ref_id": "rep-teleauth-01",
+    "hash": "rep123456789hash"
+  },
+  "items": [
+    {
+      "schema_version": "1.0.0",
+      "evidence_id": "ev-01",
+      "type": "TEST_RESULT",
+      "source": "pytest auth module",
+      "value": "12 passed in 1.43s",
+      "confidence": 1.0,
+      "timestamp": "2026-08-07T10:05:00Z"
+    },
+    {
+      "schema_version": "1.0.0",
+      "evidence_id": "ev-02",
+      "type": "LINT_RESULT",
+      "source": "flake8",
+      "value": "0 errors",
+      "confidence": 1.0,
+      "timestamp": "2026-08-07T10:05:15Z"
+    }
+  ],
+  "confidence": 1.0,
+  "collected_at": "2026-08-07T10:06:00Z"
+}

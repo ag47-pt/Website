@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schemas/core/target-architecture.schema.json",
+  "required": [
+    "authentication",
+    "pytest",
+    "postgresql",
+    "telegram-provider"
+  ]
+}

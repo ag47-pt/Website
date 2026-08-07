@@ -1,0 +1,4 @@
+{
+  "schema": "artifact-reference",
+  "expected_failure_reason": "Additional properties not allowed"
+}

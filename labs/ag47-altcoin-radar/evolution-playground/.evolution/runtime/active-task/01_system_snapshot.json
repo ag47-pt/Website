@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schemas/core/system-snapshot.schema.json",
+  "project_id": "evolution-playground",
+  "timestamp": "2026-08-06T23:25:13.079635Z",
+  "environment": {
+    "os": "Windows",
+    "language": "Python",
+    "frameworks": [
+      "FastAPI"
+    ]
+  },
+  "architecture": {
+    "directories": [
+      "src",
+      "tests"
+    ],
+    "key_files": [
+      "README.md",
+      "requirements.txt"
+    ],
+    "architecture_patterns": [
+      "src-layout"
+    ]
+  },
+  "dependencies": [
+    {
+      "name": "fastapi",
+      "version": "0.103.1",
+      "source": "requirements.txt"
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.23.0",
+      "source": "requirements.txt"
+    }
+  ],
+  "test_frameworks": [
+    "unknown-test-framework"
+  ],
+  "risks": [],
+  "state": {
+    "git_branch": "main",
+    "dirty": true
+  },
+  "metrics": {
+    "total_files": 5,
+    "lines_of_code": 2
+  }
+}

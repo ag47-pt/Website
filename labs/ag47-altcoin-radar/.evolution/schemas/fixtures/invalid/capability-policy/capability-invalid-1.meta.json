@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "capability-policy",
+  "reason": "skill_refs array minItems is 1"
+}

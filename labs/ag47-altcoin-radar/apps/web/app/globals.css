@@ -86,6 +86,16 @@ button:disabled {
   background: #29404e;
 }
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
 /* Sem `position` aqui de propósito: utilitários como `absolute` (dropdowns) têm de vencer. */
 .panel {
   border: 1px solid rgb(78 130 160 / 0.22);
@@ -177,6 +187,14 @@ button:disabled {
   to {
     transform: translateX(100%);
   }
+}
+
+body.is-sidebar-resizing * {
+  pointer-events: none !important;
+}
+body.is-sidebar-resizing aside,
+body.is-sidebar-resizing aside * {
+  transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

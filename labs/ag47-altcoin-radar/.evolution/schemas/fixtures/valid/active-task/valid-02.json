@@ -1,0 +1,11 @@
+{
+  "task_id": "TASK-2",
+  "status": "PENDING",
+  "assignee": "system",
+  "description": "Waiting for dependency",
+  "acceptance_criteria": [],
+  "budget_ref": "123e4567-e89b-12d3-a456-426614174001",
+  "dependencies": [
+    "TASK-1"
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "schema": "evidence-bundle",
+  "expected_failure_reason": "Missing subject_refs"
+}

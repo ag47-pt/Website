@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/active-task",
+  "title": "Active Task",
+  "description": "Currently executing task with budget and criteria.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "IN_PROGRESS", "IN_REVIEW", "BLOCKED", "COMPLETED", "FAILED"]
+    },
+    "assignee": { "type": "string" },
+    "description": { "type": "string" },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "budget_ref": {
+      "type": "string",
+      "description": "Reference ID for the change budget."
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "artifacts_produced": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "optimization_objectives": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Priorities for the planner, e.g. security, low_cost, minimal_changes."
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Strict prohibitions for the task."
+    },
+    "complexity_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_risk_score": { "type": "integer" },
+        "max_architecture_layers_affected": { "type": "integer" }
+      },
+      "required": ["max_risk_score", "max_architecture_layers_affected"]
+    }
+  },
+  "required": ["task_id", "status", "assignee", "description", "acceptance_criteria", "budget_ref"]
+}

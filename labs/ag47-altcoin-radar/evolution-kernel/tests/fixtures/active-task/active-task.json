@@ -1,0 +1,9 @@
+{
+  "task_id": "task-01",
+  "status": "PENDING",
+  "assignee": "system",
+  "description": "Test",
+  "acceptance_criteria": ["test"],
+  "budget_ref": "b1",
+  "optimization_objectives": ["security"]
+}

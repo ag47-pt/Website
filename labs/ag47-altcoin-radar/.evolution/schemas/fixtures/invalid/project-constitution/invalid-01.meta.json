@@ -1,0 +1,5 @@
+{
+  "schema": "project-constitution",
+  "expected_failure_reason": "Missing required field 'domain'",
+  "invalid_field": "domain"
+}

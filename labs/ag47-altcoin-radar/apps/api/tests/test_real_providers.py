@@ -150,6 +150,18 @@ async def test_telegram_alert_delivery_provider_success(settings):
 
 
 @pytest.mark.asyncio
+async def test_telegram_public_social_provider_success(settings):
+    from ag47_radar.providers.social import TelegramPublicSocialProvider
+    
+    provider = TelegramPublicSocialProvider(settings)
+    
+    # It currently returns unknown gracefully
+    result = await provider.collect("solana:test_token")
+    assert result.data is None
+    assert result.quality.name == "UNKNOWN"
+    assert any(e.code == "telegram_chat_id_unknown" for e in result.partial_errors)
+
+@pytest.mark.asyncio
 async def test_routing_providers(settings):
     risk_router = RoutingContractRiskProvider(settings)
     holder_router = RoutingHolderProvider(settings)
@@ -176,15 +188,25 @@ async def test_routing_providers(settings):
         res_evm_h = await holder_router.get_holders(Chain.ETHEREUM, "addr2")
         assert res_sol_h == "solana_holders"
         assert res_evm_h == "evm_holders"
+        
+    from ag47_radar.providers.social import RoutingSocialProvider
+    social_router = RoutingSocialProvider(settings)
+    
+    with patch.object(social_router.telegram, "collect", AsyncMock(return_value="telegram_social")):
+        res_social = await social_router.collect("solana:test_token")
+        assert res_social == "telegram_social"
 
 
 @pytest.mark.asyncio
 async def test_registry_integration(settings):
     # Test registry instantiation under real mode
     registry = ProviderRegistry(settings)
+    from ag47_radar.providers.social import RoutingSocialProvider
+    
     assert isinstance(registry.holders, RoutingHolderProvider)
     assert isinstance(registry.risk, RoutingContractRiskProvider)
     assert isinstance(registry.alert_delivery, TelegramAlertDeliveryProvider)
+    assert isinstance(registry.social, RoutingSocialProvider)
 
     # Clean up registry
     await registry.close()

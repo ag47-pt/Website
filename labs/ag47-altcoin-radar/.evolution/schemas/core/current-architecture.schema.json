@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/current-architecture",
+  "title": "Current Architecture",
+  "description": "Snapshot of the current architectural state of the system.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "last_updated": { "type": "string", "format": "date-time" },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["id", "name", "type"]
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "type": { "type": "string" }
+        },
+        "required": ["source", "target"]
+      }
+    },
+    "data_models": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "api_contracts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "known_technical_debt": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["version", "last_updated", "components", "dependencies"]
+}

@@ -1,0 +1,4 @@
+{
+  "schema": "integrity-verdict",
+  "expected_failure_reason": "Invalid enum for result"
+}

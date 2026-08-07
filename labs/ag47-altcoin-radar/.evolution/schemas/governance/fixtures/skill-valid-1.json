@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "skill_id": "python-analyzer",
+  "name": "Python Analyzer",
+  "description": "Analyzes Python AST",
+  "objective": "Identify security vulnerabilities in Python files",
+  "inputs": [
+    "source_code"
+  ],
+  "outputs": [
+    "vulnerability_report"
+  ],
+  "tools_required": [
+    "ast_parser"
+  ],
+  "boundaries": [
+    "read_only"
+  ],
+  "cost_profile": "MEDIUM",
+  "test_criteria": [
+    "must_detect_eval"
+  ],
+  "version": "1.2.0"
+}

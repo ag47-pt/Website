@@ -333,4 +333,3 @@ async def test_process_alert_rules_confidence_levels(
     )
     assert len(alerts) == 1
     assert alerts[0].confidence_level == "confirmado"
-

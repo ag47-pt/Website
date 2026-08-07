@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/common/artifact-reference",
+  "title": "Artifact Reference",
+  "description": "Standardized reference to an artifact including hash for integrity.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ref_id": { "type": "string" },
+    "uri": { "type": "string" },
+    "hash": { "type": "string" }
+  },
+  "required": ["ref_id", "hash"]
+}

@@ -9,13 +9,13 @@ from __future__ import annotations
 from ag47_radar.schemas import EvolutionStatusRead
 
 EVOLUTION_STATUS = EvolutionStatusRead(
-    phase="Sprint 7",
-    phase_title="Infraestrutura de Produção e Ingestão Contínua",
+    phase="Sprint 11",
+    phase_title="Webhook Outbound Assinado, Painel Multi-Chain e Exportação Epistemológica",
     now=(
-        "Configuração de suporte PostgreSQL, ativação do background scheduler e "
-        "loop autônomo de ingestão/TruthEngine."
+        "Monitoramento de desempenho teórico, PNL simulado e métricas de "
+        "Paper Trading sem exposição financeira real."
     ),
-    completed_steps=6,
-    total_steps=8,
+    completed_steps=10,
+    total_steps=12,
     goal="Lóbulo Observacional do Organismo Cognitivo",
 )

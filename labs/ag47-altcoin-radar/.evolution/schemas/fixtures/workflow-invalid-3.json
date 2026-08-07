@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "workflow_id": "wf_bug_fix",
+  "name": "Bug Fix Cycle",
+  "steps": [
+    {
+      "step_name": "planning",
+      "role_required": "planner",
+      "inputs_required": [
+        "context"
+      ],
+      "outputs_produced": [
+        "evolution_hypothesis"
+      ]
+    }
+  ]
+}

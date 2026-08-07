@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "role-definition",
+  "reason": "Permissions array minItems is 1"
+}

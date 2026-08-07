@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "workflow-definition",
+  "reason": "Invalid workflow_id pattern"
+}

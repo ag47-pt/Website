@@ -1,0 +1,5 @@
+{
+  "schema": "target-architecture",
+  "expected_failure_reason": "success_criteria is not an array",
+  "invalid_field": "success_criteria"
+}

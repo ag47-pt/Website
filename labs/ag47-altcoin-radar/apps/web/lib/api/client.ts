@@ -17,7 +17,13 @@ import {
   notificationDeliveryDetailSchema,
   paginatedSchema,
   type OpportunityFilters,
+  multiChainStatusSchema,
+  virtualPositionSchema,
+  virtualPortfolioMetricsSchema,
+  gridSearchResponseSchema,
+  applyWeightsResponseSchema,
 } from "./schemas";
+
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 const REQUEST_TIMEOUT_MS = 12_000;
@@ -199,7 +205,7 @@ export const radarApi = {
       userNotificationSettingsSchema
     );
   },
-  updateUserNotificationSettings(payload: { min_severity: number; min_confidence: number; allowed_chains: string[] }) {
+  updateUserNotificationSettings(payload: { min_severity: number; min_confidence: number; allowed_chains: string[]; webhook_url?: string; webhook_secret?: string }) {
     return apiRequest(
       "/api/v1/system/notification-settings",
       userNotificationSettingsSchema,
@@ -221,5 +227,58 @@ export const radarApi = {
       paginatedSchema(notificationDeliveryDetailSchema)
     );
   },
+  getChainStatus(signal?: AbortSignal) {
+    return apiRequest("/api/v1/system/chains/status", multiChainStatusSchema, { signal });
+  },
+  testWebhook() {
+    return apiRequest(
+      "/api/v1/system/webhook/test",
+      z.object({ success: z.boolean(), status_code: z.number().optional(), error: z.string().optional(), duration_ms: z.number().nullable().optional() }),
+      { method: "POST" },
+    );
+  },
+  async downloadTruthDataset(format: "json" | "csv" = "json") {
+    const response = await fetch(
+      `${API_URL}/api/v1/system/export/truth-dataset?format=${format}`,
+      { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
+    );
+    if (!response.ok) throw new ApiError(`Export failed (${response.status}).`, response.status);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `truth-dataset.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+  getPortfolioMetrics(signal?: AbortSignal) {
+    return apiRequest("/api/v1/portfolio/metrics", virtualPortfolioMetricsSchema, { signal });
+  },
+  getPortfolioPositions(signal?: AbortSignal) {
+    return apiRequest("/api/v1/portfolio/positions", z.array(virtualPositionSchema), { signal });
+  },
+  getPortfolioEquityCurve(interval: string = "1d", signal?: AbortSignal) {
+    return apiRequest(`/api/v1/portfolio/equity-curve?interval=${interval}`, z.array(z.object({ timestamp: z.string(), value: z.number() })), { signal });
+  },
+  optimizeWeights(horizonHours: number = 24, signal?: AbortSignal) {
+    return apiRequest(
+      `/api/v1/system/optimize-weights?horizon_hours=${horizonHours}`,
+      gridSearchResponseSchema,
+      { method: "POST", signal }
+    );
+  },
+  applyWeights(weights: Record<string, number>) {
+    return apiRequest(
+      "/api/v1/system/apply-weights",
+      applyWeightsResponseSchema,
+      {
+        method: "POST",
+        body: JSON.stringify({ weights }),
+      }
+    );
+  },
 };
+
 

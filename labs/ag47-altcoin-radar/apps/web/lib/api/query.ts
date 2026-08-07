@@ -187,7 +187,7 @@ export function useUpdateUserNotificationSettingsMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: { min_severity: number; min_confidence: number; allowed_chains: string[] }) =>
+    mutationFn: (payload: { min_severity: number; min_confidence: number; allowed_chains: string[]; webhook_url?: string; webhook_secret?: string }) =>
       radarApi.updateUserNotificationSettings(payload),
     onSuccess: () => {
       return queryClient.invalidateQueries({ queryKey: ["notification-settings"] });
@@ -202,4 +202,63 @@ export function useSystemNotifications(page = 1, pageSize = 20, status?: string)
   });
 }
 
+export function useChainStatus() {
+  return useQuery({
+    queryKey: ["chain-status"],
+    queryFn: ({ signal }) => radarApi.getChainStatus(signal),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+}
+
+export function useTestWebhookMutation() {
+  return useMutation({
+    mutationFn: () => radarApi.testWebhook(),
+  });
+}
+
+export function useDownloadTruthDataset() {
+  return useMutation({
+    mutationFn: (format: "json" | "csv") => radarApi.downloadTruthDataset(format),
+  });
+}
+
+export function usePortfolioMetrics() {
+  return useQuery({
+    queryKey: ["portfolio-metrics"],
+    queryFn: ({ signal }) => radarApi.getPortfolioMetrics(signal),
+    refetchInterval: 30000,
+  });
+}
+
+export function usePortfolioPositions() {
+  return useQuery({
+    queryKey: ["portfolio-positions"],
+    queryFn: ({ signal }) => radarApi.getPortfolioPositions(signal),
+    refetchInterval: 30000,
+  });
+}
+
+export function usePortfolioEquityCurve(interval: string = "1d") {
+  return useQuery({
+    queryKey: ["portfolio-equity-curve", interval],
+    queryFn: ({ signal }) => radarApi.getPortfolioEquityCurve(interval, signal),
+  });
+}
+
+export function useOptimizeWeightsMutation() {
+  return useMutation({
+    mutationFn: (horizonHours?: number) => radarApi.optimizeWeights(horizonHours),
+  });
+}
+
+export function useApplyWeightsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (weights: Record<string, number>) => radarApi.applyWeights(weights),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.status });
+    },
+  });
+}
 

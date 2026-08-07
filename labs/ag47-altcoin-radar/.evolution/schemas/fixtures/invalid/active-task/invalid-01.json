@@ -1,0 +1,9 @@
+{
+  "task_id": "TASK-1",
+  "status": "IN_PROGRESS",
+  "assignee": "agent-1",
+  "description": "desc",
+  "acceptance_criteria": [
+    "crit 1"
+  ]
+}

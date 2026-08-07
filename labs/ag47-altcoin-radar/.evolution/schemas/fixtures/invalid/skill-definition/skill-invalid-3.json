@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "skill_id": "db-migrator",
+  "name": "DB Migrator",
+  "description": "Runs migrations",
+  "objective": "Apply database changes",
+  "inputs": [
+    "sql_files"
+  ],
+  "outputs": [
+    "migration_log"
+  ],
+  "boundaries": [
+    "only_target_db"
+  ],
+  "cost_profile": "HIGH",
+  "test_criteria": [
+    "must_rollback_on_error"
+  ]
+}

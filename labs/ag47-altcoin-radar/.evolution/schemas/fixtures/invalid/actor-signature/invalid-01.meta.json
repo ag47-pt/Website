@@ -1,0 +1,5 @@
+{
+  "schema": "actor-signature",
+  "expected_failure_reason": "Missing required field 'actor_id'",
+  "invalid_field": "actor_id"
+}

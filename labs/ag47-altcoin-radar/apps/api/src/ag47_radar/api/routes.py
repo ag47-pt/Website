@@ -21,6 +21,8 @@ from ag47_radar.schemas import (
     HealthResponse,
     MarketHistoryResponse,
     MicrostructureResponse,
+    MultiChainStatusResponse,
+    NotificationDeliveryDetailRead,
     OperatorInboxResponse,
     OpportunityItem,
     OpportunityScoreRead,
@@ -38,11 +40,10 @@ from ag47_radar.schemas import (
     TokenDetailResponse,
     TokenTruthRead,
     TruthSummaryRead,
-    WatchlistCreate,
-    WatchlistRead,
     UserNotificationSettingsRead,
     UserNotificationSettingsUpdate,
-    NotificationDeliveryDetailRead,
+    WatchlistCreate,
+    WatchlistRead,
 )
 
 health_router = APIRouter(tags=["system"])
@@ -202,7 +203,6 @@ async def reset_provider_circuit(
 ) -> dict[str, bool]:
     success = await providers.reset_circuit(provider_id)
     return {"success": success}
-
 
 
 @api_router.get(
@@ -666,6 +666,7 @@ async def get_user_notification_settings(
     session: AsyncSession = Depends(get_session),
 ) -> UserNotificationSettingsRead:
     from sqlalchemy import select
+
     from ag47_radar.models import UserNotificationSettings
 
     settings = await session.scalar(select(UserNotificationSettings))
@@ -678,7 +679,14 @@ async def get_user_notification_settings(
         session.add(settings)
         await session.commit()
         await session.refresh(settings)
-    return settings
+    return UserNotificationSettingsRead(
+        min_severity=settings.min_severity,
+        min_confidence=settings.min_confidence,
+        allowed_chains=settings.allowed_chains,
+        webhook_url=settings.webhook_url,
+        webhook_configured=bool(settings.webhook_url),
+        updated_at=settings.updated_at,
+    )
 
 
 @api_router.post(
@@ -692,6 +700,7 @@ async def update_user_notification_settings(
     session: AsyncSession = Depends(get_session),
 ) -> UserNotificationSettingsRead:
     from sqlalchemy import select
+
     from ag47_radar.models import UserNotificationSettings
 
     settings = await session.scalar(select(UserNotificationSettings))
@@ -711,10 +720,21 @@ async def update_user_notification_settings(
         settings.min_confidence = payload.min_confidence
     if payload.allowed_chains is not None:
         settings.allowed_chains = payload.allowed_chains
+    if payload.webhook_url is not None:
+        settings.webhook_url = payload.webhook_url
+    if payload.webhook_secret is not None:
+        settings.webhook_secret = payload.webhook_secret
 
     await session.commit()
     await session.refresh(settings)
-    return settings
+    return UserNotificationSettingsRead(
+        min_severity=settings.min_severity,
+        min_confidence=settings.min_confidence,
+        allowed_chains=settings.allowed_chains,
+        webhook_url=settings.webhook_url,
+        webhook_configured=bool(settings.webhook_url),
+        updated_at=settings.updated_at,
+    )
 
 
 @api_router.get(
@@ -730,8 +750,9 @@ async def get_system_notifications(
     session: AsyncSession = Depends(get_session),
     settings: Settings = Depends(get_settings),
 ) -> PaginatedResponse[NotificationDeliveryDetailRead]:
-    from sqlalchemy import select, func
-    from ag47_radar.models import NotificationDelivery, TokenAlert, Token
+    from sqlalchemy import func, select
+
+    from ag47_radar.models import NotificationDelivery, Token, TokenAlert
 
     offset = (page - 1) * page_size
     query = (
@@ -766,6 +787,7 @@ async def get_system_notifications(
         )
 
     import math
+
     pages = math.ceil(total / page_size) if total > 0 else 0
 
     return PaginatedResponse(
@@ -776,4 +798,96 @@ async def get_system_notifications(
         pages=pages,
         demo_mode=settings.demo_mode,
     )
+
+
+@api_router.post(
+    "/system/webhook/test",
+    tags=["system"],
+    summary="Test the configured webhook endpoint",
+    dependencies=[Depends(enforce_mutation_rate_limit)],
+)
+async def test_webhook(
+    session: AsyncSession = Depends(get_session),
+) -> dict[str, Any]:
+    from sqlalchemy import select
+
+    from ag47_radar.models import UserNotificationSettings
+    from ag47_radar.services.webhooks import send_test_webhook
+
+    settings = await session.scalar(select(UserNotificationSettings))
+    if not settings or not settings.webhook_url:
+        return {"success": False, "error": "Nenhum webhook configurado."}
+
+    result = await send_test_webhook(settings.webhook_url, settings.webhook_secret or "")
+    return result
+
+
+@api_router.get(
+    "/system/chains/status",
+    response_model=MultiChainStatusResponse,
+    tags=["system"],
+    summary="Multi-chain health matrix",
+    description="Contagem de tokens ativos, liquidez rastreada e alertas por rede blockchain.",
+)
+async def chain_status(
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> MultiChainStatusResponse:
+    from ag47_radar.services.queries import get_chain_health_stats
+
+    chains = await get_chain_health_stats(session, settings)
+    return MultiChainStatusResponse(chains=chains, generated_at=datetime.now(UTC))
+
+
+@api_router.get(
+    "/system/export/truth-dataset",
+    tags=["system"],
+    summary="Export epistemological truth dataset as JSON or CSV",
+    description="Baixa o histórico de validações do Truth Engine em formato JSON ou CSV.",
+)
+async def export_truth_dataset(
+    format: Annotated[Literal["json", "csv"], Query()] = "json",
+    session: AsyncSession = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> Response:
+    import csv
+    import io
+    import json
+
+    from ag47_radar.services.queries import get_truth_dataset_rows
+
+    rows = await get_truth_dataset_rows(session, settings)
+    rows_dicts = [r.model_dump() for r in rows]
+
+    # Convert datetime to ISO string for JSON serialization
+    for row in rows_dicts:
+        if hasattr(row.get("validated_at"), "isoformat"):
+            row["validated_at"] = row["validated_at"].isoformat()
+
+    if format == "csv":
+        output = io.StringIO()
+        if rows_dicts:
+            writer = csv.DictWriter(output, fieldnames=rows_dicts[0].keys())
+            writer.writeheader()
+            writer.writerows(rows_dicts)
+        content = output.getvalue()
+        return Response(
+            content=content,
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=truth-dataset.csv"},
+        )
+    else:
+        content = json.dumps(rows_dicts, default=str, ensure_ascii=False, indent=2)
+        return Response(
+            content=content,
+            media_type="application/json",
+            headers={"Content-Disposition": "attachment; filename=truth-dataset.json"},
+        )
+
+
+from ag47_radar.api.v1.optimization import router as optimization_router
+from ag47_radar.api.v1.portfolio import router as portfolio_router
+
+api_router.include_router(portfolio_router)
+api_router.include_router(optimization_router)
 

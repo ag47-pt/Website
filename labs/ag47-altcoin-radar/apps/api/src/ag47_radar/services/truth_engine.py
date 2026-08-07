@@ -177,7 +177,7 @@ async def run_truth_engine(db: AsyncSession, token_id: str | None = None) -> lis
     stmt_unvalidated = (
         select(TokenHypothesis)
         .outerjoin(TokenTruth, TokenTruth.hypothesis_id == TokenHypothesis.id)
-        .where(TokenTruth.id == None)  # noqa: E711
+        .where(TokenTruth.id == None)
     )
     if token_id is not None:
         stmt_unvalidated = stmt_unvalidated.where(TokenHypothesis.token_id == token_id)

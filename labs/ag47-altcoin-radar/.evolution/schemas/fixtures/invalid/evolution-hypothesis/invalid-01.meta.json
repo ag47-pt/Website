@@ -1,0 +1,4 @@
+{
+  "schema": "evolution-hypothesis",
+  "expected_failure_reason": "falsification_criteria must have minItems 1"
+}

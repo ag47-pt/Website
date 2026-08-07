@@ -1,0 +1,5 @@
+{
+  "schema": "current-architecture",
+  "expected_failure_reason": "Component missing required field 'type'",
+  "invalid_field": "components[0].type"
+}

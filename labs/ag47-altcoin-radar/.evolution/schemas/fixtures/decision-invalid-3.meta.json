@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "decision-context.schema.json",
+  "reason": "Missing chosen_path_ref"
+}

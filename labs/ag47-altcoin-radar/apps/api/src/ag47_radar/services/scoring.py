@@ -80,7 +80,9 @@ def calculate_score(
     normalized = {
         name: round(min(10.0, max(0.0, float(raw.get(name) or 0.0))), 2) for name in active_weights
     }
-    final_score = round(sum(normalized[name] * weight for name, weight in active_weights.items()), 2)
+    final_score = round(
+        sum(normalized[name] * weight for name, weight in active_weights.items()), 2
+    )
     classification = classify_score(final_score)
     critical = sorted(set(critical_flags or []))
     critical_gate_applied = bool(critical)
@@ -104,7 +106,9 @@ def calculate_score(
         for name, value in normalized.items()
         if name in available and value >= 7
     ]
-    negatives = [f"{LABELS[name]}: aguardando dados" for name in active_weights if name not in available]
+    negatives = [
+        f"{LABELS[name]}: aguardando dados" for name in active_weights if name not in available
+    ]
     negatives.extend(
         f"{LABELS[name]}: {value:.1f}/10"
         for name, value in normalized.items()

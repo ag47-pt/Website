@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   AG47 Evolution Protocol — design tokens
+   Base grafite + verde esmeralda. Âmbar e vermelho são reservados
+   exclusivamente para semântica de estado (BLOCKED, REGRESSION, REJECTED)
+   e nunca devem ser usados como cor decorativa.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Superfícies — do mais profundo ao mais elevado.
+     O fundo se chama `canvas`, e não `base`, porque `--color-base` geraria a
+     utilitária `text-base`, que colide com o tamanho de fonte do Tailwind. */
+  --canvas: #08090b;
+  --surface: #0d0f12;
+  --surface-2: #131619;
+  --surface-3: #1a1e23;
+
+  /* Hairlines — bordas de 1px que definem o visual de painel de engenharia */
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.13);
+
+  /* Texto */
+  /* Contraste medido contra --canvas / --surface / --surface-2.
+     --fg-faint é usado em rótulos de 10–12px, então precisa de 4.5:1 mesmo
+     sobre a superfície mais clara: #7d8692 entrega 5.40 / 5.21 / 4.93. */
+  --fg: #e9ecef;
+  --fg-muted: #98a1ab;
+  --fg-faint: #7d8692;
+
+  /* Destaque — verde esmeralda */
+  --accent: #10b981;
+  --accent-bright: #34d399;
+  --accent-dim: #047857;
+  --accent-glow: rgba(16, 185, 129, 0.18);
+
+  /* Semântica de estado — uso restrito */
+  --state-warn: #f59e0b;
+  --state-danger: #ef4444;
+  --state-info: #38bdf8;
+  --state-neutral: #64748b;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-bright: var(--accent-bright);
+  --color-accent-dim: var(--accent-dim);
+
+  --color-state-warn: var(--state-warn);
+  --color-state-danger: var(--state-danger);
+  --color-state-info: var(--state-info);
+  --color-state-neutral: var(--state-neutral);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+  /* Compensa o header fixo ao navegar por âncoras */
+  scroll-padding-top: 5.5rem;
+  background-color: var(--canvas);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--fg);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+  /* Glows radiais muito sutis — ancoram a página sem virar gradiente decorativo */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--accent-glow), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(56, 189, 248, 0.05), transparent 65%);
+  background-repeat: no-repeat;
+}
+
+/* Alvos de âncora respeitam o header fixo mesmo sem scroll-padding */
+[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Numerais tabulares em contextos técnicos */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Acessibilidade
+   --------------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::selection {
+  background-color: var(--accent-dim);
+  color: #ffffff;
+}
+
+/* Guarda global de motion. Componentes não precisam repetir esta regra —
+   o `Reveal` e as variantes em lib/motion.ts também a respeitam via hook. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilitários de superfície
+   --------------------------------------------------------------------------- */
+
+/* Malha de grid — textura de fundo de painel técnico */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--hairline) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--hairline) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Máscara radial para o grid não encostar nas bordas da viewport */
+.mask-fade {
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
+}
+
+/* Régua de 1px que separa seções sem peso visual */
+.hairline-top {
+  border-top: 1px solid var(--hairline);
+}
+
+/* ---------------------------------------------------------------------------
+   Scrollbar
+   --------------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--canvas);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 9999px;
+  border: 2px solid var(--canvas);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-dim);
+}

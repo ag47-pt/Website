@@ -377,7 +377,9 @@ async def get_market_history(
                 volume_usd=float(item.volume_1h) if item.volume_1h is not None else None,
                 liquidity_usd=float(item.liquidity_usd) if item.liquidity_usd is not None else None,
                 source=item.source,
-                data_quality=DataQuality(item.data_quality) if item.data_quality else DataQuality.UNKNOWN,
+                data_quality=DataQuality(item.data_quality)
+                if item.data_quality
+                else DataQuality.UNKNOWN,
             )
             for item in snapshots
         ],
@@ -475,11 +477,12 @@ async def list_alerts(
     latest_scores = {}
     if token_ids:
         from ag47_radar.models import OpportunityScore
+
         scores_stmt = (
             select(OpportunityScore)
             .where(
                 OpportunityScore.token_id.in_(list(token_ids)),
-                OpportunityScore.is_demo.is_(settings.demo_mode)
+                OpportunityScore.is_demo.is_(settings.demo_mode),
             )
             .order_by(OpportunityScore.token_id, OpportunityScore.calculated_at.desc())
         )
@@ -489,6 +492,7 @@ async def list_alerts(
                 latest_scores[sc.token_id] = sc
 
     from ag47_radar.services.scoring import WEIGHTS
+
     active_weights = await get_latest_scoring_weights(session) or WEIGHTS
 
     items = []
@@ -535,7 +539,6 @@ async def list_alerts(
         pages=_pages(total, page_size),
         demo_mode=settings.demo_mode,
     )
-
 
 
 async def list_global_knowledge(
@@ -802,11 +805,12 @@ async def list_edge_alerts(
     latest_scores = {}
     if token_ids:
         from ag47_radar.models import OpportunityScore
+
         scores_stmt = (
             select(OpportunityScore)
             .where(
                 OpportunityScore.token_id.in_(list(token_ids)),
-                OpportunityScore.is_demo.is_(settings.demo_mode)
+                OpportunityScore.is_demo.is_(settings.demo_mode),
             )
             .order_by(OpportunityScore.token_id, OpportunityScore.calculated_at.desc())
         )
@@ -816,6 +820,7 @@ async def list_edge_alerts(
                 latest_scores[sc.token_id] = sc
 
     from ag47_radar.services.scoring import WEIGHTS
+
     active_weights = await get_latest_scoring_weights(session) or WEIGHTS
 
     alert_items = []
@@ -952,3 +957,149 @@ async def get_latest_scoring_weights(session: AsyncSession) -> dict[str, float] 
         return result.weights_json
     return None
 
+
+async def get_chain_health_stats(
+    session: AsyncSession, settings: Settings
+) -> list[ChainHealthRead]:
+    """Aggregate per-chain health statistics."""
+    from datetime import timedelta
+
+    from sqlalchemy import func
+
+    from ag47_radar.models import MarketSnapshot, Token, TokenAlert, TradingPair
+    from ag47_radar.schemas import ChainHealthRead
+
+    now = datetime.now(UTC)
+    cutoff_24h = now - timedelta(hours=24)
+
+    # Tokens active per chain
+    token_counts = dict(
+        (
+            await session.execute(
+                select(Token.chain, func.count(Token.id))
+                .where(Token.is_demo.is_(settings.demo_mode))
+                .group_by(Token.chain)
+            )
+        ).all()
+    )
+
+    # Liquidity tracked per chain (latest snapshot per pair)
+    liq_results = (
+        await session.execute(
+            select(
+                Token.chain,
+                func.coalesce(func.sum(MarketSnapshot.liquidity_usd), 0),
+            )
+            .join(TradingPair, TradingPair.token_id == Token.id)
+            .join(MarketSnapshot, MarketSnapshot.pair_id == TradingPair.id)
+            .where(Token.is_demo.is_(settings.demo_mode))
+            .where(MarketSnapshot.captured_at >= cutoff_24h)
+            .group_by(Token.chain)
+        )
+    ).all()
+    liquidity_by_chain = {row[0]: float(row[1]) for row in liq_results}
+
+    # Alerts in last 24h per chain
+    alert_results = (
+        await session.execute(
+            select(Token.chain, func.count(TokenAlert.id))
+            .join(Token, TokenAlert.token_id == Token.id)
+            .where(
+                TokenAlert.is_demo.is_(settings.demo_mode),
+                TokenAlert.triggered_at >= cutoff_24h,
+            )
+            .group_by(Token.chain)
+        )
+    ).all()
+    alerts_by_chain = {row[0]: row[1] for row in alert_results}
+
+    known_chains = sorted(
+        set(
+            list(token_counts.keys())
+            + list(liquidity_by_chain.keys())
+            + list(alerts_by_chain.keys())
+        )
+    )
+
+    result = []
+    for chain in known_chains:
+        tokens_active = token_counts.get(chain, 0)
+        liq = liquidity_by_chain.get(chain, 0.0)
+        alerts_count = alerts_by_chain.get(chain, 0)
+
+        # Determine status heuristically
+        if tokens_active == 0:
+            health_status = "red"
+        elif liq < 1000:
+            health_status = "yellow"
+        else:
+            health_status = "green"
+
+        result.append(
+            ChainHealthRead(
+                chain=chain,
+                tokens_active=tokens_active,
+                liquidity_tracked=liq,
+                alerts_24h=alerts_count,
+                provider_success_rate=100.0
+                if health_status == "green"
+                else 80.0
+                if health_status == "yellow"
+                else 0.0,
+                status=health_status,  # type: ignore[arg-type]
+            )
+        )
+
+    return result
+
+
+async def get_truth_dataset_rows(
+    session: AsyncSession, settings: Settings
+) -> list[TruthDatasetRow]:
+    """Export epistemological truth dataset for out-of-sample validation."""
+    from ag47_radar.models import Token, TokenHypothesis, TokenTruth
+    from ag47_radar.schemas import TruthDatasetRow
+
+    stmt = (
+        select(
+            Token.symbol,
+            Token.chain,
+            TokenTruth.status,
+            TokenTruth.created_at,
+            TokenTruth.gain,
+            TokenHypothesis.metadata_json,
+        )
+        .join(TokenHypothesis, TokenTruth.hypothesis_id == TokenHypothesis.id)
+        .join(Token, TokenTruth.token_id == Token.id)
+        .where(Token.is_demo.is_(settings.demo_mode))
+        .order_by(TokenTruth.created_at.desc())
+    )
+
+    results = (await session.execute(stmt)).all()
+
+    rows = []
+    for symbol, chain, truth_status, validated_at, gain, hyp_meta in results:
+        meta = hyp_meta or {}
+        score_val = meta.get("score")
+
+        # Map truth status to hit_result
+        if truth_status == "success":
+            hit_result = "win"
+        elif truth_status == "failure":
+            hit_result = "loss"
+        else:
+            hit_result = "neutral"
+
+        rows.append(
+            TruthDatasetRow(
+                token_symbol=symbol,
+                chain=chain,
+                score_at_alert=float(score_val) if score_val is not None else None,
+                breakdown_summary=meta.get("explanation", ""),
+                price_after_24h=float(gain) if gain is not None else None,
+                hit_result=hit_result,  # type: ignore[arg-type]
+                validated_at=validated_at,
+            )
+        )
+
+    return rows

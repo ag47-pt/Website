@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "role_id": "architect-guardian",
+  "name": "Architectural Guardian",
+  "description": "Protects the core architecture.",
+  "prohibited_actions": [
+    "execute_code"
+  ]
+}

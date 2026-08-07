@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "knowledge-entry.schema.json",
+  "reason": "status not in enum"
+}

@@ -1,0 +1,7 @@
+{
+  "version": "2.1.0",
+  "target_state_description": "Update node versions",
+  "success_criteria": [
+    "All apps on node 20"
+  ]
+}

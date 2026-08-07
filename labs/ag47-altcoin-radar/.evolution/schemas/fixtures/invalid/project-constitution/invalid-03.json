@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "domain": "Software Evolution",
+  "core_principles": [
+    "Incremental change"
+  ],
+  "invariant_rules": [
+    "Never rewrite history"
+  ],
+  "roles": [
+    {
+      "role_name": "Release Manager",
+      "permissions": [
+        "deploy"
+      ]
+    }
+  ],
+  "last_updated": "2026-08-06T22:00:00Z",
+  "extra_property": "Not allowed"
+}

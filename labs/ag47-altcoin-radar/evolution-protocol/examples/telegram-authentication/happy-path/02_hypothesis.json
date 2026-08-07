@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "hypothesis_id": "hyp-telegram-auth-01",
+  "source_snapshot_ref": {
+    "ref_id": "snap-12345",
+    "hash": "snap123456789hash"
+  },
+  "title": "Adicionar Autenticação Telegram",
+  "description": "Implementar login instantâneo via Telegram Widget para contornar atrito em mobile.",
+  "expected_benefits": ["Aumento de 20% na taxa de conversão", "Captura direta do ChatID para alertas"],
+  "assumptions": ["Usuários cripto são heavy users de Telegram"],
+  "risks": ["Vazamento de chaves do bot na env", "Limites da API de auth do Telegram"],
+  "confidence": 0.75,
+  "success_metrics": ["signup_conversion_rate > 0.60"],
+  "falsification_criteria": ["signup_conversion_rate <= 0.42"],
+  "stop_conditions": ["Falhas de CORS na API principal", "Falha nos testes de segurança"]
+}

@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "decision-context",
+  "reason": "observations array minItems is 1"
+}

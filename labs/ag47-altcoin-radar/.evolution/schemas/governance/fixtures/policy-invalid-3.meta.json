@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "policy-definition.schema.json",
+  "reason": "Missing required fields"
+}

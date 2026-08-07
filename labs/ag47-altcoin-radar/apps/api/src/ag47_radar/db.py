@@ -7,7 +7,6 @@ from pathlib import Path
 
 from sqlalchemy import MetaData, text
 from sqlalchemy.exc import DBAPIError
-from sqlalchemy.orm.exc import StaleDataError
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -15,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm.exc import StaleDataError
 
 from ag47_radar.config import get_settings
 
@@ -79,7 +79,7 @@ async def get_session() -> AsyncGenerator[AsyncSession]:
 
 async def create_schema() -> None:
     # Imported here so model metadata is populated before create_all.
-    from ag47_radar import models  # noqa: F401
+    from ag47_radar import models
 
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
@@ -104,7 +104,7 @@ async def run_transaction_with_retry(
     *args,
     max_retries: int = 3,
     initial_backoff: float = 0.05,
-    **kwargs
+    **kwargs,
 ):
     """Executes a callable inside a new session, with exponential backoff retries for serialization errors or deadlocks."""
     for attempt in range(max_retries):
@@ -115,7 +115,7 @@ async def run_transaction_with_retry(
             except StaleDataError:
                 if attempt < max_retries - 1:
                     await session.rollback()
-                    backoff = initial_backoff * (2 ** attempt)
+                    backoff = initial_backoff * (2**attempt)
                     await asyncio.sleep(backoff)
                     continue
                 raise
@@ -129,10 +129,10 @@ async def run_transaction_with_retry(
                     or "busy" in str(e).lower()
                     or "unique constraint failed" in str(e).lower()
                 )
-                
+
                 if (is_concurrency_error or is_sqlite_lock) and attempt < max_retries - 1:
                     await session.rollback()
-                    backoff = initial_backoff * (2 ** attempt)
+                    backoff = initial_backoff * (2**attempt)
                     await asyncio.sleep(backoff)
                     continue
                 raise

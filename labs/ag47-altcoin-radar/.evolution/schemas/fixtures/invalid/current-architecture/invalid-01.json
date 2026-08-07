@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "components": [
+    {
+      "id": "c1",
+      "name": "Auth",
+      "type": "Service"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "c1",
+      "target": "db1",
+      "type": "db"
+    }
+  ]
+}

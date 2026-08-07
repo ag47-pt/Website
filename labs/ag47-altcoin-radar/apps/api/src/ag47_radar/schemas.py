@@ -395,7 +395,6 @@ class TokenAlertRead(BaseModel):
     score_weights: dict[str, float] | None = None
 
 
-
 class TokenAlertUpdate(BaseModel):
     status: Literal["unread", "read", "acknowledged", "dismissed"]
 
@@ -635,6 +634,8 @@ class UserNotificationSettingsRead(ApiModel):
     min_severity: float
     min_confidence: float
     allowed_chains: list[str]
+    webhook_url: str | None = None
+    webhook_configured: bool = False
     updated_at: datetime
 
 
@@ -642,6 +643,8 @@ class UserNotificationSettingsUpdate(ApiModel):
     min_severity: float | None = Field(default=None, ge=0.0, le=1.0)
     min_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     allowed_chains: list[str] | None = Field(default=None)
+    webhook_url: str | None = Field(default=None, max_length=500)
+    webhook_secret: str | None = Field(default=None, max_length=128)
 
 
 class NotificationDeliveryDetailRead(ApiModel):
@@ -653,4 +656,98 @@ class NotificationDeliveryDetailRead(ApiModel):
     created_at: datetime
     updated_at: datetime
     token_symbol: str | None = None
+
+
+class ChainHealthRead(ApiModel):
+    chain: str
+    tokens_active: int
+    liquidity_tracked: float
+    alerts_24h: int
+    provider_success_rate: float
+    status: Literal["green", "yellow", "red"]
+
+
+class MultiChainStatusResponse(ApiModel):
+    chains: list[ChainHealthRead]
+    generated_at: datetime
+
+
+class TruthDatasetRow(ApiModel):
+    token_symbol: str
+    chain: str
+    score_at_alert: float | None
+    breakdown_summary: str
+    price_after_24h: float | None
+    hit_result: Literal["win", "loss", "neutral"]
+    validated_at: datetime
+
+
+class VirtualPositionRead(ApiModel):
+    id: str
+    portfolio_id: str
+    token_symbol: str
+    entry_price: float
+    simulated_size: float
+    current_price: float
+    status: Literal["OPEN", "CLOSED"]
+    pnl: float | None = None
+    opened_at: datetime
+    closed_at: datetime | None = None
+    alert_id: str | None = None
+
+
+class VirtualPortfolioRead(ApiModel):
+    id: str
+    initial_balance: float
+    current_balance: float
+    created_at: datetime
+    updated_at: datetime
+    positions: list[VirtualPositionRead] | None = None
+
+
+class VirtualPortfolioMetrics(ApiModel):
+    total_pnl: float
+    profit_factor: float
+    win_rate: float
+    max_drawdown: float
+    total_trades: int
+
+
+class EquityCurvePoint(ApiModel):
+    timestamp: datetime
+    equity: float
+
+
+class EquityCurveResponse(ApiModel):
+    points: list[EquityCurvePoint]
+
+
+class GridSearchCandidate(ApiModel):
+    weights: dict[str, float]
+    profit_factor: float
+    win_rate: float
+    mean_return_pct: float
+    total_return_pct: float
+    samples_evaluated: int
+    improvement_vs_base_pct: float
+
+
+class GridSearchResponse(ApiModel):
+    evaluated_at: datetime
+    total_combinations_tested: int
+    baseline_weights: dict[str, float]
+    baseline_profit_factor: float
+    baseline_win_rate: float
+    top_candidates: list[GridSearchCandidate]
+    demo_mode: bool
+
+
+class ApplyWeightsRequest(ApiModel):
+    weights: dict[str, float]
+
+
+class ApplyWeightsResponse(ApiModel):
+    status: Literal["ok"] = "ok"
+    active_weights: dict[str, float]
+    applied_at: datetime
 

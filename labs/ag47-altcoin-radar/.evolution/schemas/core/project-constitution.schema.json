@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/project-constitution",
+  "title": "Project Constitution",
+  "description": "Foundational governance rules, roles, and invariant rules for the project.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "core_principles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "invariant_rules": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "role_name": { "type": "string" },
+          "description": { "type": "string" },
+          "permissions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["role_name", "permissions"]
+      }
+    },
+    "closure_policies": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["version", "domain", "core_principles", "invariant_rules", "roles", "last_updated"]
+}

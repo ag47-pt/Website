@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "role_id": "architect-guardian",
+  "name": "Architectural Guardian",
+  "description": "Protects the core architecture.",
+  "permissions": [
+    "approve_architecture",
+    "reject_changeset"
+  ],
+  "prohibited_actions": [
+    "execute_code"
+  ],
+  "allowed_transitions": [
+    "PENDING_TO_APPROVED"
+  ],
+  "required_skills": [
+    "architecture-analysis"
+  ]
+}

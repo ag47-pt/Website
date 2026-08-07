@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "entry_id": "123e4567-e89b-12d3-a456-426614174000",
+  "source_verdict_ref": {
+    "artifact_id": "verdict-1",
+    "artifact_type": "integrity-verdict",
+    "hash": "verdict_hash_1"
+  },
+  "topic": "JSON Schema Validation",
+  "content": "Python jsonschema requires Draft202012Validator.FORMAT_CHECKER to validate UUIDs.",
+  "confidence_level": 1.0,
+  "promoted_by": {
+    "role": "Curator",
+    "signature": "sig_curator_1"
+  },
+  "status": "OFFICIAL"
+}

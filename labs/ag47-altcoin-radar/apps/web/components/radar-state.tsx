@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import {
@@ -21,6 +22,8 @@ interface RadarStateValue {
   setNavigationOpen: (isOpen: boolean) => void;
   isSidebarCollapsed: boolean;
   toggleSidebar: () => void;
+  sidebarWidth: number;
+  setSidebarWidth: (width: number) => void;
 }
 
 const SIDEBAR_STORAGE_KEY = "ag47-radar-sidebar-collapsed";
@@ -55,13 +58,27 @@ export function RadarStateProvider({ children }: { children: ReactNode }) {
     readSidebarCollapsed,
     () => false,
   );
+  
+  const [sidebarWidth, setSidebarWidth] = useState(192); // 12rem by default
+
+  useEffect(() => {
+    const saved = localStorage.getItem("ag47-radar-sidebar-width");
+    if (saved) {
+      setSidebarWidth(parseInt(saved, 10));
+    }
+  }, []);
 
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--radar-sidebar-width",
-      isSidebarCollapsed ? "4.5rem" : "13.5rem",
+      isSidebarCollapsed ? "4.5rem" : `${sidebarWidth}px`,
     );
-  }, [isSidebarCollapsed]);
+  }, [isSidebarCollapsed, sidebarWidth]);
+
+  const handleSetSidebarWidth = (width: number) => {
+    setSidebarWidth(width);
+    localStorage.setItem("ag47-radar-sidebar-width", width.toString());
+  };
 
   const value = useMemo<RadarStateValue>(
     () => ({
@@ -79,8 +96,10 @@ export function RadarStateProvider({ children }: { children: ReactNode }) {
       setNavigationOpen,
       isSidebarCollapsed,
       toggleSidebar: toggleSidebarCollapsed,
+      sidebarWidth,
+      setSidebarWidth: handleSetSidebarWidth,
     }),
-    [chains, isNavigationOpen, isSidebarCollapsed, search],
+    [chains, isNavigationOpen, isSidebarCollapsed, search, sidebarWidth],
   );
 
   return <RadarStateContext.Provider value={value}>{children}</RadarStateContext.Provider>;

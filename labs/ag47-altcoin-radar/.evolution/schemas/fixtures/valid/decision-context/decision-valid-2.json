@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "context_id": "123e4567-e89b-12d3-a456-426614174001",
+  "trigger": "High latency in API",
+  "observations": [
+    "Endpoint X takes 500ms",
+    "DB queries are not indexed"
+  ],
+  "constraints": [
+    "No downtime allowed"
+  ],
+  "alternatives_considered": [
+    "Add Redis cache",
+    "Add DB indexes"
+  ],
+  "chosen_path_ref": {
+    "ref_id": "ref-2",
+    "hash": "def456hash"
+  },
+  "rejected_paths": [
+    "Add Redis cache"
+  ],
+  "rationale": "Indexes are cheaper and solve the root cause"
+}

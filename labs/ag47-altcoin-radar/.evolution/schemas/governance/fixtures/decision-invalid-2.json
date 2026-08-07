@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "context_id": "123e4567-e89b-12d3-a456-426614174000",
+  "trigger": "User request for new feature",
+  "observations": [],
+  "constraints": [
+    "Must be backwards compatible"
+  ],
+  "chosen_path_ref": {
+    "artifact_id": "ref-1",
+    "artifact_type": "changeset",
+    "hash": "abc123hash"
+  },
+  "rationale": "Safest path with lowest risk"
+}

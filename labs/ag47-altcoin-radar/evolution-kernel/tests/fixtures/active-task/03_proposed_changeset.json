@@ -1,0 +1,43 @@
+{
+  "$schema": "../../schemas/core/proposed-changeset.schema.json",
+  "changeset_id": "cs-6b430209",
+  "source_gap_refs": [
+    "gap-test"
+  ],
+  "intent": "Resolve architecture gaps with deterministic planner.",
+  "scope": {
+    "allowed_paths": [
+      "src/*",
+      "tests/*"
+    ],
+    "prohibited_paths": [
+      ".evolution/*",
+      "evolution-kernel/*"
+    ]
+  },
+  "change_budget": {
+    "files_modified": 1,
+    "lines_added": 50,
+    "new_dependencies": 0
+  },
+  "changes": [
+    {
+      "type": "modify",
+      "path": "src/dummy.py",
+      "reason": "Deterministic resolution for gap-test",
+      "expected_effect": "Fixes missing framework."
+    }
+  ],
+  "acceptance_criteria": [
+    "Code compiles",
+    "Tests pass"
+  ],
+  "risk_assessment": {
+    "level": "high",
+    "confidence": "high"
+  },
+  "rollback_plan": "git reset --hard HEAD",
+  "evidence_required": [
+    "test_execution_log"
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/proposed-changeset",
+  "title": "Proposed Changeset",
+  "description": "Formal proposal of changes mapped from an architecture gap.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "changeset_id": { "type": "string" },
+    "source_gap_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "intent": { "type": "string" },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "prohibited_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["allowed_paths", "prohibited_paths"]
+    },
+    "change_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "files_modified": { "type": "integer" },
+        "lines_added": { "type": "integer" },
+        "new_dependencies": { "type": "integer" },
+        "complexity_budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_risk_score": { "type": "integer" },
+            "max_architecture_layers_affected": { "type": "integer" }
+          },
+          "required": ["max_risk_score", "max_architecture_layers_affected"]
+        }
+      },
+      "required": ["files_modified"]
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["create", "modify", "delete", "add_dependency"]
+          },
+          "path": { "type": "string" },
+          "reason": { "type": "string" },
+          "expected_effect": { "type": "string" }
+        },
+        "required": ["type", "path", "reason", "expected_effect"]
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "risk_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        }
+      },
+      "required": ["level", "confidence"]
+    },
+    "execution_strategy": {
+      "type": "string",
+      "enum": ["incremental", "migration", "refactor", "hotfix"],
+      "description": "Nature of the mutation: incremental (additive), migration (data/schema), refactor (structural), hotfix (urgent/minimal)."
+    },
+    "rollback_plan": { "type": "string" },
+    "rollback_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_before": { "type": "boolean" },
+        "reversible": { "type": "boolean" },
+        "manual_steps": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["snapshot_before", "reversible"]
+    },
+    "evidence_required": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": [
+    "changeset_id",
+    "source_gap_refs",
+    "intent",
+    "scope",
+    "change_budget",
+    "changes",
+    "acceptance_criteria",
+    "risk_assessment",
+    "execution_strategy",
+    "rollback_plan"
+  ]
+}

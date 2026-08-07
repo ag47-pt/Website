@@ -1,0 +1,6 @@
+{
+  "snapshot_id": "not-uuid",
+  "timestamp": "2026-08-06T22:00:00Z",
+  "trigger": "SCHEDULED",
+  "health_status": "HEALTHY"
+}

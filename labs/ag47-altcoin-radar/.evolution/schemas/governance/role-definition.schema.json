@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.com/schemas/governance/role-definition.schema.json",
+  "title": "Role Definition",
+  "description": "Formaliza as responsabilidades e restrições de um papel (role) no protocolo AG47.",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "role_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "permissions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "prohibited_actions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "allowed_transitions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_skills": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["schema_version", "role_id", "name", "description", "permissions", "prohibited_actions"],
+  "additionalProperties": false
+}

@@ -58,7 +58,7 @@ def _extract_circuit_details(provider: object) -> dict[str, Any]:
             "latency_ms": None,
             "remaining_cooldown": None,
         }
-    
+
     http_client = provider.http
     if not hasattr(http_client, "circuit") or http_client.circuit is None:
         return {
@@ -67,7 +67,7 @@ def _extract_circuit_details(provider: object) -> dict[str, Any]:
             "latency_ms": None,
             "remaining_cooldown": None,
         }
-        
+
     state, remaining = http_client.circuit.get_state_and_cooldown()
     return {
         "circuit_state": state,
@@ -91,7 +91,12 @@ class ProviderRegistry:
             if settings.demo_mode
             else RoutingContractRiskProvider(settings)
         )
-        self.social = DemoSocialProvider()
+        from ag47_radar.providers.social import RoutingSocialProvider
+        self.social: SocialDataProvider = (
+            DemoSocialProvider() 
+            if settings.demo_mode 
+            else RoutingSocialProvider(settings)
+        )
         self.alert_delivery: AlertDeliveryProvider = (
             TelegramAlertDeliveryProvider(settings)
             if not settings.demo_mode and settings.telegram_bot_token and settings.telegram_chat_id
@@ -100,11 +105,13 @@ class ProviderRegistry:
 
     def statuses(self) -> list[ProviderStatusRead]:
         now = datetime.now(UTC)
-        
+
         # If in demo mode, return the static statuses as before to keep compatibility
         if self.settings.demo_mode:
             real_status = ProviderStatus.DISABLED
-            real_detail = "Implementado; chamadas externas desativadas enquanto AG47_DEMO_MODE=true."
+            real_detail = (
+                "Implementado; chamadas externas desativadas enquanto AG47_DEMO_MODE=true."
+            )
             return [
                 ProviderStatusRead(
                     id=self.discovery.provider_id,
@@ -168,17 +175,17 @@ class ProviderRegistry:
                     detail="Entrega externa não configurada; eventos permanecem internos.",
                 ),
             ]
-            
+
         # Real Mode: Map actual active providers and extract their circuit status
         result_list = []
-        
+
         # Helper to build status dynamically
         def add_provider_status(provider_obj: any, name: str, kind: str):
             details = _extract_circuit_details(provider_obj)
             status_val = ProviderStatus.ACTIVE
             if details["circuit_state"] == "open":
                 status_val = ProviderStatus.DEGRADED
-            
+
             result_list.append(
                 ProviderStatusRead(
                     id=provider_obj.provider_id,
@@ -194,24 +201,33 @@ class ProviderRegistry:
 
         # 1. GeckoTerminal Discovery
         add_provider_status(self.discovery, "GeckoTerminal", "pair_discovery")
-        
+
         # 2. DexScreener Market Data
         add_provider_status(self.market, "DexScreener", "market_data")
-        
+
         # 3. GoPlus Risk (EVM) and RugCheck (Solana)
         from ag47_radar.providers.registry import RoutingContractRiskProvider
+
         if isinstance(self.risk, RoutingContractRiskProvider):
             add_provider_status(self.risk.evm_risk, "GoPlus Security", "contract_risk")
             add_provider_status(self.risk.solana_risk, "RugCheck Solana", "contract_risk")
-            
+
         # 4. Routing Holders
         from ag47_radar.providers.holders import RoutingHolderProvider
+
         if isinstance(self.holders, RoutingHolderProvider):
             add_provider_status(self.holders.solana_provider, "Helius Holders", "holder_data")
             add_provider_status(self.holders.evm_provider, "Etherscan Holders", "holder_data")
             
-        # 5. Alert Delivery (Telegram Bot or Log Delivery)
+        # 5. Routing Social
+        from ag47_radar.providers.social import RoutingSocialProvider
+        
+        if isinstance(self.social, RoutingSocialProvider):
+            add_provider_status(self.social.telegram, "Telegram Public API", "social_data")
+
+        # 6. Alert Delivery (Telegram Bot or Log Delivery)
         from ag47_radar.providers.telegram import TelegramAlertDeliveryProvider
+
         if isinstance(self.alert_delivery, TelegramAlertDeliveryProvider):
             add_provider_status(self.alert_delivery, "Telegram Bot API", "alert_delivery")
         else:
@@ -230,20 +246,27 @@ class ProviderRegistry:
                     remaining_cooldown=None,
                 )
             )
-            
+
         return result_list
 
     async def reset_circuit(self, provider_id: str) -> bool:
         providers_to_check = [self.discovery, self.market, self.alert_delivery]
-        
+
         from ag47_radar.providers.registry import RoutingContractRiskProvider
+
         if isinstance(self.risk, RoutingContractRiskProvider):
             providers_to_check.extend([self.risk.evm_risk, self.risk.solana_risk])
-            
+
         from ag47_radar.providers.holders import RoutingHolderProvider
+
         if isinstance(self.holders, RoutingHolderProvider):
             providers_to_check.extend([self.holders.solana_provider, self.holders.evm_provider])
-            
+
+        from ag47_radar.providers.social import RoutingSocialProvider
+
+        if isinstance(self.social, RoutingSocialProvider):
+            providers_to_check.append(self.social.telegram)
+
         for p in providers_to_check:
             if hasattr(p, "provider_id") and p.provider_id == provider_id:
                 if hasattr(p, "http") and p.http is not None:

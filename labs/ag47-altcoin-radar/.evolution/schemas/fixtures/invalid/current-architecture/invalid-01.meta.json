@@ -1,0 +1,5 @@
+{
+  "schema": "current-architecture",
+  "expected_failure_reason": "Missing required field 'last_updated'",
+  "invalid_field": "last_updated"
+}

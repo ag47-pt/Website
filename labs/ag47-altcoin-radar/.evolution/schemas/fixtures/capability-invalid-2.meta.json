@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "capability-policy.schema.json",
+  "reason": "max_tokens minimum is 0"
+}

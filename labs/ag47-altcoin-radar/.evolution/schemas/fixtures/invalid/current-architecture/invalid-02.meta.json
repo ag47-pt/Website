@@ -1,0 +1,5 @@
+{
+  "schema": "current-architecture",
+  "expected_failure_reason": "last_updated is not a valid date-time format",
+  "invalid_field": "last_updated"
+}

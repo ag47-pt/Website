@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "workflow-definition.schema.json",
+  "reason": "Steps array minItems is 1"
+}

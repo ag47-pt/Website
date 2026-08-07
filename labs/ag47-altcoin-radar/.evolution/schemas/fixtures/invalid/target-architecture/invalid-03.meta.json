@@ -1,0 +1,5 @@
+{
+  "schema": "target-architecture",
+  "expected_failure_reason": "Additional properties are not allowed",
+  "invalid_field": "unknown_field"
+}

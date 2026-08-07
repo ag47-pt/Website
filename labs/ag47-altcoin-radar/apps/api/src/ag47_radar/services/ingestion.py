@@ -61,6 +61,7 @@ async def run_ingestion_cycle(
     confirmed_alerts_to_dispatch = []
 
     from sqlalchemy import func
+
     from ag47_radar.models import TokenTruth
     from ag47_radar.services.queries import get_latest_scoring_weights
 
@@ -207,13 +208,17 @@ async def run_ingestion_cycle(
                             )
                             for a in new_alerts:
                                 if a.confidence_level == "confirmado":
-                                    confirmed_alerts_to_dispatch.append((
-                                        a.id,
-                                        token.symbol,
-                                        sig.signal_type,
-                                        float(a.severity) if a.severity is not None else 0.0,
-                                        float(a.confidence) if a.confidence is not None else 0.0,
-                                    ))
+                                    confirmed_alerts_to_dispatch.append(
+                                        (
+                                            a.id,
+                                            token.symbol,
+                                            sig.signal_type,
+                                            float(a.severity) if a.severity is not None else 0.0,
+                                            float(a.confidence)
+                                            if a.confidence is not None
+                                            else 0.0,
+                                        )
+                                    )
 
         critical_flags: list[str] = []
         safety_score_val: float | None = None
@@ -290,14 +295,27 @@ async def run_ingestion_cycle(
 
     if confirmed_alerts_to_dispatch:
         import asyncio
+
         from ag47_radar.db import get_session_factory
         from ag47_radar.services.alerts import dispatch_telegram_alert_bg
+        from ag47_radar.services.webhooks import dispatch_webhook_alert_bg
+
         session_factory = get_session_factory()
         for alert_id, symbol, sig_type, severity, confidence in confirmed_alerts_to_dispatch:
             asyncio.create_task(
                 dispatch_telegram_alert_bg(
                     session_factory,
                     settings,
+                    alert_id,
+                    symbol,
+                    sig_type,
+                    severity,
+                    confidence,
+                )
+            )
+            asyncio.create_task(
+                dispatch_webhook_alert_bg(
+                    session_factory,
                     alert_id,
                     symbol,
                     sig_type,

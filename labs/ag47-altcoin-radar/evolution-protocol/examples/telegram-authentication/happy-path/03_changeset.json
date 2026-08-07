@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "changeset_id": "chg-teleauth-01",
+  "hypothesis_ref": {
+    "ref_id": "hyp-telegram-auth-01",
+    "hash": "hyp123456789hash"
+  },
+  "added_files": [
+    "apps/api/src/auth/telegram.py",
+    "apps/web/components/TelegramLoginWidget.tsx"
+  ],
+  "modified_files": [
+    "apps/api/src/auth/routes.py",
+    "apps/api/requirements.txt"
+  ],
+  "deleted_files": [],
+  "allowed_directories": [
+    "apps/api/src/auth/",
+    "apps/web/components/",
+    "apps/api/"
+  ]
+}

@@ -1,10 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
   Bell,
   BellRing,
+  Briefcase,
   ChartNoAxesCombined,
   FileClock,
+  FlaskConical,
   Gauge,
   PanelLeftClose,
   PanelLeftOpen,
@@ -75,6 +79,8 @@ const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: Gauge },
   { href: "/oportunidades", label: "Oportunidades", icon: ChartNoAxesCombined },
   { href: "/alertas", label: "Alertas", icon: Bell },
+  { href: "/portfolio", label: "Portfolio", icon: Briefcase },
+  { href: "/lab", label: "Laboratório", icon: FlaskConical },
   { href: "/social", label: "Social", icon: UsersRound },
   { href: "/risco", label: "Risco", icon: ShieldAlert },
   { href: "/watchlist", label: "Watchlist", icon: Star },
@@ -83,12 +89,13 @@ const navigation = [
   { href: "/configuracoes", label: "Configurações", icon: Settings2 },
 ] as const;
 
+
 function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
   const pathname = usePathname();
   const { setNavigationOpen } = useRadarState();
 
   return (
-    <nav aria-label="Navegação principal" className="mt-8 flex flex-1 flex-col gap-1.5">
+    <nav aria-label="Navegação principal" className="mt-8 flex flex-1 flex-col gap-1 shrink-0">
       {navigation.map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href;
         return (
@@ -97,7 +104,7 @@ function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
             aria-current={isActive ? "page" : undefined}
             data-testid={`nav-${href.slice(1)}`}
             title={collapsed ? label : undefined}
-            className={`group relative flex min-h-11 items-center gap-3 rounded-lg text-[0.83rem] font-semibold transition-all duration-200 ${
+            className={`group relative flex min-h-9 items-center gap-3 rounded-lg text-[0.83rem] font-semibold transition-all duration-200 ${
               collapsed ? "justify-center px-0" : "px-3.5"
             } ${
               isActive
@@ -128,7 +135,7 @@ function SidebarContent({ mobile = false }: { mobile?: boolean }) {
   const { setNavigationOpen } = useRadarState();
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between shrink-0">
         <LogoMark />
         {mobile && (
           <button
@@ -142,8 +149,62 @@ function SidebarContent({ mobile = false }: { mobile?: boolean }) {
         )}
       </div>
       <NavigationLinks />
-      <EvolutionCard />
+      <div className="mt-8 shrink-0">
+        <EvolutionCard />
+      </div>
     </>
+  );
+}
+
+function SidebarResizer() {
+  const { setSidebarWidth } = useRadarState();
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // 160px min, 480px max
+      const newWidth = Math.min(Math.max(e.clientX, 160), 480);
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    
+    document.body.classList.add("is-sidebar-resizing");
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.classList.remove("is-sidebar-resizing");
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+  }, [isDragging, setSidebarWidth]);
+
+  return (
+    <div
+      className={`absolute top-0 right-0 w-1.5 h-full cursor-col-resize z-50 transition-colors group ${
+        isDragging ? "bg-radar-positive/20" : "hover:bg-radar-border-strong/50 bg-transparent"
+      }`}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+    >
+      <div
+        className={`absolute top-1/2 -translate-y-1/2 -left-0.5 w-1 h-8 rounded-full transition-colors ${
+          isDragging ? "bg-radar-positive" : "bg-radar-border-strong opacity-0 group-hover:opacity-100"
+        }`}
+      />
+    </div>
   );
 }
 
@@ -156,23 +217,28 @@ export function Sidebar() {
     <>
       <aside
         className={`fixed inset-y-0 left-0 z-30 hidden w-[var(--radar-sidebar-width)] border-r border-radar-border bg-gradient-to-b from-[#08131d]/90 to-[#050d14]/90 backdrop-blur-2xl transition-[width] duration-300 xl:flex xl:flex-col ${
-          isSidebarCollapsed ? "items-center p-3" : "p-4"
+          isSidebarCollapsed ? "items-center p-3" : "py-4 px-2"
         }`}
       >
-        {isSidebarCollapsed ? (
-          <>
-            <LogoMark compact />
-            <NavigationLinks collapsed />
-          </>
-        ) : (
-          <SidebarContent />
-        )}
+        {!isSidebarCollapsed && <SidebarResizer />}
+        <div className="flex flex-1 w-full flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-2">
+          {isSidebarCollapsed ? (
+            <>
+              <div className="flex shrink-0 justify-center">
+                <LogoMark compact />
+              </div>
+              <NavigationLinks collapsed />
+            </>
+          ) : (
+            <SidebarContent />
+          )}
+        </div>
         <button
           aria-label={isSidebarCollapsed ? "Expandir menu" : "Recolher menu"}
           aria-expanded={!isSidebarCollapsed}
           data-testid="sidebar-toggle"
-          className={`mt-3 flex min-h-10 items-center justify-center gap-2 rounded-lg border border-radar-border bg-white/[0.02] text-[0.72rem] font-bold text-radar-subtle transition-colors hover:border-radar-border-strong hover:text-radar-ink ${
-            isSidebarCollapsed ? "w-10" : "w-full"
+          className={`mt-3 shrink-0 flex min-h-9 items-center justify-center gap-2 rounded-lg border border-radar-border bg-white/[0.02] text-[0.72rem] font-bold text-radar-subtle transition-colors hover:border-radar-border-strong hover:text-radar-ink ${
+            isSidebarCollapsed ? "w-9" : "w-full"
           }`}
           onClick={toggleSidebar}
           type="button"
@@ -189,8 +255,10 @@ export function Sidebar() {
             onClick={() => setNavigationOpen(false)}
             type="button"
           />
-          <aside className="relative flex h-full w-[min(88vw,20rem)] flex-col border-r border-radar-border bg-[#07111a] p-4 shadow-2xl">
-            <SidebarContent mobile />
+          <aside className="relative flex h-full w-[min(88vw,20rem)] flex-col border-r border-radar-border bg-[#07111a] py-4 px-2 shadow-2xl">
+            <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-2">
+              <SidebarContent mobile />
+            </div>
           </aside>
         </div>
       )}

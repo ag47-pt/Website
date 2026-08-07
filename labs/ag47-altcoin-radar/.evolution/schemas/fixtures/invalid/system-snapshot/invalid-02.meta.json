@@ -1,0 +1,5 @@
+{
+  "schema": "system-snapshot",
+  "expected_failure_reason": "snapshot_id is not a valid uuid",
+  "invalid_field": "snapshot_id"
+}

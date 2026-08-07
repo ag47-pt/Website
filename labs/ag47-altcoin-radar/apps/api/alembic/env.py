@@ -7,7 +7,7 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from ag47_radar import models  # noqa: F401
+from ag47_radar import models
 from ag47_radar.config import get_settings
 from ag47_radar.db import Base
 

@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "role-definition",
+  "reason": "Role ID must be lowercase alphanumeric and hyphens"
+}

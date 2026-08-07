@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/evolution/evolution-hypothesis",
+  "title": "Evolution Hypothesis",
+  "description": "A testable statement asserting that a specific change will yield a specific outcome.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hypothesis_id": { "type": "string", "format": "uuid" },
+    "protocol_version": { "type": "string" },
+    "system_snapshot_ref": { "$ref": "https://ag47.protocol/schemas/common/artifact-reference" },
+    "problem_statement": { "type": "string" },
+    "observed_gap": { "type": "string" },
+    "proposed_outcome": { "type": "string" },
+    "expected_benefits": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "confidence": { "type": "number", "enum": [0.0, 0.25, 0.5, 0.75, 1.0] },
+    "success_metrics": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "falsification_criteria": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "proposed_by": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "PROPOSED", "REVIEWED", "APPROVED", "REJECTED", "EXPIRED", "FALSIFIED", "VALIDATED"]
+    }
+  },
+  "required": [
+    "hypothesis_id", "protocol_version", "system_snapshot_ref", "problem_statement",
+    "proposed_outcome", "success_metrics", "falsification_criteria", "status"
+  ]
+}

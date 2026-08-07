@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "role_id": "executor",
+  "name": "Executor",
+  "description": "Executes allowed changes.",
+  "permissions": [
+    "write_code"
+  ],
+  "prohibited_actions": [
+    "approve_own_changes"
+  ]
+}

@@ -355,6 +355,8 @@ export const userNotificationSettingsSchema = z.object({
   min_severity: z.number(),
   min_confidence: z.number(),
   allowed_chains: z.array(z.string()),
+  webhook_url: z.string().nullable().optional(),
+  webhook_configured: z.boolean().default(false),
   updated_at: timestampSchema,
 });
 
@@ -369,6 +371,74 @@ export const notificationDeliveryDetailSchema = z.object({
   token_symbol: z.string().nullable(),
 });
 
+export const chainHealthSchema = z.object({
+  chain: z.string(),
+  tokens_active: z.number().int().nonnegative(),
+  liquidity_tracked: z.number(),
+  alerts_24h: z.number().int().nonnegative(),
+  provider_success_rate: z.number(),
+  status: z.enum(["green", "yellow", "red"]),
+});
+
+export const multiChainStatusSchema = z.object({
+  chains: z.array(chainHealthSchema),
+  generated_at: timestampSchema,
+});
+
+export const virtualPositionSchema = z.object({
+  id: z.string(),
+  token_symbol: z.string(),
+  status: z.enum(["OPEN", "CLOSED"]),
+  entry_price: z.number(),
+  simulated_size: z.number(),
+  pnl: z.number().nullable(),
+  pnl_percentage: z.number().nullable(),
+  opened_at: z.string(),
+  closed_at: z.string().nullable(),
+});
+
+export const virtualPortfolioMetricsSchema = z.object({
+  current_balance: z.number(),
+  total_pnl: z.number(),
+  win_rate: z.number(),
+  profit_factor: z.number(),
+  total_trades: z.number(),
+});
+
 export type UserNotificationSettings = z.infer<typeof userNotificationSettingsSchema>;
 export type NotificationDeliveryDetail = z.infer<typeof notificationDeliveryDetailSchema>;
+export type ChainHealth = z.infer<typeof chainHealthSchema>;
+export type MultiChainStatus = z.infer<typeof multiChainStatusSchema>;
+export type VirtualPosition = z.infer<typeof virtualPositionSchema>;
+export type VirtualPortfolioMetrics = z.infer<typeof virtualPortfolioMetricsSchema>;
+
+export const gridSearchCandidateSchema = z.object({
+  weights: z.record(z.string(), z.number()),
+  profit_factor: z.number(),
+  win_rate: z.number(),
+  mean_return_pct: z.number(),
+  total_return_pct: z.number(),
+  samples_evaluated: z.number(),
+  improvement_vs_base_pct: z.number(),
+});
+
+export const gridSearchResponseSchema = z.object({
+  evaluated_at: z.string(),
+  total_combinations_tested: z.number(),
+  baseline_weights: z.record(z.string(), z.number()),
+  baseline_profit_factor: z.number(),
+  baseline_win_rate: z.number(),
+  top_candidates: z.array(gridSearchCandidateSchema),
+  demo_mode: z.boolean(),
+});
+
+export const applyWeightsResponseSchema = z.object({
+  status: z.enum(["ok"]),
+  active_weights: z.record(z.string(), z.number()),
+  applied_at: z.string(),
+});
+
+export type GridSearchCandidate = z.infer<typeof gridSearchCandidateSchema>;
+export type GridSearchResponse = z.infer<typeof gridSearchResponseSchema>;
+export type ApplyWeightsResponse = z.infer<typeof applyWeightsResponseSchema>;
 

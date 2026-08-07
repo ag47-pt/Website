@@ -151,7 +151,7 @@ async def test_notification_settings_crud(api_client: AsyncClient):
     # POST updates
     update_response = await api_client.post(
         "/api/v1/system/notification-settings",
-        json={"min_severity": 0.5, "min_confidence": 0.6, "allowed_chains": ["solana"]}
+        json={"min_severity": 0.5, "min_confidence": 0.6, "allowed_chains": ["solana"]},
     )
     assert update_response.status_code == 200
     updated_data = update_response.json()
@@ -174,4 +174,3 @@ async def test_get_notifications_history(api_client: AsyncClient, seeded_db):
     data = response.json()
     assert "items" in data
     assert isinstance(data["items"], list)
-

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ag47_radar.config import Settings
 from ag47_radar.enums import AlertSeverity, AlertType
-from ag47_radar.models import Alert, AlertRule, TokenAlert, NotificationDelivery
+from ag47_radar.models import Alert, AlertRule, NotificationDelivery, TokenAlert
 
 logger = logging.getLogger(__name__)
 
@@ -217,9 +217,9 @@ async def process_alert_rules(
         severity = calculate_severity(source_kind, source_type, strength or 0.0, confidence or 0.0)
 
         # Identify OpportunityScore and score bucket
-        from ag47_radar.models import OpportunityScore, GlobalKnowledge, TokenTruth, TokenHypothesis
         from ag47_radar.knowledge.confidence import calculate_historical_confidence
-        
+        from ag47_radar.models import GlobalKnowledge, OpportunityScore, TokenHypothesis, TokenTruth
+
         score_stmt = (
             select(OpportunityScore)
             .where(
@@ -241,21 +241,27 @@ async def process_alert_rules(
             (9.0, 10.0),
         ]
         bucket = next(
-            (b for b in SCORE_BUCKETS if (b[0] <= score_val < b[1] if b[1] < 10.0 else b[0] <= score_val <= b[1])),
-            (5.0, 6.0)
+            (
+                b
+                for b in SCORE_BUCKETS
+                if (b[0] <= score_val < b[1] if b[1] < 10.0 else b[0] <= score_val <= b[1])
+            ),
+            (5.0, 6.0),
         )
         bucket_pattern_name = f"score_bucket_{bucket[0]}_{bucket[1]}"
 
         # Query GlobalKnowledge stats for this score bucket
         gk_stmt = select(GlobalKnowledge).where(GlobalKnowledge.pattern_name == bucket_pattern_name)
         gks = (await session.execute(gk_stmt)).scalars().all()
-        
+
         total_occurrences = sum(gk.total_occurrences for gk in gks)
         success_count = sum(gk.success_count for gk in gks)
         failure_count = sum(gk.failure_count for gk in gks)
         neutral_count = sum(gk.neutral_count for gk in gks)
 
-        hist_conf = float(calculate_historical_confidence(success_count, failure_count, neutral_count))
+        hist_conf = float(
+            calculate_historical_confidence(success_count, failure_count, neutral_count)
+        )
 
         # Check drawdown suspension
         drawdown_suspended = False
@@ -268,18 +274,22 @@ async def process_alert_rules(
                 .limit(50)
             )
             truth_rows = (await session.execute(truth_stmt)).all()
-            
+
             bucket_truths = []
             for truth, hypothesis in truth_rows:
                 h_meta = hypothesis.metadata_json or {}
                 h_score = h_meta.get("score")
                 if h_score is not None:
                     h_score = float(h_score)
-                    if bucket[0] <= h_score < bucket[1] if bucket[1] < 10.0 else bucket[0] <= h_score <= bucket[1]:
+                    if (
+                        bucket[0] <= h_score < bucket[1]
+                        if bucket[1] < 10.0
+                        else bucket[0] <= h_score <= bucket[1]
+                    ):
                         bucket_truths.append(truth)
                 if len(bucket_truths) >= 3:
                     break
-            
+
             if len(bucket_truths) >= 3:
                 if all(t.status == "failure" for t in bucket_truths[:3]):
                     drawdown_suspended = True
@@ -334,12 +344,12 @@ async def dispatch_telegram_alert_bg(
     confidence: float,
 ) -> None:
     from ag47_radar.providers.registry import ProviderRegistry
-    from ag47_radar.models import NotificationDelivery
-    
+
     # 1. Create a NotificationDelivery record in DB as pending after checking filters
     async with session_factory() as session:
         from sqlalchemy import select
-        from ag47_radar.models import UserNotificationSettings, TokenAlert, Token
+
+        from ag47_radar.models import Token, TokenAlert, UserNotificationSettings
 
         # Get chain information for the token
         token_info = await session.execute(
@@ -389,11 +399,10 @@ async def dispatch_telegram_alert_bg(
         await session.commit()
         delivery_id = delivery.id
 
-
     # 2. Get the provider registry
     providers = ProviderRegistry(settings)
     provider = providers.alert_delivery
-    
+
     title = f"Alerta de Oportunidade: {token_symbol}"
     message = (
         f"Alerta confirmado com Edge Estatístico!\n\n"
@@ -407,31 +416,37 @@ async def dispatch_telegram_alert_bg(
     success = False
     response_data = None
     error_msg = None
-    
+
     for attempt in range(max_tries):
         try:
             result = await provider.deliver(
                 alert_id=alert_id,
                 title=title,
                 message=message,
-                payload={"token_symbol": token_symbol, "source_type": source_type}
+                payload={"token_symbol": token_symbol, "source_type": source_type},
             )
             if result.data.accepted:
                 success = True
-                response_data = {"external_id": result.data.external_id, "duration_ms": result.duration_ms}
+                response_data = {
+                    "external_id": result.data.external_id,
+                    "duration_ms": result.duration_ms,
+                }
                 break
             else:
-                err_msg = result.partial_errors[0].message if result.partial_errors else "unknown error"
+                err_msg = (
+                    result.partial_errors[0].message if result.partial_errors else "unknown error"
+                )
                 error_msg = f"Delivery rejected: {err_msg}"
         except Exception as e:
             error_msg = str(e)
-        
+
         if attempt < max_tries - 1:
-            await asyncio.sleep(2 ** attempt)
+            await asyncio.sleep(2**attempt)
 
     # 3. Update the NotificationDelivery status
     async with session_factory() as session:
         from sqlalchemy import update
+
         status = "success" if success else "failed"
         provider_resp = response_data if success else {"error": error_msg}
         stmt = (

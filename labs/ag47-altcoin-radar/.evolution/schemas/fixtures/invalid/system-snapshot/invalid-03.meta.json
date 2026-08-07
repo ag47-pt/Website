@@ -1,0 +1,5 @@
+{
+  "schema": "system-snapshot",
+  "expected_failure_reason": "trigger is not in ENUM",
+  "invalid_field": "trigger"
+}

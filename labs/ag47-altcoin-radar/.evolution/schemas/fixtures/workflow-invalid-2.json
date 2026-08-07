@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "workflow_id": "wf-bug-fix",
+  "name": "Bug Fix Cycle",
+  "steps": [
+    {
+      "step_name": "reproduction",
+      "role_required": "debugger"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/validation/integrity-verdict",
+  "title": "Integrity Verdict",
+  "description": "The result of a validation process over an execution report and evidence bundle.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "verdict_id": { "type": "string", "format": "uuid" },
+    "execution_report_ref": { "$ref": "https://ag47.protocol/schemas/common/artifact-reference" },
+    "evidence_bundle_refs": {
+      "type": "array",
+      "items": { "$ref": "https://ag47.protocol/schemas/common/artifact-reference" }
+    },
+    "validator_signature": { "$ref": "https://ag47.protocol/schemas/common/artifact-reference" },
+    "evaluated_criteria": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "passed_criteria": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "failed_criteria": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "policy_violations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "architecture_findings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "human_actions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "result": {
+      "type": "string",
+      "enum": ["PASS", "PASS_WITH_WARNINGS", "FAIL", "INSUFFICIENT_EVIDENCE", "POLICY_VIOLATION", "ARCHITECTURE_CONFLICT", "HUMAN_ACTION_REQUIRED", "ROLLBACK_REQUIRED"]
+    },
+    "confidence": { "type": "number", "enum": [0.0, 0.25, 0.5, 0.75, 1.0] },
+    "allowed_next_transitions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "issued_at": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "verdict_id", "execution_report_ref", "evidence_bundle_refs",
+    "validator_signature", "evaluated_criteria", "result", "issued_at"
+  ]
+}

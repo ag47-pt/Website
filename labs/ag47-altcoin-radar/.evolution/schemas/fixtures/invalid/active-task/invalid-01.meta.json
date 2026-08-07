@@ -1,0 +1,5 @@
+{
+  "schema": "active-task",
+  "expected_failure_reason": "Missing required field 'budget_ref'",
+  "invalid_field": "budget_ref"
+}

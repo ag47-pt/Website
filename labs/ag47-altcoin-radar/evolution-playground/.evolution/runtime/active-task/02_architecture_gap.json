@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/core/architecture-gap.schema.json",
+  "gaps": [
+    {
+      "id": "gap-a52eb5",
+      "category": "authentication",
+      "current_state": "missing",
+      "target_state": "authentication",
+      "severity": "high",
+      "confidence": 1.0,
+      "evidence_refs": [
+        "system_snapshot.dependencies",
+        "system_snapshot.architecture.directories"
+      ]
+    },
+    {
+      "id": "gap-aa3d08",
+      "category": "testing",
+      "current_state": "no_test_framework_detected",
+      "target_state": "pytest_required",
+      "severity": "medium",
+      "confidence": 0.8,
+      "evidence_refs": [
+        "system_snapshot.test_frameworks"
+      ]
+    },
+    {
+      "id": "gap-3bfa65",
+      "category": "database",
+      "current_state": "missing_dependency",
+      "target_state": "postgresql_required",
+      "severity": "high",
+      "confidence": 1.0,
+      "evidence_refs": [
+        "system_snapshot.dependencies"
+      ]
+    },
+    {
+      "id": "gap-dba33d",
+      "category": "authentication",
+      "current_state": "missing",
+      "target_state": "telegram-provider",
+      "severity": "high",
+      "confidence": 1.0,
+      "evidence_refs": [
+        "system_snapshot.dependencies",
+        "system_snapshot.architecture.directories"
+      ]
+    }
+  ]
+}

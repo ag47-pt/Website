@@ -1,0 +1,33 @@
+{
+  "hypothesis_id": "123e4567-e89b-12d3-a456-426614174002",
+  "protocol_version": "1.0",
+  "system_snapshot_ref": {
+    "ref_id": "snap-2",
+    "hash": "h2"
+  },
+  "problem_statement": "Bug X",
+  "observed_gap": "Gap Y",
+  "proposed_outcome": "Fixed Bug X",
+  "expected_benefits": [
+    "Happy users"
+  ],
+  "assumptions": [
+    "User is on chrome"
+  ],
+  "risks": [
+    "Might break safari"
+  ],
+  "confidence": 0.75,
+  "success_metrics": [
+    "0 errors"
+  ],
+  "falsification_criteria": [
+    ">0 errors"
+  ],
+  "stop_conditions": [
+    "too many errors"
+  ],
+  "proposed_by": "agent-1",
+  "created_at": "2026-08-06T22:00:00Z",
+  "status": "APPROVED"
+}

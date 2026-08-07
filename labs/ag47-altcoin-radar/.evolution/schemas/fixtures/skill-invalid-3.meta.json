@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "skill-definition.schema.json",
+  "reason": "Missing version field"
+}

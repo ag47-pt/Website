@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/cycle-event",
+  "title": "Cycle Event",
+  "description": "Records lifecycle events and transitions within an Evolution Cycle.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cycle_id": { "type": "string" },
+    "event": {
+      "type": "string",
+      "enum": ["STATE_TRANSITION", "CYCLE_CREATED", "CYCLE_PAUSED", "CYCLE_FAILED", "CYCLE_COMPLETED", "BUDGET_EXHAUSTED", "AGENT_DISPATCHED"]
+    },
+    "from_state": { "type": "string" },
+    "to_state": { "type": "string" },
+    "actor": {
+      "type": "string",
+      "description": "The entity responsible for the event, usually 'kernel' or an agent identifier."
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "References to artifacts produced that justify the event."
+    },
+    "details": { "type": "string" }
+  },
+  "required": [
+    "cycle_id",
+    "event",
+    "actor",
+    "timestamp"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "capability_id": "cap-frontend-edit",
+  "role_ref": "role-executor",
+  "skill_refs": [
+    "skill-react-dev"
+  ],
+  "allowed_contexts": [
+    "apps/web/src/**"
+  ],
+  "forbidden_contexts": [
+    "apps/api/**"
+  ],
+  "budget_limits": {
+    "max_tokens": -100
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "schema": "actor-signature",
+  "expected_failure_reason": "actor_type is not in the ENUM list",
+  "invalid_field": "actor_type"
+}

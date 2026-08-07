@@ -593,8 +593,49 @@ class UserNotificationSettings(Base):
     min_severity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     min_confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     allowed_chains: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    webhook_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    webhook_secret: Mapped[str | None] = mapped_column(String(128), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
     )
 
 
+class VirtualPortfolio(Base):
+    __tablename__ = "virtual_portfolio"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    initial_balance: Mapped[float] = mapped_column(Float, nullable=False, default=10000.0)
+    current_balance: Mapped[float] = mapped_column(Float, nullable=False, default=10000.0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )
+
+    positions: Mapped[list[VirtualPosition]] = relationship(
+        back_populates="portfolio", cascade="all, delete-orphan"
+    )
+
+
+class VirtualPosition(Base):
+    __tablename__ = "virtual_positions"
+    __table_args__ = (Index("ix_virtual_pos_status", "status"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    portfolio_id: Mapped[str] = mapped_column(
+        ForeignKey("virtual_portfolio.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    token_symbol: Mapped[str] = mapped_column(String(32), nullable=False)
+    entry_price: Mapped[float] = mapped_column(Float, nullable=False)
+    simulated_size: Mapped[float] = mapped_column(Float, nullable=False)
+    current_price: Mapped[float] = mapped_column(Float, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="OPEN")
+    pnl: Mapped[float | None] = mapped_column(Float, nullable=True)
+    opened_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    alert_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+
+    portfolio: Mapped[VirtualPortfolio] = relationship(back_populates="positions")

@@ -1,0 +1,4 @@
+{
+  "schema": "evolution-hypothesis",
+  "expected_failure_reason": "Missing required field falsification_criteria"
+}

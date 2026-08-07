@@ -1,0 +1,6 @@
+{
+  "snapshot_id": "123e4567-e89b-12d3-a456-426614174001",
+  "timestamp": "2026-08-06T23:00:00Z",
+  "trigger": "PRE_DEPLOY",
+  "health_status": "DEGRADED"
+}

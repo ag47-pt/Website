@@ -1,0 +1,5 @@
+{
+  "expected_to_fail": true,
+  "schema": "skill-definition",
+  "reason": "skill_id pattern mismatch"
+}

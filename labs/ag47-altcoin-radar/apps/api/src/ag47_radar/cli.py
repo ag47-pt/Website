@@ -6,7 +6,12 @@ import json
 from typing import Any
 
 from ag47_radar.config import get_settings
-from ag47_radar.db import close_database, create_schema, get_session_factory, run_transaction_with_retry
+from ag47_radar.db import (
+    close_database,
+    create_schema,
+    get_session_factory,
+    run_transaction_with_retry,
+)
 from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.services.backtest import run_backtest
 from ag47_radar.services.ingestion import run_ingestion_cycle

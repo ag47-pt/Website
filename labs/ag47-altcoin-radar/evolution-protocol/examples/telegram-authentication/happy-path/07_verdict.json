@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "verdict_id": "verd-teleauth-01",
+  "bundle_ref": {
+    "ref_id": "evb-teleauth-01",
+    "hash": "evb123456789hash"
+  },
+  "validator": {
+    "actor_id": "660e8400-e29b-41d4-a716-446655440001",
+    "actor_type": "AI_AGENT",
+    "role": "security-auditor",
+    "timestamp": "2026-08-07T10:10:00Z"
+  },
+  "result": "PASS",
+  "confidence": 1.0,
+  "validation_rules_checked": [
+    "Tests passing",
+    "Linting passing",
+    "No external keys committed"
+  ],
+  "architecture_findings": ["Telegram Widget is properly isolated in frontend"],
+  "human_actions": [],
+  "allowed_next_transitions": ["PROMOTE_KNOWLEDGE"],
+  "issued_at": "2026-08-07T10:11:00Z"
+}

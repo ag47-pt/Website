@@ -158,6 +158,7 @@ async def validate_historical_hypotheses(db: AsyncSession) -> None:
 
             # Update score bucket stats in GlobalKnowledge
             from ag47_radar.models import OpportunityScore
+
             score_val = metadata.get("score")
             if score_val is None:
                 score_stmt = (
@@ -185,8 +186,12 @@ async def validate_historical_hypotheses(db: AsyncSession) -> None:
                 (9.0, 10.0),
             ]
             bucket = next(
-                (b for b in SCORE_BUCKETS if (b[0] <= score_val < b[1] if b[1] < 10.0 else b[0] <= score_val <= b[1])),
-                (5.0, 6.0)
+                (
+                    b
+                    for b in SCORE_BUCKETS
+                    if (b[0] <= score_val < b[1] if b[1] < 10.0 else b[0] <= score_val <= b[1])
+                ),
+                (5.0, 6.0),
             )
             bucket_pattern_name = f"score_bucket_{bucket[0]}_{bucket[1]}"
 

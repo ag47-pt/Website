@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/candidate-plan",
+  "title": "Candidate Plan",
+  "description": "Raw LLM reasoning for planning before gateway purification.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reasoning": { "type": "string" },
+    "trade_off_analysis": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "evidence_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "How strong is the evidence backing the plan (0=no evidence, 1=fully substantiated)."
+    },
+    "plan_completeness": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "How complete the plan is given available information (0=sketch, 1=fully specified)."
+    },
+    "input_artifacts_summary": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of artifact keys the Planner actually consumed."
+    },
+    "proposed_changeset": {
+      "$ref": "proposed-changeset.schema.json"
+    }
+  },
+  "required": ["reasoning", "evidence_confidence", "plan_completeness", "proposed_changeset"]
+}

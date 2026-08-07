@@ -1,0 +1,5 @@
+{
+  "schema": "active-task",
+  "expected_failure_reason": "status is not in ENUM",
+  "invalid_field": "status"
+}

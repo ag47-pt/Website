@@ -1,0 +1,5 @@
+{
+  "schema": "change-budget",
+  "expected_failure_reason": "Missing required field 'max_retries'",
+  "invalid_field": "max_retries"
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/common/evidence-item",
+  "title": "Evidence Item",
+  "description": "A single verifiable piece of evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "evidence_id": { "type": "string", "format": "uuid" },
+    "type": {
+      "type": "string",
+      "enum": ["BUILD", "LINT", "TYPECHECK", "UNIT_TEST", "INTEGRATION_TEST", "E2E_TEST", "SECURITY_SCAN", "DEPENDENCY_AUDIT", "PERFORMANCE_TEST", "RUNTIME_OBSERVATION", "FILE_DIFF", "ARTIFACT_HASH", "SCREENSHOT", "HUMAN_ATTESTATION"]
+    },
+    "source": { "type": "string" },
+    "artifact_ref": { "$ref": "https://ag47.protocol/schemas/common/artifact-reference" },
+    "hash": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "related_acceptance_criteria": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "result": { "type": "string" },
+    "confidence": {
+      "type": "number",
+      "description": "Nível de confiança na evidência na escala normativa AG47.",
+      "enum": [0.0, 0.25, 0.5, 0.75, 1.0]
+    },
+    "validity_status": {
+      "type": "string",
+      "enum": ["VALID", "INVALID", "EXPIRED", "UNVERIFIED"]
+    }
+  },
+  "required": ["evidence_id", "type", "source", "hash", "timestamp", "result"]
+}

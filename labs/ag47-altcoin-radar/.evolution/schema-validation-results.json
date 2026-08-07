@@ -1,0 +1,8 @@
+{
+  "total_schemas": 22,
+  "total_valid_fixtures": 44,
+  "total_invalid_fixtures": 66,
+  "passed": 110,
+  "failed": 0,
+  "details": []
+}

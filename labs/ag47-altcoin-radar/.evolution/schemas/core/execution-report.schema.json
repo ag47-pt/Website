@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/execution-report",
+  "title": "Execution Report",
+  "description": "Complete record of what the Execution Engine did (or would do). Produced after every invocation, including dry-run.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "execution_id": { "type": "string" },
+    "changeset_ref": { "type": "string" },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["dry-run", "sandbox", "apply"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "partial", "failed", "blocked"]
+    },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["create_file", "modify_file", "delete_file", "add_dependency"]
+          },
+          "path": { "type": "string" },
+          "result": {
+            "type": "string",
+            "enum": ["simulated", "executed", "skipped", "failed"]
+          },
+          "detail": { "type": "string" }
+        },
+        "required": ["type", "path", "result"]
+      }
+    },
+    "budget_consumed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "files_modified": { "type": "integer" },
+        "lines_added": { "type": "integer" },
+        "lines_removed": { "type": "integer" },
+        "new_dependencies": { "type": "integer" }
+      }
+    },
+    "budget_allowed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "files_modified": { "type": "integer" },
+        "lines_added": { "type": "integer" },
+        "new_dependencies": { "type": "integer" }
+      }
+    },
+    "pre_snapshot_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the snapshot taken before execution, if rollback_requirements.snapshot_before was true."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "path": { "type": "string" }
+        },
+        "required": ["code", "message"]
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "References to evidence produced during execution (test logs, snapshots, etc.)."
+    }
+  },
+  "required": [
+    "execution_id",
+    "changeset_ref",
+    "execution_mode",
+    "status",
+    "started_at",
+    "completed_at",
+    "actions",
+    "budget_consumed",
+    "errors"
+  ]
+}

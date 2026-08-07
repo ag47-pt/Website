@@ -1,0 +1,5 @@
+{
+  "schema": "project-constitution",
+  "expected_failure_reason": "Role missing required field 'permissions'",
+  "invalid_field": "roles[0].permissions"
+}

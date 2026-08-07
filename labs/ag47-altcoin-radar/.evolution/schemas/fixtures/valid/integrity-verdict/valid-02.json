@@ -1,0 +1,39 @@
+{
+  "verdict_id": "123e4567-e89b-12d3-a456-426614174002",
+  "execution_report_ref": {
+    "ref_id": "er-1",
+    "hash": "h1"
+  },
+  "evidence_bundle_refs": [],
+  "validator_signature": {
+    "ref_id": "vs-1",
+    "hash": "h3"
+  },
+  "evaluated_criteria": [
+    "c1"
+  ],
+  "passed_criteria": [
+    "c1"
+  ],
+  "failed_criteria": [
+    "c2"
+  ],
+  "missing_evidence": [
+    "c2_evidence"
+  ],
+  "policy_violations": [
+    "pv1"
+  ],
+  "architecture_findings": [
+    "af1"
+  ],
+  "human_actions": [
+    "ha1"
+  ],
+  "result": "FAIL",
+  "confidence": 0.75,
+  "allowed_next_transitions": [
+    "RETRY"
+  ],
+  "issued_at": "2026-08-06T22:00:00Z"
+}

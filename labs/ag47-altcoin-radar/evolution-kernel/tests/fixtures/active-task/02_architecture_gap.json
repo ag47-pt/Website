@@ -1,0 +1,12 @@
+{
+  "$schema": "x",
+  "gaps": [
+    {
+      "id": "gap-test",
+      "category": "architecture",
+      "severity": "high",
+      "description": "test",
+      "evidence_refs": ["x"]
+    }
+  ]
+}

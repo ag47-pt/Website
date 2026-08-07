@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "policy_id": "pol-no-direct-push",
+  "name": "No Direct Push",
+  "rule": "DENY",
+  "condition": "branch == 'main'",
+  "reason": "Main branch requires PR",
+  "enforcement_level": "STRICT"
+}

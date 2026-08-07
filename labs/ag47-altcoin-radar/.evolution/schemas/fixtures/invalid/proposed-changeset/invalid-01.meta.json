@@ -1,0 +1,4 @@
+{
+  "schema": "proposed-changeset",
+  "expected_failure_reason": "Missing allowed_paths"
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ag47.protocol/schemas/core/model-interaction-record",
+  "title": "Model Interaction Record",
+  "description": "A cryptographic and auditable record of a cognitive gateway call.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "model_id": { "type": "string" },
+    "agent_role": { "type": "string" },
+    "agent_version": { "type": "string" },
+    "prompt_version": { "type": "string" },
+    "input_hash": { "type": "string" },
+    "output_hash": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "token_usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prompt_tokens": { "type": "integer" },
+        "completion_tokens": { "type": "integer" },
+        "total_tokens": { "type": "integer" }
+      }
+    }
+  },
+  "required": [
+    "model_id",
+    "agent_role",
+    "agent_version",
+    "prompt_version",
+    "input_hash",
+    "output_hash",
+    "timestamp"
+  ]
+}

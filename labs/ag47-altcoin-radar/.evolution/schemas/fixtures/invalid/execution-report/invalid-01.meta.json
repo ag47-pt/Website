@@ -1,0 +1,4 @@
+{
+  "schema": "execution-report",
+  "expected_failure_reason": "Missing budget_consumption"
+}
