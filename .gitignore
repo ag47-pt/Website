@@ -38,3 +38,15 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# --- EvoPro host state -------------------------------------------------------
+# This repository is governed as an Evolution Protocol host, so the durable part
+# of .evolution/ is versioned on purpose: the goal, the sprints, the accumulated
+# knowledge and CONTINUITY.md are what let a fresh agent in a fresh clone
+# reconstruct context. That is the whole point of "repository-native".
+#
+# What is excluded below is measured, not decided: snapshots, baselines,
+# command output and the active task are re-derived from the working tree on the
+# next run, and versioning them would produce a merge conflict per cycle.
+.evolution/runtime/
+.evolution/logs/

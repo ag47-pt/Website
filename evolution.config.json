@@ -1,0 +1,77 @@
+{
+  "project": {
+    "name": "Ag47.pt",
+    "root": "."
+  },
+  "version": "1.0.0",
+  "kernel": {
+    "version": "0.2",
+    "strict_mode": true
+  },
+  "host_contract": {
+    "_comment": "What this host promises the protocol. The Evolution Core is generic; everything host-specific belongs here. Commands left empty are inferred from repository evidence where possible, and reported as UNVERIFIABLE where not.",
+    "commands": {
+      "test": "pytest eco/evopro",
+      "build": "npm run build",
+      "lint": "npm run lint",
+      "typecheck": "npx tsc --noEmit"
+    },
+    "protected_paths": [
+      ".evolution/**",
+      ".git/**",
+      "evolution.config.json"
+    ],
+    "critics": [],
+    "architecture": {
+      "forbidden_paths": []
+    },
+    "metrics": [],
+    "limits": {
+      "max_revision_cycles": 3,
+      "max_consecutive_failures": 3,
+      "max_sprints": 25,
+      "max_runtime_minutes": 240,
+      "no_progress_threshold": 3,
+      "command_timeout_seconds": 900,
+      "max_files_per_changeset": 25
+    }
+  },
+  "inspection": {
+    "include": [
+      "apps/**",
+      "src/**",
+      "lib/**",
+      "infrastructure/**",
+      "scripts/**",
+      "tests/**",
+      "docs/**",
+      "pyproject.toml",
+      "package.json",
+      "README.md",
+      "docker-compose.yml"
+    ],
+    "exclude": [
+      ".git/**",
+      ".evolution/**",
+      "evolution-kernel/**",
+      "evolution-protocol/**",
+      "evolution-playground/**",
+      "**/__pycache__/**",
+      "**/.venv/**",
+      "**/node_modules/**",
+      "PROTOCOL_*.md",
+      "LOT_*_SCHEMA_AUDIT_REPORT.md",
+      "SCHEMA_*_REPORT.md"
+    ]
+  },
+  "agents": {
+    "override_dir": "./.evolution/agents",
+    "allow_custom_agents": true
+  },
+  "budget_defaults": {
+    "max_agent_calls": 20,
+    "max_retries": 3,
+    "max_tokens": 100000,
+    "max_execution_time_minutes": 30
+  }
+}
