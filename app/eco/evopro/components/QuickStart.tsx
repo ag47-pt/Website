@@ -3,7 +3,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { EVOPRO_CONFIG } from '@/data/evopro';
+import {
+  CLI_COMMANDS,
+  CRITICS_IMPLEMENTED_COUNT,
+  CRITICS_REGISTERED_COUNT,
+  EVOPRO_CONFIG,
+  EVOPRO_VERSION_LABEL,
+  JUDGE_VERDICTS
+} from '@/data/evopro';
 import { 
   Play, 
   Copy, 
@@ -24,7 +31,7 @@ export function QuickStart() {
       num: '01',
       title: 'Instalar o Protocolo',
       desc: 'Instale o pacote EvoPro via pip diretamente do repositório oficial.',
-      cmd: 'pip install git+https://github.com/ag47-pt/ag47-evolution-protocol.git'
+      cmd: EVOPRO_CONFIG.installCommand
     },
     {
       num: '02',
@@ -87,26 +94,52 @@ export function QuickStart() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  /**
+   * O guia descarregável é gerado a partir dos mesmos dados que a página usa —
+   * que por sua vez vêm de `evolution manifest`. Nenhum comando aqui é escrito à
+   * mão, para que este ficheiro não volte a documentar comandos inexistentes.
+   */
   const downloadDocs = () => {
-    const markdownContent = `# Evolution Protocol (EvoPro) v0.3.0 — Executive Spec & Guide
-    
+    const coreCommands = CLI_COMMANDS.filter((cmd) =>
+      [
+        'evolution init',
+        'evolution upgrade',
+        'evolution inspect',
+        'evolution goal set',
+        'evolution baseline capture',
+        'evolution gauntlet run',
+        'evolution judge',
+        'evolution run'
+      ].includes(cmd.command)
+    );
+
+    const markdownContent = `# Evolution Protocol (EvoPro) ${EVOPRO_VERSION_LABEL} — Executive Spec & Guide
+
 Repository-native, harness-agnostic, model-agnostic, goal-driven and evidence-based governance protocol for software evolution assisted by AI coding agents.
 
 ## Quick Installation
 \`\`\`bash
-pip install git+https://github.com/ag47-pt/ag47-evolution-protocol.git
+${EVOPRO_CONFIG.installCommand}
 evolution doctor
 evolution init
 \`\`\`
 
+## Upgrading an existing host
+\`\`\`bash
+evolution upgrade --check   # inventory of what would change, nothing is touched
+evolution upgrade           # reconcile, preserving goal, sprints, cycles and ledger
+\`\`\`
+
 ## Core CLI Commands
-- \`evolution status\`: Inspection of active state and Global Goal progress
-- \`evolution inspect\`: Observer diagnosis of workspace structure and gaps
-- \`evolution goal set "<objective>"\`: Set measurable Global Goal
-- \`evolution baseline measure\`: Capture State A baseline metrics
-- \`evolution gauntlet run\`: Execute 12 adversarial critics
-- \`evolution judge\`: Evaluate deterministic verdicts (ACCEPT, REVISE, ROLLBACK, BLOCKED)
-- \`evolution run --mode goal-driven\`: Run autonomous goal-driven loop
+${coreCommands.map((cmd) => `- \`${cmd.command}\`: ${cmd.description}`).join('\n')}
+
+## Adversarial Review
+${CRITICS_IMPLEMENTED_COUNT} deterministic critics run today; ${
+      CRITICS_REGISTERED_COUNT - CRITICS_IMPLEMENTED_COUNT
+    } more are registered and report UNAVAILABLE until the host declares what they need.
+
+## Verdicts
+${JUDGE_VERDICTS.map((v) => `- **${v.verdict}** — ${v.action}`).join('\n')}
 
 -- Developed by Agência 47 Labs (https://ag47.pt/eco/evopro)
 `;
@@ -115,7 +148,7 @@ evolution init
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'evopro-spec-v0.3.0.md';
+    link.download = `evopro-spec-${EVOPRO_VERSION_LABEL}.md`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

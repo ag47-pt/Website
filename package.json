@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "sync:evopro": "node scripts/sync-evopro-manifest.mjs",
     "crypto-agent": "tsx --tsconfig agent/crypto/tsconfig.json agent/crypto/index.ts"
   },
   "dependencies": {

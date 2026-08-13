@@ -3,7 +3,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { ROADMAP_ITEMS } from '@/data/evopro';
+import {
+  CRITICS_IMPLEMENTED_COUNT,
+  EVOPRO_VERSION_LABEL,
+  GOAL_CRITERION_KINDS,
+  GUARDRAILS_ENFORCED_COUNT,
+  GUARDRAILS_LIST,
+  ROADMAP_ITEMS
+} from '@/data/evopro';
 import { 
   CheckCircle2, 
   FlaskConical, 
@@ -19,11 +26,24 @@ export function StatusAndRoadmap() {
   const { theme } = useTheme();
   const [tab, setTab] = useState<'status' | 'roadmap'>('status');
 
+  /** Guardrails que o protocolo declara mas que ainda não interrompem uma execução. */
+  const unenforcedGuardrails = GUARDRAILS_LIST.filter((rail) => !rail.enforced);
+
   const knownLimits = [
     {
       title: 'O Kernel não escreve código por iniciativa própria',
       desc: 'O planeamento requer sempre um agente cognitivo externo (Claude Code, Codex, Antigravity, etc.). A autonomia total só ocorre quando o harness responde aos pedidos cognitivos (03_cognitive_request.json).'
     },
+    ...(unenforcedGuardrails.length
+      ? [
+          {
+            title: `${unenforcedGuardrails
+              .map((r) => r.condition)
+              .join(', ')} é registado mas ainda não interrompe o loop`,
+            desc: 'A tentativa é gravada por fingerprint no histórico de guardrails, mas a verificação de paragem ainda não a consulta. O protocolo publica-a como não aplicada em vez de a apresentar como proteção ativa.'
+          }
+        ]
+      : []),
     {
       title: 'Críticos de Performance, UX e Code Quality estão Registados mas Indisponíveis',
       desc: 'Requerem profiles específicos do host ou browser capability. Reportam UNAVAILABLE em vez de aprovação silenciosa.'
@@ -87,12 +107,20 @@ export function StatusAndRoadmap() {
               <div className="p-6 rounded-3xl bg-zinc-950 border border-emerald-500/30 backdrop-blur-xl shadow-xl">
                 <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm pb-3 mb-4 border-b border-zinc-800">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>DISPONÍVEL AGORA (v0.3.0)</span>
+                  <span>DISPONÍVEL AGORA ({EVOPRO_VERSION_LABEL})</span>
                 </div>
                 <ul className="space-y-2.5 text-zinc-300 font-sans text-xs">
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>Global Goal com 4 tipos de critérios estritamente verificáveis.</span>
+                    <span>Global Goal com {GOAL_CRITERION_KINDS.length} tipos de critérios estritamente verificáveis.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold font-mono">✓</span>
+                    <span><code>evolution upgrade</code> reconcilia um host instalado com um protocolo mais recente sem perder goal, sprints, ciclos ou ledger.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold font-mono">✓</span>
+                    <span>Progresso ao vivo no terminal durante comandos longos, e a saída completa de cada comando do host preservada em <code>.evolution/runtime/commands/</code>.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
@@ -100,7 +128,7 @@ export function StatusAndRoadmap() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>Gauntlet adversarial com 9 críticos determinísticos funcionais.</span>
+                    <span>Gauntlet adversarial com {CRITICS_IMPLEMENTED_COUNT} críticos determinísticos funcionais.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
@@ -116,7 +144,7 @@ export function StatusAndRoadmap() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>8 guardrails e stop conditions configuráveis pelo host contract.</span>
+                    <span>{GUARDRAILS_ENFORCED_COUNT} guardrails aplicados e stop conditions configuráveis pelo host contract.</span>
                   </li>
                 </ul>
               </div>

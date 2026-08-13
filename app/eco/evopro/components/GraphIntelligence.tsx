@@ -25,13 +25,13 @@ export function GraphIntelligence() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-4">
             <Network className="w-3.5 h-3.5" />
-            NOVIDADE NA V0.3.0 — GRAPH INTELLIGENCE
+            GRAPH INTELLIGENCE — DESDE A V0.3.0
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
             Code Graph & Evolution Graph
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base font-sans">
-            <em>&ldquo;Graph-enhanced, not graph-dependent.&rdquo;</em> O EvoPro v0.3.0 adiciona indexação AST nativa sem dependências pesadas, permitindo mapear o raio de impacto de dependências e testes afetados com precisão cirúrgica.
+            <em>&ldquo;Graph-enhanced, not graph-dependent.&rdquo;</em> O EvoPro faz indexação AST nativa sem dependências pesadas, permitindo mapear o raio de impacto de dependências e testes afetados com precisão cirúrgica.
           </p>
         </div>
 

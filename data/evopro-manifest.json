@@ -1,0 +1,990 @@
+{
+  "protocol": {
+    "name": "EvoPro — Evolution Protocol",
+    "package": "ag47-evolution-protocol",
+    "cli": "evolution",
+    "version": "0.3.2",
+    "manifest_schema_version": "1.0"
+  },
+  "cli": [
+    {
+      "command": "evolution init",
+      "help": "Install Evolution Protocol into host repository"
+    },
+    {
+      "command": "evolution tick",
+      "help": "Execute single transition step in active cycle"
+    },
+    {
+      "command": "evolution scope",
+      "subcommands": [
+        {
+          "command": "evolution scope show",
+          "help": "Show summary of included/excluded files"
+        },
+        {
+          "command": "evolution scope explain",
+          "arguments": [
+            {
+              "name": "path",
+              "positional": true,
+              "help": "Path to evaluate"
+            }
+          ],
+          "help": "Explain scope rule for a file path"
+        }
+      ],
+      "help": "Inspect and explain host scanning scope"
+    },
+    {
+      "command": "evolution workspace",
+      "help": "Detect workspace type"
+    },
+    {
+      "command": "evolution inspect",
+      "arguments": [
+        {
+          "name": "--dry-run",
+          "positional": false,
+          "help": "Preview scan without saving snapshot"
+        }
+      ],
+      "help": "Run Observer to diagnose current reality"
+    },
+    {
+      "command": "evolution snapshot",
+      "subcommands": [
+        {
+          "command": "evolution snapshot validate",
+          "arguments": [
+            {
+              "name": "--file",
+              "positional": false,
+              "help": "Path to snapshot JSON"
+            }
+          ],
+          "help": "Validate a snapshot file"
+        },
+        {
+          "command": "evolution snapshot diff",
+          "help": "Diff recent snapshots"
+        }
+      ],
+      "help": "Snapshot management"
+    },
+    {
+      "command": "evolution status",
+      "help": "Show overall evolution state"
+    },
+    {
+      "command": "evolution next",
+      "help": "Recommend next action"
+    },
+    {
+      "command": "evolution human-actions",
+      "help": "List pending developer actions"
+    },
+    {
+      "command": "evolution spec",
+      "arguments": [
+        {
+          "name": "--dry-run",
+          "positional": false,
+          "help": "Preview spec output without writing artifacts"
+        },
+        {
+          "name": "--regenerate",
+          "positional": false,
+          "help": "Regenerate bootstrap artifacts"
+        },
+        {
+          "name": "--json",
+          "positional": false,
+          "help": "Print full bootstrap report JSON"
+        },
+        {
+          "name": "--verbose",
+          "positional": false,
+          "help": "Verbose spec pipeline output"
+        }
+      ],
+      "subcommands": [
+        {
+          "command": "evolution spec questions",
+          "help": "List pending human decisions"
+        },
+        {
+          "command": "evolution spec confirm",
+          "arguments": [
+            {
+              "name": "--id",
+              "positional": false,
+              "help": "Decision ID (e.g., DEC-001)",
+              "required": true
+            },
+            {
+              "name": "--answer",
+              "positional": false,
+              "help": "Human confirmation answer",
+              "required": true
+            }
+          ],
+          "help": "Confirm a pending decision"
+        }
+      ],
+      "help": "Run Analyst + Planner to define architecture and roadmap"
+    },
+    {
+      "command": "evolution cycle",
+      "subcommands": [
+        {
+          "command": "evolution cycle create",
+          "help": "Create a new cycle"
+        },
+        {
+          "command": "evolution cycle status",
+          "help": "Check active cycle status"
+        },
+        {
+          "command": "evolution cycle show",
+          "arguments": [
+            {
+              "name": "id",
+              "positional": true,
+              "help": "Cycle ID"
+            }
+          ],
+          "help": "Show details of a specific cycle"
+        },
+        {
+          "command": "evolution cycle pause",
+          "help": "Pause the active cycle"
+        },
+        {
+          "command": "evolution cycle resume",
+          "help": "Resume a paused cycle"
+        },
+        {
+          "command": "evolution cycle abort",
+          "help": "Abort the active cycle"
+        }
+      ],
+      "help": "Manage Evolution Cycles"
+    },
+    {
+      "command": "evolution schedule",
+      "subcommands": [
+        {
+          "command": "evolution schedule install",
+          "arguments": [
+            {
+              "name": "--every",
+              "positional": false,
+              "help": "Frequency (e.g. 1h, 30m)",
+              "default": "1h"
+            }
+          ],
+          "help": "Install automated tick schedule"
+        },
+        {
+          "command": "evolution schedule status",
+          "help": "Check schedule status"
+        },
+        {
+          "command": "evolution schedule remove",
+          "help": "Remove schedule"
+        }
+      ],
+      "help": "Agendador de ticks do protocolo"
+    },
+    {
+      "command": "evolution goal",
+      "subcommands": [
+        {
+          "command": "evolution goal set",
+          "arguments": [
+            {
+              "name": "objective",
+              "positional": true,
+              "help": "What this host must become"
+            },
+            {
+              "name": "--force",
+              "positional": false,
+              "help": "Replace an existing Global Goal"
+            }
+          ],
+          "help": "Set the Global Goal"
+        },
+        {
+          "command": "evolution goal show",
+          "help": "Show the Global Goal and its latest evaluation"
+        },
+        {
+          "command": "evolution goal evaluate",
+          "arguments": [
+            {
+              "name": "--no-commands",
+              "positional": false,
+              "help": "Skip running host commands"
+            },
+            {
+              "name": "--progress",
+              "positional": false,
+              "help": "Live progress on stderr: auto (animate only on a terminal), always, plain (one line per step), never. Defaults to auto, or $EVOLUTION_PROGRESS.",
+              "choices": [
+                "auto",
+                "always",
+                "plain",
+                "never"
+              ]
+            },
+            {
+              "name": "--quiet",
+              "positional": false,
+              "help": "Report no progress (same as --progress never)",
+              "aliases": [
+                "-q"
+              ]
+            }
+          ],
+          "help": "Evaluate success criteria against reality"
+        },
+        {
+          "command": "evolution goal confirm",
+          "arguments": [
+            {
+              "name": "--id",
+              "positional": false,
+              "help": "Criterion ID",
+              "required": true
+            },
+            {
+              "name": "--answer",
+              "positional": false,
+              "help": "CONFIRM or a written answer",
+              "required": true
+            }
+          ],
+          "help": "Human-confirm a criterion"
+        }
+      ],
+      "help": "Manage the Global Goal this host evolves toward"
+    },
+    {
+      "command": "evolution sprint",
+      "subcommands": [
+        {
+          "command": "evolution sprint status",
+          "help": "Show the active sprint"
+        },
+        {
+          "command": "evolution sprint list",
+          "help": "List all sprints"
+        },
+        {
+          "command": "evolution sprint next",
+          "arguments": [
+            {
+              "name": "--no-commands",
+              "positional": false,
+              "help": "Skip running host commands"
+            }
+          ],
+          "help": "Generate the next sprint from current state"
+        }
+      ],
+      "help": "Inspect and generate sprints"
+    },
+    {
+      "command": "evolution baseline",
+      "subcommands": [
+        {
+          "command": "evolution baseline capture",
+          "arguments": [
+            {
+              "name": "--label",
+              "positional": false,
+              "help": "Baseline label (e.g. before, after)",
+              "default": "before"
+            },
+            {
+              "name": "--no-commands",
+              "positional": false,
+              "help": "Structure only, no command runs"
+            },
+            {
+              "name": "--progress",
+              "positional": false,
+              "help": "Live progress on stderr: auto (animate only on a terminal), always, plain (one line per step), never. Defaults to auto, or $EVOLUTION_PROGRESS.",
+              "choices": [
+                "auto",
+                "always",
+                "plain",
+                "never"
+              ]
+            },
+            {
+              "name": "--quiet",
+              "positional": false,
+              "help": "Report no progress (same as --progress never)",
+              "aliases": [
+                "-q"
+              ]
+            }
+          ],
+          "help": "Measure the host as it is now"
+        },
+        {
+          "command": "evolution baseline compare",
+          "arguments": [
+            {
+              "name": "--before",
+              "positional": false,
+              "help": "Label of STATE A",
+              "default": "before"
+            },
+            {
+              "name": "--after",
+              "positional": false,
+              "help": "Label of STATE B",
+              "default": "after"
+            }
+          ],
+          "help": "Compare two captured baselines"
+        }
+      ],
+      "help": "Capture and compare host baselines"
+    },
+    {
+      "command": "evolution gauntlet",
+      "subcommands": [
+        {
+          "command": "evolution gauntlet run",
+          "arguments": [
+            {
+              "name": "--critics",
+              "positional": false,
+              "help": "Comma-separated critic names (default: auto-selected)"
+            }
+          ],
+          "help": "Run the selected critics"
+        }
+      ],
+      "help": "Adversarial review of the active mutation"
+    },
+    {
+      "command": "evolution judge",
+      "help": "Decide ACCEPT / REVISE / ROLLBACK / BLOCKED"
+    },
+    {
+      "command": "evolution run",
+      "arguments": [
+        {
+          "name": "--mode",
+          "positional": false,
+          "help": "Execution mode",
+          "choices": [
+            "one-shot",
+            "continuous",
+            "goal-driven"
+          ],
+          "default": "one-shot"
+        },
+        {
+          "name": "--max-iterations",
+          "positional": false,
+          "help": "Iteration ceiling"
+        },
+        {
+          "name": "--no-commands",
+          "positional": false,
+          "help": "Skip running host commands"
+        },
+        {
+          "name": "--progress",
+          "positional": false,
+          "help": "Live progress on stderr: auto (animate only on a terminal), always, plain (one line per step), never. Defaults to auto, or $EVOLUTION_PROGRESS.",
+          "choices": [
+            "auto",
+            "always",
+            "plain",
+            "never"
+          ]
+        },
+        {
+          "name": "--quiet",
+          "positional": false,
+          "help": "Report no progress (same as --progress never)",
+          "aliases": [
+            "-q"
+          ]
+        }
+      ],
+      "help": "Run the evolution loop"
+    },
+    {
+      "command": "evolution pause",
+      "help": "Pause the evolution loop"
+    },
+    {
+      "command": "evolution resume",
+      "help": "Resume a paused evolution loop"
+    },
+    {
+      "command": "evolution stop",
+      "arguments": [
+        {
+          "name": "--reason",
+          "positional": false,
+          "help": "Why the loop was stopped",
+          "default": ""
+        }
+      ],
+      "help": "Stop the evolution loop"
+    },
+    {
+      "command": "evolution upgrade",
+      "arguments": [
+        {
+          "name": "--check",
+          "positional": false,
+          "help": "Report what an upgrade would do"
+        },
+        {
+          "name": "--dry-run",
+          "positional": false,
+          "help": "Preview without applying"
+        },
+        {
+          "name": "--no-graph",
+          "positional": false,
+          "help": "Skip rebuilding the graph"
+        }
+      ],
+      "help": "Reconcile this host with the installed protocol (state is preserved)"
+    },
+    {
+      "command": "evolution graph",
+      "subcommands": [
+        {
+          "command": "evolution graph status",
+          "help": "Provider, size, version and staleness"
+        },
+        {
+          "command": "evolution graph build",
+          "arguments": [
+            {
+              "name": "--provider",
+              "positional": false,
+              "help": "Force a specific provider (e.g. null)"
+            },
+            {
+              "name": "--incremental",
+              "positional": false,
+              "help": "Re-index only what changed"
+            }
+          ],
+          "help": "Index the host"
+        },
+        {
+          "command": "evolution graph impact",
+          "arguments": [
+            {
+              "name": "target",
+              "positional": true,
+              "help": "Path(s) to analyse"
+            },
+            {
+              "name": "--depth",
+              "positional": false,
+              "help": "Traversal depth",
+              "default": 3
+            }
+          ],
+          "help": "Analyse the reach of changing a path"
+        },
+        {
+          "command": "evolution graph query",
+          "arguments": [
+            {
+              "name": "--path",
+              "positional": false,
+              "help": "Query a specific file"
+            },
+            {
+              "name": "--kind",
+              "positional": false,
+              "help": "Filter by node kind"
+            },
+            {
+              "name": "--depth",
+              "positional": false,
+              "help": "Relation depth",
+              "default": 2
+            },
+            {
+              "name": "--limit",
+              "positional": false,
+              "help": "Max nodes returned",
+              "default": 50
+            }
+          ],
+          "help": "Inspect nodes and their relations"
+        },
+        {
+          "command": "evolution graph why",
+          "arguments": [
+            {
+              "name": "node",
+              "positional": true,
+              "help": "Node id from the evolution graph"
+            }
+          ],
+          "help": "Trace why an evolution node exists"
+        }
+      ],
+      "help": "Graph intelligence over the host"
+    },
+    {
+      "command": "evolution cognitive",
+      "subcommands": [
+        {
+          "command": "evolution cognitive status",
+          "help": "Show the pending cognitive request"
+        },
+        {
+          "command": "evolution cognitive validate",
+          "help": "Validate the response against its contract"
+        }
+      ],
+      "help": "Inspect the cognitive boundary"
+    },
+    {
+      "command": "evolution benchmark",
+      "subcommands": [
+        {
+          "command": "evolution benchmark graph",
+          "arguments": [
+            {
+              "name": "--task",
+              "positional": false,
+              "help": "Task description for context assembly",
+              "default": ""
+            },
+            {
+              "name": "--target",
+              "positional": false,
+              "help": "Target path(s)"
+            }
+          ],
+          "help": "A/B: context with and without the graph"
+        }
+      ],
+      "help": "Measure protocol capabilities"
+    },
+    {
+      "command": "evolution capabilities",
+      "arguments": [
+        {
+          "name": "--declare",
+          "positional": false,
+          "help": "Let the detected harness adapter declare first"
+        }
+      ],
+      "help": "Discover what this harness can do"
+    },
+    {
+      "command": "evolution context",
+      "arguments": [
+        {
+          "name": "task",
+          "positional": true,
+          "help": "What the context is for",
+          "default": ""
+        },
+        {
+          "name": "--no-files",
+          "positional": false,
+          "help": "Skip file relevance ranking"
+        }
+      ],
+      "help": "Build task-relevant context"
+    },
+    {
+      "command": "evolution continuity",
+      "arguments": [
+        {
+          "name": "--markdown",
+          "positional": false,
+          "help": "Print CONTINUITY.md"
+        }
+      ],
+      "help": "Reconstruct state for an agent taking over cold"
+    },
+    {
+      "command": "evolution guardrails",
+      "subcommands": [
+        {
+          "command": "evolution guardrails show",
+          "help": "Show limits and current guardrail state"
+        },
+        {
+          "command": "evolution guardrails reset",
+          "help": "Reset guardrail counters"
+        }
+      ],
+      "help": "Inspect stop conditions and safety limits"
+    },
+    {
+      "command": "evolution history",
+      "arguments": [
+        {
+          "name": "--limit",
+          "positional": false,
+          "help": "Number of events to show",
+          "default": 25
+        }
+      ],
+      "help": "View evolution history and decisions"
+    },
+    {
+      "command": "evolution audit",
+      "help": "Audit knowledge and ledger consistency"
+    },
+    {
+      "command": "evolution version",
+      "help": "Show Evolution Protocol version and system info"
+    },
+    {
+      "command": "evolution doctor",
+      "help": "Check health of Evolution installation"
+    },
+    {
+      "command": "evolution manifest",
+      "arguments": [
+        {
+          "name": "--section",
+          "positional": false,
+          "help": "Emit a single section (e.g. cli, critics, guardrails, artifacts)"
+        }
+      ],
+      "help": "Publish this protocol's surface: commands, critics, guardrails, artifacts"
+    }
+  ],
+  "critics": [
+    {
+      "name": "scope",
+      "status": "implemented",
+      "description": "Did the mutation stay inside the boundary it declared?",
+      "evidence_type": "changeset_and_host_contract",
+      "requires_context": [
+        "changeset"
+      ],
+      "requires_capabilities": []
+    },
+    {
+      "name": "regression",
+      "status": "implemented",
+      "description": "Did the host get measurably worse?",
+      "evidence_type": "baseline_comparison",
+      "requires_context": [],
+      "requires_capabilities": []
+    },
+    {
+      "name": "test",
+      "status": "implemented",
+      "description": "Are the acceptance criteria backed by executed tests?",
+      "evidence_type": "execution_evidence",
+      "requires_context": [
+        "changeset"
+      ],
+      "requires_capabilities": []
+    },
+    {
+      "name": "security",
+      "status": "implemented",
+      "description": "Does the introduced content contain known-dangerous patterns?",
+      "evidence_type": "static_pattern_scan",
+      "requires_context": [
+        "changeset"
+      ],
+      "requires_capabilities": []
+    },
+    {
+      "name": "architecture",
+      "status": "implemented",
+      "description": "Did the shape of the system change without being declared?",
+      "evidence_type": "structural_comparison",
+      "requires_context": [],
+      "requires_capabilities": []
+    },
+    {
+      "name": "goal_alignment",
+      "status": "implemented",
+      "description": "Does this mutation trace back to the objective being pursued?",
+      "evidence_type": "traceability",
+      "requires_context": [
+        "changeset"
+      ],
+      "requires_capabilities": []
+    },
+    {
+      "name": "integrity",
+      "status": "implemented",
+      "description": "Independent re-reading of the Validator's verdict.",
+      "evidence_type": "integrity_verdict",
+      "requires_context": [],
+      "requires_capabilities": []
+    },
+    {
+      "name": "dependency_impact",
+      "status": "implemented",
+      "description": "Did the mutation reach further than the review assumed?",
+      "evidence_type": "code_graph",
+      "requires_context": [
+        "impact"
+      ],
+      "requires_capabilities": []
+    },
+    {
+      "name": "historical_failure",
+      "status": "implemented",
+      "description": "Has this approach already been tried here and rejected?",
+      "evidence_type": "evolution_graph",
+      "requires_context": [
+        "evolution_graph"
+      ],
+      "requires_capabilities": []
+    },
+    {
+      "name": "performance",
+      "status": "registered_unavailable",
+      "description": "Requires a host-declared performance profile.",
+      "evidence_type": "host_profile",
+      "requires_context": [
+        "contract"
+      ],
+      "requires_capabilities": []
+    },
+    {
+      "name": "ux",
+      "status": "registered_unavailable",
+      "description": "Requires a host-declared UX profile and a browser capability.",
+      "evidence_type": "host_profile",
+      "requires_context": [
+        "contract"
+      ],
+      "requires_capabilities": [
+        "browser"
+      ]
+    },
+    {
+      "name": "code_quality",
+      "status": "registered_unavailable",
+      "description": "Requires a host-declared lint or quality command.",
+      "evidence_type": "host_profile",
+      "requires_context": [
+        "contract"
+      ],
+      "requires_capabilities": []
+    }
+  ],
+  "judge_verdicts": [
+    {
+      "verdict": "ACCEPT",
+      "next_action": "Persist state, learn from the cycle and evaluate the Global Goal"
+    },
+    {
+      "verdict": "REVISE",
+      "next_action": "Return to PLANNING with the findings as input"
+    },
+    {
+      "verdict": "ROLLBACK",
+      "next_action": "Restore the pre-mutation state and record the failed hypothesis"
+    },
+    {
+      "verdict": "BLOCKED",
+      "next_action": "Surface to a human; the protocol will not proceed autonomously"
+    }
+  ],
+  "guardrails": [
+    {
+      "condition": "HUMAN_STOP",
+      "trips_when": "A human ran `evolution stop` or signalled an interruption.",
+      "action": "Stops immediately and persists the current state.",
+      "limit_key": null,
+      "configurable": false,
+      "enforced": true
+    },
+    {
+      "condition": "MAX_SPRINTS",
+      "trips_when": "The sprint ceiling declared in the host contract was reached.",
+      "action": "Stops for a strategy and budget review.",
+      "limit_key": "max_sprints",
+      "configurable": true,
+      "enforced": true
+    },
+    {
+      "condition": "MAX_RUNTIME",
+      "trips_when": "The continuous wall-clock ceiling was exceeded.",
+      "action": "Stops safely rather than running unbounded.",
+      "limit_key": "max_runtime_minutes",
+      "configurable": true,
+      "enforced": true
+    },
+    {
+      "condition": "MAX_CONSECUTIVE_FAILURES",
+      "trips_when": "Sprints failed in a row without recovery.",
+      "action": "Moves to BLOCKED and waits for diagnosis.",
+      "limit_key": "max_consecutive_failures",
+      "configurable": true,
+      "enforced": true
+    },
+    {
+      "condition": "NO_PROGRESS",
+      "trips_when": "N sprints produced no change in the count of satisfied goal criteria.",
+      "action": "Stops and reports stagnation of the current hypothesis.",
+      "limit_key": "no_progress_threshold",
+      "configurable": true,
+      "enforced": true
+    },
+    {
+      "condition": "OSCILLATION",
+      "trips_when": "The loop is alternating between two states it has already seen.",
+      "action": "Detects the cycle by outcome history and stops.",
+      "limit_key": null,
+      "configurable": false,
+      "enforced": true
+    },
+    {
+      "condition": "RUNAWAY_GROWTH",
+      "trips_when": "The host grew far beyond the size it started at.",
+      "action": "Blocks uncontrolled expansion.",
+      "limit_key": null,
+      "configurable": false,
+      "enforced": true
+    },
+    {
+      "condition": "REPEATED_ATTEMPT",
+      "trips_when": "A mutation already rejected is proposed again under a new identifier.",
+      "action": "Recorded by fingerprint in the attempt history; `check()` does not yet stop on it.",
+      "limit_key": null,
+      "configurable": false,
+      "enforced": false
+    }
+  ],
+  "execution_modes": [
+    "one-shot",
+    "continuous",
+    "goal-driven"
+  ],
+  "default_limits": {
+    "max_revision_cycles": 3,
+    "max_consecutive_failures": 3,
+    "max_sprints": 25,
+    "max_runtime_minutes": 240,
+    "no_progress_threshold": 3,
+    "command_timeout_seconds": 900,
+    "max_files_per_changeset": 25
+  },
+  "goal": {
+    "criterion_kinds": [
+      "command",
+      "artifact_exists",
+      "no_findings_above",
+      "human_confirmed"
+    ],
+    "criterion_outcomes": [
+      "SATISFIED",
+      "UNSATISFIED",
+      "UNVERIFIABLE"
+    ],
+    "stop_conditions": [
+      "goal_achieved",
+      "human_stop",
+      "unrecoverable_failure",
+      "safety_limit_reached",
+      "no_progress"
+    ]
+  },
+  "capabilities": {
+    "discoverable": [
+      "filesystem",
+      "terminal",
+      "git",
+      "test_runner",
+      "build_system",
+      "scheduler"
+    ],
+    "declaration_only": [
+      "subagents",
+      "browser",
+      "mcp",
+      "background_execution",
+      "screenshots",
+      "network"
+    ]
+  },
+  "command_slots": [
+    "test",
+    "build",
+    "lint",
+    "typecheck",
+    "coverage",
+    "security_scan",
+    "e2e"
+  ],
+  "artifacts": [
+    {
+      "stage": "Global Goal",
+      "path": ".evolution/goal/global-goal.json",
+      "produced_by": "core/global_goal.py"
+    },
+    {
+      "stage": "Observe",
+      "path": ".evolution/runtime/snapshots/snapshot-*.json",
+      "produced_by": "agents/observer_v0.py"
+    },
+    {
+      "stage": "Baseline (State A)",
+      "path": ".evolution/runtime/baselines/latest-before.json",
+      "produced_by": "core/baseline.py"
+    },
+    {
+      "stage": "Baseline (State B)",
+      "path": ".evolution/runtime/baselines/latest-after.json",
+      "produced_by": "core/baseline.py"
+    },
+    {
+      "stage": "Baseline comparison",
+      "path": ".evolution/runtime/baselines/latest-delta.json",
+      "produced_by": "core/baseline.py"
+    },
+    {
+      "stage": "Gauntlet",
+      "path": ".evolution/runtime/gauntlet/latest-report.json",
+      "produced_by": "engines/gauntlet.py"
+    },
+    {
+      "stage": "Judge",
+      "path": ".evolution/runtime/judge/latest-decision.json",
+      "produced_by": "engines/judge.py"
+    },
+    {
+      "stage": "Event ledger",
+      "path": ".evolution/logs/events.jsonl",
+      "produced_by": "core/event_ledger.py"
+    },
+    {
+      "stage": "Run state",
+      "path": ".evolution/runtime/run-state.json",
+      "produced_by": "engines/run_loop.py"
+    },
+    {
+      "stage": "Host command output",
+      "path": ".evolution/runtime/commands/<slot>.log",
+      "produced_by": "core/host_contract.py"
+    }
+  ]
+}

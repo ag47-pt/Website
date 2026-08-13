@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { 
+import { EVOPRO_CONFIG, EVOPRO_VERSION_LABEL } from '@/data/evopro';
+import {
   Terminal, 
   Copy, 
   Check, 
@@ -33,26 +34,31 @@ export function TerminalInteractive() {
       title: 'Status Geral',
       command: 'evolution status',
       output: `{
-  "workspace_type": "WORKSPACE_HOST",
-  "protocol_version": "0.3.0",
-  "host_state": "READY_FOR_CYCLES",
+  "project": "billing-service",
+  "workspace_type": "HOST",
+  "protocol_version": "${EVOPRO_CONFIG.version}",
+  "state": "READY_FOR_CYCLES",
+  "active_cycle": "cycle-95e53157",
+  "last_snapshot": "snapshot-20260813T201300Z.json",
+  "intent_confirmed": true,
   "global_goal": {
     "objective": "Transformar este host num SaaS pronto para produção",
-    "satisfied_criteria": 3,
-    "total_criteria": 4,
-    "progress_percent": 75.0
+    "status": "ACTIVE",
+    "progress": 0.75,
+    "satisfied": 3,
+    "total": 4
   },
   "active_sprint": {
-    "sprint_id": "SPRINT-014",
-    "goal": "Integrar webhooks de faturamento e testes de carga",
-    "state": "JUDGING"
+    "sprint_id": "sprint-014-a3f9c1",
+    "status": "ACTIVE",
+    "objective": "Integrar webhooks de faturamento e testes de carga"
   },
-  "guardrails": {
-    "status": "CLEAR",
-    "consecutive_failures": 0,
-    "sprints_run": 14
+  "run": {
+    "status": "RUNNING",
+    "mode": "goal-driven",
+    "paused": false
   },
-  "recommended_next_action": "evolution judge"
+  "stop_condition": null
 }`
     },
     {
@@ -60,38 +66,44 @@ export function TerminalInteractive() {
       title: 'Avaliação de Goal',
       command: 'evolution goal evaluate',
       output: `{
-  "evaluated_at": "2026-08-13T07:15:00Z",
+  "goal_id": "goal-1f11bb4f",
   "objective": "Transformar este host num SaaS pronto para produção",
-  "criteria_results": [
+  "evaluated_at": "2026-08-13T07:15:00.412903+00:00",
+  "achieved": false,
+  "progress": 0.75,
+  "commands_executed": true,
+  "satisfied_count": 3,
+  "total_count": 4,
+  "results": [
     {
-      "id": "CRIT-TEST",
+      "criterion_id": "CRIT-TEST",
+      "description": "All host tests pass",
       "kind": "command",
-      "slot": "test",
-      "exit_code": 0,
-      "satisfied": true
+      "outcome": "SATISFIED",
+      "evidence": "\`npm run test\` exited 0"
     },
     {
-      "id": "CRIT-BUILD",
+      "criterion_id": "CRIT-BUILD",
+      "description": "Host build succeeds",
       "kind": "command",
-      "slot": "build",
-      "exit_code": 0,
-      "satisfied": true
+      "outcome": "SATISFIED",
+      "evidence": "\`npm run build\` exited 0"
     },
     {
-      "id": "CRIT-NO-CRITICAL-FINDINGS",
+      "criterion_id": "CRIT-NO-CRITICAL-FINDINGS",
+      "description": "No open critical findings",
       "kind": "no_findings_above",
-      "severity": "critical",
-      "findings_count": 0,
-      "satisfied": true
+      "outcome": "SATISFIED",
+      "evidence": "0 finding(s) of severity 'critical'"
     },
     {
-      "id": "CRIT-HUMAN-UX",
+      "criterion_id": "CRIT-HUMAN-UX",
+      "description": "Fluxo de checkout validado por um humano",
       "kind": "human_confirmed",
-      "satisfied": false,
-      "notes": "Awaiting 'evolution goal confirm --id CRIT-HUMAN-UX'"
+      "outcome": "UNSATISFIED",
+      "evidence": "awaiting human confirmation"
     }
-  ],
-  "goal_complete": false
+  ]
 }`
     },
     {
@@ -99,27 +111,31 @@ export function TerminalInteractive() {
       title: 'Baseline Compare',
       command: 'evolution baseline compare --before before --after after',
       output: `{
-  "status": "OK",
-  "comparison": {
-    "test_suite": {
-      "before_passed": 48,
-      "after_passed": 52,
-      "classification": "IMPROVEMENT"
-    },
-    "syntax_check": {
-      "before_errors": 0,
-      "after_errors": 0,
-      "classification": "UNCHANGED"
-    },
-    "structural_growth": {
-      "files_added": 2,
-      "lines_delta": "+140",
-      "growth_ratio": 1.03,
-      "classification": "UNCHANGED"
-    }
-  },
+  "before_id": "baseline-a1573770",
+  "after_id": "baseline-2c59af44",
+  "compared_at": "2026-08-13T20:42:35.030536+00:00",
   "is_improvement": true,
-  "regressions_detected": false
+  "regression_count": 0,
+  "improvement_count": 1,
+  "uncomparable_count": 0,
+  "deltas": [
+    {
+      "dimension": "test",
+      "kind": "command",
+      "verdict": "IMPROVEMENT",
+      "before": "failed",
+      "after": "passed",
+      "detail": "exit 1 -> exit 0"
+    },
+    {
+      "dimension": "source_lines",
+      "kind": "structure",
+      "verdict": "UNCHANGED",
+      "before": 4218,
+      "after": 4358,
+      "detail": ""
+    }
+  ]
 }`
     },
     {
@@ -127,32 +143,33 @@ export function TerminalInteractive() {
       title: 'Gauntlet Run',
       command: 'evolution gauntlet run',
       output: `{
+  "gauntlet_id": "gauntlet-4c2baecb",
   "strategy": "sequential_role_separation",
-  "critics_run": [
-    "scope",
-    "regression",
-    "test",
-    "security",
-    "architecture",
-    "goal_alignment",
-    "integrity",
-    "dependency_impact",
-    "historical_failure"
+  "started_at": "2026-08-13T17:11:20.612049+00:00",
+  "completed_at": "2026-08-13T17:11:24.881203+00:00",
+  "passed": true,
+  "critical_count": 0,
+  "error_count": 0,
+  "warning_count": 1,
+  "critics": [
+    { "critic": "scope", "status": "ran", "reason": "", "finding_count": 0 },
+    { "critic": "security", "status": "ran", "reason": "", "finding_count": 0 },
+    { "critic": "dependency_impact", "status": "ran", "reason": "", "finding_count": 1 },
+    {
+      "critic": "performance",
+      "status": "unavailable",
+      "reason": "host declares no performance profile",
+      "finding_count": 0
+    }
   ],
   "findings": [
     {
-      "critic": "security",
-      "severity": "info",
-      "message": "Zero hardcoded secrets or dynamic exec calls detected"
-    },
-    {
       "critic": "dependency_impact",
-      "severity": "info",
-      "message": "Impact radius verified against AST Code Graph (3 affected files, all tested)"
+      "code": "AFFECTED_COMPONENTS_UNTESTED",
+      "severity": "warning",
+      "message": "2 dependent components have no covering test"
     }
-  ],
-  "blocking_findings_count": 0,
-  "ready_for_judge": true
+  ]
 }`
     },
     {
@@ -306,7 +323,7 @@ export function TerminalInteractive() {
 
           {/* Terminal Footer Info */}
           <div className="bg-zinc-900/60 px-4 py-2 border-t border-zinc-800/80 text-[10px] text-zinc-500 flex items-center justify-between">
-            <span>Formato de saída: JSON Schema v0.3.0 compliant</span>
+            <span>Saída real do CLI {EVOPRO_VERSION_LABEL} — stdout é sempre JSON</span>
             <span>Atalhos: Teclas 1 a 5 para navegar</span>
           </div>
         </div>

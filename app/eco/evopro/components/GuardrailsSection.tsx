@@ -53,7 +53,14 @@ export function GuardrailsSection() {
                     <ShieldAlert className="w-3.5 h-3.5" />
                     <span>{g.condition}</span>
                   </div>
-                  {g.configurable ? (
+                  {!g.enforced ? (
+                    <span
+                      className="text-[9px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20"
+                      title="Declarado e registado pelo protocolo, mas ainda não interrompe uma execução"
+                    >
+                      Não aplicado
+                    </span>
+                  ) : g.configurable ? (
                     <span className="text-[9px] text-zinc-400 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
                       Configurável
                     </span>
@@ -91,7 +98,15 @@ export function GuardrailsSection() {
                 Fingerprinting por Intenção e Caminhos Modificados
               </h3>
               <p className="text-zinc-400 font-sans text-xs leading-relaxed">
-                As hipóteses de mutação são identificadas pela assinatura da sua intenção e caminhos tocados, e não apenas pelo ID gerado. Se um agente tentar repropor a mesma solução falhada sob um novo ID, o EvoPro deteta a repetição e rejeita imediatamente.
+                As hipóteses de mutação são identificadas pela assinatura da sua intenção e caminhos
+                tocados, e não apenas pelo ID gerado. Cada tentativa e o seu desfecho ficam gravados
+                no histórico de guardrails, o que torna visível quando um agente repropõe uma solução
+                já falhada.{' '}
+                <strong className="text-amber-400">
+                  A paragem automática sobre essa deteção ainda não está implementada
+                </strong>{' '}
+                — o protocolo publica <code>REPEATED_ATTEMPT</code> como não aplicada, em vez de a
+                apresentar como uma proteção que já funciona.
               </p>
             </div>
 

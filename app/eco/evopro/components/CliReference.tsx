@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { CLI_COMMANDS, CliCommand } from '@/data/evopro';
+import { CLI_COMMANDS, CliCommand, EVOPRO_VERSION_LABEL } from '@/data/evopro';
 import { 
   BookOpen, 
   Search, 
@@ -65,7 +65,7 @@ export function CliReference() {
             CLI Reference
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base font-sans">
-            Comandos oficiais implementados na versão v0.3.0. Clique em qualquer comando para ver flags, argumentos e exemplos.
+            Os {CLI_COMMANDS.length} comandos publicados pelo protocolo na versão {EVOPRO_VERSION_LABEL}, lidos diretamente da sua árvore de parsers via <code className="text-emerald-400">evolution manifest</code>. Clique em qualquer comando para ver flags, argumentos e exemplos.
           </p>
         </div>
 
