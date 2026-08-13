@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import OracleAuthWrapper from '@/labs/oracle-trader-footboll/oracle-auth-wrapper';
+import OracleAuthWrapper from '@/labs/ag47-oracle-trader-footboll/oracle-auth-wrapper';
 
 export const metadata: Metadata = {
   title: 'Oracle Trader Footbol | Agência 47 Labs',

@@ -8,9 +8,9 @@
  */
 export const site = {
   name: "AG47 Evolution Protocol",
-  shortName: "AG47 EP",
+  shortName: "AG47 EvoPro",
   locale: "pt-BR",
-  url: "https://ag47.pt/evolution",
+  url: "https://ag47.pt/eco/evopro",
   repoUrl: "https://github.com/ag47-pt/ag47-evolution-protocol",
   tagline: "Um protocolo para evolução contínua de software com Inteligência Artificial.",
   description:

@@ -41,6 +41,10 @@
   ],
   "exclude": [
     "node_modules",
+    "labs/ag47-altcoin-radar",
+    "labs/ag47-digital-bank",
+    "labs/ag47-evo-pro-landing-page",
+    "labs/ag47-token-agi-solana",
     "labs/digital-bank"
   ]
 }
