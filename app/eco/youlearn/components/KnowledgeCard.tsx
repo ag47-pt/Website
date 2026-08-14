@@ -10,33 +10,11 @@ import { formatDurationHuman, extractYoutubeId } from '@/eco/youlearn/lib/proven
 interface KnowledgeCardProps {
   entry: LibraryEntry;
   featured?: boolean;
+  progressPercent?: number;
+  isCompleted?: boolean;
 }
 
-export function KnowledgeCard({ entry, featured }: KnowledgeCardProps) {
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  useEffect(() => {
-    const videoId = extractYoutubeId(entry.sourceUrl);
-    if (!videoId) return;
-
-    const completed = localStorage.getItem(`youlearn:completed:${videoId}`) === 'true';
-    setIsCompleted(completed);
-
-    if (completed) {
-      setProgressPercent(100);
-    } else {
-      const savedTime = localStorage.getItem(`youlearn:resume:${videoId}`);
-      if (savedTime) {
-        const seconds = Number(savedTime);
-        const durationSeconds = entry.originalDurationMinutes * 60;
-        if (seconds > 0 && durationSeconds > 0) {
-          const pct = Math.min(Math.round((seconds / durationSeconds) * 100), 100);
-          setProgressPercent(pct);
-        }
-      }
-    }
-  }, [entry.sourceUrl, entry.originalDurationMinutes]);
+export function KnowledgeCard({ entry, featured, progressPercent = 0, isCompleted = false }: KnowledgeCardProps) {
   const sourceIcon = () => {
     switch (entry.sourceType) {
       case 'youtube':

@@ -250,6 +250,30 @@ export function CinematicHeroPlayer({
     }));
   };
 
+  const resetProgress = () => {
+    if (!videoId) return;
+    if (!window.confirm('Tem certeza de que deseja recomeçar a aula do início? Isso limpará seu progresso.')) {
+      return;
+    }
+
+    localStorage.removeItem(`youlearn:resume:${videoId}`);
+    localStorage.removeItem(`youlearn:completed:${videoId}`);
+
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }),
+        '*'
+      );
+    }
+
+    setActiveStartTime(0);
+
+    // Sync to hero reset
+    window.dispatchEvent(new CustomEvent('youlearn:seek', {
+      detail: { timeSeconds: 0, autoplay: false }
+    }));
+  };
+
   // High-res YouTube thumbnail with fallback to hqdefault
   const maxresThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : thumbnailUrl;
   const hqThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : thumbnailUrl;
@@ -299,6 +323,18 @@ export function CinematicHeroPlayer({
 
         {/* Viewport Size & Volume Controls Wrapper */}
         <div className="flex items-center gap-2">
+          {/* Reset Progress Control */}
+          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 p-1 backdrop-blur-md">
+            <button
+              onClick={resetProgress}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-mono text-zinc-400 hover:text-rose-400 transition-colors"
+              title="Recomeçar Aula (Limpar Progresso)"
+            >
+              <RotateCcw className="h-3.5 w-3.5 text-zinc-500 hover:text-rose-400 transition-colors" />
+              <span className="text-[10px] font-bold uppercase">Recomeçar</span>
+            </button>
+          </div>
+
           {/* Native Volume Control */}
           <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 p-1 backdrop-blur-md">
             <button

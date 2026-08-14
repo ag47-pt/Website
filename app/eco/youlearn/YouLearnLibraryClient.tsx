@@ -10,6 +10,7 @@ import { KnowledgeCard } from './components/KnowledgeCard';
 import { LibraryEmptyState } from './components/LibraryEmptyState';
 import { Sparkles, Layers, BookOpen, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { extractYoutubeId } from '@/eco/youlearn/lib/provenance';
 
 interface YouLearnLibraryClientProps {
   initialEntries: LibraryEntry[];
@@ -21,7 +22,9 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [selectedProgress, setSelectedProgress] = useState('All');
   const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [progressMap, setProgressMap] = useState<Record<string, { completed: boolean; percent: number }>>({});
 
   const fetchEntries = async () => {
     try {
@@ -35,10 +38,40 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
     }
   };
 
+  const loadProgressMap = () => {
+    const map: Record<string, { completed: boolean; percent: number }> = {};
+    entries.forEach((entry) => {
+      const videoId = extractYoutubeId(entry.sourceUrl);
+      if (!videoId) return;
+
+      const completed = localStorage.getItem(`youlearn:completed:${videoId}`) === 'true';
+      let percent = 0;
+      if (completed) {
+        percent = 100;
+      } else {
+        const savedTime = localStorage.getItem(`youlearn:resume:${videoId}`);
+        if (savedTime) {
+          const seconds = Number(savedTime);
+          const durationSeconds = entry.originalDurationMinutes * 60;
+          if (seconds > 0 && durationSeconds > 0) {
+            percent = Math.min(Math.round((seconds / durationSeconds) * 100), 100);
+          }
+        }
+      }
+      map[entry.id] = { completed, percent };
+    });
+    setProgressMap(map);
+  };
+
   // Dynamically load latest entries on mount
   useEffect(() => {
     fetchEntries();
   }, []);
+
+  // Update progressMap whenever entries reload or page mounts
+  useEffect(() => {
+    loadProgressMap();
+  }, [entries]);
 
   const handleIngestSuccess = async (slug: string) => {
     console.log(`[YouLearn Client] Ingestion successful for slug: ${slug}, reloading entries...`);
@@ -46,13 +79,25 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
   };
 
   const filteredEntries = useMemo(() => {
-    return filterKnowledgeEntries(entries, {
+    let result = filterKnowledgeEntries(entries, {
       query: searchQuery,
       category: selectedCategory,
       difficulty: selectedDifficulty,
       featuredOnly,
     });
-  }, [entries, searchQuery, selectedCategory, selectedDifficulty, featuredOnly]);
+
+    if (selectedProgress !== 'All') {
+      result = result.filter((entry) => {
+        const prog = progressMap[entry.id];
+        const status = prog
+          ? (prog.completed ? 'completed' : prog.percent > 0 ? 'inProgress' : 'notStarted')
+          : 'notStarted';
+        return status === selectedProgress;
+      });
+    }
+
+    return result;
+  }, [entries, searchQuery, selectedCategory, selectedDifficulty, featuredOnly, selectedProgress, progressMap]);
 
   const featuredEntry = useMemo(() => {
     return entries.find((e) => e.featured);
@@ -62,6 +107,7 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
     setSearchQuery('');
     setSelectedCategory('All');
     setSelectedDifficulty('All');
+    setSelectedProgress('All');
     setFeaturedOnly(false);
   };
 
@@ -86,6 +132,8 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
           onSelectCategory={setSelectedCategory}
           selectedDifficulty={selectedDifficulty}
           onSelectDifficulty={setSelectedDifficulty}
+          selectedProgress={selectedProgress}
+          onSelectProgress={setSelectedProgress}
           featuredOnly={featuredOnly}
           onToggleFeatured={() => setFeaturedOnly((prev) => !prev)}
           onReset={handleReset}
@@ -106,6 +154,8 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
                 key={entry.id}
                 entry={entry}
                 featured={entry.featured && !searchQuery && selectedCategory === 'All'}
+                progressPercent={progressMap[entry.id]?.percent || 0}
+                isCompleted={progressMap[entry.id]?.completed || false}
               />
             ))}
           </div>

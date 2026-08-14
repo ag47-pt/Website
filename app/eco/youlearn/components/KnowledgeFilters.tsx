@@ -9,6 +9,8 @@ interface KnowledgeFiltersProps {
   onSelectCategory: (cat: string) => void;
   selectedDifficulty: string;
   onSelectDifficulty: (diff: string) => void;
+  selectedProgress: string;
+  onSelectProgress: (progress: string) => void;
   featuredOnly: boolean;
   onToggleFeatured: () => void;
   onReset: () => void;
@@ -21,12 +23,14 @@ export function KnowledgeFilters({
   onSelectCategory,
   selectedDifficulty,
   onSelectDifficulty,
+  selectedProgress,
+  onSelectProgress,
   featuredOnly,
   onToggleFeatured,
   onReset,
   resultCount,
 }: KnowledgeFiltersProps) {
-  const isFiltered = selectedCategory !== 'All' || selectedDifficulty !== 'All' || featuredOnly;
+  const isFiltered = selectedCategory !== 'All' || selectedDifficulty !== 'All' || selectedProgress !== 'All' || featuredOnly;
 
   return (
     <div className="mb-8 space-y-4">
@@ -65,6 +69,28 @@ export function KnowledgeFilters({
             <Sparkles className="h-3 w-3" />
             <span>Featured</span>
           </button>
+
+          {/* Progress Status Filter */}
+          <div className="flex items-center rounded-lg border border-white/10 bg-zinc-900/60 p-0.5 text-xs">
+            {[
+              { key: 'All', label: 'Todos' },
+              { key: 'notStarted', label: 'Não Iniciados' },
+              { key: 'inProgress', label: 'Em Progresso' },
+              { key: 'completed', label: 'Concluídos' }
+            ].map((p) => (
+              <button
+                key={p.key}
+                onClick={() => onSelectProgress(p.key)}
+                className={`rounded px-2 py-1 text-[11px] transition-all ${
+                  selectedProgress === p.key
+                    ? 'bg-zinc-800 text-white font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
 
           {/* Difficulty Dropdown / Selector */}
           <div className="flex items-center rounded-lg border border-white/10 bg-zinc-900/60 p-0.5 text-xs">
