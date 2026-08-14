@@ -89,7 +89,51 @@ export function SocialPanel({
         </p>
       )}
 
-      <dl className="mt-2 divide-y divide-radar-border/60">
+      {/* Hype Velocity Gauge */}
+      {latest.messages_per_minute !== null && (
+        <div className="mt-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-2 font-mono text-[0.62rem]">
+          <div className="flex items-center justify-between">
+            <span className="text-zinc-400 font-bold flex items-center gap-1">
+              ⚡ Hype Velocity:
+            </span>
+            <span
+              className={`font-bold ${
+                latest.messages_per_minute >= 30
+                  ? "text-[#d1ff00]"
+                  : latest.messages_per_minute >= 15
+                    ? "text-amber-400"
+                    : "text-zinc-400"
+              }`}
+            >
+              {latest.messages_per_minute >= 30
+                ? "🚀 Frenesi Viral"
+                : latest.messages_per_minute >= 15
+                  ? "⚡ Expansão Ativa"
+                  : "💤 Atividade Normal"}
+            </span>
+          </div>
+
+          <div className="mt-1.5 h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+            <div
+              style={{
+                width: `${Math.min(100, (latest.messages_per_minute / 45) * 100)}%`,
+              }}
+              className={`h-full rounded-full transition-all ${
+                latest.messages_per_minute >= 30
+                  ? "bg-[#d1ff00] shadow-[0_0_8px_rgba(209,255,0,0.6)]"
+                  : "bg-cyan-400"
+              }`}
+            />
+          </div>
+          <div className="mt-1 flex justify-between text-[0.55rem] text-zinc-500">
+            <span>0 msg/min</span>
+            <span>{latest.messages_per_minute} msg/min</span>
+            <span>45+ pico</span>
+          </div>
+        </div>
+      )}
+
+      <dl className="mt-2 divide-y divide-zinc-800/60 font-mono">
         <SocialMetric label="Membros" value={formatNumber(latest.members)} />
         <SocialMetric
           label="Crescimento 1h"

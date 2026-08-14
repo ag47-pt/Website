@@ -15,6 +15,7 @@ import { TokenAnalysis } from "./token-analysis";
 import { PaperTrading } from "./paper-trading";
 import { TokenMobileDrawer } from "./token-mobile-drawer";
 import { TacticalHotkeys } from "./tactical-hotkeys";
+import { ChainCapitalFlow } from "./chain-capital-flow";
 
 export function DashboardView() {
   const [selected, setSelected] = useState<Opportunity | null>(null);
@@ -66,6 +67,7 @@ export function DashboardView() {
             selectedTokenId={tokenId}
           />
           <PaperTrading selectedOpportunity={selected} />
+          <ChainCapitalFlow />
         </div>
         <div className="min-w-0">
           <TokenAnalysis holdersCount={selected?.holders_count ?? null} tokenId={tokenId} />

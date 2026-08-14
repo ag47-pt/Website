@@ -119,22 +119,74 @@ export function WatchlistView() {
 
   return (
     <div className="space-y-3">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="flex flex-wrap items-end justify-between gap-3 font-mono">
         <div>
-          <p className="eyebrow">Lista de observação persistente</p>
-          <h1 className="mt-1 flex items-center gap-2 text-xl font-extrabold tracking-[-0.04em]">
-            <Star className="size-5 text-radar-warning" fill="currentColor" /> Watchlist
+          <p className="eyebrow text-zinc-400">Lista de observação persistente</p>
+          <h1 className="mt-1 flex items-center gap-2 text-xl font-bold tracking-tight text-white">
+            <Star className="size-5 text-amber-400" fill="currentColor" /> Watchlist
           </h1>
-          <p className="mt-1 max-w-2xl text-xs leading-5 text-radar-muted">
-            Tokens guardados no banco para acompanhamento; remover um item não altera qualquer dado
-            on-chain.
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
+            Tokens guardados para acompanhamento e exportação para cópia ou bots de trading.
           </p>
         </div>
-        <DataBadges
-          demo={watchlist.data?.demo_mode}
-          partial={watchlist.data?.partial}
-          stale={watchlist.data?.stale}
-        />
+        <div className="flex items-center gap-2">
+          {watchlist.data?.items && watchlist.data.items.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  const items = watchlist.data?.items ?? [];
+                  const headers = "Symbol,Name,Chain,Contract,PriceUSD,Change1h,Score,AddedAt\n";
+                  const rows = items
+                    .map(
+                      (i) =>
+                        `"${i.token.symbol}","${i.token.name}","${i.token.chain}","${i.token.contract_address}",${i.latest_market?.price_usd ?? 0},${i.latest_market?.price_change_1h ?? 0},${i.latest_score?.final_score ?? 0},"${i.created_at}"`
+                    )
+                    .join("\n");
+                  const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `ag47-watchlist-${new Date().toISOString().slice(0, 10)}.csv`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/90 px-3 py-1.5 text-xs font-bold text-zinc-300 hover:border-[#d1ff00]/40 hover:text-white transition-all cursor-pointer"
+                title="Exportar Lista em CSV"
+              >
+                CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const items = watchlist.data?.items ?? [];
+                  const blob = new Blob([JSON.stringify(items, null, 2)], {
+                    type: "application/json",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `ag47-watchlist-${new Date().toISOString().slice(0, 10)}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/90 px-3 py-1.5 text-xs font-bold text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-all cursor-pointer"
+                title="Exportar Lista em JSON"
+              >
+                JSON
+              </button>
+            </>
+          )}
+          <DataBadges
+            demo={watchlist.data?.demo_mode}
+            partial={watchlist.data?.partial}
+            stale={watchlist.data?.stale}
+          />
+        </div>
       </header>
 
       {mutation.isError && (

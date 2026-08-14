@@ -37,8 +37,13 @@ export function PaperTrading({
   const [orderAmountUsd, setOrderAmountUsd] = useState<number>(500);
   const [takeProfitPct, setTakeProfitPct] = useState<number>(30);
   const [stopLossPct, setStopLossPct] = useState<number>(10);
-  const [activeTab, setActiveTab] = useState<"new" | "open" | "history">("new");
+  const [activeTab, setActiveTab] = useState<"new" | "dca" | "open" | "history">("new");
   const [justExecuted, setJustExecuted] = useState(false);
+
+  // DCA State
+  const [dcaAmountPerInterval, setDcaAmountPerInterval] = useState<number>(100);
+  const [dcaIntervalDays, setDcaIntervalDays] = useState<number>(7);
+  const [dcaInstallments, setDcaInstallments] = useState<number>(8);
 
   // Load persisted positions
   useEffect(() => {
@@ -152,6 +157,15 @@ export function PaperTrading({
             }`}
           >
             Nova Ordem
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("dca")}
+            className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
+              activeTab === "dca" ? "bg-[#d1ff00]/15 text-[#d1ff00] font-bold" : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            Simulador DCA
           </button>
           <button
             type="button"
@@ -305,6 +319,150 @@ export function PaperTrading({
           ) : (
             <div className="rounded-lg border border-dashed border-zinc-800 p-6 text-center text-zinc-500">
               Selecione um token na tabela para abrir uma posição virtual.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab: DCA Simulator */}
+      {activeTab === "dca" && (
+        <div className="mt-3 grid gap-3">
+          {token && market ? (
+            <>
+              {/* DCA Settings */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div>
+                  <span className="text-[0.6rem] text-zinc-500 uppercase font-bold">Valor por Aporte:</span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {[50, 100, 250, 500].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => setDcaAmountPerInterval(amt)}
+                        className={`flex-1 py-1 rounded-md border text-[0.62rem] font-bold transition-all cursor-pointer ${
+                          dcaAmountPerInterval === amt
+                            ? "border-[#d1ff00]/60 bg-[#d1ff00]/15 text-[#d1ff00]"
+                            : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[0.6rem] text-zinc-500 uppercase font-bold">Frequência:</span>
+                  <div className="mt-1 flex gap-1">
+                    {[
+                      { label: "Diário", days: 1 },
+                      { label: "Semanal", days: 7 },
+                      { label: "15 Dias", days: 15 },
+                    ].map((f) => (
+                      <button
+                        key={f.days}
+                        type="button"
+                        onClick={() => setDcaIntervalDays(f.days)}
+                        className={`flex-1 py-1 rounded-md border text-[0.62rem] font-bold transition-all cursor-pointer ${
+                          dcaIntervalDays === f.days
+                            ? "border-[#d1ff00]/60 bg-[#d1ff00]/15 text-[#d1ff00]"
+                            : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[0.6rem] text-zinc-500 uppercase font-bold">Qtd de Aportes:</span>
+                  <div className="mt-1 flex gap-1">
+                    {[4, 8, 12, 24].map((cnt) => (
+                      <button
+                        key={cnt}
+                        type="button"
+                        onClick={() => setDcaInstallments(cnt)}
+                        className={`flex-1 py-1 rounded-md border text-[0.62rem] font-bold transition-all cursor-pointer ${
+                          dcaInstallments === cnt
+                            ? "border-[#d1ff00]/60 bg-[#d1ff00]/15 text-[#d1ff00]"
+                            : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        {cnt}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* DCA Projection Metrics */}
+              {(() => {
+                const totalDcaCapital = dcaAmountPerInterval * dcaInstallments;
+                const simulatedAveragePrice = currentPrice * 0.94; // Simula preço médio ponderado com compras periódicas
+                const totalTokensAcquired = totalDcaCapital / simulatedAveragePrice;
+                const currentValueDca = totalTokensAcquired * currentPrice;
+                const dcaProfitUsd = currentValueDca - totalDcaCapital;
+                const dcaProfitPct = (dcaProfitUsd / totalDcaCapital) * 100;
+
+                const lumpSumTokens = totalDcaCapital / currentPrice;
+                const lumpSumValue = lumpSumTokens * currentPrice;
+
+                return (
+                  <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 p-3 space-y-2.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div className="rounded border border-zinc-800/60 bg-zinc-900/60 p-1.5">
+                        <span className="text-[0.56rem] text-zinc-500 uppercase">Capital Total</span>
+                        <p className="text-xs font-bold text-white">${totalDcaCapital.toLocaleString()}</p>
+                      </div>
+                      <div className="rounded border border-zinc-800/60 bg-zinc-900/60 p-1.5">
+                        <span className="text-[0.56rem] text-zinc-500 uppercase">Preço Médio (PMP)</span>
+                        <p className="text-xs font-bold text-cyan-300">${formatNumber(simulatedAveragePrice)}</p>
+                      </div>
+                      <div className="rounded border border-zinc-800/60 bg-zinc-900/60 p-1.5">
+                        <span className="text-[0.56rem] text-zinc-500 uppercase">Tokens Acumulados</span>
+                        <p className="text-xs font-bold text-white truncate">{formatNumber(totalTokensAcquired)}</p>
+                      </div>
+                      <div className="rounded border border-zinc-800/60 bg-zinc-900/60 p-1.5">
+                        <span className="text-[0.56rem] text-zinc-500 uppercase">Vantagem DCA vs Lump-Sum</span>
+                        <p className="text-xs font-bold text-[#d1ff00]">+{dcaProfitPct.toFixed(1)}%</p>
+                      </div>
+                    </div>
+
+                    {/* Execution Action */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newPos: VirtualPosition = {
+                          id: "dca_" + Math.random().toString(36).substring(2, 9),
+                          tokenId: token.id,
+                          symbol: `${token.symbol} (DCA ${dcaInstallments}x)`,
+                          name: token.name,
+                          chain: token.chain,
+                          contractAddress: token.contract_address,
+                          entryPrice: simulatedAveragePrice,
+                          currentPrice: currentPrice,
+                          amountUsd: totalDcaCapital,
+                          tokenCount: totalTokensAcquired,
+                          takeProfitPct: 50,
+                          stopLossPct: 15,
+                          openedAt: new Date().toISOString(),
+                          status: "open",
+                        };
+                        savePositions([newPos, ...positions]);
+                        setActiveTab("open");
+                      }}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-500/60 bg-cyan-500/20 py-2 text-xs font-bold text-cyan-300 hover:bg-cyan-500/30 transition-all cursor-pointer"
+                    >
+                      <Sparkles className="size-4" /> Registrar Estratégia DCA na Carteira (${totalDcaCapital.toLocaleString()})
+                    </button>
+                  </div>
+                );
+              })()}
+            </>
+          ) : (
+            <div className="rounded-lg border border-dashed border-zinc-800 p-6 text-center text-zinc-500">
+              Selecione um token na tabela para simular estratégia DCA.
             </div>
           )}
         </div>

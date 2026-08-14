@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const RADAR_API_BASE = process.env.ALT_RADAR_API_URL || 'http://127.0.0.1:8000';
+const RADAR_API_BASE = process.env.ALT_RADAR_API_URL || 'https://alt-radar-api-15974783507.europe-west3.run.app';
 
 // Stable UUIDs for Demo Tokens
 const DEMO_TOKENS = [
@@ -441,14 +441,18 @@ export async function GET(
   const search = request.nextUrl.search;
   const targetUrl = `${RADAR_API_BASE}/${subPath}${search}`;
 
+  const incomingHeaders: Record<string, string> = {
+    'Accept': 'application/json',
+    'User-Agent': 'AG47-Eco-Proxy/1.0',
+  };
+  const apiKey = request.headers.get('x-ag47-api-key');
+  if (apiKey) incomingHeaders['x-ag47-api-key'] = apiKey;
+
   try {
     const res = await fetch(targetUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'AG47-Eco-Proxy/1.0',
-      },
+      headers: incomingHeaders,
       next: { revalidate: 0 },
-      signal: AbortSignal.timeout(1500),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (res.ok) {
@@ -498,15 +502,19 @@ export async function POST(
   const body = await request.json().catch(() => ({}));
   const targetUrl = `${RADAR_API_BASE}/${subPath}`;
 
+  const postHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'User-Agent': 'AG47-Eco-Proxy/1.0',
+  };
+  const postApiKey = request.headers.get('x-ag47-api-key');
+  if (postApiKey) postHeaders['x-ag47-api-key'] = postApiKey;
+
   try {
     const res = await fetch(targetUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'AG47-Eco-Proxy/1.0',
-      },
+      headers: postHeaders,
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(1500),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (res.ok) {

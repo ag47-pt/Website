@@ -1,14 +1,14 @@
-name: AG47 Altcoin Radar
+name: AG47 Altcoin Radar CI
 
 on:
   pull_request:
     paths:
-      - "labs/ag47-altcoin-radar/**"
+      - "eco/alt-radar/**"
       - ".github/workflows/ag47-radar.yml"
   push:
     branches: [main]
     paths:
-      - "labs/ag47-altcoin-radar/**"
+      - "eco/alt-radar/**"
       - ".github/workflows/ag47-radar.yml"
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: labs/ag47-altcoin-radar
+        working-directory: eco/alt-radar
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,8 +27,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
-            labs/ag47-altcoin-radar/package-lock.json
-            labs/ag47-altcoin-radar/apps/web/package-lock.json
+            eco/alt-radar/package-lock.json
+            eco/alt-radar/apps/web/package-lock.json
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.6.17"

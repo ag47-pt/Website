@@ -83,12 +83,16 @@ function AlertRow({ alert, compact }: { alert: Alert; compact?: boolean }) {
 export function AlertFeed({ compact = false }: { compact?: boolean }) {
   const [page, setPage] = useState(1);
   const [muted, setMuted] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
   const lastAlertIdRef = useRef<string | null>(null);
   const alerts = useAlerts(page, compact ? 4 : 20);
   const visibleAlerts = alerts.data?.items ?? [];
 
   useEffect(() => {
     setMuted(getAudioMuted());
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPushEnabled(Notification.permission === "granted");
+    }
   }, []);
 
   useEffect(() => {
@@ -96,10 +100,32 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
       const topAlert = visibleAlerts[0];
       if (lastAlertIdRef.current && lastAlertIdRef.current !== topAlert.id) {
         playTacticalAlertSound(540, 920, 0.22);
+
+        // Native Web Push Notification
+        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+          try {
+            new Notification(`🚨 AG47 Radar: ${topAlert.token_symbol}`, {
+              body: `Alerta Tático: ${alertTitles[topAlert.rule_id] ?? topAlert.rule_id}`,
+              icon: "/icon.svg",
+            });
+          } catch (_e) {
+            // Ignore notification errors
+          }
+        }
       }
       lastAlertIdRef.current = topAlert.id;
     }
   }, [visibleAlerts]);
+
+  const handleTogglePush = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "granted") {
+      setPushEnabled(true);
+      return;
+    }
+    const res = await Notification.requestPermission();
+    setPushEnabled(res === "granted");
+  };
 
   const handleToggleMute = () => {
     const isNowMuted = toggleAudioMuted();
@@ -127,6 +153,19 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
           </h2>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleTogglePush}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[0.65rem] font-mono font-bold transition-all cursor-pointer ${
+              pushEnabled
+                ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.15)]"
+                : "border-zinc-800 bg-zinc-900/60 text-zinc-500 hover:text-zinc-300"
+            }`}
+            title={pushEnabled ? "Notificações push do navegador ativas" : "Clique para permitir notificações no navegador"}
+          >
+            <Bell className={`size-3.5 ${pushEnabled ? "text-cyan-400" : "text-zinc-500"}`} />
+            <span>{pushEnabled ? "Push ON" : "Push OFF"}</span>
+          </button>
           <button
             type="button"
             onClick={handleToggleMute}

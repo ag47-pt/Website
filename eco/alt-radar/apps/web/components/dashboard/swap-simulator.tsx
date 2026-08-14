@@ -132,6 +132,38 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
           </div>
         </div>
 
+        {/* Break-Even Analysis Box */}
+        <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 p-2.5 text-[0.62rem]">
+          <div className="flex items-center justify-between border-b border-zinc-800/60 pb-1.5">
+            <span className="font-bold text-zinc-300">🎯 Preço de Break-Even (Zero a Zero):</span>
+            <span className="font-bold text-[#d1ff00]">
+              ${formatNumber(price * (1 + (buyTax + sellTax + priceImpact * 1.5) / 100))} (+{((buyTax + sellTax + priceImpact * 1.5)).toFixed(1)}%)
+            </span>
+          </div>
+
+          <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
+            {[
+              { target: "+10%", multiplier: 1.1 },
+              { target: "+25%", multiplier: 1.25 },
+              { target: "+50%", multiplier: 1.5 },
+              { target: "+100%", multiplier: 2.0 },
+            ].map((t) => {
+              const targetGrossValue = orderAmountUsd * t.multiplier;
+              const netPnl = targetGrossValue * (1 - (sellTax + priceImpact) / 100) - orderAmountUsd;
+              const isProfit = netPnl > 0;
+
+              return (
+                <div key={t.target} className="rounded border border-zinc-800/60 bg-zinc-900/60 p-1">
+                  <span className="text-[0.56rem] text-zinc-500">{t.target} Alvo</span>
+                  <p className={`font-bold ${isProfit ? "text-[#d1ff00]" : "text-rose-400"}`}>
+                    {isProfit ? "+" : ""}${netPnl.toFixed(0)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {isHighImpact && (
           <div className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-[0.65rem] text-rose-300">
             <ShieldAlert className="size-4 shrink-0 text-rose-400" />

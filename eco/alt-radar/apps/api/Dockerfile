@@ -23,5 +23,5 @@ COPY . .
 # Install the project itself (the source code)
 RUN uv sync
 
-# Run the FastAPI app using the virtual environment created by uv
-CMD uv run uvicorn src.ag47_radar.main:app --host 0.0.0.0 --port ${PORT:-8080}
+# Run database migrations and start FastAPI on Cloud Run PORT
+CMD ["sh", "-c", "uv run alembic upgrade head && uv run uvicorn ag47_radar.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
