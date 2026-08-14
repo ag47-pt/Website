@@ -16,6 +16,8 @@ import {
   XCircle
 } from 'lucide-react';
 
+import { BaselineDiffViewer } from './BaselineDiffViewer';
+
 export function ChangeVsEvolution() {
   const { theme } = useTheme();
 
@@ -83,6 +85,9 @@ export function ChangeVsEvolution() {
             </div>
           </div>
         </div>
+
+        {/* Diff Viewer Interativo: State A vs State B */}
+        <BaselineDiffViewer />
 
         {/* 4 Classification Dimensions Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12 font-mono">

@@ -12,7 +12,8 @@ import {
   Activity, 
   ShieldCheck, 
   Network,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react';
 
 interface TerminalTab {
@@ -217,8 +218,98 @@ export function TerminalInteractive() {
     }
   };
 
+  const [isLiveShell, setIsLiveShell] = useState(false);
+  const [inputCommand, setInputCommand] = useState('');
+  const [commandHistory, setCommandHistory] = useState<Array<{ cmd: string; res: string; timestamp: string }>>([
+    {
+      cmd: 'evolution doctor',
+      res: `✓ Python Version: 3.11.8 (Supported)
+✓ Workspace: WORKSPACE_HOST (/host/project)
+✓ Kernel Core: .evolution/ installed
+✓ Host Contract: Validated (evolution.config.json)
+✓ Git Status: Clean working directory on branch 'main'
+✓ Ast Indexer: Ready (stdlib ast available)
+✓ Status: PROTOCOL READY FOR RUNTIME CYCLES`,
+      timestamp: '12:00:01'
+    }
+  ]);
+
+  const handleRunCommand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputCommand.trim()) return;
+
+    playCopySound();
+    const rawCmd = inputCommand.trim();
+    const cmd = rawCmd.toLowerCase();
+    let res = '';
+
+    if (cmd === 'help' || cmd === '--help' || cmd === 'evolution --help') {
+      res = `EvoPro Kernel CLI v0.3.0
+
+Comandos disponíveis:
+  evolution doctor              Verifica saúde e pré-requisitos do host
+  evolution status              Exibe status do ciclo, goal e guardrails
+  evolution init                Inicializa a estrutura .evolution/ no repositório
+  evolution goal evaluate       Avalia critérios de sucesso do Global Goal
+  evolution baseline compare    Executa comparação dimensional State A vs State B
+  evolution gauntlet run        Dispara os 12 Critics adversariais
+  evolution graph index         Indexa AST do repositório em tempo real
+  evolution judge               Emite veredito determinístico de aceitação/rejeição
+  clear                         Limpa o histórico de comandos`;
+    } else if (cmd === 'clear') {
+      setCommandHistory([]);
+      setInputCommand('');
+      return;
+    } else if (cmd.includes('doctor')) {
+      res = `✓ Workspace: WORKSPACE_HOST
+✓ Ast Indexer: Ready (270 nodes, 1340 edges indexed in 84ms)
+✓ Active Goal: "Transformar este host num SaaS pronto para produção"
+✓ Gauntlet: 12 Critics registered and active
+✓ Result: ALL SYSTEMS OPERATIONAL`;
+    } else if (cmd.includes('status')) {
+      res = `{\n  "status": "READY_FOR_CYCLES",\n  "active_sprint": "SPRINT-014",\n  "progress": "75%",\n  "guardrails": "CLEAR"\n}`;
+    } else if (cmd.includes('init')) {
+      res = `[EVOPRO] Initializing Evolution Protocol in current repository...
+✓ Created .evolution/goal/
+✓ Created .evolution/baselines/
+✓ Created .evolution/gauntlet/
+✓ Created .evolution/runtime/
+✓ Created .evolution/graph/
+✓ Generated default evolution.config.json
+[EVOPRO] Protocol successfully attached to host. Run 'evolution status' to begin.`;
+    } else if (cmd.includes('gauntlet')) {
+      res = `[GAUNTLET] Running 12 Adversarial Critics...
+✓ ScopeCritic: PASS (0 protected files touched)
+✓ SecurityCritic: PASS (0 unsafe patterns)
+✓ RegressionCritic: PASS (Test pass rate: 100%)
+✓ DependencyImpactCritic: PASS (AST blast radius verified)
+✓ HistoricalFailureCritic: PASS (No recurring failure detected)
+[GAUNTLET] VERDICT: 0 blocking findings. Ready for judge.`;
+    } else if (cmd.includes('graph')) {
+      res = `[GRAPH] Indexing AST for 120 files...
+✓ Parsed 270 modules, classes and functions
+✓ Mapped 1,340 dependency edges (Confidence: 1.0 OBSERVED)
+✓ Index time: 82ms (Memory: 3.4 MB)`;
+    } else if (cmd.includes('goal')) {
+      res = `[GOAL] Evaluated Global Goal:
+✓ Criteria 1 (Tests): 100% PASS
+✓ Criteria 2 (Build): Exit code 0
+✓ Criteria 3 (Zero Critical Findings): Verified
+○ Criteria 4 (Human UX Confirmation): PENDING
+[GOAL] Progress: 75% completed`;
+    } else {
+      res = `[EVOPRO] Executando '${rawCmd}'...
+✓ Comando simulado no ambiente de demonstração.
+Digite 'help' para listar comandos suportados.`;
+    }
+
+    const now = new Date().toLocaleTimeString();
+    setCommandHistory((prev) => [...prev, { cmd: rawCmd, res, timestamp: now }]);
+    setInputCommand('');
+  };
+
   const copyCommand = () => {
-    navigator.clipboard.writeText(currentTab.command);
+    navigator.clipboard.writeText(isLiveShell ? 'evolution status' : currentTab.command);
     playCopySound();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -231,13 +322,13 @@ export function TerminalInteractive() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-4">
             <Terminal className="w-3.5 h-3.5" />
-            DEMONSTRAÇÃO INTERATIVA DA CLI
+            SIMULADOR INTERATIVO DA CLI EM TEMPO REAL
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
             Terminal em Ação
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base font-sans">
-            Inspecione saídas reais geradas pelos comandos determinísticos do EvoPro. Pressione as teclas <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-emerald-400 border border-zinc-700 font-mono text-xs">1</kbd> a <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-emerald-400 border border-zinc-700 font-mono text-xs">5</kbd> para alternar abas rapidamente.
+            Inspecione saídas reais geradas pelos comandos determinísticos do EvoPro ou digite comandos ao vivo no terminal interativo.
           </p>
         </div>
 
@@ -258,14 +349,17 @@ export function TerminalInteractive() {
               <span className="text-[11px] text-zinc-500 ml-2 hidden sm:inline">bash — evopro-host</span>
             </div>
 
-            {/* Tabs com números de atalho */}
+            {/* Tabs & Live Shell Toggle */}
             <div className="flex flex-wrap items-center gap-1">
               {tabs.map((tab, idx) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setIsLiveShell(false);
+                    setActiveTab(tab.id);
+                  }}
                   className={`px-3 py-1 rounded-lg text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === tab.id
+                    !isLiveShell && activeTab === tab.id
                       ? 'bg-zinc-800 text-emerald-400 font-bold border border-zinc-700 shadow-sm'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
                   }`}
@@ -274,40 +368,105 @@ export function TerminalInteractive() {
                   <span>{tab.title}</span>
                 </button>
               ))}
+
+              <button
+                onClick={() => setIsLiveShell(true)}
+                className={`px-3 py-1 rounded-lg text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isLiveShell 
+                    ? 'bg-cyan-500/20 text-cyan-400 font-bold border border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.3)]' 
+                    : 'text-cyan-400/80 hover:text-cyan-300 hover:bg-zinc-800/50'
+                }`}
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Prompt ao Vivo (Digitar)</span>
+              </button>
             </div>
           </div>
 
-          {/* Terminal Command Line */}
-          <div className="p-4 sm:p-6 bg-zinc-950 flex items-center justify-between border-b border-zinc-900">
-            <div className="flex items-center gap-2 text-sm text-zinc-200 overflow-x-auto">
-              <span className="text-emerald-400 select-none font-bold">$</span>
-              <span className="text-white font-semibold">{currentTab.command}</span>
-            </div>
-            <button
-              onClick={copyCommand}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono border transition-all cursor-pointer shrink-0 ml-2 ${
-                copied 
-                  ? 'bg-emerald-500 text-black font-bold border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]' 
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border-zinc-800'
-              }`}
-              title="Copiar comando"
-            >
-              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copiado!' : 'Copiar'}</span>
-            </button>
-          </div>
+          {!isLiveShell ? (
+            <>
+              {/* Preset Command Line */}
+              <div className="p-4 sm:p-6 bg-zinc-950 flex items-center justify-between border-b border-zinc-900">
+                <div className="flex items-center gap-2 text-sm text-zinc-200 overflow-x-auto">
+                  <span className="text-emerald-400 select-none font-bold">$</span>
+                  <span className="text-white font-semibold">{currentTab.command}</span>
+                </div>
+                <button
+                  onClick={copyCommand}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono border transition-all cursor-pointer shrink-0 ml-2 ${
+                    copied 
+                      ? 'bg-emerald-500 text-black font-bold border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]' 
+                      : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border-zinc-800'
+                  }`}
+                  title="Copiar comando"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copiado!' : 'Copiar'}</span>
+                </button>
+              </div>
 
-          {/* Terminal Output Area */}
-          <div className="p-4 sm:p-6 bg-zinc-950/95 overflow-x-auto max-h-[380px] overflow-y-auto">
-            <pre className="text-zinc-300 text-xs sm:text-[13px] leading-relaxed font-mono">
-              <code>{currentTab.output}</code>
-            </pre>
-          </div>
+              {/* Preset Output Area */}
+              <div className="p-4 sm:p-6 bg-zinc-950/95 overflow-x-auto max-h-[380px] overflow-y-auto">
+                <pre className="text-zinc-300 text-xs sm:text-[13px] leading-relaxed font-mono">
+                  <code>{currentTab.output}</code>
+                </pre>
+              </div>
+            </>
+          ) : (
+            /* Live Interactive Shell */
+            <div className="p-4 sm:p-6 bg-zinc-950/95 space-y-4 max-h-[420px] overflow-y-auto flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="text-[11px] text-zinc-500 border-b border-zinc-900 pb-2">
+                  <span>Sessão interativa iniciada. Digite </span>
+                  <code className="text-cyan-400">help</code>
+                  <span>, </span>
+                  <code className="text-cyan-400">evolution doctor</code>
+                  <span>, </span>
+                  <code className="text-cyan-400">evolution status</code>
+                  <span> ou </span>
+                  <code className="text-cyan-400">evolution gauntlet</code>
+                  <span> e pressione Enter.</span>
+                </div>
+
+                {commandHistory.map((item, idx) => (
+                  <div key={idx} className="space-y-1.5 font-mono text-xs">
+                    <div className="flex items-center gap-2 text-zinc-400">
+                      <span className="text-emerald-400 font-bold">$</span>
+                      <span className="text-white font-bold">{item.cmd}</span>
+                      <span className="text-[10px] text-zinc-600 ml-auto">{item.timestamp}</span>
+                    </div>
+                    <pre className="p-3 rounded-xl bg-black/80 text-emerald-300/90 text-[11px] sm:text-xs border border-zinc-900 overflow-x-auto whitespace-pre-wrap">
+                      <code>{item.res}</code>
+                    </pre>
+                  </div>
+                ))}
+              </div>
+
+              {/* Live Input Form */}
+              <form onSubmit={handleRunCommand} className="pt-2 border-t border-zinc-900 flex items-center gap-2">
+                <span className="text-emerald-400 font-bold select-none">$</span>
+                <input
+                  type="text"
+                  value={inputCommand}
+                  onChange={(e) => setInputCommand(e.target.value)}
+                  placeholder="Digite um comando (ex: evolution status, help, clear)..."
+                  className="flex-1 bg-transparent text-white font-mono text-xs focus:outline-none placeholder-zinc-600"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Executar
+                </button>
+              </form>
+            </div>
+          )}
 
           {/* Terminal Footer Info */}
           <div className="bg-zinc-900/60 px-4 py-2 border-t border-zinc-800/80 text-[10px] text-zinc-500 flex items-center justify-between">
-            <span>Formato de saída: JSON Schema v0.3.0 compliant</span>
-            <span>Atalhos: Teclas 1 a 5 para navegar</span>
+            <span>Formato: JSON Schema v0.3.0 compliant</span>
+            <span>Atalhos: Teclas 1 a 5 para abas predefinidas</span>
           </div>
         </div>
       </div>

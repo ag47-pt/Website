@@ -15,6 +15,7 @@ import {
   Shield,
   Layers
 } from 'lucide-react';
+import { ConfigGeneratorWizard } from './ConfigGeneratorWizard';
 
 export function HostModelSection() {
   const { theme } = useTheme();
@@ -66,6 +67,9 @@ export function HostModelSection() {
             O seu projeto de software atua como o <strong>Host</strong>. O EvoPro instala-se de forma limpa numa pasta dedicada <code className="text-emerald-400 font-mono">.evolution/</code> e governa a evolução através do <code className="text-zinc-300 font-mono">evolution.config.json</code>.
           </p>
         </div>
+
+        {/* Wizard Interativo de Configuração */}
+        <ConfigGeneratorWizard />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* File Tree Visualizer */}

@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Sparkles
 } from 'lucide-react';
+import { CompatibilityMatrixInteractive } from './CompatibilityMatrixInteractive';
 
 export function HarnessIndependence() {
   const { theme } = useTheme();
@@ -42,6 +43,9 @@ export function HarnessIndependence() {
             O EvoPro não depende da personalidade, do prompt de sistema ou da interface do agente. O projeto preserva o estado, o objetivo, o histórico e os contratos — o modelo atua como executor cognitivo intercambiável.
           </p>
         </div>
+
+        {/* Matriz Interativa de Compatibilidade de Harnesses & Modelos */}
+        <CompatibilityMatrixInteractive />
 
         {/* Central Core & Harness Spokes Visual */}
         <div className="rounded-3xl bg-zinc-950/80 border border-zinc-800 p-6 sm:p-10 shadow-2xl backdrop-blur-xl mb-12">

@@ -15,6 +15,7 @@ import {
   Terminal,
   Cpu
 } from 'lucide-react';
+import { SprintTimelineReplay } from './SprintTimelineReplay';
 
 export function ContinuityFlow() {
   const { theme } = useTheme();
@@ -35,6 +36,9 @@ export function ContinuityFlow() {
             Nenhum agente precisa partilhar a mesma conversa de chat. Qualquer novo modelo lê o ficheiro <code className="text-emerald-400 font-mono">.evolution/CONTINUITY.md</code> e obtém respostas exatas e imediatas para as 9 perguntas vitais de continuidade.
           </p>
         </div>
+
+        {/* Player de Replay de Sprints */}
+        <SprintTimelineReplay />
 
         {/* Day 1 -> Day 2 -> Day 3 Timeline Visual */}
         <div className="rounded-3xl bg-zinc-950 border border-zinc-800 p-6 sm:p-10 shadow-2xl backdrop-blur-xl mb-12">

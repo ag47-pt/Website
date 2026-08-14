@@ -329,6 +329,16 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+  
+  /* Masking to draw a hollow border */
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+}
+
 /* ============================================================
    Altcoin Radar Design System & Panel Classes
    ============================================================ */

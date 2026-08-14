@@ -15,6 +15,9 @@ import {
   Sparkles
 } from 'lucide-react';
 
+import { GraphInteractiveVisualizer } from './GraphInteractiveVisualizer';
+import { DynamicBenchmarkCalculator } from './DynamicBenchmarkCalculator';
+
 export function GraphIntelligence() {
   const { theme } = useTheme();
 
@@ -25,7 +28,7 @@ export function GraphIntelligence() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-4">
             <Network className="w-3.5 h-3.5" />
-            NOVIDADE NA V0.3.0 — GRAPH INTELLIGENCE
+            NOVIDADE NA V0.3.0 — GRAPH INTELLIGENCE & BENCHMARK
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
             Code Graph & Evolution Graph
@@ -63,6 +66,14 @@ export function GraphIntelligence() {
               <code>Provenance: &quot;src/service.py:1&quot; • Confidence: 1.0 (OBSERVED)</code>
             </div>
           </div>
+        </div>
+
+        {/* Visualizador Interativo de AST Code Graph */}
+        <GraphInteractiveVisualizer />
+
+        {/* Calculadora Dinâmica de Economia & ROI */}
+        <div className="mb-12">
+          <DynamicBenchmarkCalculator />
         </div>
 
         {/* Benchmark Results (Measured & Proven) */}

@@ -29,12 +29,14 @@ import { UseCasesSection } from './components/UseCasesSection';
 import { StatusAndRoadmap } from './components/StatusAndRoadmap';
 import { GitHubEcosystemCTA } from './components/GitHubEcosystemCTA';
 import { EvoFooter } from './components/EvoFooter';
+import { EvoPitchDeck } from './components/EvoPitchDeck';
 
 export default function EvoProClient() {
   const { theme } = useTheme();
   const scrollOffset = usePageScroll();
   const [activeSection, setActiveSection] = useState<string>('overview');
   const [isOledMode, setIsOledMode] = useState<boolean>(false);
+  const [isPitchDeckOpen, setIsPitchDeckOpen] = useState<boolean>(false);
 
   const displayPercent = Math.round(
     theme.branding.startingPercent + scrollOffset * (100 - theme.branding.startingPercent)
@@ -244,8 +246,23 @@ export default function EvoProClient() {
       {/* Footer */}
       <EvoFooter />
 
-      {/* Controles Flutuantes: OLED Mode & Percentual de Scroll */}
-      <div className="fixed bottom-6 right-6 z-40 hidden md:flex items-center gap-3 bg-zinc-950/90 p-2 rounded-2xl border border-zinc-800/80 backdrop-blur-xl shadow-2xl font-mono text-xs">
+      {/* Pitch Deck Presentation Overlay */}
+      <EvoPitchDeck 
+        isOpen={isPitchDeckOpen} 
+        onClose={() => setIsPitchDeckOpen(false)} 
+      />
+
+      {/* Controles Flutuantes: Pitch Deck, OLED Mode & Percentual de Scroll */}
+      <div className="fixed bottom-6 right-6 z-40 hidden md:flex items-center gap-2.5 bg-zinc-950/90 p-2 rounded-2xl border border-zinc-800/80 backdrop-blur-xl shadow-2xl font-mono text-xs">
+        <button
+          onClick={() => setIsPitchDeckOpen(true)}
+          className="px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold border transition-all cursor-pointer bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1.5"
+          title="Abrir Modo Apresentação / Pitch Deck (Navegue com ← →)"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span>PITCH DECK</span>
+        </button>
+
         <button
           onClick={() => setIsOledMode(!isOledMode)}
           className={`px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold border transition-all cursor-pointer ${

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Metadata } from 'next';
 import AltRadarSystemApp from './AltRadarSystemApp';
 import { ALT_RADAR_CONFIG } from '@/data/alt-radar';
@@ -94,7 +95,9 @@ export default function AltRadarPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <AltRadarSystemApp />
+      <Suspense fallback={null}>
+        <AltRadarSystemApp />
+      </Suspense>
     </>
   );
 }
