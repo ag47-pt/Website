@@ -64,13 +64,13 @@ export function StickyFloatingMiniPlayer({
     }
   };
 
+  // Seek handler for mini-player
   useEffect(() => {
     const handleSeek = (e: CustomEvent<{ timeSeconds: number; autoplay: boolean }>) => {
       const { timeSeconds, autoplay } = e.detail;
       
-      // Only process seek if the mini-player is currently the main view (scrolled down)
-      // Otherwise CinematicHeroPlayer handles it and we don't want audio collision
-      if (!isVisible || isCollapsed || isDismissed) return;
+      const isScrolledDown = window.scrollY > 480;
+      if (!isScrolledDown || !isVisible || isCollapsed || isDismissed) return;
 
       if (!isPlaying) {
         setActiveStartTime(timeSeconds);
@@ -92,6 +92,71 @@ export function StickyFloatingMiniPlayer({
     window.addEventListener('youlearn:seek' as any, handleSeek);
     return () => window.removeEventListener('youlearn:seek' as any, handleSeek);
   }, [isPlaying, isVisible, isCollapsed, isDismissed]);
+
+  // Handoff logic: scrolling DOWN (Hero -> Floating)
+  useEffect(() => {
+    if (isVisible && !isDismissed && !isCollapsed) {
+      const syncState = (window as any).youlearnPlayerSync;
+      if (syncState && syncState.activePlayer === 'hero' && syncState.isPlaying) {
+        // Pause the hero player
+        window.dispatchEvent(new CustomEvent('youlearn:pause-hero'));
+        
+        // Start playing in floating player from the same timestamp
+        setActiveStartTime(Math.floor(syncState.currentTime));
+        setIsPlaying(true);
+      }
+    }
+  }, [isVisible, isDismissed, isCollapsed]);
+
+  // Handoff logic: scrolling UP (Floating -> Hero)
+  const prevVisibleRef = useRef(isVisible);
+  useEffect(() => {
+    const wasVisible = prevVisibleRef.current;
+    prevVisibleRef.current = isVisible;
+
+    if (wasVisible && !isVisible) {
+      // Scrolled up! If floating player was playing, transfer back to hero
+      if (isPlaying) {
+        setIsPlaying(false); // stop floating player
+        
+        const syncState = (window as any).youlearnPlayerSync;
+        const timeToResume = syncState && syncState.activePlayer === 'floating' 
+          ? Math.floor(syncState.currentTime) 
+          : activeStartTime;
+          
+        window.dispatchEvent(new CustomEvent('youlearn:resume-hero', {
+          detail: { timeSeconds: timeToResume }
+        }));
+      }
+    }
+  }, [isVisible, isPlaying, activeStartTime]);
+
+  // YouTube Iframe PostMessage listener to update sync status
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (iframeRef.current && event.source === iframeRef.current.contentWindow) {
+        try {
+          const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+          if (data.event === 'infoDelivery' && data.info) {
+            const info = data.info;
+            if (info.currentTime !== undefined) {
+              (window as any).youlearnPlayerSync = {
+                currentTime: info.currentTime,
+                isPlaying: info.playerState === 1,
+                activePlayer: 'floating',
+                lastUpdated: Date.now(),
+              };
+            }
+          }
+        } catch (e) {
+          // not a youtube JSON message
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isPlaying]);
 
   const maxresThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : thumbnailUrl;
   const hqThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : thumbnailUrl;

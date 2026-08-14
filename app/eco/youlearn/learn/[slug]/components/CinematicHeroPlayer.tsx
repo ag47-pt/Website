@@ -32,6 +32,19 @@ export function CinematicHeroPlayer({
   useEffect(() => {
     const handleSeek = (e: CustomEvent<{ timeSeconds: number; autoplay: boolean }>) => {
       const { timeSeconds, autoplay } = e.detail;
+      
+      // If we are scrolled down, the floating player is active, so the hero player should pause
+      const isScrolledDown = window.scrollY > 480;
+      if (isScrolledDown) {
+        if (isPlaying && iframeRef.current && iframeRef.current.contentWindow) {
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+            '*'
+          );
+        }
+        return;
+      }
+
       if (!isPlaying) {
         setActiveStartTime(timeSeconds);
         setIsPlaying(true);
@@ -47,12 +60,73 @@ export function CinematicHeroPlayer({
           );
         }
       }
-      // Scroll to top to see the player
+      
+      // Only scroll to top if we are not already at the top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handlePauseHero = () => {
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }),
+          '*'
+        );
+      }
+    };
+
+    const handleResumeHero = (e: CustomEvent<{ timeSeconds: number }>) => {
+      const { timeSeconds } = e.detail;
+      if (!isPlaying) {
+        setActiveStartTime(timeSeconds);
+        setIsPlaying(true);
+      } else if (iframeRef.current && iframeRef.current.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'seekTo', args: [timeSeconds, true] }),
+          '*'
+        );
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+          '*'
+        );
+      }
+    };
+
     window.addEventListener('youlearn:seek' as any, handleSeek);
-    return () => window.removeEventListener('youlearn:seek' as any, handleSeek);
+    window.addEventListener('youlearn:pause-hero' as any, handlePauseHero);
+    window.addEventListener('youlearn:resume-hero' as any, handleResumeHero);
+
+    return () => {
+      window.removeEventListener('youlearn:seek' as any, handleSeek);
+      window.removeEventListener('youlearn:pause-hero' as any, handlePauseHero);
+      window.removeEventListener('youlearn:resume-hero' as any, handleResumeHero);
+    };
+  }, [isPlaying]);
+
+  // YouTube Iframe PostMessage listener to update sync status
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (iframeRef.current && event.source === iframeRef.current.contentWindow) {
+        try {
+          const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+          if (data.event === 'infoDelivery' && data.info) {
+            const info = data.info;
+            if (info.currentTime !== undefined) {
+              (window as any).youlearnPlayerSync = {
+                currentTime: info.currentTime,
+                isPlaying: info.playerState === 1,
+                activePlayer: 'hero',
+                lastUpdated: Date.now(),
+              };
+            }
+          }
+        } catch (e) {
+          // not a youtube JSON message
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, [isPlaying]);
 
   // High-res YouTube thumbnail with fallback to hqdefault

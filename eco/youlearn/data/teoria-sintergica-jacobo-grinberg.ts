@@ -199,28 +199,27 @@ export const teoriaSintergicaJacoboGrinberg: KnowledgeObject = {
       "title": "Insights Chave: O Poder do Campo Neuronal",
       "subtitle": "Princípios fundamentais da Teoria Sintérgica para aplicar em sua vida.",
       "content": {
-        "introText": "Além do protocolo, a obra de Grinberg oferece modelos mentais poderosos que redefinem nossa relação com a realidade.",
-        "insights": [
+        "items": [
           {
             "id": "insight-1",
+            "type": "key_insight",
             "title": "Você sintoniza o que emite, não o que deseja.",
-            "text": "Seus desejos conscientes são irrelevantes se o seu campo neuronal, o estado automático de fundo, estiver emitindo uma frequência de medo, escassez ou dúvida. A Latis responde ao seu estado de ser, não às suas palavras. A consistência do universo é rigorosa.",
-            "type": "rule",
-            "citation": "Jacobo Grinberg"
+            "description": "Seus desejos conscientes são irrelevantes se o seu campo neuronal, o estado automático de fundo, estiver emitindo uma frequência de medo, escassez ou dúvida. A Latis responde ao seu estado de ser, não às suas palavras. A consistência do universo é rigorosa.",
+            "actionableAdvice": "Concentre-se em mudar seu estado vibratório interno antes de projetar seus desejos no mundo externo."
           },
           {
             "id": "insight-2",
+            "type": "pro_tip",
             "title": "O ruído não se resolve com mais força, se resolve com silêncio.",
-            "text": "Tentar superar um campo distorcido com mais esforço mental ou afirmações é como gritar para abafar um ruído. A solução é o oposto: o silêncio do estado autoalusivo, que permite ao sistema se reorganizar naturalmente para a coerência.",
-            "type": "heuristic",
-            "citation": "Jacobo Grinberg"
+            "description": "Tentar superar um campo distorcido com mais esforço mental ou afirmações é como gritar para abafar um ruído. A solução é o oposto: o silêncio do estado autoalusivo, que permite ao sistema se reorganizar naturalmente para a coerência.",
+            "actionableAdvice": "Use momentos de silêncio e meditação autoalusiva para reorganizar seu campo neuronal."
           },
           {
             "id": "insight-3",
+            "type": "mental_model",
             "title": "A coerência de um cérebro pode influenciar outros.",
-            "text": "Os experimentos de Grinberg com a curandeira Pachita mostraram que um campo neuronal altamente coerente pode sincronizar outros cérebros ao redor, um fenômeno chamado 'ressonância'. Isso sugere que nosso estado interno tem um impacto direto e mensurável no ambiente e nas pessoas, mesmo à distância.",
-            "type": "mental-model",
-            "citation": "Experimentos de Jacobo Grinberg com Pachita"
+            "description": "Os experimentos de Grinberg com a curandeira Pachita mostraram que um campo neuronal altamente coerente pode sincronizar outros cérebros ao redor, um fenômeno chamado 'ressonância'. Isso sugere que nosso estado interno tem um impacto direto e mensurável no ambiente e nas pessoas, mesmo à distância.",
+            "actionableAdvice": "Ao cultivar alta coerência cerebral interna, você ressoa positivamente e harmoniza o ambiente ao seu redor."
           }
         ]
       }
@@ -278,32 +277,34 @@ export const teoriaSintergicaJacoboGrinberg: KnowledgeObject = {
       "title": "Integrando a Teoria Sintérgica",
       "subtitle": "Seus próximos passos no caminho da navegação da realidade.",
       "content": {
-        "summary": "Você agora tem o mapa. A Teoria Sintérgica não é uma crença, mas uma prática. O poder não está em entender o mapa, mas em usá-lo para explorar o território da sua própria consciência.",
-        "checklist": [
+        "mainPoints": [
+          "A realidade material é uma decodificação do cérebro a partir da malha da Latis.",
+          "A meditação autoalusiva expande o campo neuronal e estabiliza a coerência.",
+          "O campo neuronal sintoniza a frequência correspondente à nossa atitude interna profunda."
+        ],
+        "actionableChecklist": [
           {
-            "id": "chk1",
-            "task": "Pratique a Meditação Autoalusiva",
-            "description": "Dedique 5-10 minutos por dia para sentar em silêncio e, em vez de focar na respiração, tente perceber a consciência que está por trás de tudo. Apenas observe o observador."
+            "text": "Praticar a Meditação Autoalusiva por 5 a 10 minutos diários observando o observador.",
+            "category": "Prática"
           },
           {
-            "id": "chk2",
-            "task": "Identifique a Contradição Interna",
-            "description": "Ao longo do dia, observe os momentos em que você declara uma intenção (ex: 'quero ter paz'), mas sente o oposto (ansiedade). Apenas reconhecer essa incoerência é o primeiro passo para a coerência."
+            "text": "Monitorar e reconhecer contradições internas entre intenções e sentimentos de fundo.",
+            "category": "Autoconsciência"
           },
           {
-            "id": "chk3",
-            "task": "Mude sua Linguagem de 'Criar' para 'Navegar'",
-            "description": "Quando pensar em seus objetivos, experimente a frase: 'Estou ajustando minha frequência para sintonizar a realidade onde isso já é verdade', em vez de 'Preciso fazer isso acontecer'."
+            "text": "Substituir ativamente a mentalidade de 'criar' com esforço pela de 'navegar' e 'sintonizar' frequências.",
+            "category": "Mentalidade"
           }
         ],
         "nextSteps": [
+          "Aprofunde-se nos livros e artigos de Jacobo Grinberg sobre xamanismo e neurofisiologia.",
+          "Observe os padrões de realidade que você sintoniza com frequência no cotidiano."
+        ],
+        "recommendedFollowUps": [
           {
-            "title": "Aprofunde-se na Obra de Grinberg",
-            "description": "Pesquise os mais de 50 livros e artigos deixados por Jacobo Grinberg para explorar a base científica e filosófica completa de sua teoria."
-          },
-          {
-            "title": "Observe os Padrões Repetitivos",
-            "description": "Use a lente da Teoria Sintérgica para analisar os padrões que se repetem em sua vida. Em vez de culpa, pergunte: 'Qual frequência meu campo está emitindo para que esta realidade continue sendo sintonizada?'"
+            "title": "Conceito-Chave: A Lattice e a Decodificação da Realidade",
+            "linkOrSlug": "jacobo-grinberg-teoria-sintergica",
+            "type": "concept"
           }
         ]
       }
@@ -314,28 +315,34 @@ export const teoriaSintergicaJacoboGrinberg: KnowledgeObject = {
       "title": "Fonte e Citações",
       "subtitle": "Baseado no conteúdo do canal HolisticaMind.",
       "content": {
+        "sourceTitle": "É assim que seu CÉREBRO Sintoniza a REALIDADE (Teoria Sintérgica)",
         "sourceUrl": "https://www.youtube.com/watch?v=wIXwJgLfxJQ",
-        "authorName": "HolisticaMind",
-        "channelOrOrg": "HolisticaMind",
+        "author": {
+          "name": "HolisticaMind",
+          "channelOrOrg": "HolisticaMind",
+          "avatarUrl": "",
+          "profileUrl": "https://www.youtube.com/@HolisticaMind"
+        },
         "license": "Standard YouTube License",
-        "excerpts": [
+        "citationText": "HolisticaMind. \"É assim que seu CÉREBRO Sintoniza a REALIDADE (Teoria Sintérgica)\". YouTube, 2026.",
+        "keyTimestamps": [
           {
-            "text": "O que você vê como vazio é, na verdade, uma malha densa de informação, uma estrutura que permeia tudo... Ele chamou essa malha de latis.",
+            "label": "O que você vê como vazio é, na verdade, uma malha densa de informação",
             "timestampDisplay": "03:25",
             "timestampSeconds": 205
           },
           {
-            "text": "Você não projeta a realidade para fora de si. Você capta uma das frequências disponíveis na lattis e a interpreta como a realidade.",
+            "label": "Você não projeta a realidade para fora de si",
             "timestampDisplay": "04:26",
             "timestampSeconds": 266
           },
           {
-            "text": "Você não sintoniza o que quer, você sintoniza o que emite. E o que você emite não é o que você decide conscientemente... É o padrão eletromagnético que seu campo neuronal produz no estado habitual.",
+            "label": "Você não sintoniza o que quer, você sintoniza o que emite",
             "timestampDisplay": "11:21",
             "timestampSeconds": 681
           },
           {
-            "text": "Você não cria a realidade que deseja. Você move sua consciência até a camada da leta onde ela já existe.",
+            "label": "Você não cria a realidade que deseja",
             "timestampDisplay": "21:13",
             "timestampSeconds": 1273
           }
