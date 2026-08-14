@@ -10,9 +10,10 @@ interface YouLearnNavbarProps {
   currentSlug?: string;
   isLearningPage?: boolean;
   learningTitle?: string;
+  onIngestSuccess?: (slug: string) => void;
 }
 
-export function YouLearnNavbar({ currentSlug, isLearningPage, learningTitle }: YouLearnNavbarProps) {
+export function YouLearnNavbar({ currentSlug, isLearningPage, learningTitle, onIngestSuccess }: YouLearnNavbarProps) {
   const { theme } = useTheme();
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
 
@@ -109,6 +110,7 @@ export function YouLearnNavbar({ currentSlug, isLearningPage, learningTitle }: Y
       <IngestVideoModal
         isOpen={isIngestModalOpen}
         onClose={() => setIsIngestModalOpen(false)}
+        onSuccess={onIngestSuccess}
       />
     </header>
   );

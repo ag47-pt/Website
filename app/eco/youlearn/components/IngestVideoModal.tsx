@@ -1,23 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Video, Sparkles, AlertCircle, CheckCircle, Loader2, ArrowRight, Terminal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface IngestVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (slug: string) => void;
 }
 
 type IngestStatus = 'idle' | 'loading' | 'success' | 'error';
 
-export function IngestVideoModal({ isOpen, onClose }: IngestVideoModalProps) {
+export function IngestVideoModal({ isOpen, onClose, onSuccess }: IngestVideoModalProps) {
   const router = useRouter();
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [status, setStatus] = useState<IngestStatus>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [successSlug, setSuccessSlug] = useState<string | null>(null);
   const [consoleOutput, setConsoleOutput] = useState<string>('');
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+
+  const fetchLogs = async () => {
+    setLoadingLogs(true);
+    try {
+      const res = await fetch('/api/eco/youlearn/logs');
+      const data = await res.json();
+      if (data.success && data.logs) {
+        setLogs(data.logs);
+      }
+    } catch (e) {
+      console.error('[YouLearn Modal] Failed to load ingestion logs:', e);
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchLogs();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -52,12 +77,19 @@ export function IngestVideoModal({ isOpen, onClose }: IngestVideoModalProps) {
       setSuccessSlug(data.slug);
       setStatus('success');
       
+      if (onSuccess && data.slug) {
+        onSuccess(data.slug);
+      }
+
+      await fetchLogs();
+      
       // Refresh the page data after a successful ingestion
       router.refresh();
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || 'Ocorreu um erro inesperado.');
       setStatus('error');
+      await fetchLogs();
     }
   };
 
@@ -226,6 +258,64 @@ export function IngestVideoModal({ isOpen, onClose }: IngestVideoModalProps) {
               >
                 <span>Tentar Novamente</span>
               </button>
+            </div>
+          )}
+
+          {(status === 'idle' || status === 'error') && logs.length > 0 && (
+            <div className="mt-8 border-t border-white/10 pt-6">
+              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400 mb-4 flex items-center gap-1.5">
+                <Terminal className="h-3.5 w-3.5 text-[#D1FF00]" />
+                Histórico Recente de Ingestões
+              </h4>
+              {loadingLogs && logs.length === 0 ? (
+                <div className="flex items-center gap-2 justify-center py-4 text-xs text-zinc-500">
+                  <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
+                  <span>Carregando histórico...</span>
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                  {logs.map((log, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-white/5 bg-white/5 p-3 hover:border-white/10 transition-all"
+                    >
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="truncate text-xs font-mono text-zinc-300" title={log.url}>
+                          {log.url}
+                        </span>
+                        <span className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                          {new Date(log.timestamp).toLocaleString('pt-PT')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 font-mono">
+                        {log.status === 'success' ? (
+                          <>
+                            <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/20">
+                              SUCESSO
+                            </span>
+                            {log.slug && (
+                              <Link
+                                href={`/eco/youlearn/learn/${log.slug}`}
+                                onClick={onClose}
+                                className="text-[11px] text-[#D1FF00] hover:underline"
+                              >
+                                Ver Aula
+                              </Link>
+                            )}
+                          </>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 rounded bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-400 border border-rose-500/20 max-w-[80px] truncate"
+                            title={log.error || undefined}
+                          >
+                            FALHA
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

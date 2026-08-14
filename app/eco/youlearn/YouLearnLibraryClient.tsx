@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { LibraryEntry } from '@/eco/youlearn/schema/types';
 import { filterKnowledgeEntries } from '@/eco/youlearn/lib/library';
 import { YouLearnNavbar } from './components/YouLearnNavbar';
@@ -17,23 +17,46 @@ interface YouLearnLibraryClientProps {
 }
 
 export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLibraryClientProps) {
+  const [entries, setEntries] = useState<LibraryEntry[]>(initialEntries);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [featuredOnly, setFeaturedOnly] = useState(false);
 
+  const fetchEntries = async () => {
+    try {
+      const res = await fetch('/api/eco/youlearn/entries');
+      const data = await res.json();
+      if (data.success && data.entries) {
+        setEntries(data.entries);
+      }
+    } catch (err) {
+      console.error('[YouLearn Client] Failed to refresh library entries:', err);
+    }
+  };
+
+  // Dynamically load latest entries on mount
+  useEffect(() => {
+    fetchEntries();
+  }, []);
+
+  const handleIngestSuccess = async (slug: string) => {
+    console.log(`[YouLearn Client] Ingestion successful for slug: ${slug}, reloading entries...`);
+    await fetchEntries();
+  };
+
   const filteredEntries = useMemo(() => {
-    return filterKnowledgeEntries(initialEntries, {
+    return filterKnowledgeEntries(entries, {
       query: searchQuery,
       category: selectedCategory,
       difficulty: selectedDifficulty,
       featuredOnly,
     });
-  }, [initialEntries, searchQuery, selectedCategory, selectedDifficulty, featuredOnly]);
+  }, [entries, searchQuery, selectedCategory, selectedDifficulty, featuredOnly]);
 
   const featuredEntry = useMemo(() => {
-    return initialEntries.find((e) => e.featured);
-  }, [initialEntries]);
+    return entries.find((e) => e.featured);
+  }, [entries]);
 
   const handleReset = () => {
     setSearchQuery('');
@@ -45,11 +68,11 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
   return (
     <div className="min-h-screen bg-black text-white selection:bg-[#D1FF00] selection:text-black">
       {/* Top Navbar */}
-      <YouLearnNavbar />
+      <YouLearnNavbar onIngestSuccess={handleIngestSuccess} />
 
       {/* Hero Section */}
       <YouLearnHero
-        entries={initialEntries}
+        entries={entries}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
