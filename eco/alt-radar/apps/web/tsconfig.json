@@ -14,7 +14,10 @@
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./*"] }
+    "paths": {
+      "@/eco/alt-radar/apps/web/*": ["./*"],
+      "@/*": ["./*", "../../../../*"]
+    }
   },
   "include": [
     "next-env.d.ts",

@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev",
     "dev:bank": "npm --prefix labs/digital-bank run dev -- -p 3001",
-    "build": "next build --webpack",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "crypto-agent": "tsx --tsconfig agent/crypto/tsconfig.json agent/crypto/index.ts"

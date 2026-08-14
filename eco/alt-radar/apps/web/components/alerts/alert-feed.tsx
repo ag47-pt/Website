@@ -1,13 +1,14 @@
 "use client";
 
-import { AlertTriangle, Bell, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
+import { AlertTriangle, Bell, ChevronLeft, ChevronRight, TrendingUp, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAlerts } from "@/eco/alt-radar/apps/web/lib/api/query";
 import type { Alert } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { formatDateTime, formatTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import { getAudioMuted, playTacticalAlertSound, toggleAudioMuted } from "@/eco/alt-radar/apps/web/lib/sonar-audio";
 
 const alertIcons = {
   "rule:liquidity_volume_expansion": TrendingUp,
@@ -31,11 +32,11 @@ const alertMessages: Record<string, string> = {
 };
 
 function severityTone(severity: number | null) {
-  if (severity === null) return "border-radar-neutral/25 bg-[#132943] text-radar-neutral";
-  if (severity >= 80) return "border-radar-critical/25 bg-[#37181e] text-radar-critical";
-  if (severity >= 60) return "border-[#ff8a67]/25 bg-[#3a2118] text-[#ff8a67]";
-  if (severity >= 40) return "border-radar-warning/25 bg-[#38290e] text-radar-warning";
-  return "border-radar-neutral/25 bg-[#132943] text-radar-neutral";
+  if (severity === null) return "border-cyan-500/40 bg-cyan-500/10 text-cyan-400";
+  if (severity >= 80) return "border-rose-500/40 bg-rose-500/10 text-rose-400 font-bold";
+  if (severity >= 60) return "border-orange-500/40 bg-orange-500/10 text-orange-400 font-bold";
+  if (severity >= 40) return "border-amber-500/40 bg-amber-500/10 text-amber-400 font-bold";
+  return "border-cyan-500/40 bg-cyan-500/10 text-cyan-400";
 }
 
 function AlertRow({ alert, compact }: { alert: Alert; compact?: boolean }) {
@@ -81,8 +82,32 @@ function AlertRow({ alert, compact }: { alert: Alert; compact?: boolean }) {
 
 export function AlertFeed({ compact = false }: { compact?: boolean }) {
   const [page, setPage] = useState(1);
+  const [muted, setMuted] = useState(false);
+  const lastAlertIdRef = useRef<string | null>(null);
   const alerts = useAlerts(page, compact ? 4 : 20);
   const visibleAlerts = alerts.data?.items ?? [];
+
+  useEffect(() => {
+    setMuted(getAudioMuted());
+  }, []);
+
+  useEffect(() => {
+    if (visibleAlerts.length > 0) {
+      const topAlert = visibleAlerts[0];
+      if (lastAlertIdRef.current && lastAlertIdRef.current !== topAlert.id) {
+        playTacticalAlertSound(540, 920, 0.22);
+      }
+      lastAlertIdRef.current = topAlert.id;
+    }
+  }, [visibleAlerts]);
+
+  const handleToggleMute = () => {
+    const isNowMuted = toggleAudioMuted();
+    setMuted(isNowMuted);
+    if (!isNowMuted) {
+      playTacticalAlertSound(440, 880, 0.15);
+    }
+  };
 
   return (
     <section
@@ -90,18 +115,31 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
       aria-labelledby={compact ? "recent-alerts-title" : "alerts-title"}
       data-testid="alerts-feed"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-radar-border px-3.5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 px-3.5 py-3">
         <div>
-          <p className="eyebrow">Eventos deduplicados</p>
+          <p className="eyebrow text-zinc-400">Eventos deduplicados</p>
           <h2
             id={compact ? "recent-alerts-title" : "alerts-title"}
-            className="mt-1 flex items-center gap-2 text-sm font-extrabold"
+            className="mt-1 flex items-center gap-2 text-sm font-mono font-bold text-white"
           >
-            <Bell className="size-4 text-radar-muted" />{" "}
+            <Bell className="size-4 text-[#d1ff00]" />{" "}
             {compact ? "Alertas recentes" : "Feed de alertas"}
           </h2>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleToggleMute}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[0.65rem] font-mono font-bold transition-all cursor-pointer ${
+              !muted
+                ? "border-[#d1ff00]/40 bg-[#d1ff00]/10 text-[#d1ff00] shadow-[0_0_8px_rgba(209,255,0,0.15)]"
+                : "border-zinc-800 bg-zinc-900/60 text-zinc-500 hover:text-zinc-300"
+            }`}
+            title={!muted ? "Sonar de áudio ativo (clique para silenciar)" : "Sonar silenciado (clique para ativar)"}
+          >
+            {!muted ? <Volume2 className="size-3.5 text-[#d1ff00]" /> : <VolumeX className="size-3.5 text-zinc-500" />}
+            <span>{!muted ? "Sonar ON" : "Sonar OFF"}</span>
+          </button>
           <DataBadges
             demo={alerts.data?.demo_mode}
             partial={alerts.data?.partial}
@@ -121,7 +159,7 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
         />
       ) : (
         <div>
-          {visibleAlerts.map((alert) => (
+          {visibleAlerts.map((alert: Alert) => (
             <AlertRow key={alert.id} alert={alert} compact={compact} />
           ))}
         </div>

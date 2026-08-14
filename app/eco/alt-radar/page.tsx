@@ -6,14 +6,14 @@ import { ALT_RADAR_CONFIG } from '@/data/alt-radar';
 export const metadata: Metadata = {
   title: 'Alt Radar — Altcoin Intelligence & Discovery | AG47',
   description:
-    'Radar inteligente de descoberta, análise autônoma de risco, scoring explicável e alertas de altcoins no ecossistema AG47.',
+    'Radar inteligente de descoberta, análise autônoma de risco, scoring explicável e alertas de altcoins no ecossistema AG47. Arquitetura determinística EvoPro.',
   alternates: {
     canonical: '/eco/alt-radar',
   },
   openGraph: {
     title: 'Alt Radar — AG47 ECO',
     description:
-      'Plataforma de inteligência, descoberta e monitorização de altcoins do ecossistema AG47.',
+      'Plataforma de inteligência, descoberta e monitorização de altcoins do ecossistema AG47. Zero-Trust Security & Sub-second Ingestion.',
     url: 'https://ag47.pt/eco/alt-radar',
     siteName: 'Agência 47 — ECO',
     locale: 'pt_PT',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Alt Radar — AG47 ECO',
     description:
-      'Radar inteligente de descoberta e análise de risco para altcoins.',
+      'Radar inteligente de descoberta e análise de risco para altcoins no padrão EvoPro.',
   },
   keywords: [
     'Alt Radar',
@@ -41,7 +41,10 @@ export const metadata: Metadata = {
     'Crypto Intelligence',
     'DeFi Security',
     'Smart Contract Audit',
-    'Token Discovery'
+    'Token Discovery',
+    'Honeypot Detector',
+    'Zero-Trust Risk Engine',
+    'EvoPro'
   ],
 };
 
@@ -62,6 +65,14 @@ export default function AltRadarPage() {
           name: 'Agência 47 ECO',
           url: 'https://ag47.pt',
         },
+      },
+      {
+        '@type': 'SoftwareSourceCode',
+        name: 'ag47-alt-radar',
+        codeRepository: ALT_RADAR_CONFIG.gitHubUrl,
+        programmingLanguage: 'TypeScript',
+        version: ALT_RADAR_CONFIG.version,
+        license: 'https://opensource.org/licenses/MIT',
       },
       {
         '@type': 'BreadcrumbList',
@@ -95,7 +106,7 @@ export default function AltRadarPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Suspense fallback={null}>
+      <Suspense fallback={<div className="min-h-screen bg-[#050c12]" />}>
         <AltRadarSystemApp />
       </Suspense>
     </>

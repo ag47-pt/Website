@@ -16,11 +16,11 @@ interface RiskSignal {
 }
 
 const levelConfig: Record<SignalLevel, { label: string; icon: typeof Info; className: string }> = {
-  informative: { label: "Informativo", icon: ShieldCheck, className: "text-radar-positive" },
-  attention: { label: "Atenção", icon: AlertTriangle, className: "text-radar-warning" },
-  high: { label: "Alto risco", icon: AlertTriangle, className: "text-[#ff8a67]" },
-  critical: { label: "Crítico", icon: AlertOctagon, className: "text-radar-critical" },
-  unknown: { label: "Desconhecido", icon: HelpCircle, className: "text-radar-subtle" },
+  informative: { label: "Informativo", icon: ShieldCheck, className: "text-[#d1ff00]" },
+  attention: { label: "Atenção", icon: AlertTriangle, className: "text-amber-400" },
+  high: { label: "Alto risco", icon: AlertTriangle, className: "text-orange-400" },
+  critical: { label: "Crítico", icon: AlertOctagon, className: "text-rose-400" },
+  unknown: { label: "Desconhecido", icon: HelpCircle, className: "text-zinc-500" },
 };
 
 function booleanSignal(label: string, value: boolean | null, positiveWhenFalse = true): RiskSignal {

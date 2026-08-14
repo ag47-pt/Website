@@ -12,30 +12,60 @@ import { MetricsGrid } from "./metrics-grid";
 import { RiskPanel } from "./risk-panel";
 import { SocialPanel } from "./social-panel";
 import { TokenAnalysis } from "./token-analysis";
+import { PaperTrading } from "./paper-trading";
+import { TokenMobileDrawer } from "./token-mobile-drawer";
+import { TacticalHotkeys } from "./tactical-hotkeys";
 
 export function DashboardView() {
   const [selected, setSelected] = useState<Opportunity | null>(null);
+  const [loadedRows, setLoadedRows] = useState<Opportunity[]>([]);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { search, chains } = useRadarState();
   const status = useSystemStatus();
-  const selectFirstRow = useCallback((rows: Opportunity[]) => {
+
+  const handleRowsLoaded = useCallback((rows: Opportunity[]) => {
+    setLoadedRows(rows);
     setSelected((current) => current ?? rows[0] ?? null);
   }, []);
+
   const tableKey = `${search.trim()}-${chains.join("-")}`;
   const tokenId = selected?.token.id ?? null;
+
+  const handleSelectRow = (opp: Opportunity) => {
+    setSelected(opp);
+    if (typeof window !== "undefined" && window.innerWidth < 1280) {
+      setMobileDrawerOpen(true);
+    }
+  };
+
+  const handleNextRow = () => {
+    if (!loadedRows.length) return;
+    const currentIndex = loadedRows.findIndex((r) => r.token.id === selected?.token.id);
+    const nextIndex = (currentIndex + 1) % loadedRows.length;
+    setSelected(loadedRows[nextIndex]);
+  };
+
+  const handlePrevRow = () => {
+    if (!loadedRows.length) return;
+    const currentIndex = loadedRows.findIndex((r) => r.token.id === selected?.token.id);
+    const prevIndex = (currentIndex - 1 + loadedRows.length) % loadedRows.length;
+    setSelected(loadedRows[prevIndex]);
+  };
 
   return (
     <div className="space-y-3">
       <MetricsGrid />
 
       <div className="rise rise-2 grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,.92fr)] 2xl:grid-cols-[minmax(500px,1.12fr)_minmax(460px,1fr)_minmax(245px,.52fr)]">
-        <div className="min-w-0">
+        <div className="min-w-0 space-y-3">
           <OpportunityTable
             key={tableKey}
             compact
-            onRowsLoaded={selectFirstRow}
-            onSelect={setSelected}
+            onRowsLoaded={handleRowsLoaded}
+            onSelect={handleSelectRow}
             selectedTokenId={tokenId}
           />
+          <PaperTrading selectedOpportunity={selected} />
         </div>
         <div className="min-w-0">
           <TokenAnalysis holdersCount={selected?.holders_count ?? null} tokenId={tokenId} />
@@ -55,6 +85,21 @@ export function DashboardView() {
           <AlertFeed compact />
         </div>
       </div>
+
+      {/* Tactical Hotkeys Global Listener */}
+      <TacticalHotkeys
+        onNextRow={handleNextRow}
+        onPrevRow={handlePrevRow}
+        onInspect={() => setMobileDrawerOpen(true)}
+        onPaperTrade={() => setMobileDrawerOpen(true)}
+      />
+
+      {/* Mobile Drawer */}
+      <TokenMobileDrawer
+        opportunity={selected}
+        isOpen={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
+      />
 
       <footer className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pb-1 text-[0.6rem] text-radar-subtle">
         <DatabaseZap

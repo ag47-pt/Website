@@ -12,18 +12,18 @@ const scoreItems: { key: keyof Score; label: string }[] = [
 ];
 
 function scoreColor(value: number | null) {
-  if (value === null) return "bg-radar-subtle";
-  if (value >= 8) return "bg-radar-positive";
-  if (value >= 6.5) return "bg-[#91cf58]";
-  if (value >= 5) return "bg-radar-warning";
-  return "bg-radar-critical";
+  if (value === null) return "bg-zinc-700";
+  if (value >= 8) return "bg-[#d1ff00] shadow-[0_0_8px_rgba(209,255,0,0.6)]";
+  if (value >= 6.5) return "bg-cyan-400";
+  if (value >= 5) return "bg-amber-400";
+  return "bg-rose-500";
 }
 
 function scoreTone(value: number | null) {
-  if (value === null) return "text-radar-muted";
-  if (value >= 8) return "text-radar-positive";
-  if (value >= 5) return "text-radar-warning";
-  return "text-radar-critical";
+  if (value === null) return "text-zinc-500";
+  if (value >= 8) return "text-[#d1ff00]";
+  if (value >= 5) return "text-amber-400";
+  return "text-rose-400";
 }
 
 export function ScoreBreakdown({ score }: { score: Score | null }) {

@@ -322,6 +322,8 @@ export const watchlistResponseSchema = paginatedSchema(watchlistItemSchema);
 
 export type Chain = z.infer<typeof chainSchema>;
 export type TokenId = z.infer<typeof tokenIdSchema>;
+export type Token = z.infer<typeof tokenSchema>;
+export type Market = z.infer<typeof marketSchema>;
 export type Opportunity = z.infer<typeof opportunitySchema>;
 export type SystemStatus = z.infer<typeof systemStatusSchema>;
 export type EvolutionStatus = z.infer<typeof evolutionStatusSchema>;

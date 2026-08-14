@@ -12,9 +12,10 @@ import AltRadarClient from "./AltRadarClient";
 
 function AltRadarMainContent() {
   const searchParams = useSearchParams();
-  const tab = searchParams ? (searchParams.get("tab") || "dashboard") : "dashboard";
+  const tab = searchParams ? searchParams.get("tab") : null;
 
-  if (tab === "landing") {
+  // Por padrão ao entrar em /eco/alt-radar, cai direto em EvoPro Specs
+  if (!tab || tab === "landing" || tab === "specs") {
     return <AltRadarClient />;
   }
 

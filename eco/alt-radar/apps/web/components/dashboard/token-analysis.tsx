@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { ExternalLink, Star } from "lucide-react";
+import { ExternalLink, Star, FileDown, Download, Check, FileJson, Code, Camera } from "lucide-react";
 import { useState } from "react";
 import { useMarketHistory, useScore, useToken, useWatchlistMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
 import {
@@ -19,6 +19,11 @@ import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badg
 import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { ScoreBreakdown } from "./score-breakdown";
 import { TokenTimeline } from "./token-timeline";
+import { SwapSimulator } from "./swap-simulator";
+import { LiquidityDepthChart } from "./liquidity-depth-chart";
+import { SmartMoneyTracker } from "./smart-money-tracker";
+import { MarketCorrelationMatrix } from "./market-correlation-matrix";
+import { generateChartSnapshotPng } from "@/eco/alt-radar/apps/web/lib/chart-snapshot";
 
 const MarketChart = dynamic(() => import("./market-chart").then((module) => module.MarketChart), {
   ssr: false,
@@ -46,7 +51,7 @@ function getMarketSourceUrl(source: string, chain: string, pairAddress: string) 
 function ChangeValue({ value }: { value: number | null }) {
   return (
     <span
-      className={`mono text-[0.68rem] font-bold ${value === null ? "text-radar-subtle" : value > 0 ? "text-radar-positive" : value < 0 ? "text-radar-critical" : "text-radar-muted"}`}
+      className={`mono text-[0.68rem] font-bold ${value === null ? "text-zinc-500" : value > 0 ? "text-[#d1ff00]" : value < 0 ? "text-rose-400" : "text-zinc-400"}`}
     >
       {formatPercent(value, true)}
     </span>
@@ -55,11 +60,11 @@ function ChangeValue({ value }: { value: number | null }) {
 
 function MarketMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-white/[0.045] bg-black/10 px-2.5 py-2">
-      <dt className="text-[0.56rem] font-bold uppercase tracking-wide text-radar-subtle">
+    <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 px-3 py-2">
+      <dt className="text-[0.58rem] font-mono font-bold uppercase tracking-wider text-zinc-500">
         {label}
       </dt>
-      <dd className="mono mt-1 truncate text-[0.68rem] font-bold text-radar-ink" title={value}>
+      <dd className="mono mt-1 truncate text-xs font-bold text-white" title={value}>
         {value}
       </dd>
     </div>
@@ -162,10 +167,124 @@ export function TokenAnalysis({
               </div>
             </div>
           </div>
-          <DataBadges
-            demo={detail.data_mode === "demo"}
-            partial={score.isError || history.isError}
-          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const token = detail.token;
+                const market = detail.latest_market;
+                const risk = detail.latest_risk;
+                const scoreData = detail.latest_score;
+                const now = new Date().toISOString();
+
+                const markdown = `# 📡 AG47 Alt Radar — Dossiê de Auditoria Técnica
+**Data de Emissão:** ${now}
+**Token:** ${token.name} (${token.symbol})
+**Blockchain:** ${token.chain.toUpperCase()}
+**Contrato:** \`${token.contract_address}\`
+
+---
+
+## 🎯 Scoring & Classificação AG47
+- **Score Final:** **${scoreData?.final_score ?? 'N/D'}/10**
+- **Classificação:** ${scoreData?.classification ?? 'N/D'}
+- **Confiança do Modelo:** ${scoreData?.confidence ? `${Math.round(scoreData.confidence * 100)}%` : 'N/D'}
+- **Versão do Motor:** ${scoreData?.scoring_version ?? '2.4.0'}
+- **Explicação:** ${scoreData?.explanation ?? 'N/D'}
+
+### Fatores de Destaque
+- **Positivos:** ${(scoreData?.positive_factors ?? []).join(', ') || 'Nenhum'}
+- **Negativos:** ${(scoreData?.negative_factors ?? []).join(', ') || 'Nenhum'}
+
+---
+
+## 🛡️ Auditoria Zero-Trust & Risco
+- **Score de Risco:** **${risk?.risk_score ?? 'N/D'}/10**
+- **Status do Pool (LP Lock):** ${risk?.liquidity_lock_status ?? 'Desconhecido'}
+- **Honeypot Check:** ${risk?.honeypot_status ?? 'Clean'}
+- **Mint Authority:** ${risk?.mintable === false ? 'Revogada (Seguro)' : risk?.mintable === true ? 'Ativa (Risco)' : 'Desconhecido'}
+- **Top 10 Holders:** ${risk?.top_holders_percentage != null ? `${risk.top_holders_percentage}%` : 'N/D'}
+- **Deployer Balance:** ${risk?.deployer_percentage != null ? `${risk.deployer_percentage}%` : 'N/D'}
+- **Buy Tax / Sell Tax:** ${risk?.buy_tax ?? 0}% / ${risk?.sell_tax ?? 0}%
+
+---
+
+## 📊 Telemetria de Mercado
+- **Preço USD:** $${market?.price_usd ?? 0}
+- **Liquidez:** $${market?.liquidity_usd ? market.liquidity_usd.toLocaleString() : 0}
+- **Volume 24h:** $${market?.volume_24h ? market.volume_24h.toLocaleString() : 0}
+- **Market Cap:** $${market?.market_cap ? market.market_cap.toLocaleString() : 0}
+- **Holders Ativos:** ${holdersCount ?? risk?.holders_count ? (holdersCount ?? risk?.holders_count)?.toLocaleString() : 'N/D'}
+
+---
+*Gerado deterministicamente por AG47 Alt Radar — Ecosystem Intelligence.*
+`;
+
+                const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dossie-tecnico-${token.symbol.toLowerCase()}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-zinc-800 bg-zinc-900/90 text-[0.65rem] font-mono font-bold text-zinc-300 hover:border-[#d1ff00]/40 hover:text-white transition-all cursor-pointer shadow-sm"
+              title="Exportar Dossiê de Auditoria em Markdown"
+            >
+              <FileDown className="size-3.5 text-[#d1ff00]" />
+              <span>Dossiê .md</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const payload = {
+                  token: detail.token,
+                  latest_market: detail.latest_market,
+                  latest_risk: detail.latest_risk,
+                  latest_score: detail.latest_score,
+                  holders_count: holdersCount ?? detail.latest_risk?.holders_count ?? null,
+                  exported_at: new Date().toISOString(),
+                  system: "AG47 Alt Radar — EvoPro Ecosystem",
+                };
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dossie-${detail.token.symbol.toLowerCase()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-zinc-800 bg-zinc-900/90 text-[0.65rem] font-mono font-bold text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-all cursor-pointer shadow-sm"
+              title="Exportar Payload JSON do Dossiê"
+            >
+              <FileJson className="size-3.5 text-cyan-400" />
+              <span>.json</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                generateChartSnapshotPng(
+                  detail.token,
+                  detail.latest_market,
+                  detail.latest_risk,
+                  detail.latest_score
+                );
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-[#d1ff00]/40 bg-[#d1ff00]/10 text-[0.65rem] font-mono font-bold text-[#d1ff00] hover:bg-[#d1ff00]/20 transition-all cursor-pointer shadow-sm"
+              title="Gerar e Descarregar Snapshot PNG com Marca d'Água AG47 R-A"
+            >
+              <Camera className="size-3.5" />
+              <span>Snapshot</span>
+            </button>
+            <DataBadges
+              demo={detail.data_mode === "demo"}
+              partial={score.isError || history.isError}
+            />
+          </div>
         </div>
 
         <div className="mt-3 grid gap-1.5 text-[0.61rem] text-radar-muted">
@@ -219,22 +338,27 @@ export function TokenAnalysis({
           />
         </dl>
 
-        <div className="mt-3 grid grid-cols-3 divide-x divide-radar-border rounded-lg border border-radar-border bg-black/10 py-2 text-center">
+        <div className="mt-3 grid grid-cols-3 divide-x divide-zinc-800/80 rounded-xl border border-zinc-800/80 bg-zinc-950/60 py-2.5 text-center">
           <div>
-            <p className="text-[0.57rem] font-bold uppercase text-radar-subtle">5 min</p>
+            <p className="text-[0.58rem] font-mono font-bold uppercase text-zinc-500">5 min</p>
             <ChangeValue value={market?.price_change_5m ?? null} />
           </div>
           <div>
-            <p className="text-[0.57rem] font-bold uppercase text-radar-subtle">1 hora</p>
+            <p className="text-[0.58rem] font-mono font-bold uppercase text-zinc-500">1 hora</p>
             <ChangeValue value={market?.price_change_1h ?? null} />
           </div>
           <div>
-            <p className="text-[0.57rem] font-bold uppercase text-radar-subtle">24 horas</p>
+            <p className="text-[0.58rem] font-mono font-bold uppercase text-zinc-500">24 horas</p>
             <ChangeValue value={market?.price_change_24h ?? null} />
           </div>
         </div>
 
-        <section className="mt-3" aria-labelledby={`history-title-${tokenId}`}>
+        {/* Swap & Slippage Simulator */}
+        <div className="mt-3.5">
+          <SwapSimulator token={detail.token} market={market} risk={detail.latest_risk} />
+        </div>
+
+        <section className="mt-3.5" aria-labelledby={`history-title-${tokenId}`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 id={`history-title-${tokenId}`} className="text-xs font-extrabold">
@@ -290,6 +414,12 @@ export function TokenAnalysis({
         </div>
 
         <TokenTimeline tokenId={tokenId} />
+
+        <div className="mt-3.5 space-y-3.5">
+          <LiquidityDepthChart token={detail.token} market={market} />
+          <SmartMoneyTracker token={detail.token} />
+          <MarketCorrelationMatrix token={detail.token} />
+        </div>
 
         <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-radar-border pt-2.5 text-[0.59rem] text-radar-subtle">
           <span>Fonte de mercado: {market?.source ?? "Provider indisponível"}</span>

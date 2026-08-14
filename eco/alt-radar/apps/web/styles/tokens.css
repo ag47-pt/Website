@@ -1,45 +1,45 @@
 :root {
   color-scheme: dark;
 
-  --radar-ink: #eef5f9;
-  --radar-ink-muted: #93a9b8;
-  --radar-ink-subtle: #64798a;
-  --radar-canvas: #04090e;
-  --radar-canvas-raised: #071119;
-  --radar-surface: #0a1620;
-  --radar-surface-raised: #0d1b27;
-  --radar-surface-hover: #112533;
-  --radar-border: #1d3140;
-  --radar-border-strong: #2e4a5b;
-  --radar-positive: #4ee59a;
-  --radar-positive-dim: #123c2b;
-  --radar-warning: #f6bd4a;
-  --radar-warning-dim: #453110;
-  --radar-critical: #f7726f;
-  --radar-critical-dim: #471c21;
-  --radar-neutral: #67a9ff;
-  --radar-neutral-dim: #142b48;
-  --radar-secondary: #a394f8;
-  --radar-secondary-dim: #272148;
-  --radar-focus: #7cf0b4;
+  --radar-ink: #f4f4f5;
+  --radar-ink-muted: #a1a1aa;
+  --radar-ink-subtle: #71717a;
+  --radar-canvas: #000000;
+  --radar-canvas-raised: #09090b;
+  --radar-surface: #09090b;
+  --radar-surface-raised: #18181b;
+  --radar-surface-hover: #27272a;
+  --radar-border: rgba(39, 39, 42, 0.8);
+  --radar-border-strong: rgba(63, 63, 70, 0.9);
+  --radar-positive: #d1ff00;
+  --radar-positive-dim: rgba(209, 255, 0, 0.12);
+  --radar-warning: #f59e0b;
+  --radar-warning-dim: rgba(245, 158, 11, 0.15);
+  --radar-critical: #f43f5e;
+  --radar-critical-dim: rgba(244, 63, 94, 0.15);
+  --radar-neutral: #06b6d4;
+  --radar-neutral-dim: rgba(6, 182, 212, 0.15);
+  --radar-secondary: #8b5cf6;
+  --radar-secondary-dim: rgba(139, 92, 246, 0.15);
+  --radar-focus: #d1ff00;
 
   --radar-radius-xs: 0.38rem;
   --radar-radius-sm: 0.55rem;
   --radar-radius-md: 0.85rem;
   --radar-radius-lg: 1.1rem;
   --radar-shadow:
-    0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.35),
-    0 16px 40px rgb(0 0 0 / 0.28);
+    0 1px 0 rgb(255 255 255 / 0.04) inset, 0 1px 2px rgb(0 0 0 / 0.6),
+    0 16px 40px rgb(0 0 0 / 0.5);
   --radar-shadow-hover:
-    0 1px 0 rgb(255 255 255 / 0.05) inset, 0 2px 6px rgb(0 0 0 / 0.4), 0 24px 56px rgb(0 0 0 / 0.38);
-  --radar-glow-positive: 0 0 24px rgb(78 229 154 / 0.18);
-  --radar-sidebar-width: 12rem;
-  --radar-header-height: 4.8rem;
+    0 1px 0 rgb(255 255 255 / 0.08) inset, 0 2px 8px rgb(0 0 0 / 0.7), 0 24px 56px rgb(0 0 0 / 0.6);
+  --radar-glow-positive: 0 0 24px rgba(209, 255, 0, 0.2);
+  --radar-sidebar-width: 13rem;
+  --radar-header-height: 4.5rem;
 }
 
 @theme inline {
-  --font-sans: "Manrope Variable", "Aptos", sans-serif;
-  --font-mono: "JetBrains Mono Variable", monospace;
+  --font-sans: var(--font-geist-sans), "Inter", sans-serif;
+  --font-mono: var(--font-geist-mono), "JetBrains Mono", monospace;
   --color-radar-ink: var(--radar-ink);
   --color-radar-muted: var(--radar-ink-muted);
   --color-radar-subtle: var(--radar-ink-subtle);

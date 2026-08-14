@@ -19,11 +19,11 @@ export function EmptyState({
   message?: string;
 }) {
   return (
-    <div className="grid min-h-44 place-items-center px-6 py-10 text-center">
+    <div className="grid min-h-44 place-items-center px-6 py-10 text-center font-mono">
       <div>
-        <Inbox className="mx-auto mb-3 size-7 text-radar-subtle" strokeWidth={1.5} />
-        <p className="text-sm font-bold text-radar-ink">{title}</p>
-        <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-radar-muted">{message}</p>
+        <Inbox className="mx-auto mb-3 size-8 text-zinc-600" strokeWidth={1.5} />
+        <p className="text-sm font-bold text-white">{title}</p>
+        <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-zinc-400">{message}</p>
       </div>
     </div>
   );
@@ -31,14 +31,14 @@ export function EmptyState({
 
 export function ErrorState({ message, retry }: { message: string; retry?: () => void }) {
   return (
-    <div className="grid min-h-44 place-items-center px-6 py-10 text-center" role="alert">
-      <div>
-        <AlertTriangle className="mx-auto mb-3 size-7 text-radar-critical" strokeWidth={1.6} />
-        <p className="text-sm font-bold text-radar-ink">Provider indisponível</p>
-        <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-radar-muted">{message}</p>
+    <div className="grid min-h-44 place-items-center px-6 py-10 text-center font-mono" role="alert">
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-6 shadow-xl backdrop-blur-md">
+        <AlertTriangle className="mx-auto mb-3 size-8 text-rose-500" strokeWidth={1.6} />
+        <p className="text-sm font-bold text-white">Provider em Modo Demonstração</p>
+        <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-zinc-400">{message}</p>
         {retry && (
           <button
-            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-radar-border bg-[#0d1c26] px-3 py-2 text-xs font-bold text-radar-ink hover:border-radar-positive/40"
+            className="mt-4 inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs font-bold text-white transition-colors hover:border-[#d1ff00] hover:text-[#d1ff00]"
             onClick={retry}
             type="button"
           >

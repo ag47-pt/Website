@@ -20,15 +20,15 @@ interface SocialMetricProps {
 
 function SocialMetric({ label, value, tone = "neutral" }: SocialMetricProps) {
   const toneClass = {
-    positive: "text-radar-positive",
-    warning: "text-radar-warning",
-    critical: "text-radar-critical",
-    neutral: "text-radar-ink",
+    positive: "text-[#d1ff00]",
+    warning: "text-amber-400",
+    critical: "text-rose-400",
+    neutral: "text-white",
   }[tone];
   return (
-    <div className="flex items-center justify-between gap-3 py-1.5">
-      <dt className="text-[0.65rem] text-radar-muted">{label}</dt>
-      <dd className={`mono text-[0.66rem] font-bold ${toneClass}`}>{value}</dd>
+    <div className="flex items-center justify-between gap-3 py-1.5 border-b border-zinc-800/50 last:border-0 font-mono">
+      <dt className="text-[0.68rem] text-zinc-400">{label}</dt>
+      <dd className={`text-[0.72rem] font-bold ${toneClass}`}>{value}</dd>
     </div>
   );
 }

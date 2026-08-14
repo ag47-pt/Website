@@ -75,29 +75,29 @@ function numericFilter(value: string) {
 }
 
 function changeTone(value: number | null) {
-  if (value === null) return "text-radar-subtle";
-  if (value > 0) return "text-radar-positive";
-  if (value < 0) return "text-radar-critical";
-  return "text-radar-muted";
+  if (value === null) return "text-zinc-500 font-mono";
+  if (value > 0) return "text-[#d1ff00] font-mono font-semibold";
+  if (value < 0) return "text-rose-400 font-mono font-semibold";
+  return "text-zinc-400 font-mono";
 }
 
 function scoreTone(value: number | null) {
-  if (value === null) return "border-radar-border bg-[#101b24] text-radar-subtle";
-  if (value >= 8) return "border-radar-positive/25 bg-[#133a28] text-radar-positive";
-  if (value >= 6.5) return "border-radar-neutral/25 bg-[#142b47] text-radar-neutral";
-  if (value >= 5) return "border-radar-warning/25 bg-[#3c2c0e] text-radar-warning";
-  return "border-radar-critical/25 bg-[#3d191e] text-radar-critical";
+  if (value === null) return "border-zinc-800 bg-zinc-900 text-zinc-500";
+  if (value >= 8) return "border-[#d1ff00]/40 bg-[#d1ff00]/10 text-[#d1ff00] font-bold shadow-[0_0_8px_rgba(209,255,0,0.15)]";
+  if (value >= 6.5) return "border-cyan-500/40 bg-cyan-500/10 text-cyan-400 font-bold";
+  if (value >= 5) return "border-amber-500/40 bg-amber-500/10 text-amber-400 font-bold";
+  return "border-rose-500/40 bg-rose-500/10 text-rose-400 font-bold";
 }
 
 function statusTone(classification: string | null) {
   const normalized = classification?.toLowerCase() ?? "";
   if (normalized.includes("forte"))
-    return "border-radar-positive/25 bg-[#133a28] text-radar-positive";
+    return "border-[#d1ff00]/40 bg-[#d1ff00]/10 text-[#d1ff00] font-bold";
   if (normalized.includes("observar"))
-    return "border-radar-neutral/25 bg-[#142b47] text-radar-neutral";
+    return "border-cyan-500/40 bg-cyan-500/10 text-cyan-400 font-bold";
   if (normalized.includes("especul"))
-    return "border-radar-warning/25 bg-[#3c2c0e] text-radar-warning";
-  return "border-radar-critical/25 bg-[#3d191e] text-radar-critical";
+    return "border-amber-500/40 bg-amber-500/10 text-amber-400 font-bold";
+  return "border-rose-500/40 bg-rose-500/10 text-rose-400 font-bold";
 }
 
 function SortableHeader({
@@ -476,10 +476,10 @@ export function OpportunityTable({
       aria-labelledby="opportunities-title"
       data-testid="opportunities-panel"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-radar-border px-3.5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 px-3.5 py-3">
         <div>
-          <p className="eyebrow">Descoberta e observação</p>
-          <h2 id="opportunities-title" className="mt-1 text-sm font-extrabold">
+          <p className="eyebrow text-zinc-400">Descoberta e observação</p>
+          <h2 id="opportunities-title" className="mt-1 text-sm font-mono font-bold text-white">
             Oportunidades em destaque
           </h2>
         </div>
@@ -491,13 +491,73 @@ export function OpportunityTable({
           />
           <button
             aria-expanded={showFilters}
-            className={`inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[0.65rem] font-bold ${showFilters ? "border-radar-positive/40 bg-[#10251f] text-radar-positive" : "border-radar-border bg-[#0b1821] text-radar-muted"}`}
+            className={`inline-flex h-8 items-center gap-1.5 rounded-xl border px-3 text-xs font-mono font-bold transition-all ${
+              showFilters 
+                ? "border-[#d1ff00]/40 bg-[#d1ff00]/10 text-[#d1ff00]" 
+                : "border-zinc-800 bg-zinc-900/70 text-zinc-400 hover:border-zinc-700 hover:text-white"
+            }`}
             onClick={() => setShowFilters((current) => !current)}
             type="button"
           >
             <SlidersHorizontal className="size-3.5" /> Filtros
           </button>
         </div>
+      </div>
+
+      {/* Quick Strategy Presets */}
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 py-2.5 border-b border-zinc-800/80 bg-zinc-950/70 font-mono text-xs">
+        <span className="text-zinc-500 font-bold uppercase tracking-wider text-[0.62rem] mr-1">Estratégias:</span>
+        <button
+          type="button"
+          onClick={() => {
+            setFilters({ minScore: "8", maxRisk: "4", minLiquidity: "500000", maxPairAgeHours: "" });
+            setPage(1);
+          }}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[0.68rem] transition-all cursor-pointer ${
+            filters.minScore === "8" && filters.minLiquidity === "500000"
+              ? "border-[#d1ff00]/60 bg-[#d1ff00]/15 text-[#d1ff00] font-bold shadow-[0_0_10px_rgba(209,255,0,0.15)]"
+              : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-white"
+          }`}
+        >
+          🚀 Breakout Momentum
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setFilters({ minScore: "8", maxRisk: "3", minLiquidity: "100000", maxPairAgeHours: "" });
+            setPage(1);
+          }}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[0.68rem] transition-all cursor-pointer ${
+            filters.maxRisk === "3" && filters.minScore === "8" && filters.minLiquidity === "100000"
+              ? "border-cyan-500/60 bg-cyan-500/15 text-cyan-300 font-bold shadow-[0_0_10px_rgba(6,182,212,0.15)]"
+              : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-white"
+          }`}
+        >
+          🛡️ Zero-Trust Clean
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setFilters({ minScore: "", maxRisk: "5", minLiquidity: "50000", maxPairAgeHours: "24" });
+            setPage(1);
+          }}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[0.68rem] transition-all cursor-pointer ${
+            filters.maxPairAgeHours === "24"
+              ? "border-amber-500/60 bg-amber-500/15 text-amber-300 font-bold shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+              : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-white"
+          }`}
+        >
+          ⚡ Fresh Launch
+        </button>
+        {(filters.minScore || filters.maxRisk || filters.minLiquidity || filters.maxPairAgeHours) && (
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="ml-auto inline-flex items-center gap-1 text-[0.62rem] font-bold text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="size-3" /> Limpar Presets
+          </button>
+        )}
       </div>
 
       {showFilters && (
@@ -594,16 +654,16 @@ export function OpportunityTable({
         <>
           <div className="hidden overflow-x-auto md:block">
             <table
-              className="w-full min-w-[1320px] border-collapse text-left"
+              className="w-full min-w-[1320px] border-collapse text-left font-mono"
               data-testid="opportunities-table"
             >
-              <thead className="bg-[#0b1720]">
+              <thead className="bg-zinc-900/90 border-b border-zinc-800">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
-                        className="border-b border-radar-border px-2.5 py-2.5 text-[0.61rem] font-bold text-radar-muted"
+                        className="border-b border-zinc-800/80 px-3 py-3 text-[0.64rem] font-bold uppercase tracking-wider text-zinc-400"
                       >
                         {header.isPlaceholder
                           ? null
@@ -613,7 +673,7 @@ export function OpportunityTable({
                   </tr>
                 ))}
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-zinc-800/60">
                 {table.getRowModel().rows.map((row) => {
                   const isSelected = row.original.token.id === selectedTokenId;
                   return (
@@ -621,11 +681,15 @@ export function OpportunityTable({
                       key={row.id}
                       aria-selected={isSelected}
                       data-testid={`opportunity-row-${row.original.token.symbol.toLowerCase()}`}
-                      className={`border-b border-radar-border/70 transition-colors last:border-0 ${isSelected ? "bg-[#10291f] shadow-[inset_2px_0_0_#55df8a]" : "hover:bg-white/[0.025]"}`}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected 
+                          ? "bg-zinc-900/90 shadow-[inset_3px_0_0_#d1ff00] text-white" 
+                          : "hover:bg-zinc-900/40 text-zinc-300"
+                      }`}
                       onClick={() => onSelect(row.original)}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="whitespace-nowrap px-2.5 py-2.5 align-middle">
+                        <td key={cell.id} className="whitespace-nowrap px-3 py-3 align-middle text-xs">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}
