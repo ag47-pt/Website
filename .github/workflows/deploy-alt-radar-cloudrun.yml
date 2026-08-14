@@ -12,6 +12,8 @@ env:
   PROJECT_ID: radar-altcoin
   REGION: europe-west3
   SERVICE_NAME: alt-radar-api
+  # Cloud SQL connection name: project:region:instance
+  CLOUD_SQL_CONNECTION_NAME: radar-altcoin:europe-west3:alt-radar-pg
 
 permissions:
   contents: read
@@ -26,14 +28,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud (Workload Identity)
-        if: "${{ env.WIF_PROVIDER != '' }}"
+        if: "${{ secrets.WCP_PROVIDER != '' }}"
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WCP_PROVIDER }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
 
       - name: Authenticate to Google Cloud (Service Account Key Fallback)
-        if: "${{ env.WIF_PROVIDER == '' && secrets.GCP_SA_KEY != '' }}"
+        if: "${{ secrets.WCP_PROVIDER == '' && secrets.GCP_SA_KEY != '' }}"
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -48,4 +50,15 @@ jobs:
             --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }} \
             --allow-unauthenticated \
-            --set-env-vars="AG47_ENVIRONMENT=production,AG47_DEMO_MODE=false,AG47_SCHEDULER_ENABLED=true,AG47_SCHEDULER_INTERVAL_SECONDS=300"
+            --add-cloudsql-instances=${{ env.CLOUD_SQL_CONNECTION_NAME }} \
+            --set-env-vars="\
+              AG47_ENVIRONMENT=production,\
+              AG47_DEMO_MODE=false,\
+              AG47_SCHEDULER_ENABLED=true,\
+              AG47_SCHEDULER_INTERVAL_SECONDS=300,\
+              AG47_DATABASE_URL=${{ secrets.AG47_DATABASE_URL }},\
+              AG47_OPERATOR_API_KEY=${{ secrets.AG47_OPERATOR_API_KEY }},\
+              AG47_ADMIN_API_KEY=${{ secrets.AG47_ADMIN_API_KEY }},\
+              AG47_TELEGRAM_BOT_TOKEN=${{ secrets.AG47_TELEGRAM_BOT_TOKEN }},\
+              AG47_TELEGRAM_CHAT_ID=${{ secrets.AG47_TELEGRAM_CHAT_ID }},\
+              AG47_HELIUS_API_KEY=${{ secrets.AG47_HELIUS_API_KEY }}"
