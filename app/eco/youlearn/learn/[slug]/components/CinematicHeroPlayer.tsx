@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, ExternalLink, Film, Sparkles, RotateCcw, MonitorPlay, Image as ImageIcon, Maximize2, Minimize2, Tv, RefreshCw } from 'lucide-react';
+import { Play, Pause, ExternalLink, Film, Sparkles, RotateCcw, MonitorPlay, Image as ImageIcon, Maximize2, Minimize2, Tv, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import { extractYoutubeId } from '@/eco/youlearn/lib/provenance';
 
 export type PlayerSizeMode = 'standard' | 'wide' | 'theater';
@@ -27,7 +27,29 @@ export function CinematicHeroPlayer({
   const [sizeMode, setSizeMode] = useState<PlayerSizeMode>('wide');
   const [useNoCookie, setUseNoCookie] = useState(false);
   const [activeStartTime, setActiveStartTime] = useState(initialTimeSeconds);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(100);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Load initial saved states
+  useEffect(() => {
+    const savedMuted = localStorage.getItem('youlearn:muted') === 'true';
+    const savedVolume = localStorage.getItem('youlearn:volume');
+    setIsMuted(savedMuted);
+    if (savedVolume !== null) {
+      setVolume(Number(savedVolume));
+    }
+
+    if (videoId) {
+      const savedTime = localStorage.getItem(`youlearn:resume:${videoId}`);
+      if (savedTime) {
+        const seconds = Number(savedTime);
+        if (seconds > 0 && seconds < 100000) {
+          setActiveStartTime(seconds);
+        }
+      }
+    }
+  }, [videoId]);
 
   useEffect(() => {
     const handleSeek = (e: CustomEvent<{ timeSeconds: number; autoplay: boolean }>) => {
@@ -117,6 +139,9 @@ export function CinematicHeroPlayer({
                 activePlayer: 'hero',
                 lastUpdated: Date.now(),
               };
+              if (videoId) {
+                localStorage.setItem(`youlearn:resume:${videoId}`, String(Math.floor(info.currentTime)));
+              }
             }
             if (info.volume !== undefined) {
               localStorage.setItem('youlearn:volume', String(info.volume));
@@ -133,7 +158,7 @@ export function CinematicHeroPlayer({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isPlaying]);
+  }, [isPlaying, videoId]);
 
   // Sync volume state to iframe on start
   useEffect(() => {
@@ -157,6 +182,65 @@ export function CinematicHeroPlayer({
       return () => clearTimeout(timer);
     }
   }, [isPlaying]);
+
+  // Volume sync from other player
+  useEffect(() => {
+    const handleVolumeSync = (e: CustomEvent<{ muted: boolean; volume: number }>) => {
+      const { muted, volume: newVolume } = e.detail;
+      setIsMuted(muted);
+      setVolume(newVolume);
+      
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: muted ? 'mute' : 'unMute', args: [] }),
+          '*'
+        );
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'setVolume', args: [newVolume] }),
+          '*'
+        );
+      }
+    };
+
+    window.addEventListener('youlearn:volume-sync' as any, handleVolumeSync);
+    return () => window.removeEventListener('youlearn:volume-sync' as any, handleVolumeSync);
+  }, []);
+
+  const handleVolumeCycle = () => {
+    let newMuted = isMuted;
+    let newVolume = volume;
+
+    if (isMuted) {
+      newMuted = false;
+      newVolume = 100;
+    } else if (volume === 100) {
+      newVolume = 50;
+    } else {
+      newMuted = true;
+    }
+
+    setIsMuted(newMuted);
+    setVolume(newVolume);
+    localStorage.setItem('youlearn:muted', String(newMuted));
+    localStorage.setItem('youlearn:volume', String(newVolume));
+
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: newMuted ? 'mute' : 'unMute', args: [] }),
+        '*'
+      );
+      if (!newMuted) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'setVolume', args: [newVolume] }),
+          '*'
+        );
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent('youlearn:volume-sync', {
+      detail: { muted: newMuted, volume: newVolume }
+    }));
+  };
 
   // High-res YouTube thumbnail with fallback to hqdefault
   const maxresThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : thumbnailUrl;
@@ -205,8 +289,31 @@ export function CinematicHeroPlayer({
           </span>
         </div>
 
-        {/* Viewport Size Controls */}
-        <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 p-1 backdrop-blur-md">
+        {/* Viewport Size & Volume Controls Wrapper */}
+        <div className="flex items-center gap-2">
+          {/* Native Volume Control */}
+          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 p-1 backdrop-blur-md">
+            <button
+              onClick={handleVolumeCycle}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-mono text-zinc-400 hover:text-white transition-colors"
+              title={isMuted ? 'Ativar Áudio (Muted)' : `Ajustar Volume (Atual: ${volume}%)`}
+            >
+              {isMuted ? (
+                <>
+                  <VolumeX className="h-3.5 w-3.5 text-rose-500" />
+                  <span className="text-[10px] text-rose-400 font-bold">MUTED</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="h-3.5 w-3.5 text-[#D1FF00]" />
+                  <span className="text-[10px] text-zinc-300 font-bold">{volume}%</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Viewport Size Controls */}
+          <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 p-1 backdrop-blur-md">
           <button
             onClick={() => handleModeChange('standard')}
             className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-mono transition-all ${
@@ -247,6 +354,7 @@ export function CinematicHeroPlayer({
           </button>
         </div>
       </div>
+    </div>
 
       {/* Main Video Box */}
       <div className="relative w-full overflow-hidden rounded-2xl border border-white/20 bg-zinc-950 shadow-[0_20px_60px_rgba(0,0,0,0.9)] transition-all duration-300 group hover:border-[#D1FF00]/40">
