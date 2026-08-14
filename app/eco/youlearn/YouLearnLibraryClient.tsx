@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { LibraryEntry } from '@/eco/youlearn/schema/types';
 import { filterKnowledgeEntries } from '@/eco/youlearn/lib/library';
 import { YouLearnNavbar } from './components/YouLearnNavbar';
@@ -8,9 +8,9 @@ import { YouLearnHero } from './components/YouLearnHero';
 import { KnowledgeFilters } from './components/KnowledgeFilters';
 import { KnowledgeCard } from './components/KnowledgeCard';
 import { LibraryEmptyState } from './components/LibraryEmptyState';
-import { Sparkles, Layers, BookOpen, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, Layers, BookOpen, Clock, ArrowRight, ShieldCheck, Download } from 'lucide-react';
 import Link from 'next/link';
-import { extractYoutubeId } from '@/eco/youlearn/lib/provenance';
+import { extractYoutubeId, formatSecondsToTimestamp } from '@/eco/youlearn/lib/provenance';
 
 interface YouLearnLibraryClientProps {
   initialEntries: LibraryEntry[];
@@ -24,7 +24,7 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedProgress, setSelectedProgress] = useState('All');
   const [featuredOnly, setFeaturedOnly] = useState(false);
-  const [progressMap, setProgressMap] = useState<Record<string, { completed: boolean; percent: number }>>({});
+  const [progressMap, setProgressMap] = useState<Record<string, { completed: boolean; percent: number; resumeSeconds: number }>>({});
 
   const fetchEntries = async () => {
     try {
@@ -39,26 +39,29 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
   };
 
   const loadProgressMap = () => {
-    const map: Record<string, { completed: boolean; percent: number }> = {};
+    const map: Record<string, { completed: boolean; percent: number; resumeSeconds: number }> = {};
     entries.forEach((entry) => {
       const videoId = extractYoutubeId(entry.sourceUrl);
       if (!videoId) return;
 
       const completed = localStorage.getItem(`youlearn:completed:${videoId}`) === 'true';
       let percent = 0;
+      let resumeSeconds = 0;
       if (completed) {
         percent = 100;
+        resumeSeconds = entry.originalDurationMinutes * 60;
       } else {
         const savedTime = localStorage.getItem(`youlearn:resume:${videoId}`);
         if (savedTime) {
           const seconds = Number(savedTime);
+          resumeSeconds = seconds;
           const durationSeconds = entry.originalDurationMinutes * 60;
           if (seconds > 0 && durationSeconds > 0) {
             percent = Math.min(Math.round((seconds / durationSeconds) * 100), 100);
           }
         }
       }
-      map[entry.id] = { completed, percent };
+      map[entry.id] = { completed, percent, resumeSeconds };
     });
     setProgressMap(map);
   };
@@ -111,6 +114,65 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
     setFeaturedOnly(false);
   };
 
+  const handleExportProgress = useCallback(() => {
+    const completedCourses: { title: string; slug: string; category: string; watchedMinutes: number; totalMinutes: number }[] = [];
+    const inProgressCourses: { title: string; slug: string; category: string; stoppedAt: string; percent: number; watchedMinutes: number; totalMinutes: number }[] = [];
+    let totalWatchedSeconds = 0;
+
+    entries.forEach((entry) => {
+      const prog = progressMap[entry.id];
+      if (!prog) return;
+
+      if (prog.completed) {
+        const totalMin = entry.originalDurationMinutes;
+        totalWatchedSeconds += totalMin * 60;
+        completedCourses.push({
+          title: entry.title,
+          slug: entry.slug,
+          category: entry.category,
+          watchedMinutes: Math.round(totalMin),
+          totalMinutes: Math.round(totalMin),
+        });
+      } else if (prog.percent > 0) {
+        totalWatchedSeconds += prog.resumeSeconds;
+        inProgressCourses.push({
+          title: entry.title,
+          slug: entry.slug,
+          category: entry.category,
+          stoppedAt: formatSecondsToTimestamp(prog.resumeSeconds),
+          percent: prog.percent,
+          watchedMinutes: Math.round(prog.resumeSeconds / 60),
+          totalMinutes: Math.round(entry.originalDurationMinutes),
+        });
+      }
+    });
+
+    const report = {
+      exportedAt: new Date().toISOString(),
+      platform: 'YouLearn · AG47',
+      summary: {
+        totalCourses: entries.length,
+        completedCount: completedCourses.length,
+        inProgressCount: inProgressCourses.length,
+        notStartedCount: entries.length - completedCourses.length - inProgressCourses.length,
+        totalWatchedTime: formatSecondsToTimestamp(totalWatchedSeconds),
+        totalWatchedMinutes: Math.round(totalWatchedSeconds / 60),
+      },
+      completed: completedCourses,
+      inProgress: inProgressCourses,
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `youlearn-progress-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [entries, progressMap]);
+
   return (
     <div className="min-h-screen bg-black text-white selection:bg-[#D1FF00] selection:text-black">
       {/* Top Navbar */}
@@ -156,6 +218,7 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
                 featured={entry.featured && !searchQuery && selectedCategory === 'All'}
                 progressPercent={progressMap[entry.id]?.percent || 0}
                 isCompleted={progressMap[entry.id]?.completed || false}
+                resumeSeconds={progressMap[entry.id]?.resumeSeconds || 0}
               />
             ))}
           </div>
@@ -204,6 +267,14 @@ export function YouLearnLibraryClient({ initialEntries, categories }: YouLearnLi
           </div>
 
           <div className="flex items-center gap-6 text-zinc-400">
+            <button
+              onClick={handleExportProgress}
+              className="inline-flex items-center gap-1.5 hover:text-[#D1FF00] transition-colors"
+              title="Exportar progresso como JSON"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export Progress
+            </button>
             <Link href="/" className="hover:text-white transition-colors">
               AG47 Home
             </Link>

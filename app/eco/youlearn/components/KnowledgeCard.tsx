@@ -5,16 +5,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, Zap, ArrowUpRight, Video, BookOpen, FileText, CheckCircle2, User, Sparkles } from 'lucide-react';
 import { LibraryEntry } from '@/eco/youlearn/schema/types';
-import { formatDurationHuman, extractYoutubeId } from '@/eco/youlearn/lib/provenance';
+import { formatDurationHuman, extractYoutubeId, formatSecondsToTimestamp } from '@/eco/youlearn/lib/provenance';
 
 interface KnowledgeCardProps {
   entry: LibraryEntry;
   featured?: boolean;
   progressPercent?: number;
   isCompleted?: boolean;
+  resumeSeconds?: number;
 }
 
-export function KnowledgeCard({ entry, featured, progressPercent = 0, isCompleted = false }: KnowledgeCardProps) {
+export function KnowledgeCard({ entry, featured, progressPercent = 0, isCompleted = false, resumeSeconds = 0 }: KnowledgeCardProps) {
   const sourceIcon = () => {
     switch (entry.sourceType) {
       case 'youtube':
@@ -112,11 +113,18 @@ export function KnowledgeCard({ entry, featured, progressPercent = 0, isComplete
 
           {/* Progress Bar Overlay */}
           {progressPercent > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-10">
+            <div 
+              className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-10 group/progress cursor-default"
+              title={isCompleted ? 'Concluído ✓' : `Parou em ${formatSecondsToTimestamp(resumeSeconds)}`}
+            >
               <div 
                 className={`h-full transition-all duration-300 ${isCompleted ? 'bg-emerald-400' : 'bg-[#D1FF00]'}`} 
                 style={{ width: `${progressPercent}%` }} 
               />
+              {/* Tooltip */}
+              <div className="opacity-0 group-hover/progress:opacity-100 transition-opacity duration-200 absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/90 border border-white/10 px-2.5 py-1 text-[10px] font-mono text-zinc-200 shadow-lg pointer-events-none backdrop-blur-sm z-20">
+                {isCompleted ? '✓ Concluído' : `⏸ Parou em ${formatSecondsToTimestamp(resumeSeconds)}`}
+              </div>
             </div>
           )}
         </div>
