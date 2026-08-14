@@ -147,6 +147,12 @@ export function StickyFloatingMiniPlayer({
                 lastUpdated: Date.now(),
               };
             }
+            if (info.volume !== undefined) {
+              localStorage.setItem('youlearn:volume', String(info.volume));
+            }
+            if (info.muted !== undefined) {
+              localStorage.setItem('youlearn:muted', String(info.muted));
+            }
           }
         } catch (e) {
           // not a youtube JSON message
@@ -156,6 +162,29 @@ export function StickyFloatingMiniPlayer({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
+  }, [isPlaying]);
+
+  // Sync volume state to iframe on start
+  useEffect(() => {
+    if (isPlaying && iframeRef.current && iframeRef.current.contentWindow) {
+      const timer = setTimeout(() => {
+        if (!iframeRef.current || !iframeRef.current.contentWindow) return;
+        const savedVolume = localStorage.getItem('youlearn:volume');
+        const savedMuted = localStorage.getItem('youlearn:muted') === 'true';
+
+        if (savedVolume !== null) {
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'setVolume', args: [Number(savedVolume)] }),
+            '*'
+          );
+        }
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: savedMuted ? 'mute' : 'unMute', args: [] }),
+          '*'
+        );
+      }, 600);
+      return () => clearTimeout(timer);
+    }
   }, [isPlaying]);
 
   const maxresThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : thumbnailUrl;

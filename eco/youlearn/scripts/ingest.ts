@@ -238,58 +238,80 @@ Provide a single JSON object with the following fields:
        }
        
     G. Type "insight":
-       "content": {
-         "introText": "string intro",
-         "insights": [
-           {
-             "id": "string",
-             "title": "string title",
-             "text": "string text",
-             "type": "rule" | "warning" | "heuristic" | "mental-model",
-             "citation": "string (optional)"
-           }
-         ]
-       }
-       
-    H. Type "quiz":
-       "content": {
-         "introText": "string intro",
-         "questions": [
-           {
-             "id": "string",
-             "question": "string question",
-             "options": ["option 1", "option 2", "option 3", "option 4"],
-             "correctOptionIndex": number (0-3),
-             "explanation": "string explanation"
-           }
-         ]
-       }
-       
-    I. Type "takeaways":
-       "content": {
-         "summary": "string summary",
-         "checklist": [
-           { "id": "string", "task": "string task", "description": "string" }
-         ],
-         "nextSteps": [
-           { "title": "string", "description": "string" }
-         ]
-       }
-       
-    J. Type "provenance":
-       "content": {
-         "sourceUrl": "https://www.youtube.com/watch?v=${rawData.videoId}",
-         "authorName": "${rawData.metadata.author.name}",
-         "channelOrOrg": "${rawData.metadata.author.channelOrOrg || ''}",
-         "license": "Standard YouTube License",
-         "excerpts": [
-           {
-             "text": "direct quote or key segment summary",
-             "timestampDisplay": "MM:SS",
-             "timestampSeconds": number
-           }
-         ]
-       }
+        "content": {
+          "items": [
+            {
+              "id": "string",
+              "type": "key_insight" | "warning" | "mental_model" | "pro_tip",
+              "title": "string title",
+              "description": "string description",
+              "actionableAdvice": "string (optional)",
+              "quote": {
+                "text": "string text",
+                "author": "string author"
+              } // optional
+            }
+          ]
+        }
+        
+     H. Type "quiz":
+        "content": {
+          "introText": "string intro",
+          "questions": [
+            {
+              "id": "string",
+              "question": "string question",
+              "options": ["option 1", "option 2", "option 3", "option 4"],
+              "correctOptionIndex": number (0-3),
+              "explanation": "string explanation"
+            }
+          ]
+        }
+        
+     I. Type "takeaways":
+        "content": {
+          "mainPoints": [
+            "string main point"
+          ],
+          "actionableChecklist": [
+            { "text": "string checklist item", "category": "string optional category" }
+          ],
+          "nextSteps": [
+            "string next step"
+          ],
+          "recommendedFollowUps": [ // optional
+            { "title": "string", "linkOrSlug": "string slug", "type": "string type" }
+          ]
+        }
+        
+     J. Type "provenance":
+        "content": {
+          "sourceTitle": "${rawData.metadata.title}",
+          "sourceUrl": "https://www.youtube.com/watch?v=${rawData.videoId}",
+          "author": {
+             "name": "${rawData.metadata.author.name}",
+             "channelOrOrg": "${rawData.metadata.author.channelOrOrg || ''}",
+             "avatarUrl": "${rawData.metadata.author.avatarUrl || ''}",
+             "profileUrl": "${rawData.metadata.author.profileUrl || ''}"
+          },
+          "license": "Standard YouTube License",
+          "citationText": "string optional citation text",
+          "keyTimestamps": [
+            {
+              "label": "string label for the key timestamp",
+              "timestampDisplay": "MM:SS",
+              "timestampSeconds": number
+            }
+          ],
+          "references": [ // optional
+            {
+              "label": "string label",
+              "url": "string url",
+              "type": "paper" | "github" | "documentation" | "video" | "book",
+              "description": "string optional description"
+            }
+          ]
+        }
 
 Compile all information directly from the provided segments. Make sure to represent ALL core details, warnings, code examples, or diagrams discussed in the video.
 Ensure the output is raw JSON, with no markdown code blocks (do NOT wrap in \`\`\`json). The output must be valid JSON parseable by JSON.parse().
