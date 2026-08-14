@@ -41,9 +41,22 @@
   ],
   "exclude": [
     "node_modules",
-    "labs/ag47-digital-bank",
-    "labs/ag47-evo-pro-landing-page",
-    "labs/ag47-token-agi-solana",
-    "labs/digital-bank"
+    "**/node_modules",
+    "labs/**",
+    "labs",
+    "eco/**/node_modules",
+    "eco/**/e2e/**",
+    "eco/**/app/layout.tsx",
+    "eco/alt-radar/apps/api/**",
+    "eco/alt-radar/apps/api",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/playwright.config.ts",
+    "**/vitest.config.ts",
+    "**/vitest.setup.ts",
+    ".next",
+    "out"
   ]
 }

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:bank": "npm --prefix labs/digital-bank run dev -- -p 3001",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "crypto-agent": "tsx --tsconfig agent/crypto/tsconfig.json agent/crypto/index.ts"
