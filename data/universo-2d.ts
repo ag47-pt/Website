@@ -309,7 +309,7 @@ export const UNIVERSO_2D_DATA = {
       path: '/eco/evopro',
       featuredMetric: { label: 'Gauntlet Pass Rate', value: '100%' },
       badgeText: 'CORE ECOSYSTEM',
-      imageUrl: '/imgs/evopro_product_mockup.jpg',
+      imageUrl: '/imgs/evopro_product_mockup.webp',
     },
     {
       id: 'port-altradar',
@@ -323,7 +323,7 @@ export const UNIVERSO_2D_DATA = {
       path: '/eco/alt-radar',
       featuredMetric: { label: 'Latência de Stream', value: '120ms' },
       badgeText: 'REALTIME STREAM',
-      imageUrl: '/imgs/altradar_product_mockup.jpg',
+      imageUrl: '/imgs/altradar_product_mockup.webp',
     },
     {
       id: 'port-youlearn',
@@ -337,7 +337,7 @@ export const UNIVERSO_2D_DATA = {
       path: '/eco/youlearn',
       featuredMetric: { label: 'Velocidade de Ingestão', value: '3.4s' },
       badgeText: 'NOVO LANÇAMENTO',
-      imageUrl: '/imgs/youlearn_product_mockup.jpg',
+      imageUrl: '/imgs/youlearn_product_mockup.webp',
     },
     {
       id: 'port-apex',
@@ -365,7 +365,7 @@ export const UNIVERSO_2D_DATA = {
       path: '/labs/oracle-trader',
       featuredMetric: { label: 'Edge Médio', value: '+8.4%' },
       badgeText: 'LABS EXPERIMENTAL',
-      imageUrl: '/imgs/altradar_product_mockup.jpg',
+      imageUrl: '/imgs/altradar_product_mockup.webp',
     },
     {
       id: 'port-pitchlib',
