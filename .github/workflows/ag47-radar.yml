@@ -1,0 +1,42 @@
+name: AG47 Altcoin Radar
+
+on:
+  pull_request:
+    paths:
+      - "labs/ag47-altcoin-radar/**"
+      - ".github/workflows/ag47-radar.yml"
+  push:
+    branches: [main]
+    paths:
+      - "labs/ag47-altcoin-radar/**"
+      - ".github/workflows/ag47-radar.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: labs/ag47-altcoin-radar
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            labs/ag47-altcoin-radar/package-lock.json
+            labs/ag47-altcoin-radar/apps/web/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.6.17"
+      - run: npm ci
+      - run: npm --prefix apps/web ci
+      - run: uv sync --project apps/api --extra dev --frozen
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build

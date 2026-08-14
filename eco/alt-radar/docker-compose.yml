@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ag47_radar}
+      POSTGRES_USER: ${POSTGRES_USER:-ag47}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ag47_local_only}
+    ports:
+      - '5432:5432'
+    volumes:
+      - radar-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api.Dockerfile
+    environment:
+      AG47_ENVIRONMENT: production
+      AG47_DEMO_MODE: ${AG47_DEMO_MODE:-true}
+      AG47_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ag47}:${POSTGRES_PASSWORD:-ag47_local_only}@db:5432/${POSTGRES_DB:-ag47_radar}
+      AG47_CORS_ORIGINS: http://localhost:3000
+      AG47_AUTO_CREATE_SCHEMA: 'false'
+      AG47_AUTO_SEED_DEMO: ${AG47_AUTO_SEED_DEMO:-true}
+      AG47_SCHEDULER_ENABLED: ${AG47_SCHEDULER_ENABLED:-false}
+    ports:
+      - '8000:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - '3000:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  radar-postgres:
