@@ -3,11 +3,11 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { OpportunitiesView } from "./opportunities-view";
 
 // Mock das dependências principais para isolar a view
-vi.mock("@/components/radar-state", () => ({
+vi.mock("@/eco/alt-radar/apps/web/components/radar-state", () => ({
   useRadarState: vi.fn(() => ({ search: "", chains: [] })),
 }));
 
-vi.mock("@/lib/api/query", () => ({
+vi.mock("@/eco/alt-radar/apps/web/lib/api/query", () => ({
   useOpportunities: vi.fn(() => ({
     data: {
       items: [
@@ -44,13 +44,13 @@ vi.mock("@/lib/api/query", () => ({
 }));
 
 // Mock dos painéis que não são o foco deste teste
-vi.mock("@/components/dashboard/risk-panel", () => ({
+vi.mock("@/eco/alt-radar/apps/web/components/dashboard/risk-panel", () => ({
   RiskPanel: () => <div data-testid="risk-panel" />,
 }));
-vi.mock("@/components/dashboard/social-panel", () => ({
+vi.mock("@/eco/alt-radar/apps/web/components/dashboard/social-panel", () => ({
   SocialPanel: () => <div data-testid="social-panel" />,
 }));
-vi.mock("@/components/dashboard/token-analysis", () => ({
+vi.mock("@/eco/alt-radar/apps/web/components/dashboard/token-analysis", () => ({
   TokenAnalysis: () => <div data-testid="token-analysis" />,
 }));
 

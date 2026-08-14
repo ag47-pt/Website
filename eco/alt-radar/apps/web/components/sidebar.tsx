@@ -19,9 +19,9 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEvolution } from "@/lib/api/query";
-import { evolution as evolutionFallback } from "@/lib/evolution";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEvolution } from "@/eco/alt-radar/apps/web/lib/api/query";
+import { evolution as evolutionFallback } from "@/eco/alt-radar/apps/web/lib/evolution";
 import { LogoMark } from "./logo-mark";
 import { useRadarState } from "./radar-state";
 
@@ -76,33 +76,34 @@ function EvolutionCard() {
 }
 
 const navigation = [
-  { href: "/dashboard", label: "Dashboard", icon: Gauge },
-  { href: "/oportunidades", label: "Oportunidades", icon: ChartNoAxesCombined },
-  { href: "/alertas", label: "Alertas", icon: Bell },
-  { href: "/portfolio", label: "Portfolio", icon: Briefcase },
-  { href: "/lab", label: "Laboratório", icon: FlaskConical },
-  { href: "/social", label: "Social", icon: UsersRound },
-  { href: "/risco", label: "Risco", icon: ShieldAlert },
-  { href: "/watchlist", label: "Watchlist", icon: Star },
-  { href: "/notificacoes", label: "Notificações", icon: BellRing },
-  { href: "/logs", label: "Logs", icon: FileClock },
-  { href: "/configuracoes", label: "Configurações", icon: Settings2 },
+  { tab: "dashboard", label: "Dashboard", icon: Gauge },
+  { tab: "oportunidades", label: "Oportunidades", icon: ChartNoAxesCombined },
+  { tab: "alertas", label: "Alertas", icon: Bell },
+  { tab: "portfolio", label: "Portfolio", icon: Briefcase },
+  { tab: "lab", label: "Laboratório", icon: FlaskConical },
+  { tab: "social", label: "Social", icon: UsersRound },
+  { tab: "risco", label: "Risco", icon: ShieldAlert },
+  { tab: "watchlist", label: "Watchlist", icon: Star },
+  { tab: "notificacoes", label: "Notificações", icon: BellRing },
+  { tab: "logs", label: "Logs", icon: FileClock },
+  { tab: "configuracoes", label: "Configurações", icon: Settings2 },
 ] as const;
 
-
 function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
-  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams ? (searchParams.get("tab") || "dashboard") : "dashboard";
   const { setNavigationOpen } = useRadarState();
 
   return (
     <nav aria-label="Navegação principal" className="mt-8 flex flex-1 flex-col gap-1 shrink-0">
-      {navigation.map(({ href, label, icon: Icon }) => {
-        const isActive = pathname === href;
+      {navigation.map(({ tab, label, icon: Icon }) => {
+        const href = tab === "dashboard" ? "/eco/alt-radar" : `/eco/alt-radar?tab=${tab}`;
+        const isActive = currentTab === tab;
         return (
           <Link
-            key={href}
+            key={tab}
             aria-current={isActive ? "page" : undefined}
-            data-testid={`nav-${href.slice(1)}`}
+            data-testid={`nav-${tab}`}
             title={collapsed ? label : undefined}
             className={`group relative flex min-h-9 items-center gap-3 rounded-lg text-[0.83rem] font-semibold transition-all duration-200 ${
               collapsed ? "justify-center px-0" : "px-3.5"

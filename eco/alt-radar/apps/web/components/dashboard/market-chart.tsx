@@ -10,9 +10,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { MarketHistory } from "@/lib/api/schemas";
-import { formatCurrency, formatNumber, formatTime } from "@/lib/format";
-import { EmptyState } from "@/components/shared/query-state";
+import type { MarketHistory } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { formatCurrency, formatNumber, formatTime } from "@/eco/alt-radar/apps/web/lib/format";
+import { EmptyState } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 
 interface ChartDatum {
   capturedAt: string;

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { WatchlistView } from "@/components/watchlist/watchlist-view";
+import { WatchlistView } from "@/eco/alt-radar/apps/web/components/watchlist/watchlist-view";
 
 export const metadata: Metadata = { title: "Watchlist" };
 

@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { ExternalLink, Star } from "lucide-react";
 import { useState } from "react";
-import { useMarketHistory, useScore, useToken, useWatchlistMutation } from "@/lib/api/query";
+import { useMarketHistory, useScore, useToken, useWatchlistMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
 import {
   formatAge,
   formatCurrency,
@@ -12,11 +12,11 @@ import {
   formatPercent,
   getErrorMessage,
   shortenAddress,
-} from "@/lib/format";
-import { ChainBadge } from "@/components/shared/chain-badge";
-import { CopyButton } from "@/components/shared/copy-button";
-import { DataBadges } from "@/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
+} from "@/eco/alt-radar/apps/web/lib/format";
+import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
+import { CopyButton } from "@/eco/alt-radar/apps/web/components/shared/copy-button";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { ScoreBreakdown } from "./score-breakdown";
 import { TokenTimeline } from "./token-timeline";
 

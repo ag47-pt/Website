@@ -1,8 +1,8 @@
 "use client";
 
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { SocialResponse } from "@/lib/api/schemas";
-import { formatTime } from "@/lib/format";
+import type { SocialResponse } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { formatTime } from "@/eco/alt-radar/apps/web/lib/format";
 
 export function SocialChart({ social }: { social: SocialResponse }) {
   const data = social.timeline

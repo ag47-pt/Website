@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AlertInbox } from "@/components/alerts/alert-inbox";
+import { AlertInbox } from "@/eco/alt-radar/apps/web/components/alerts/alert-inbox";
 
 export const metadata: Metadata = { title: "Inbox de Alertas" };
 

@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleAlert, Sparkles } from "lucide-react";
-import type { Score } from "@/lib/api/schemas";
-import { formatClassification, formatScore } from "@/lib/format";
+import type { Score } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { formatClassification, formatScore } from "@/eco/alt-radar/apps/web/lib/format";
 
 const scoreItems: { key: keyof Score; label: string }[] = [
   { key: "momentum_score", label: "Momentum" },

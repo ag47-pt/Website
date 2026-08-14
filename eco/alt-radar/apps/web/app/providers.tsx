@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
-import { RadarStateProvider } from "@/components/radar-state";
+import { RadarStateProvider } from "@/eco/alt-radar/apps/web/components/radar-state";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(

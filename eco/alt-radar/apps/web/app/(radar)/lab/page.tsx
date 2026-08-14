@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useApplyWeightsMutation, useOptimizeWeightsMutation } from "@/lib/api/query";
-import type { GridSearchCandidate, GridSearchResponse } from "@/lib/api/schemas";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { useApplyWeightsMutation, useOptimizeWeightsMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
+import type { GridSearchCandidate, GridSearchResponse } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { formatNumber, formatPercent } from "@/eco/alt-radar/apps/web/lib/format";
 import {
   FlaskConical,
   Play,

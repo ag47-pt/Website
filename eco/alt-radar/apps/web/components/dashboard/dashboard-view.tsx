@@ -2,12 +2,12 @@
 
 import { DatabaseZap } from "lucide-react";
 import { useCallback, useState } from "react";
-import type { Opportunity } from "@/lib/api/schemas";
-import { useSystemStatus } from "@/lib/api/query";
-import { formatDateTime } from "@/lib/format";
-import { OpportunityTable } from "@/components/opportunities/opportunity-table";
-import { useRadarState } from "@/components/radar-state";
-import { AlertFeed } from "@/components/alerts/alert-feed";
+import type { Opportunity } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { useSystemStatus } from "@/eco/alt-radar/apps/web/lib/api/query";
+import { formatDateTime } from "@/eco/alt-radar/apps/web/lib/format";
+import { OpportunityTable } from "@/eco/alt-radar/apps/web/components/opportunities/opportunity-table";
+import { useRadarState } from "@/eco/alt-radar/apps/web/components/radar-state";
+import { AlertFeed } from "@/eco/alt-radar/apps/web/components/alerts/alert-feed";
 import { MetricsGrid } from "./metrics-grid";
 import { RiskPanel } from "./risk-panel";
 import { SocialPanel } from "./social-panel";

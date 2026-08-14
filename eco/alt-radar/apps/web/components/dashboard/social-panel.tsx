@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { Bot, MessageCircle, Radio, UsersRound } from "lucide-react";
-import { useSocial } from "@/lib/api/query";
-import { formatNumber, formatPercent, formatRatio, getErrorMessage } from "@/lib/format";
-import { DataBadges } from "@/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
+import { useSocial } from "@/eco/alt-radar/apps/web/lib/api/query";
+import { formatNumber, formatPercent, formatRatio, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 
 const SocialChart = dynamic(() => import("./social-chart").then((module) => module.SocialChart), {
   ssr: false,

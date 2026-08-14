@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DashboardView } from "@/components/dashboard/dashboard-view";
+import { DashboardView } from "@/eco/alt-radar/apps/web/components/dashboard/dashboard-view";
 
 export const metadata: Metadata = { title: "Dashboard" };
 

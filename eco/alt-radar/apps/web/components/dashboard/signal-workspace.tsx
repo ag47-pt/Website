@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useOpportunities } from "@/lib/api/query";
-import { useRadarState } from "@/components/radar-state";
-import { ChainBadge } from "@/components/shared/chain-badge";
-import { DataBadges } from "@/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
-import { getErrorMessage } from "@/lib/format";
+import { useOpportunities } from "@/eco/alt-radar/apps/web/lib/api/query";
+import { useRadarState } from "@/eco/alt-radar/apps/web/components/radar-state";
+import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import { getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { RiskPanel } from "./risk-panel";
 import { SocialPanel } from "./social-panel";
 

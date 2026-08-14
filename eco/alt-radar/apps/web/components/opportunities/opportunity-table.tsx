@@ -18,8 +18,8 @@ import {
   Star,
 } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { useOpportunities, useWatchlistMutation } from "@/lib/api/query";
-import type { Opportunity, OpportunityFilters } from "@/lib/api/schemas";
+import { useOpportunities, useWatchlistMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
+import type { Opportunity, OpportunityFilters } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import {
   formatAge,
   formatClassification,
@@ -30,11 +30,11 @@ import {
   formatScore,
   getErrorMessage,
   shortenAddress,
-} from "@/lib/format";
-import { ChainBadge } from "@/components/shared/chain-badge";
-import { DataBadges } from "@/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
-import { useRadarState } from "@/components/radar-state";
+} from "@/eco/alt-radar/apps/web/lib/format";
+import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import { useRadarState } from "@/eco/alt-radar/apps/web/components/radar-state";
 
 interface OpportunityTableProps {
   selectedTokenId: string | null;

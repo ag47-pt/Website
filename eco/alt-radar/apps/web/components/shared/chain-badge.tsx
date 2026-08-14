@@ -1,4 +1,4 @@
-import type { Chain } from "@/lib/api/schemas";
+import type { Chain } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 
 const chainConfig: Record<Chain, { label: string; mark: string; className: string }> = {
   bsc: { label: "BSC", mark: "◆", className: "text-radar-warning" },

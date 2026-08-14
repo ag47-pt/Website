@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { Opportunity } from "@/lib/api/schemas";
-import { useRadarState } from "@/components/radar-state";
-import { RiskPanel } from "@/components/dashboard/risk-panel";
-import { SocialPanel } from "@/components/dashboard/social-panel";
-import { TokenAnalysis } from "@/components/dashboard/token-analysis";
+import type { Opportunity } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { useRadarState } from "@/eco/alt-radar/apps/web/components/radar-state";
+import { RiskPanel } from "@/eco/alt-radar/apps/web/components/dashboard/risk-panel";
+import { SocialPanel } from "@/eco/alt-radar/apps/web/components/dashboard/social-panel";
+import { TokenAnalysis } from "@/eco/alt-radar/apps/web/components/dashboard/token-analysis";
 import { OpportunityTable } from "./opportunity-table";
 
 export function OpportunitiesView({ initialTokenId = null }: { initialTokenId?: string | null }) {

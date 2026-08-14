@@ -41,7 +41,6 @@
   ],
   "exclude": [
     "node_modules",
-    "eco/alt-radar",
     "labs/ag47-digital-bank",
     "labs/ag47-evo-pro-landing-page",
     "labs/ag47-token-agi-solana",

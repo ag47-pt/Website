@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import AltRadarClient from './AltRadarClient';
+import AltRadarSystemApp from './AltRadarSystemApp';
 import { ALT_RADAR_CONFIG } from '@/data/alt-radar';
 
 export const metadata: Metadata = {
@@ -94,7 +94,7 @@ export default function AltRadarPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <AltRadarClient />
+      <AltRadarSystemApp />
     </>
   );
 }

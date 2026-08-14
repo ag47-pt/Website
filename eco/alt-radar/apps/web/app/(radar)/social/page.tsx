@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SignalWorkspace } from "@/components/dashboard/signal-workspace";
+import { SignalWorkspace } from "@/eco/alt-radar/apps/web/components/dashboard/signal-workspace";
 
 export const metadata: Metadata = { title: "Social" };
 

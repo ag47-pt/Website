@@ -3,11 +3,11 @@
 import { AlertTriangle, Bell, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useAlerts } from "@/lib/api/query";
-import type { Alert } from "@/lib/api/schemas";
-import { formatDateTime, formatTime, getErrorMessage } from "@/lib/format";
-import { DataBadges } from "@/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
+import { useAlerts } from "@/eco/alt-radar/apps/web/lib/api/query";
+import type { Alert } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { formatDateTime, formatTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 
 const alertIcons = {
   "rule:liquidity_volume_expansion": TrendingUp,

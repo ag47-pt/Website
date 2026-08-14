@@ -10,7 +10,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import type { Chain } from "@/lib/api/schemas";
+import type { Chain } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 
 interface RadarStateValue {
   search: string;

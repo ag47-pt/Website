@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { OpportunitiesView } from "@/components/opportunities/opportunities-view";
-import { tokenIdSchema } from "@/lib/api/schemas";
+import { OpportunitiesView } from "@/eco/alt-radar/apps/web/components/opportunities/opportunities-view";
+import { tokenIdSchema } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 
 export const metadata: Metadata = { title: "Oportunidades" };
 

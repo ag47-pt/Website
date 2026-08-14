@@ -27,10 +27,10 @@ import {
   useChainStatus,
   useTestWebhookMutation,
   useDownloadTruthDataset,
-} from "@/lib/api/query";
-import { formatDateTime, getErrorMessage } from "@/lib/format";
-import { DataBadges } from "@/components/shared/data-badges";
-import { ErrorState, PanelSkeleton } from "@/components/shared/query-state";
+} from "@/eco/alt-radar/apps/web/lib/api/query";
+import { formatDateTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 
 export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notifications" }) {
   const status = useSystemStatus();

@@ -1,11 +1,11 @@
 "use client";
 
 import { AlertOctagon, AlertTriangle, HelpCircle, Info, ShieldCheck } from "lucide-react";
-import { useRisk } from "@/lib/api/query";
-import type { Risk } from "@/lib/api/schemas";
-import { formatNumber, formatPercent, getErrorMessage } from "@/lib/format";
-import { DataBadges } from "@/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
+import { useRisk } from "@/eco/alt-radar/apps/web/lib/api/query";
+import type { Risk } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { formatNumber, formatPercent, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 
 type SignalLevel = "informative" | "attention" | "high" | "critical" | "unknown";
 

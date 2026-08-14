@@ -2,8 +2,8 @@
 
 import { Eye, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useWatchlist, useWatchlistMutation } from "@/lib/api/query";
-import type { WatchlistItem } from "@/lib/api/schemas";
+import { useWatchlist, useWatchlistMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
+import type { WatchlistItem } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import {
   formatCurrency,
   formatDateTime,
@@ -11,11 +11,11 @@ import {
   formatScore,
   getErrorMessage,
   shortenAddress,
-} from "@/lib/format";
-import { ChainBadge } from "@/components/shared/chain-badge";
-import { DataBadges } from "@/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/components/shared/query-state";
-import { TokenAnalysis } from "@/components/dashboard/token-analysis";
+} from "@/eco/alt-radar/apps/web/lib/format";
+import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
+import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
+import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import { TokenAnalysis } from "@/eco/alt-radar/apps/web/components/dashboard/token-analysis";
 
 function WatchlistCard({
   item,

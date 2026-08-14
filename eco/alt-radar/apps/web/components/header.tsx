@@ -2,9 +2,9 @@
 
 import { Activity, ChevronDown, Menu, Search, Server, X } from "lucide-react";
 import { useState } from "react";
-import { useSystemStatus } from "@/lib/api/query";
-import type { Chain } from "@/lib/api/schemas";
-import { formatDateTime } from "@/lib/format";
+import { useSystemStatus } from "@/eco/alt-radar/apps/web/lib/api/query";
+import type { Chain } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import { formatDateTime } from "@/eco/alt-radar/apps/web/lib/format";
 import { useRadarState } from "./radar-state";
 
 const networks: { id: Chain; label: string; mark: string; color: string }[] = [

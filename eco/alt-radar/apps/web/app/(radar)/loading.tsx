@@ -1,4 +1,4 @@
-import { PanelSkeleton } from "@/components/shared/query-state";
+import { PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 
 export default function RadarLoading() {
   return (

@@ -1,7 +1,7 @@
 "use client";
 
-import { usePortfolioMetrics, usePortfolioPositions } from "@/lib/api/query";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { usePortfolioMetrics, usePortfolioPositions } from "@/eco/alt-radar/apps/web/lib/api/query";
+import { formatNumber, formatPercent } from "@/eco/alt-radar/apps/web/lib/format";
 import { Briefcase, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 export default function PortfolioPage() {
