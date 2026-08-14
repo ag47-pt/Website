@@ -2,11 +2,19 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Terminal, Code2, Presentation, Cpu, TrendingUp, Brain, Sparkles } from 'lucide-react';
+import { Terminal, Code2, Presentation, Cpu, TrendingUp, Brain, Sparkles, Layers } from 'lucide-react';
 import { LabHero, LabCallCard } from './components';
 
 export function LabsClient() {
   const categories = [
+    {
+      id: 'pitch-deck-library',
+      title: 'Pitch Deck Library',
+      description: 'Mural editorial e curadoria de pitch decks, narrativas estratégicas e teses de investimento.',
+      icon: <Layers className="w-8 h-8" />,
+      path: '/labs/ag47-lib-pith-deck',
+      status: 'NEW_RELEASE',
+    },
     {
       id: 'apex',
       title: 'APEX Predictor',

@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   AG47 Pitch Deck Library — Design System & Editorial Tokens
+   Paleta: Grafite Profundo / Obsidiana + Off-white Linho + Terracota Queimado
+   Purple Ban: Estritamente respeitado (sem gradientes roxos/índigo)
+   --------------------------------------------------------------------------- */
+
+:root {
+  --canvas: #090a0d;
+  --canvas-subtle: #0d0f14;
+  --surface: #12141a;
+  --surface-hover: #181b22;
+  --surface-active: #1f232c;
+  --surface-border: rgba(245, 242, 235, 0.08);
+  --surface-border-strong: rgba(245, 242, 235, 0.16);
+
+  /* Texto Editorial */
+  --text-primary: #f5f2eb;
+  --text-secondary: #c7c3ba;
+  --text-muted: #8c877d;
+  --text-faint: #524f48;
+
+  /* Acento Editorial Primário (Laranja Queimado / Terracota) */
+  --accent-primary: #ff5722;
+  --accent-hover: #ff7043;
+  --accent-glow: rgba(255, 87, 34, 0.22);
+  --accent-dim: #b73812;
+
+  /* Tipografia */
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-canvas-subtle: var(--canvas-subtle);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
+  --color-surface-border: var(--surface-border);
+  --color-surface-border-strong: var(--surface-border-strong);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-glow: var(--accent-glow);
+  --color-accent-dim: var(--accent-dim);
+
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+/* ---------------------------------------------------------------------------
+   Base & Reset
+   --------------------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Grão de filme sutil e ruído editorial */
+.bg-editorial-grain {
+  background-image: radial-gradient(rgba(245, 242, 235, 0.03) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Linhas finas de grade editorial */
+.bg-editorial-grid {
+  background-image:
+    linear-gradient(to right, rgba(245, 242, 235, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(245, 242, 235, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Tipografia de título Serif Editorial */
+.font-editorial-title {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+}
+
+.font-editorial-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+/* Numerais tabulares */
+.font-mono-numbers {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Custom Scrollbar Refinada */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--canvas);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #252932;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Foco visível acessível */
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
