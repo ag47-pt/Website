@@ -1,9 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, ArrowRight, Zap, Target, Activity, Info } from 'lucide-react';
+import {
+  ChevronRight,
+  ArrowRight,
+  Zap,
+  Target,
+  Activity,
+  Info,
+  Copy,
+  Check,
+  Eye,
+} from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
 import { renderFormattedText } from './utils';
@@ -105,10 +115,44 @@ interface CallCardProps {
   status?: string;
   isExternal?: boolean;
   onClick?: () => void;
+  onOpenPreview?: () => void;
 }
 
-export const LabCallCard = ({ title, description, path, icon, status, isExternal, onClick }: CallCardProps) => {
+export const LabCallCard = ({
+  title,
+  description,
+  path,
+  icon,
+  status,
+  isExternal,
+  onClick,
+  onOpenPreview,
+}: CallCardProps) => {
   const { theme } = useTheme();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!path) return;
+    try {
+      const fullUrl = `${window.location.origin}${path}`;
+      await navigator.clipboard.writeText(fullUrl);
+      setCopied(true);
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate?.(50);
+      }
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handlePreview = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onOpenPreview?.();
+  };
 
   const content = (
     <>
@@ -122,6 +166,35 @@ export const LabCallCard = ({ title, description, path, icon, status, isExternal
       {/* Glass Shine Effect */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
+      </div>
+
+      {/* Top Right Actions: Quick Preview + Copy URL */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+        {onOpenPreview && (
+          <button
+            type="button"
+            onClick={handlePreview}
+            title="Visualizar Preview Rápido"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-gray-400 hover:text-white transition-all backdrop-blur-md"
+          >
+            <Eye className="w-3.5 h-3.5" />
+          </button>
+        )}
+
+        {path && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            title={copied ? "Copiado!" : "Copiar Rota / Share"}
+            className={`p-2 rounded-xl border transition-all backdrop-blur-md ${
+              copied
+                ? 'bg-green-500/20 border-green-500/40 text-green-400'
+                : 'bg-white/5 hover:bg-white/15 border-white/10 text-gray-400 hover:text-white'
+            }`}
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {status && (

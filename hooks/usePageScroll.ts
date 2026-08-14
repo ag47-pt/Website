@@ -7,11 +7,17 @@ export function usePageScroll() {
     const handleScroll = () => {
       const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
       if (scrollHeight > 0) {
-        setOffset(window.scrollY / scrollHeight)
+        setOffset(Math.min(1, Math.max(0, window.scrollY / scrollHeight)))
       }
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
   }, [])
   
   return offset

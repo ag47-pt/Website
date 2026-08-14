@@ -4,6 +4,7 @@ import React from 'react';
 import { Search, Sparkles, Zap, Clock, ShieldCheck, ArrowRight, Play, Compass } from 'lucide-react';
 import { LibraryEntry } from '@/eco/youlearn/schema/types';
 import { getLibraryStats } from '@/eco/youlearn/lib/library';
+import { GlobalBreadcrumb } from '@/components/ui/GlobalBreadcrumb';
 
 interface YouLearnHeroProps {
   entries: LibraryEntry[];
@@ -22,6 +23,11 @@ export function YouLearnHero({ entries, searchQuery, onSearchChange }: YouLearnH
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center">
+          {/* Breadcrumb Navigation */}
+          <div className="mb-4">
+            <GlobalBreadcrumb />
+          </div>
+
           {/* Tagline Badge */}
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D1FF00]/30 bg-[#D1FF00]/10 px-3.5 py-1 text-xs font-mono font-medium text-[#D1FF00] backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5" />
@@ -35,7 +41,7 @@ export function YouLearnHero({ entries, searchQuery, onSearchChange }: YouLearnH
 
           {/* Subtitle */}
           <p className="mt-4 max-w-2xl text-sm sm:text-base text-zinc-400 leading-relaxed">
-            YouLearn transforms hours of unstructured lectures, technical talks, and papers into rich, interactive visual learning pages with timelines, diagrams, and code.
+            <br></br>YouLearn transforms hours of unstructured lectures, technical talks, and papers into rich, interactive visual learning pages with timelines, diagrams, and code.
           </p>
 
           {/* Real-time Search Input */}

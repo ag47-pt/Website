@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,28 +9,95 @@ import { useTheme } from '@/context/ThemeContext';
 import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher';
 import { ScrollProgressBar } from '@/components/ui/ScrollProgressBar';
 import { usePageScroll } from '@/hooks/usePageScroll';
-import { Menu, X, ChevronRight, Home } from 'lucide-react';
-import { LABS_NAV_CONFIG } from '@/data/ecosystem-sitemap';
-import { SitemapHoverPopover } from '@/app/labs/components/SitemapHoverPopover';
+import {
+  Menu,
+  X,
+  ChevronRight,
+  Home,
+  Globe2,
+  AlertCircle,
+} from 'lucide-react';
+import {
+  LabHero,
+  LabCallCard,
+  LabListRow,
+  SitemapSearchFilter,
+  InteractiveStatsBar,
+  SitemapQuickPreviewModal,
+  SitemapHoverPopover,
+  SitemapStatusWidget,
+  ScrollToTopButton,
+  FilterCategory,
+  SortOption,
+  ViewDensityMode,
+} from '@/app/labs/components';
+import {
+  ALL_SITEMAP_ITEMS,
+  ECO_NAV_CONFIG,
+  SitemapItem,
+} from '@/data/ecosystem-sitemap';
 
-export default function LabsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const SORT_STORAGE_KEY = 'ag47_sitemap_sort_preference';
+const VIEW_STORAGE_KEY = 'ag47_sitemap_view_mode';
+
+export function EcoClient() {
   const pathname = usePathname();
   const { theme, themeName, toggleTheme } = useTheme();
   const scrollOffset = usePageScroll();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const displayPercent = Math.round(theme.branding.startingPercent + (scrollOffset * (100 - theme.branding.startingPercent)));
-
-  const primaryNav = LABS_NAV_CONFIG.primary;
-  const overflowNav = LABS_NAV_CONFIG.overflow;
-  const allNavItems = [...primaryNav, ...overflowNav];
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
-  // Close mobile menu + dropdown on route change
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [viewMode, setViewMode] = useState<ViewDensityMode>('grid_2');
+  const [previewItem, setPreviewItem] = useState<SitemapItem | null>(null);
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSort = localStorage.getItem(SORT_STORAGE_KEY) as SortOption | null;
+      if (savedSort && ['default', 'name_asc', 'name_desc', 'status'].includes(savedSort)) {
+        setSortBy(savedSort);
+      }
+      const savedView = localStorage.getItem(VIEW_STORAGE_KEY) as ViewDensityMode | null;
+      if (savedView && ['grid_2', 'grid_3', 'list'].includes(savedView)) {
+        setViewMode(savedView);
+      }
+    } catch {
+      // Ignore localStorage access errors
+    }
+  }, []);
+
+  // Save sort preference to localStorage
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort);
+    try {
+      localStorage.setItem(SORT_STORAGE_KEY, newSort);
+    } catch {
+      // Ignore localStorage write errors
+    }
+  };
+
+  // Save view mode to localStorage
+  const handleViewModeChange = (newMode: ViewDensityMode) => {
+    setViewMode(newMode);
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, newMode);
+    } catch {
+      // Ignore localStorage write errors
+    }
+  };
+
+  const displayPercent = Math.round(
+    theme.branding.startingPercent + scrollOffset * (100 - theme.branding.startingPercent)
+  );
+
+  const primaryNav = ECO_NAV_CONFIG.primary;
+  const overflowNav = ECO_NAV_CONFIG.overflow;
+
+  // Close menus on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setMoreOpen(false);
@@ -49,13 +116,95 @@ export default function LabsLayout({
     }
   }, [moreOpen]);
 
+  // Real-time filtering logic with sorting
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+
+    const matched = ALL_SITEMAP_ITEMS.filter((item) => {
+      // Filter by Category/Tag
+      if (selectedFilter === 'labs_core' && item.category !== 'labs_core') return false;
+      if (selectedFilter === 'ecosystem' && item.category !== 'ecosystem') return false;
+      if (selectedFilter === 'live' && !item.status.includes('LIVE')) return false;
+      if (
+        selectedFilter === 'beta' &&
+        !item.status.includes('BETA') &&
+        !item.status.includes('EXPERIMENT')
+      )
+        return false;
+
+      // Filter by Search Query
+      if (!q) return true;
+
+      const matchTitle = item.title.toLowerCase().includes(q);
+      const matchDesc = item.description.toLowerCase().includes(q);
+      const matchPath = item.path.toLowerCase().includes(q);
+      const matchStatus = item.status.toLowerCase().includes(q);
+      const matchShort = item.shortName ? item.shortName.toLowerCase().includes(q) : false;
+
+      return matchTitle || matchDesc || matchPath || matchStatus || matchShort;
+    });
+
+    if (sortBy === 'name_asc') {
+      return [...matched].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (sortBy === 'name_desc') {
+      return [...matched].sort((a, b) => b.title.localeCompare(a.title));
+    }
+    if (sortBy === 'status') {
+      return [...matched].sort((a, b) => a.status.localeCompare(b.status));
+    }
+
+    return matched;
+  }, [searchQuery, selectedFilter, sortBy]);
+
+  const ecosystemApps = useMemo(
+    () => filteredItems.filter((i) => i.category === 'ecosystem'),
+    [filteredItems]
+  );
+
+  const labsSector = useMemo(
+    () => filteredItems.filter((i) => i.category === 'labs_core'),
+    [filteredItems]
+  );
+
+  // Statistics counts
+  const totalCount = ALL_SITEMAP_ITEMS.length;
+  const labsCoreCount = useMemo(
+    () => ALL_SITEMAP_ITEMS.filter((i) => i.category === 'labs_core').length,
+    []
+  );
+  const ecosystemCount = useMemo(
+    () => ALL_SITEMAP_ITEMS.filter((i) => i.category === 'ecosystem').length,
+    []
+  );
+  const liveCount = useMemo(
+    () => ALL_SITEMAP_ITEMS.filter((i) => i.status.includes('LIVE')).length,
+    []
+  );
+  const betaCount = useMemo(
+    () =>
+      ALL_SITEMAP_ITEMS.filter(
+        (i) => i.status.includes('BETA') || i.status.includes('EXPERIMENT')
+      ).length,
+    []
+  );
+
+  const getContainerClassName = () => {
+    if (viewMode === 'grid_3') {
+      return 'grid sm:grid-cols-2 lg:grid-cols-3 gap-5';
+    }
+    if (viewMode === 'list') {
+      return 'flex flex-col gap-3';
+    }
+    return 'grid md:grid-cols-2 gap-8';
+  };
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans" style={{ '--primary-color': theme.colors.primary } as any}>
+    <div
+      className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[var(--primary-color)] selection:text-black"
+      style={{ '--primary-color': theme.colors.primary } as any}
+    >
       <style>{`
-        ::selection {
-          background-color: ${theme.colors.primary};
-          color: black;
-        }
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }
@@ -64,7 +213,7 @@ export default function LabsLayout({
           scrollbar-width: none;
         }
       `}</style>
-      
+
       {/* Background Blueprint Grid */}
       <div className="fixed inset-0 z-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:40px_40px]"></div>
@@ -72,48 +221,52 @@ export default function LabsLayout({
       </div>
 
       {/* Ambient Nebula Background */}
-      {!pathname.startsWith('/labs/ia') && (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute inset-0 opacity-50">
-            <Image
-              src={pathname.includes('/oracle-trader') ? '/imgs/estadio-universo.webp' : "/imgs/universo-nebuloso.webp"}
-              alt="Background"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-          <div 
-            className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full opacity-30 blur-[120px]"
-            style={{ backgroundColor: theme.colors.primary }}
-          ></div>
-          <div 
-            className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-20 blur-[150px]"
-            style={{ backgroundColor: theme.colors.primary }}
-          ></div>
-          <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.png')]"></div>
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 opacity-50">
+          <Image
+            src="/imgs/universo-nebuloso.webp"
+            alt="Background"
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
-      )}
+        <div
+          className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full opacity-30 blur-[120px]"
+          style={{ backgroundColor: theme.colors.primary }}
+        ></div>
+        <div
+          className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-20 blur-[150px]"
+          style={{ backgroundColor: theme.colors.primary }}
+        ></div>
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.png')]"></div>
+      </div>
 
-      {/* Optimized Header (Navbar) - Following Homepage Pattern */}
-      {!pathname.includes('/oracle-trader') && (
-        <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/5 backdrop-blur-xl shadow-2xl transition-all duration-300">
+      {/* Header (Navbar) */}
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/5 backdrop-blur-xl shadow-2xl transition-all duration-300">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-0 h-full w-[150%] bg-gradient-to-r from-transparent via-white/5 to-transparent animate-glass-shine mix-blend-overlay"></div>
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="group flex items-center gap-3">
-              <div className="w-9 h-9 flex items-center justify-center font-bold text-black text-[10px] hover:scale-110 transition-transform rounded-xl" style={{ backgroundColor: theme.colors.primary }}>
-                L47
+              <div
+                className="w-9 h-9 flex items-center justify-center font-bold text-black text-[10px] hover:scale-110 transition-transform rounded-xl"
+                style={{ backgroundColor: theme.colors.primary }}
+              >
+                E47
               </div>
               <div className="hidden sm:block">
-                <span className="text-[9px] block leading-none text-gray-500 font-mono tracking-widest">EXPERIMENTAL_SECTOR</span>
-                <span className="text-xs font-black tracking-[0.2em] uppercase text-white group-hover:text-white/80 transition-colors">Agência 47 Labs</span>
+                <span className="text-[9px] block leading-none text-gray-500 font-mono tracking-widest">
+                  ECOSYSTEM_SECTOR
+                </span>
+                <span className="text-xs font-black tracking-[0.2em] uppercase text-white group-hover:text-white/80 transition-colors">
+                  Agência 47 ECO
+                </span>
               </div>
             </Link>
-            
+
             <div className="h-6 w-[1px] bg-white/10 mx-2" />
             <ThemeSwitcher themeName={themeName} onToggle={toggleTheme} />
           </div>
@@ -183,12 +336,22 @@ export default function LabsLayout({
               <button
                 onClick={() => setMoreOpen(!moreOpen)}
                 className={`flex items-center gap-1.5 transition-all duration-300 hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] ${
-                  overflowNav.some(i => pathname === i.path || pathname.startsWith(i.path + '/')) ? 'text-white drop-shadow-[0_0_8px_var(--primary-color)]' : ''
+                  overflowNav.some((i) => pathname === i.path || pathname.startsWith(i.path + '/'))
+                    ? 'text-white drop-shadow-[0_0_8px_var(--primary-color)]'
+                    : ''
                 }`}
-                style={overflowNav.some(i => pathname === i.path || pathname.startsWith(i.path + '/')) ? { '--primary-color': theme.colors.primary } as any : {}}
+                style={
+                  overflowNav.some((i) => pathname === i.path || pathname.startsWith(i.path + '/'))
+                    ? ({ '--primary-color': theme.colors.primary } as any)
+                    : {}
+                }
               >
                 MAIS
-                <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${moreOpen ? 'rotate-90' : ''}`} />
+                <ChevronRight
+                  className={`w-3 h-3 transition-transform duration-200 ${
+                    moreOpen ? 'rotate-90' : ''
+                  }`}
+                />
               </button>
 
               <AnimatePresence>
@@ -203,7 +366,8 @@ export default function LabsLayout({
                     <div className="p-1.5 space-y-0.5">
                       {overflowNav.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
+                        const isActive =
+                          pathname === item.path || pathname.startsWith(item.path + '/');
                         return (
                           <Link
                             key={item.path}
@@ -238,12 +402,16 @@ export default function LabsLayout({
                                     : {}
                                 }
                               />
-                              <span className="text-[10px] font-bold tracking-[0.15em]">{item.name}</span>
+                              <span className="text-[10px] font-bold tracking-[0.15em]">
+                                {item.name}
+                              </span>
                             </div>
                             {item.isSitemap && (
                               <span
                                 className={`text-[7px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase ${
-                                  isActive ? 'bg-black text-white' : 'bg-black/60 text-white border border-white/10'
+                                  isActive
+                                    ? 'bg-black text-white'
+                                    : 'bg-black/60 text-white border border-white/10'
                                 }`}
                               >
                                 SITEMAP
@@ -254,15 +422,17 @@ export default function LabsLayout({
                       })}
                     </div>
                     <div className="border-t border-white/5 px-4 py-2">
-                      <span className="text-[8px] font-mono text-gray-600 tracking-widest uppercase">Ecossistema_Ag47</span>
+                      <span className="text-[8px] font-mono text-gray-600 tracking-widest uppercase">
+                        Labs_Inovacao_Ag47
+                      </span>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-            
-            {/* "Back to Home" special button style from main page */}
-            <Link 
+
+            {/* "Back to Home" button */}
+            <Link
               href="/"
               className="relative group px-5 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 text-white font-black text-[10px] tracking-[0.2em] uppercase transition-all duration-500 hover:scale-110 active:scale-95 overflow-hidden ml-3"
             >
@@ -274,9 +444,10 @@ export default function LabsLayout({
 
           {/* Mobile Menu Button */}
           <div className="flex lg:hidden items-center gap-4">
-            <button 
+            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-90"
+              aria-label="Abrir Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -294,14 +465,21 @@ export default function LabsLayout({
               className="fixed top-0 right-0 w-80 h-screen bg-zinc-950 border-l border-white/10 z-[60] p-8 flex flex-col gap-8 shadow-[-20px_0_50px_rgba(0,0,0,0.5)] lg:hidden"
             >
               <div className="flex justify-between items-center mb-4">
-                <span className="font-black tracking-[0.3em] uppercase text-xs text-gray-500">Navigation</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-white">
+                <span className="font-black tracking-[0.3em] uppercase text-xs text-gray-500">
+                  Navigation
+                </span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-gray-500 hover:text-white"
+                >
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
               <div className="flex flex-col gap-2 overflow-y-auto max-h-[calc(100vh-240px)] no-scrollbar">
-                <span className="text-[9px] font-mono text-gray-600 tracking-[0.2em] uppercase px-2 pt-2">Labs_Core</span>
+                <span className="text-[9px] font-mono text-gray-600 tracking-[0.2em] uppercase px-2 pt-2">
+                  Ecossistema_Central
+                </span>
                 {primaryNav.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.path;
@@ -379,7 +557,9 @@ export default function LabsLayout({
                   );
                 })}
 
-                <span className="text-[9px] font-mono text-gray-600 tracking-[0.2em] uppercase px-2 pt-4">Ecossistema</span>
+                <span className="text-[9px] font-mono text-gray-600 tracking-[0.2em] uppercase px-2 pt-4">
+                  Labs & Inovação
+                </span>
                 {overflowNav.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.path;
@@ -459,12 +639,15 @@ export default function LabsLayout({
               </div>
 
               <div className="mt-auto space-y-4">
-                <Link href="/" className="flex items-center gap-3 p-4 bg-white/5 border border-white/5 rounded-2xl text-gray-400 font-bold text-xs tracking-widest hover:bg-white/10 transition-all">
+                <Link
+                  href="/"
+                  className="flex items-center gap-3 p-4 bg-white/5 border border-white/5 rounded-2xl text-gray-400 font-bold text-xs tracking-widest hover:bg-white/10 transition-all"
+                >
                   <Home className="w-5 h-5" />
                   PÁGINA PRINCIPAL
                 </Link>
                 <div className="text-[10px] font-mono text-gray-600 text-center uppercase tracking-widest">
-                  Protocol_Ag47_V1.0
+                  Protocol_Ag47_ECO_V1.0
                 </div>
               </div>
             </motion.div>
@@ -472,39 +655,225 @@ export default function LabsLayout({
         </AnimatePresence>
 
         <ScrollProgressBar />
-        </header>
-      )}
+      </header>
 
-      {/* Main Content Area - Balanced symmetrical top spacing */}
-      <main className={`relative pb-20 px-4 sm:px-6 max-w-7xl mx-auto ${pathname.includes('/oracle-trader') ? 'pt-8' : 'pt-24 sm:pt-28'}`}>
+      {/* Main Content Area - Balanced symmetrical spacing */}
+      <main className="relative pt-24 sm:pt-28 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="space-y-8 sm:space-y-10"
         >
-          {children}
+          <LabHero
+            overline="INITIALIZING_ECO_SYSTEM"
+            overlineIcon={Globe2}
+            title="O Ecossistema"
+            highlight="Integrado"
+            description="Explore o **hub mestre** e sitemap visual das aplicações, plataformas determinísticas e **sistemas inteligentes** desenvolvidos pela Agência 47."
+            statusTags={[
+              { label: "Ecosystem_v1.47", color: "lime", pulse: true },
+              { label: "High_Availability", color: "blue", pulse: true },
+              { label: "Multi_Agent_Sync", color: "orange" }
+            ]}
+          />
+
+          {/* Interactive Search & Filter Controls */}
+          <section id="sitemap-controls" className="pt-2 scroll-mt-28">
+            <SitemapSearchFilter
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedFilter={selectedFilter}
+              onFilterChange={setSelectedFilter}
+              sortBy={sortBy}
+              onSortChange={handleSortChange}
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+              totalCount={totalCount}
+              filteredCount={filteredItems.length}
+            />
+          </section>
+
+          {/* Empty State */}
+          {filteredItems.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-12 text-center rounded-2xl bg-white/5 border border-white/10 space-y-4"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-gray-400">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-base font-bold text-white tracking-tight">Nenhum módulo encontrado</h4>
+                <p className="text-xs text-gray-400 font-mono">
+                  Não encontramos resultados para a busca &quot;{searchQuery}&quot; com os filtros atuais.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedFilter('all');
+                }}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono tracking-wider uppercase transition-all"
+              >
+                Limpar Filtros
+              </button>
+            </motion.div>
+          )}
+
+          {/* Section: Ecossistema Principal */}
+          {ecosystemApps.length > 0 && (
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-gray-500">
+                  Ecossistema // Aplicações & Produtos Centrais ({ecosystemApps.length})
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-l from-white/10 to-transparent" />
+              </div>
+              <div className={getContainerClassName()}>
+                <AnimatePresence mode="popLayout">
+                  {ecosystemApps.map((cat, index) => {
+                    const Icon = cat.icon;
+                    return (
+                      <motion.div
+                        key={cat.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2, delay: index * 0.03 }}
+                      >
+                        {viewMode === 'list' ? (
+                          <LabListRow
+                            title={cat.title}
+                            description={cat.description}
+                            path={cat.path}
+                            icon={<Icon className="w-5 h-5" />}
+                            status={cat.status}
+                            category={cat.category}
+                            onOpenPreview={() => setPreviewItem(cat)}
+                          />
+                        ) : (
+                          <LabCallCard
+                            title={cat.title}
+                            description={cat.description}
+                            path={cat.path}
+                            icon={<Icon className="w-8 h-8" />}
+                            status={cat.status}
+                            onOpenPreview={() => setPreviewItem(cat)}
+                          />
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            </section>
+          )}
+
+          {/* Section: Labs & Módulos Experimentais */}
+          {labsSector.length > 0 && (
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-gray-500">
+                  Labs // Inovação & Módulos Experimentais ({labsSector.length})
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-l from-white/10 to-transparent" />
+              </div>
+              <div className={getContainerClassName()}>
+                <AnimatePresence mode="popLayout">
+                  {labsSector.map((cat, index) => {
+                    const Icon = cat.icon;
+                    return (
+                      <motion.div
+                        key={cat.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2, delay: index * 0.03 }}
+                      >
+                        {viewMode === 'list' ? (
+                          <LabListRow
+                            title={cat.title}
+                            description={cat.description}
+                            path={cat.path}
+                            icon={<Icon className="w-5 h-5" />}
+                            status={cat.status}
+                            category={cat.category}
+                            onOpenPreview={() => setPreviewItem(cat)}
+                          />
+                        ) : (
+                          <LabCallCard
+                            title={cat.title}
+                            description={cat.description}
+                            path={cat.path}
+                            icon={<Icon className="w-8 h-8" />}
+                            status={cat.status}
+                            onOpenPreview={() => setPreviewItem(cat)}
+                          />
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            </section>
+          )}
+
+          {/* Interactive Stats Section */}
+          <InteractiveStatsBar
+            totalCount={totalCount}
+            labsCoreCount={labsCoreCount}
+            ecosystemCount={ecosystemCount}
+            liveCount={liveCount}
+            betaCount={betaCount}
+            activeFilter={selectedFilter}
+            onSelectFilter={setSelectedFilter}
+            buildVersion="1.47.0-PRO"
+            uptime="99.98%"
+            latency="12ms"
+          />
+
+          {/* Quick Preview Modal */}
+          <SitemapQuickPreviewModal
+            item={previewItem}
+            onClose={() => setPreviewItem(null)}
+          />
+
+          {/* Floating Scroll To Top Button with Circular Progress */}
+          <ScrollToTopButton />
+
+          {/* Floating Telemetry & Protocol Status Widget */}
+          <SitemapStatusWidget hubName="ECO_MESH" totalNodes={totalCount} />
         </motion.div>
       </main>
 
       {/* HUD Footer Decor */}
       <footer className="fixed bottom-0 left-0 w-full z-50 h-8 border-t border-white/5 bg-black/80 backdrop-blur-sm pointer-events-none flex items-center px-6">
         <div className="w-full flex justify-between items-center font-mono text-[8px] text-gray-600 tracking-tighter uppercase">
-          <div>Coord_X: 47.000 // Coord_Y: 35.123 // Elevation: 1200m</div>
+          <div>ECO_SYSTEM_GRID: ACTIVE // ZONE_SYNC: EU-WEST // REPOSITORIES: 13</div>
           <div className="flex gap-4">
-            <span>Security_Protocol: 0x47_ALPHA</span>
-            <span>Bitrate: 256kbps_LMT</span>
+            <span>Protocol: AG47_ECO_MESH</span>
+            <span>Bitrate: 512kbps_DEDICATED</span>
             <span>Ag47_V.1.0</span>
           </div>
         </div>
       </footer>
 
-      {/* Indicador de Percentagem de Scroll (Ag47 Style) */}
+      {/* Indicador de Percentagem de Scroll */}
       <div className="fixed bottom-10 right-10 z-50 flex items-baseline gap-1 select-none pointer-events-none">
         <span className="text-8xl md:text-[10rem] font-black tracking-tighter text-white/5 tabular-nums leading-none">
           {displayPercent}
         </span>
-        <span 
-          style={{ color: theme.colors.primary, filter: `drop-shadow(0 0 15px ${theme.colors.primary}80)` }}
+        <span
+          style={{
+            color: theme.colors.primary,
+            filter: `drop-shadow(0 0 15px ${theme.colors.primary}80)`,
+          }}
           className="text-2xl font-black"
         >
           %

@@ -1,2 +1,10 @@
 export * from './LabHero';
 export * from './LabCards';
+export * from './SitemapSearchFilter';
+export * from './InteractiveStatsBar';
+export * from './LabListRow';
+export * from './SitemapQuickPreviewModal';
+export * from './SitemapHoverPopover';
+export * from './SitemapStatusWidget';
+export { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
+export { GlobalBreadcrumb } from '@/components/ui/GlobalBreadcrumb';

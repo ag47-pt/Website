@@ -1,82 +1,154 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Terminal, Code2, Presentation, Cpu, TrendingUp, Brain, Sparkles, Layers } from 'lucide-react';
-import { LabHero, LabCallCard } from './components';
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Terminal, AlertCircle } from 'lucide-react';
+import {
+  LabHero,
+  LabCallCard,
+  LabListRow,
+  SitemapSearchFilter,
+  InteractiveStatsBar,
+  SitemapQuickPreviewModal,
+  SitemapStatusWidget,
+  ScrollToTopButton,
+  FilterCategory,
+  SortOption,
+  ViewDensityMode,
+} from './components';
+import { ALL_SITEMAP_ITEMS, SitemapItem } from '@/data/ecosystem-sitemap';
+
+const SORT_STORAGE_KEY = 'ag47_sitemap_sort_preference';
+const VIEW_STORAGE_KEY = 'ag47_sitemap_view_mode';
 
 export function LabsClient() {
-  const categories = [
-    {
-      id: 'pitch-deck-library',
-      title: 'Pitch Deck Library',
-      description: 'Mural editorial e curadoria de pitch decks, narrativas estratégicas e teses de investimento.',
-      icon: <Layers className="w-8 h-8" />,
-      path: '/labs/ag47-lib-pith-deck',
-      status: 'NEW_RELEASE',
-    },
-    {
-      id: 'apex',
-      title: 'APEX Predictor',
-      description: 'Sinais e previsões semanais, mensais e anuais do mercado de BTC com IA proprietária.',
-      icon: <TrendingUp className="w-8 h-8" />,
-      path: '/labs/apex',
-      status: 'BETA_LIVE',
-    },
-    {
-      id: 'oracle-trader',
-      title: 'Oracle Trader',
-      description: 'Análise de mercado e trader quantitativo de futebol com cognição preditiva e calibração de edge.',
-      icon: <Brain className="w-8 h-8" />,
-      path: '/labs/oracle-trader',
-      status: 'BETA_LIVE',
-    },
-    {
-      id: 'dev',
-      title: 'Dev Showcase',
-      description: 'Acompanhe o desenvolvimento em tempo real dos nossos projetos ativos e MVPs em fase alfa.',
-      icon: <Code2 className="w-8 h-8" />,
-      path: '/labs/dev',
-      status: 'ACTIVE_SECTOR',
-    },
-    {
-      id: 'slides',
-      title: 'Sales Slides',
-      description: 'Ferramenta interativa de apresentações para pitches de vendas e demonstração de conceitos.',
-      icon: <Presentation className="w-8 h-8" />,
-      path: '/labs/slides',
-      status: 'STABLE_VERSION',
-    },
-    {
-      id: 'ia',
-      title: 'I.A-47',
-      description: 'Diretório mestre do Setor de Inteligência Artificial da Agência 47.',
-      icon: <Cpu className="w-8 h-8" />,
-      path: '/labs/ia',
-      status: 'SYSTEM_ACTIVE',
-    },
-    {
-      id: 'gemini-glow',
-      title: 'Gemini Border Glow',
-      description: 'Experimento com bordas animadas e brilhantes inspiradas no Google Gemini usando CSS Houdini.',
-      icon: <Sparkles className="w-8 h-8" />,
-      path: '/labs/gemini-glow',
-      status: 'NEW_EXPERIMENT',
-    },
-    {
-      id: 'agent-doc',
-      title: 'Exemple I.A-47 Agent.md',
-      description: 'Documentação e protótipo de agente autônomo especializado em processos Ag47.',
-      icon: <Terminal className="w-8 h-8" />,
-      path: '/labs/ia/agent/skills/ex',
-      status: 'DOC_DRIVEN',
-    }
-  ];
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [viewMode, setViewMode] = useState<ViewDensityMode>('grid_2');
+  const [previewItem, setPreviewItem] = useState<SitemapItem | null>(null);
 
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSort = localStorage.getItem(SORT_STORAGE_KEY) as SortOption | null;
+      if (savedSort && ['default', 'name_asc', 'name_desc', 'status'].includes(savedSort)) {
+        setSortBy(savedSort);
+      }
+      const savedView = localStorage.getItem(VIEW_STORAGE_KEY) as ViewDensityMode | null;
+      if (savedView && ['grid_2', 'grid_3', 'list'].includes(savedView)) {
+        setViewMode(savedView);
+      }
+    } catch {
+      // Ignore localStorage access errors
+    }
+  }, []);
+
+  // Save sort preference to localStorage
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort);
+    try {
+      localStorage.setItem(SORT_STORAGE_KEY, newSort);
+    } catch {
+      // Ignore localStorage write errors
+    }
+  };
+
+  // Save view mode to localStorage
+  const handleViewModeChange = (newMode: ViewDensityMode) => {
+    setViewMode(newMode);
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, newMode);
+    } catch {
+      // Ignore localStorage write errors
+    }
+  };
+
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+
+    const matched = ALL_SITEMAP_ITEMS.filter((item) => {
+      // Filter by Category/Tag
+      if (selectedFilter === 'labs_core' && item.category !== 'labs_core') return false;
+      if (selectedFilter === 'ecosystem' && item.category !== 'ecosystem') return false;
+      if (selectedFilter === 'live' && !item.status.includes('LIVE')) return false;
+      if (
+        selectedFilter === 'beta' &&
+        !item.status.includes('BETA') &&
+        !item.status.includes('EXPERIMENT')
+      )
+        return false;
+
+      // Filter by Search Query
+      if (!q) return true;
+
+      const matchTitle = item.title.toLowerCase().includes(q);
+      const matchDesc = item.description.toLowerCase().includes(q);
+      const matchPath = item.path.toLowerCase().includes(q);
+      const matchStatus = item.status.toLowerCase().includes(q);
+      const matchShort = item.shortName ? item.shortName.toLowerCase().includes(q) : false;
+
+      return matchTitle || matchDesc || matchPath || matchStatus || matchShort;
+    });
+
+    if (sortBy === 'name_asc') {
+      return [...matched].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (sortBy === 'name_desc') {
+      return [...matched].sort((a, b) => b.title.localeCompare(a.title));
+    }
+    if (sortBy === 'status') {
+      return [...matched].sort((a, b) => a.status.localeCompare(b.status));
+    }
+
+    return matched;
+  }, [searchQuery, selectedFilter, sortBy]);
+
+  const labsCoreItems = useMemo(
+    () => filteredItems.filter((i) => i.category === 'labs_core'),
+    [filteredItems]
+  );
+
+  const ecosystemItems = useMemo(
+    () => filteredItems.filter((i) => i.category === 'ecosystem'),
+    [filteredItems]
+  );
+
+  // Statistics counts
+  const totalCount = ALL_SITEMAP_ITEMS.length;
+  const labsCoreCount = useMemo(
+    () => ALL_SITEMAP_ITEMS.filter((i) => i.category === 'labs_core').length,
+    []
+  );
+  const ecosystemCount = useMemo(
+    () => ALL_SITEMAP_ITEMS.filter((i) => i.category === 'ecosystem').length,
+    []
+  );
+  const liveCount = useMemo(
+    () => ALL_SITEMAP_ITEMS.filter((i) => i.status.includes('LIVE')).length,
+    []
+  );
+  const betaCount = useMemo(
+    () =>
+      ALL_SITEMAP_ITEMS.filter(
+        (i) => i.status.includes('BETA') || i.status.includes('EXPERIMENT')
+      ).length,
+    []
+  );
+
+  const getContainerClassName = () => {
+    if (viewMode === 'grid_3') {
+      return 'grid sm:grid-cols-2 lg:grid-cols-3 gap-5';
+    }
+    if (viewMode === 'list') {
+      return 'flex flex-col gap-3';
+    }
+    return 'grid md:grid-cols-2 gap-8';
+  };
 
   return (
-    <div className="space-y-12">
-      <LabHero 
+    <div className="space-y-8 sm:space-y-10">
+      <LabHero
         overline="INITIALIZING_LABS_CORE"
         overlineIcon={Terminal}
         title="O Futuro é"
@@ -89,40 +161,177 @@ export function LabsClient() {
         ]}
       />
 
-      {/* Categories Grid */}
-      <div className="grid md:grid-cols-2 gap-8">
-        {categories.map((cat, index) => (
-          <motion.div
-            key={cat.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <LabCallCard 
-              title={cat.title}
-              description={cat.description}
-              path={cat.path}
-              icon={cat.icon}
-              status={cat.status}
-            />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Stats/Status Section */}
-      <section className="pt-12 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8">
-        {[
-          { label: 'PROJETOS_ATIVOS', value: '12' },
-          { label: 'UPTIME_SISTEMA', value: '99.9%' },
-          { label: 'NODES_LATÊNCIA', value: '14ms' },
-          { label: 'BUILD_VERSION', value: '0.47.0-BETA' }
-        ].map((stat) => (
-          <div key={stat.label} className="space-y-1">
-            <div className="text-[10px] font-mono text-gray-600">{stat.label}</div>
-            <div className="text-xl font-bold tracking-tighter text-gray-300">{stat.value}</div>
-          </div>
-        ))}
+      {/* Interactive Search & Filter Controls */}
+      <section id="sitemap-controls" className="pt-2 scroll-mt-28">
+        <SitemapSearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          totalCount={totalCount}
+          filteredCount={filteredItems.length}
+        />
       </section>
+
+      {/* Empty State */}
+      {filteredItems.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-12 text-center rounded-2xl bg-white/5 border border-white/10 space-y-4"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-gray-400">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-base font-bold text-white tracking-tight">Nenhum módulo encontrado</h4>
+            <p className="text-xs text-gray-400 font-mono">
+              Não encontramos resultados para a busca &quot;{searchQuery}&quot; com os filtros atuais.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedFilter('all');
+            }}
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono tracking-wider uppercase transition-all"
+          >
+            Limpar Filtros
+          </button>
+        </motion.div>
+      )}
+
+      {/* Section: Labs Core */}
+      {labsCoreItems.length > 0 && (
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+            <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-gray-500">
+              Labs_Core // Módulos Internos ({labsCoreItems.length})
+            </span>
+            <div className="h-px flex-1 bg-gradient-to-l from-white/10 to-transparent" />
+          </div>
+          <div className={getContainerClassName()}>
+            <AnimatePresence mode="popLayout">
+              {labsCoreItems.map((cat, index) => {
+                const Icon = cat.icon;
+                return (
+                  <motion.div
+                    key={cat.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                  >
+                    {viewMode === 'list' ? (
+                      <LabListRow
+                        title={cat.title}
+                        description={cat.description}
+                        path={cat.path}
+                        icon={<Icon className="w-5 h-5" />}
+                        status={cat.status}
+                        category={cat.category}
+                        onOpenPreview={() => setPreviewItem(cat)}
+                      />
+                    ) : (
+                      <LabCallCard
+                        title={cat.title}
+                        description={cat.description}
+                        path={cat.path}
+                        icon={<Icon className="w-8 h-8" />}
+                        status={cat.status}
+                        onOpenPreview={() => setPreviewItem(cat)}
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
+
+      {/* Section: Ecossistema */}
+      {ecosystemItems.length > 0 && (
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+            <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-gray-500">
+              Ecossistema // Apps & Produtos ({ecosystemItems.length})
+            </span>
+            <div className="h-px flex-1 bg-gradient-to-l from-white/10 to-transparent" />
+          </div>
+          <div className={getContainerClassName()}>
+            <AnimatePresence mode="popLayout">
+              {ecosystemItems.map((cat, index) => {
+                const Icon = cat.icon;
+                return (
+                  <motion.div
+                    key={cat.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                  >
+                    {viewMode === 'list' ? (
+                      <LabListRow
+                        title={cat.title}
+                        description={cat.description}
+                        path={cat.path}
+                        icon={<Icon className="w-5 h-5" />}
+                        status={cat.status}
+                        category={cat.category}
+                        onOpenPreview={() => setPreviewItem(cat)}
+                      />
+                    ) : (
+                      <LabCallCard
+                        title={cat.title}
+                        description={cat.description}
+                        path={cat.path}
+                        icon={<Icon className="w-8 h-8" />}
+                        status={cat.status}
+                        onOpenPreview={() => setPreviewItem(cat)}
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
+
+      {/* Interactive Stats Section */}
+      <InteractiveStatsBar
+        totalCount={totalCount}
+        labsCoreCount={labsCoreCount}
+        ecosystemCount={ecosystemCount}
+        liveCount={liveCount}
+        betaCount={betaCount}
+        activeFilter={selectedFilter}
+        onSelectFilter={setSelectedFilter}
+        buildVersion="0.47.0-BETA"
+        uptime="99.9%"
+        latency="14ms"
+      />
+
+      {/* Quick Preview Modal */}
+      <SitemapQuickPreviewModal
+        item={previewItem}
+        onClose={() => setPreviewItem(null)}
+      />
+
+      {/* Floating Scroll To Top Button with Circular Progress */}
+      <ScrollToTopButton />
+
+      {/* Floating Telemetry & Protocol Status Widget */}
+      <SitemapStatusWidget hubName="LABS_CORE" totalNodes={totalCount} />
     </div>
   );
 }

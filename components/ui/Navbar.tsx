@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { LayoutGrid, Network, Radio, Compass, Rocket } from 'lucide-react';
+import { SitemapHoverPopover } from '@/app/labs/components/SitemapHoverPopover';
 
 export function Navbar({ 
   progressRef, 
@@ -17,26 +19,49 @@ export function Navbar({
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToPercent = (e: React.MouseEvent, percent: number) => {
-    e.preventDefault()
+    e.preventDefault();
     if (typeof window !== 'undefined') {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
-      window.scrollTo({ top: scrollHeight * percent, behavior: 'smooth' })
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo({ top: scrollHeight * percent, behavior: 'smooth' });
     }
-  }
+  };
 
   useEffect(() => {
     const closeOnOutsideClick = (event: MouseEvent) => {
-      if (!mobileMenuRef.current) return
+      if (!mobileMenuRef.current) return;
       if (mobileMenuOpen && !mobileMenuRef.current.contains(event.target as Node)) {
-        setMobileMenuOpen(false)
+        setMobileMenuOpen(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', closeOnOutsideClick)
-    return () => document.removeEventListener('mousedown', closeOnOutsideClick)
-  }, [mobileMenuOpen])
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [mobileMenuOpen]);
 
   const mobileMenuItems = [
+    {
+      label: 'Sites',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+      ),
+      onClick: (e: React.MouseEvent) => scrollToPercent(e, 0.25),
+    },
+    {
+      label: 'APPs',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      ),
+      onClick: (e: React.MouseEvent) => scrollToPercent(e, 0.45),
+    },
     {
       label: 'Social',
       icon: (
@@ -61,39 +86,53 @@ export function Navbar({
       onClick: (e: React.MouseEvent) => scrollToPercent(e, 0.85),
     },
     {
-      label: 'Labs',
+      label: 'Universo 2D',
+      badge: 'NOVO',
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2v10" />
-          <path d="M18.4 4.6a9 9 0 1 1-12.8 0" />
-          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-        </svg>
+        <div className="relative flex items-center justify-center">
+          <svg 
+            width="18" 
+            height="18" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className="transition-transform duration-500 group-hover:rotate-180 text-cyan-400/90 group-hover:text-cyan-300 group-hover:drop-shadow-[0_0_8px_rgba(122,216,255,0.8)]"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+            <path d="M2 12h20" />
+          </svg>
+          <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2 pointer-events-none">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-300/90 shadow-[0_0_8px_#38bdf8]" />
+          </span>
+        </div>
       ),
+      href: '/universo-2d',
+    },
+    {
+      label: 'LABS HUB',
+      badge: 'SITEMAP',
+      isSitemap: true,
+      icon: <LayoutGrid className="w-4 h-4" />,
       href: '/labs',
     },
     {
-      label: 'Rest.AG',
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 2h18" />
-          <path d="M5 2v6a7 7 0 0 0 14 0V2" />
-          <path d="M19 14.5A9.5 9.5 0 0 1 12 17a9.5 9.5 0 0 1-7-2.5" />
-          <path d="M12 17v5" />
-        </svg>
-      ),
-      href: '/rest',
+      label: 'ECO HUB',
+      badge: 'SITEMAP',
+      isSitemap: true,
+      icon: <Network className="w-4 h-4" />,
+      href: '/eco',
     },
     {
       label: 'Lançar',
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-          <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-        </svg>
-      ),
+      icon: <Rocket className="w-4 h-4" />,
       onClick: (e: React.MouseEvent) => scrollToPercent(e, 1),
     },
-  ]
+  ];
 
   return (
     <nav className="fixed top-0 left-0 w-full z-[100] bg-white/5 backdrop-blur-xl border-b border-white/20 pointer-events-auto">
@@ -106,7 +145,7 @@ export function Navbar({
              AG47
            </div>
 
-           {/* Botão de Alterar Terra - Agora ao lado do logo */}
+           {/* Botão de Alterar Terra */}
             <button 
               onClick={onChangeEarth}
               className="w-9 h-9 rounded-full bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center group relative overflow-hidden"
@@ -122,34 +161,88 @@ export function Navbar({
           </div>
 
          {/* Desktop Links */}
-         <div className="hidden md:flex items-center gap-8 text-white/80 font-bold text-xs tracking-[0.2em] uppercase">
+         <div className="hidden lg:flex items-center gap-5 text-white/80 font-bold text-xs tracking-[0.2em] uppercase">
             <a href="#" onClick={(e) => scrollToPercent(e, 0.25)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Sites</a>
             <a href="#" onClick={(e) => scrollToPercent(e, 0.45)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">APPs</a>
             <a href="#" onClick={(e) => scrollToPercent(e, 0.65)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Social</a>
             <a href="#" onClick={(e) => scrollToPercent(e, 0.85)} className="hover:text-white hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all">Ads</a>
             <Link
-              href="/rest"
-              className="hover:text-[#7ad8ff] hover:drop-shadow-[0_0_10px_rgba(122,216,255,0.8)] transition-all"
+              href="/universo-2d"
+              className="group flex items-center gap-1.5 hover:text-[#7ad8ff] transition-all duration-300 relative py-1"
             >
-              Rest.AG
+              <div className="relative flex items-center justify-center">
+                <svg 
+                  width="14" 
+                  height="14" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="transition-transform duration-500 group-hover:rotate-180 text-cyan-400/80 group-hover:text-cyan-300 group-hover:drop-shadow-[0_0_8px_rgba(122,216,255,0.9)]"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                  <path d="M2 12h20" />
+                </svg>
+                <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5 pointer-events-none">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-300/90 shadow-[0_0_6px_#38bdf8]" />
+                </span>
+              </div>
+              <span className="group-hover:drop-shadow-[0_0_10px_rgba(122,216,255,0.9)] transition-all">
+                Universo 2D
+              </span>
+              <span className="text-[7.5px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_8px_rgba(34,211,238,0.3)] transition-all">
+                NOVO
+              </span>
             </Link>
-             <Link 
-               href="/labs" 
-               className="transition-all border px-3 py-1 rounded-sm tracking-widest flex items-center gap-2"
-               style={{ 
-                 color: theme.colors.primary, 
-                 borderColor: `${theme.colors.primary}33`,
-                 backgroundColor: `${theme.colors.primary}0D`
-               }}
-             >
-               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: theme.colors.primary }} />
-               Labs
-             </Link>
+
+            {/* Visual Sitemap: LABS HUB */}
+            <SitemapHoverPopover target="labs">
+              <Link 
+                href="/labs" 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-300 hover:scale-105"
+                style={{ 
+                  color: theme.colors.primary, 
+                  borderColor: `${theme.colors.primary}50`,
+                  backgroundColor: `${theme.colors.primary}15`,
+                  boxShadow: `0 0 12px ${theme.colors.primary}20`,
+                }}
+              >
+                <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
+                <span>LABS HUB</span>
+                <span className="text-[8px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase bg-black/60 text-white border border-white/10">
+                  MAP
+                </span>
+              </Link>
+            </SitemapHoverPopover>
+
+            {/* Visual Sitemap: ECO HUB */}
+            <SitemapHoverPopover target="eco">
+              <Link 
+                href="/eco" 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-300 hover:scale-105"
+                style={{ 
+                  color: theme.colors.primary, 
+                  borderColor: `${theme.colors.primary}50`,
+                  backgroundColor: `${theme.colors.primary}15`,
+                  boxShadow: `0 0 12px ${theme.colors.primary}20`,
+                }}
+              >
+                <Network className="w-3.5 h-3.5 shrink-0" />
+                <span>ECO HUB</span>
+                <span className="text-[8px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase bg-black/60 text-white border border-white/10">
+                  MAP
+                </span>
+              </Link>
+            </SitemapHoverPopover>
             
             {/* Botão Lançar com efeito Cometa (Refinado - Branco) */}
             <button 
               onClick={(e) => scrollToPercent(e, 1)} 
-              className="relative group px-5 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 text-white font-black text-[10px] tracking-[0.2em] uppercase transition-all duration-500 hover:scale-110 active:scale-95 overflow-hidden"
+              className="relative group px-5 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 text-white font-black text-[10px] tracking-[0.2em] uppercase transition-all duration-500 hover:scale-110 active:scale-95 overflow-hidden ml-2"
             >
               <span className="relative z-10">Lançar</span>
               
@@ -165,6 +258,34 @@ export function Navbar({
             </button>
          </div>
 
+         {/* Tablet & Small Desktop intermediate */}
+         <div className="hidden md:flex lg:hidden items-center gap-3">
+            <Link 
+              href="/labs" 
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-mono font-bold"
+              style={{ 
+                color: theme.colors.primary, 
+                borderColor: `${theme.colors.primary}50`,
+                backgroundColor: `${theme.colors.primary}15`,
+              }}
+            >
+              <LayoutGrid className="w-3 h-3" />
+              LABS
+            </Link>
+            <Link 
+              href="/eco" 
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-mono font-bold"
+              style={{ 
+                color: theme.colors.primary, 
+                borderColor: `${theme.colors.primary}50`,
+                backgroundColor: `${theme.colors.primary}15`,
+              }}
+            >
+              <Network className="w-3 h-3" />
+              ECO
+            </Link>
+         </div>
+
          {/* Mobile Buttons with overflow menu */}
          <div className="flex md:hidden items-center gap-2" ref={mobileMenuRef}>
             <button 
@@ -173,7 +294,7 @@ export function Navbar({
               aria-label="Sites"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              <span className="text-[10px] uppercase tracking-[0.2em] mt-1 text-white/70">Sites</span>
+              <span className="text-[9px] uppercase tracking-[0.2em] mt-0.5 text-white/70">Sites</span>
             </button>
             <button 
               onClick={(e) => scrollToPercent(e, 0.45)}
@@ -181,7 +302,7 @@ export function Navbar({
               aria-label="APPs"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-              <span className="text-[10px] uppercase tracking-[0.2em] mt-1 text-white/70">APPs</span>
+              <span className="text-[9px] uppercase tracking-[0.2em] mt-0.5 text-white/70">APPs</span>
             </button>
             <div className="relative">
                <button
@@ -194,30 +315,58 @@ export function Navbar({
                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
                </button>
                {mobileMenuOpen && (
-                 <div className="absolute right-0 top-full mt-2 min-w-[210px] rounded-3xl border border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-2xl p-2 z-50">
+                 <div className="absolute right-0 top-full mt-2 min-w-[240px] rounded-3xl border border-white/10 bg-zinc-950/95 backdrop-blur-2xl shadow-2xl p-2 z-50 space-y-1">
                    {mobileMenuItems.map((item) => (
                      item.href ? (
                        <Link
                          key={item.label}
                          href={item.href}
                          onClick={() => setMobileMenuOpen(false)}
-                         className="flex items-center gap-3 w-full rounded-2xl px-3 py-2 text-white/80 hover:bg-white/10 transition-colors"
+                         className={`group flex items-center justify-between w-full rounded-2xl px-3.5 py-2.5 transition-all ${
+                           item.isSitemap
+                             ? 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+                             : 'text-white/80 hover:bg-white/10'
+                         }`}
+                         style={
+                           item.isSitemap
+                             ? {
+                                 borderColor: `${theme.colors.primary}40`,
+                                 backgroundColor: `${theme.colors.primary}12`,
+                               }
+                             : {}
+                         }
                        >
-                         {item.icon}
-                         <span className="text-sm font-semibold">{item.label}</span>
+                         <div className="flex items-center gap-3">
+                           <div style={item.isSitemap ? { color: theme.colors.primary } : {}}>
+                             {item.icon}
+                           </div>
+                           <span className="text-xs font-bold tracking-wider">{item.label}</span>
+                         </div>
+                          {item.badge && (
+                            <span
+                              className={`text-[7px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase border ${
+                                item.badge === 'NOVO'
+                                  ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/40 shadow-[0_0_8px_rgba(34,211,238,0.25)]'
+                                  : 'bg-black text-white border border-white/10'
+                              }`}
+                              style={item.badge !== 'NOVO' ? { color: theme.colors.primary } : {}}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
                        </Link>
                      ) : (
                        <button
                          type="button"
                          key={item.label}
                          onClick={(e) => {
-                           item.onClick?.(e)
-                           setMobileMenuOpen(false)
+                           item.onClick?.(e);
+                           setMobileMenuOpen(false);
                          }}
-                         className="flex items-center gap-3 w-full rounded-2xl px-3 py-2 text-white/80 hover:bg-white/10 transition-colors"
+                         className="flex items-center gap-3 w-full rounded-2xl px-3.5 py-2.5 text-white/80 hover:bg-white/10 transition-colors"
                        >
                          {item.icon}
-                         <span className="text-sm font-semibold">{item.label}</span>
+                         <span className="text-xs font-bold tracking-wider">{item.label}</span>
                        </button>
                      )
                    ))}

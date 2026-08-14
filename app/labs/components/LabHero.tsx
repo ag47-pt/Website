@@ -7,6 +7,7 @@ import { LucideIcon } from 'lucide-react';
 
 import Image from 'next/image';
 import { renderFormattedText } from './utils';
+import { GlobalBreadcrumb } from '@/components/ui/GlobalBreadcrumb';
 
 interface StatusTagProps {
   label: string;
@@ -116,9 +117,13 @@ export const LabHero = ({
   
   const renderTextContent = (isCentered = false) => (
     <motion.div 
-      className={`space-y-6 ${isCentered ? 'text-center flex flex-col items-center' : 'text-left'}`}
+      className={`space-y-4 sm:space-y-5 ${isCentered ? 'text-center flex flex-col items-center' : 'text-left'}`}
     >
-      <div className="flex items-center gap-2 font-mono text-sm tracking-[0.2em]" style={{ color: theme.colors.primary }}>
+      <div className="pb-1">
+        <GlobalBreadcrumb />
+      </div>
+
+      <div className="flex items-center gap-2 font-mono text-xs sm:text-sm tracking-[0.2em]" style={{ color: theme.colors.primary }}>
         <Icon className="w-4 h-4" />
         <span>{overline}</span>
       </div>
@@ -132,12 +137,12 @@ export const LabHero = ({
         )}
       </h1>
 
-      <p className={`${variant === 'mini' ? 'text-sm md:text-base' : 'text-lg md:text-xl'} leading-relaxed max-w-2xl`} style={{ color: theme.colors.textSecondary }}>
+      <p className={`${variant === 'mini' ? 'text-sm md:text-base' : 'text-base md:text-lg'} leading-relaxed max-w-2xl`} style={{ color: theme.colors.textSecondary }}>
         {renderFormattedText(description, 'description', theme)}
       </p>
 
       {statusTags.length > 0 && (
-        <div className="flex flex-wrap gap-4 font-mono text-[10px] uppercase pt-4" style={{ color: theme.colors.textMuted }}>
+        <div className="flex flex-wrap gap-3 sm:gap-4 font-mono text-[10px] uppercase pt-1 sm:pt-2" style={{ color: theme.colors.textMuted }}>
           {statusTags.map((tag, i) => <LabStatusTag key={i} {...tag} />)}
         </div>
       )}
@@ -252,7 +257,7 @@ export const LabHero = ({
   return (
     <div ref={sectionRef} className={`${hasMedia ? 'lg:min-h-[110vh]' : 'min-h-0'} relative`}>
       <div className={`${hasMedia ? 'lg:sticky lg:top-0 lg:h-screen flex items-start lg:pt-0' : 'relative'} w-full overflow-hidden`}>
-        <section className={`w-full max-w-7xl mx-auto px-6 ${hasMedia ? 'grid lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-16 items-center pt-12 lg:pt-0 pb-12 lg:pb-0' : 'space-y-6 pt-12'}`}>
+        <section className={`w-full max-w-7xl mx-auto px-6 ${hasMedia ? 'grid lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-16 items-center pt-6 lg:pt-0 pb-8 lg:pb-0' : 'space-y-5 sm:space-y-6 pt-4 sm:pt-6'}`}>
           {renderTextContent(false)}
           {hasMedia && renderMedia()}
         </section>
