@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { KnowledgeObject } from '@/eco/youlearn/schema/types';
 import { extractYoutubeId } from '@/eco/youlearn/lib/provenance';
 import { YouLearnNavbar } from '../../components/YouLearnNavbar';
@@ -15,16 +15,82 @@ interface LearningPageClientProps {
   knowledge: KnowledgeObject;
 }
 
+function ConfettiEffect() {
+  const colors = ['#D1FF00', '#FF007F', '#00F0FF', '#FFB700', '#A020F0'];
+  const particles = Array.from({ length: 80 }).map((_, i) => {
+    const left = Math.random() * 100; // %
+    const delay = Math.random() * 3; // s
+    const duration = 2.5 + Math.random() * 2.5; // s
+    const size = 6 + Math.random() * 8; // px
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const shape = Math.random() > 0.5 ? 'rounded-full' : 'rotate-45';
+    
+    return { id: i, left, delay, duration, size, color, shape };
+  });
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className={`absolute top-[-20px] ${p.shape} animate-fall opacity-80`}
+          style={{
+            left: `${p.left}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            backgroundColor: p.color,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            animationIterationCount: 1,
+            animationFillMode: 'forwards',
+          }}
+        />
+      ))}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes fall {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(110vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        .animate-fall {
+          animation-name: fall;
+          animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+      `}} />
+    </div>
+  );
+}
+
 export function LearningPageClient({ knowledge }: LearningPageClientProps) {
   const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const videoId = extractYoutubeId(knowledge.source.url);
   const maxresBg = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : knowledge.thumbnail;
   const hqBg = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : knowledge.thumbnail;
   const [bgSrc, setBgSrc] = useState(maxresBg);
 
+  useEffect(() => {
+    const handleCourseCompleted = (e: CustomEvent<{ videoId: string }>) => {
+      setShowConfetti(true);
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 6000);
+      return () => clearTimeout(timer);
+    };
+
+    window.addEventListener('youlearn:course-completed' as any, handleCourseCompleted);
+    return () => window.removeEventListener('youlearn:course-completed' as any, handleCourseCompleted);
+  }, []);
+
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-[#D1FF00] selection:text-black">
+      {showConfetti && <ConfettiEffect />}
       {/* Full-Page Fixed Background Thumbnail with Crisp Backdrop */}
       {bgSrc && (
         <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">

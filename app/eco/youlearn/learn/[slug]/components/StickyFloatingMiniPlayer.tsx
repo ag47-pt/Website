@@ -178,6 +178,14 @@ export function StickyFloatingMiniPlayer({
             if (info.muted !== undefined) {
               localStorage.setItem('youlearn:muted', String(info.muted));
             }
+            if (info.playerState === 0) {
+              if (videoId) {
+                localStorage.setItem(`youlearn:completed:${videoId}`, 'true');
+                window.dispatchEvent(new CustomEvent('youlearn:course-completed', {
+                  detail: { videoId }
+                }));
+              }
+            }
           }
         } catch (e) {
           // not a youtube JSON message

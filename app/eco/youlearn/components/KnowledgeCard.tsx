@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, Zap, ArrowUpRight, Video, BookOpen, FileText, CheckCircle2, User, Sparkles } from 'lucide-react';
 import { LibraryEntry } from '@/eco/youlearn/schema/types';
-import { formatDurationHuman } from '@/eco/youlearn/lib/provenance';
+import { formatDurationHuman, extractYoutubeId } from '@/eco/youlearn/lib/provenance';
 
 interface KnowledgeCardProps {
   entry: LibraryEntry;
@@ -13,6 +13,30 @@ interface KnowledgeCardProps {
 }
 
 export function KnowledgeCard({ entry, featured }: KnowledgeCardProps) {
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  useEffect(() => {
+    const videoId = extractYoutubeId(entry.sourceUrl);
+    if (!videoId) return;
+
+    const completed = localStorage.getItem(`youlearn:completed:${videoId}`) === 'true';
+    setIsCompleted(completed);
+
+    if (completed) {
+      setProgressPercent(100);
+    } else {
+      const savedTime = localStorage.getItem(`youlearn:resume:${videoId}`);
+      if (savedTime) {
+        const seconds = Number(savedTime);
+        const durationSeconds = entry.originalDurationMinutes * 60;
+        if (seconds > 0 && durationSeconds > 0) {
+          const pct = Math.min(Math.round((seconds / durationSeconds) * 100), 100);
+          setProgressPercent(pct);
+        }
+      }
+    }
+  }, [entry.sourceUrl, entry.originalDurationMinutes]);
   const sourceIcon = () => {
     switch (entry.sourceType) {
       case 'youtube':
@@ -107,6 +131,16 @@ export function KnowledgeCard({ entry, featured }: KnowledgeCardProps) {
               {entry.compressionRatioPercent}% faster
             </span>
           </div>
+
+          {/* Progress Bar Overlay */}
+          {progressPercent > 0 && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-10">
+              <div 
+                className={`h-full transition-all duration-300 ${isCompleted ? 'bg-emerald-400' : 'bg-[#D1FF00]'}`} 
+                style={{ width: `${progressPercent}%` }} 
+              />
+            </div>
+          )}
         </div>
 
         {/* Title and Description */}
@@ -158,10 +192,22 @@ export function KnowledgeCard({ entry, featured }: KnowledgeCardProps) {
 
       {/* Bottom Footer CTA */}
       <div className="border-t border-white/10 pt-4 mt-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-zinc-400">
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-          <span>Interactive Guide Ready</span>
-        </div>
+        {isCompleted ? (
+          <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold font-mono uppercase tracking-wide">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Concluído</span>
+          </div>
+        ) : progressPercent > 0 ? (
+          <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-mono">
+            <span className="h-2 w-2 rounded-full bg-[#D1FF00] animate-pulse" />
+            <span>{progressPercent}% Assistido</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono">
+            <span className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
+            <span>Não iniciado</span>
+          </div>
+        )}
 
         <Link
           href={`/eco/youlearn/learn/${entry.slug}`}
