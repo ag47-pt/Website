@@ -161,7 +161,7 @@ export function HeroSection({ onExploreClick, onDemoClick }: HeroSectionProps) {
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/imgs/universo_hero_dashboard.jpg"
+                src="/imgs/universo_hero_dashboard.webp"
                 alt="Agência 47 Engineering Dashboard Telemetry"
                 className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-700"
               />

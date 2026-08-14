@@ -265,7 +265,7 @@ export function InteractiveLabsEngine() {
               <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full rounded-2xl overflow-hidden border border-white/10 bg-black/60">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/imgs/service_ai_agent.jpg"
+                  src="/imgs/service_ai_agent.webp"
                   alt="AI Autonomous Agent Neural Graph"
                   className="w-full h-full object-cover object-center opacity-85 hover:opacity-100 transition-opacity duration-500"
                 />

@@ -292,7 +292,7 @@ export const UNIVERSO_2D_DATA = {
       iconName: 'Brain',
       accentColor: '#10b981',
       linkHref: '/eco',
-      imageUrl: '/imgs/service_ai_agent.jpg',
+      imageUrl: '/imgs/service_ai_agent.webp',
     },
   ] as ServiceItem[],
 
@@ -407,7 +407,7 @@ export const UNIVERSO_2D_DATA = {
       path: '/nexus',
       featuredMetric: { label: 'Agentes Ativos', value: '12' },
       badgeText: 'AGENTIC CORE',
-      imageUrl: '/imgs/service_ai_agent.jpg',
+      imageUrl: '/imgs/service_ai_agent.webp',
     },
   ] as PortfolioProject[],
 

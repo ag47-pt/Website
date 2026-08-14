@@ -103,8 +103,8 @@ export const restaurants: RestaurantLP[] = [
       }
     ],
     giftCards: [
-      { id: 'gc-25', name: 'Experiência Brunch', value: '25€', description: 'O presente perfeito para um domingo preguiçoso.', img: '/imgs/gc_brunch.webp' },
-      { id: 'gc-50', name: 'Jantar Romântico', value: '50€', description: 'Menu completo para dois com vinho incluído.', img: '/imgs/gc_dinner.webp' }
+      { id: 'gc-25', name: 'Experiência Brunch', value: '25€', description: 'O presente perfeito para um domingo preguiçoso.', img: '/imgs/pizza-base.png' },
+      { id: 'gc-50', name: 'Jantar Romântico', value: '50€', description: 'Menu completo para dois com vinho incluído.', img: '/imgs/slake-base.png' }
     ],
     reservationSettings: {
       maxPartySize: 12,
@@ -182,7 +182,7 @@ export const restaurants: RestaurantLP[] = [
       }
     ],
     giftCards: [
-      { id: 'gc-labs', name: 'Labs Access Pass', value: '100€', description: 'Priority access to all experimental menus.', img: '/imgs/gc_labs.webp' }
+      { id: 'gc-labs', name: 'Labs Access Pass', value: '100€', description: 'Priority access to all experimental menus.', img: '/imgs/estadio-universo.webp' }
     ],
     reservationSettings: {
       maxPartySize: 4,
