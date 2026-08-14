@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Sparkles, Search, Compass, ExternalLink, ArrowLeft, Layers } from 'lucide-react';
+import { BookOpen, Sparkles, Search, Compass, ExternalLink, ArrowLeft, Layers, Plus } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { IngestVideoModal } from './IngestVideoModal';
 
 interface YouLearnNavbarProps {
   currentSlug?: string;
@@ -13,12 +14,14 @@ interface YouLearnNavbarProps {
 
 export function YouLearnNavbar({ currentSlug, isLearningPage, learningTitle }: YouLearnNavbarProps) {
   const { theme } = useTheme();
+  const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/80 backdrop-blur-xl transition-all duration-300">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        
         {/* Brand & Breadcrumbs */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-[200px]">
           <Link
             href="/eco/youlearn"
             className="group flex items-center gap-2.5 transition-transform hover:scale-102"
@@ -41,24 +44,36 @@ export function YouLearnNavbar({ currentSlug, isLearningPage, learningTitle }: Y
           </Link>
 
           {isLearningPage && learningTitle && (
-            <div className="hidden md:flex items-center gap-2 border-l border-white/10 pl-3">
+            <div className="hidden xl:flex items-center gap-2 border-l border-white/10 pl-3">
               <span className="text-zinc-500">/</span>
-              <span className="max-w-[280px] truncate text-xs font-medium text-zinc-300" title={learningTitle}>
+              <span className="max-w-[180px] truncate text-xs font-medium text-zinc-300" title={learningTitle}>
                 {learningTitle}
               </span>
             </div>
           )}
         </div>
 
+        {/* Center Actions (Ingest Video) */}
+        <div className="flex items-center justify-center flex-1 mx-4">
+          <button
+            onClick={() => setIsIngestModalOpen(true)}
+            className="group flex items-center gap-2 rounded-full border border-[#D1FF00]/30 bg-[#D1FF00]/5 px-4 sm:px-5 py-2 text-xs font-bold text-white hover:bg-[#D1FF00]/10 hover:border-[#D1FF00] transition-all hover:scale-102 hover:shadow-[0_0_15px_rgba(209,255,0,0.15)] shadow-md"
+          >
+            <Plus className="h-4 w-4 text-[#D1FF00] group-hover:rotate-90 transition-transform duration-300" />
+            <span>Ingerir Vídeo</span>
+          </button>
+        </div>
+
         {/* Navigation & Action Links */}
-        <nav className="flex items-center gap-3 sm:gap-4">
+        <nav className="flex items-center gap-3 sm:gap-4 min-w-[200px] justify-end">
           {isLearningPage ? (
             <Link
               href="/eco/youlearn"
               className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-zinc-900/80 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-[#D1FF00]/50 hover:text-white transition-all"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back to Library</span>
+              <span className="hidden sm:inline">Back to Library</span>
+              <span className="sm:hidden">Voltar</span>
             </Link>
           ) : (
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-400">
@@ -89,6 +104,12 @@ export function YouLearnNavbar({ currentSlug, isLearningPage, learningTitle }: Y
           </Link>
         </nav>
       </div>
+
+      {/* Autonomous Ingestion Modal */}
+      <IngestVideoModal
+        isOpen={isIngestModalOpen}
+        onClose={() => setIsIngestModalOpen(false)}
+      />
     </header>
   );
 }
