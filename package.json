@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "crypto-agent": "tsx --tsconfig agent/crypto/tsconfig.json agent/crypto/index.ts"
+    "crypto-agent": "tsx --tsconfig agent/crypto/tsconfig.json agent/crypto/index.ts",
+    "youlearn:ingest": "tsx eco/youlearn/scripts/ingest.ts"
   },
   "dependencies": {
     "@google/adk": "^1.1.0",

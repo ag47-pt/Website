@@ -1,3 +1,4 @@
+import { teoriaSintergicaJacoboGrinberg } from './teoria-sintergica-jacobo-grinberg';
 import { jacoboGrinbergTeoriaSintergica } from './jacobo-grinberg-teoria-sintergica';
 import { introToLargeLanguageModels } from './intro-to-large-language-models';
 import { KnowledgeObject, LibraryEntry } from '../schema/types';
@@ -14,6 +15,7 @@ export const DEMO_KNOWLEDGE_OBJECTS: KnowledgeObject[] = [
   agenticRagProd,
   introToLargeLanguageModels,
   jacoboGrinbergTeoriaSintergica,
+  teoriaSintergicaJacoboGrinberg,
 ];
 
 export const DEMO_LIBRARY_ENTRIES: LibraryEntry[] = DEMO_KNOWLEDGE_OBJECTS.map(deriveLibraryEntry);
