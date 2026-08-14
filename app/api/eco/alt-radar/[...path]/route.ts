@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const RADAR_API_BASE = process.env.ALT_RADAR_API_URL || 'http://127.0.0.1:8000/api/v1';
+const RADAR_API_BASE = process.env.ALT_RADAR_API_URL || 'http://127.0.0.1:8000';
 
 export async function GET(
   request: NextRequest,
@@ -23,13 +23,13 @@ export async function GET(
     if (!res.ok) {
       return NextResponse.json(
         {
-          status: 'degraded',
+          status: 'error',
           module: 'eco/alt-radar',
           path: subPath,
-          message: 'Backend Python service starting or offline, returning fallback telemetry.',
+          message: 'Backend Python service starting or offline.',
           timestamp: new Date().toISOString(),
         },
-        { status: 200 }
+        { status: 503 }
       );
     }
 
@@ -38,13 +38,13 @@ export async function GET(
   } catch (_err) {
     return NextResponse.json(
       {
-        status: 'online_proxy',
+        status: 'error',
         module: 'eco/alt-radar',
         path: subPath,
-        message: 'AG47 Eco Proxy bridge active. Backend microservice standby at eco/alt-radar/apps/api.',
+        message: 'Backend microservice unreachable.',
         timestamp: new Date().toISOString(),
       },
-      { status: 200 }
+      { status: 503 }
     );
   }
 }

@@ -25,7 +25,7 @@ import {
 } from "./schemas";
 
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api/eco/alt-radar").replace(/\/$/, "");
 const REQUEST_TIMEOUT_MS = 12_000;
 
 export class ApiError extends Error {
