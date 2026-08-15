@@ -658,7 +658,7 @@ export function EcoClient() {
       </header>
 
       {/* Main Content Area - Balanced symmetrical spacing */}
-      <main className="relative pt-24 sm:pt-28 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+      <main className="relative pt-20 sm:pt-22 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

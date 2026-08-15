@@ -16,7 +16,7 @@ export function YouLearnHero({ entries, searchQuery, onSearchChange }: YouLearnH
   const stats = getLibraryStats(entries);
 
   return (
-    <section className="relative overflow-hidden border-b border-white/10 bg-gradient-to-b from-black via-zinc-950 to-black py-12 sm:py-16">
+    <section className="relative overflow-hidden border-b border-white/10 bg-gradient-to-b from-black via-zinc-950 to-black pt-5 pb-12 sm:pt-7 sm:pb-16">
       {/* Background Decorative Grid & Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(209,255,0,0.12),rgba(255,255,255,0))] pointer-events-none" />
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#D1FF00]/5 blur-[120px] rounded-full pointer-events-none" />
@@ -24,7 +24,7 @@ export function YouLearnHero({ entries, searchQuery, onSearchChange }: YouLearnH
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center">
           {/* Breadcrumb Navigation */}
-          <div className="mb-4">
+          <div className="mb-5 sm:mb-6">
             <GlobalBreadcrumb />
           </div>
 

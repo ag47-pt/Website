@@ -476,7 +476,7 @@ export default function LabsLayout({
       )}
 
       {/* Main Content Area - Balanced symmetrical top spacing */}
-      <main className={`relative pb-20 px-4 sm:px-6 max-w-7xl mx-auto ${pathname.includes('/oracle-trader') ? 'pt-8' : 'pt-24 sm:pt-28'}`}>
+      <main className={`relative pb-20 px-4 sm:px-6 max-w-7xl mx-auto ${pathname.includes('/oracle-trader') ? 'pt-8' : 'pt-20 sm:pt-22'}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

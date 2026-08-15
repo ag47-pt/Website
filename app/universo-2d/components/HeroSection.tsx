@@ -27,7 +27,7 @@ export function HeroSection({ onExploreClick, onDemoClick }: HeroSectionProps) {
   const { brand } = UNIVERSO_2D_DATA;
 
   return (
-    <section id="overview" className="relative pt-24 pb-16 md:pt-32 md:pb-24 px-4 sm:px-6 overflow-hidden">
+    <section id="overview" className="relative pt-18 pb-16 md:pt-24 md:pb-24 px-4 sm:px-6 overflow-hidden">
       {/* Ambient Glow dinâmico acoplado ao tema ativo */}
       <div 
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] blur-[140px] rounded-full pointer-events-none opacity-20 transition-all duration-700"

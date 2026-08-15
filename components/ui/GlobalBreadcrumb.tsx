@@ -16,6 +16,7 @@ interface GlobalBreadcrumbProps {
   items?: BreadcrumbItem[];
   className?: string;
   showHome?: boolean;
+  enableScrollFade?: boolean;
 }
 
 const ROUTE_NAME_MAP: Record<string, { label: string; icon?: React.ReactNode }> = {
@@ -31,9 +32,29 @@ const ROUTE_NAME_MAP: Record<string, { label: string; icon?: React.ReactNode }> 
   'learn': { label: 'AULA', icon: <BookOpen className="w-3 h-3" /> },
 };
 
-export function GlobalBreadcrumb({ items: customItems, className = '', showHome = true }: GlobalBreadcrumbProps) {
+export function GlobalBreadcrumb({ 
+  items: customItems, 
+  className = '', 
+  showHome = true,
+  enableScrollFade = true
+}: GlobalBreadcrumbProps) {
   const pathname = usePathname();
   const { theme } = useTheme();
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  // Micro-transição de opacidade/fade sutil durante leitura em scroll profundo
+  React.useEffect(() => {
+    if (!enableScrollFade) return;
+
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 80;
+      setIsScrolled(scrolled);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [enableScrollFade]);
 
   // Se não forem passados itens customizados, calcula automaticamente da rota
   const breadcrumbItems: BreadcrumbItem[] = React.useMemo(() => {
@@ -76,7 +97,11 @@ export function GlobalBreadcrumb({ items: customItems, className = '', showHome 
   return (
     <nav
       aria-label="Breadcrumb"
-      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] backdrop-blur-xl border border-white/10 text-[9px] font-mono tracking-widest uppercase transition-all shadow-[0_4px_20px_rgba(0,0,0,0.3)] ${className}`}
+      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] backdrop-blur-xl border border-white/10 text-[9px] font-mono tracking-widest uppercase transition-all duration-500 ease-out shadow-[0_4px_20px_rgba(0,0,0,0.3)] ${
+        isScrolled
+          ? 'opacity-55 hover:opacity-100 hover:scale-[1.02] hover:bg-white/[0.08] hover:border-white/25'
+          : 'opacity-100 hover:scale-[1.01]'
+      } ${className}`}
     >
       {breadcrumbItems.map((item, index) => {
         const isLast = index === breadcrumbItems.length - 1;
