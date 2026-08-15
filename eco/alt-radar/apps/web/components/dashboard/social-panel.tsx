@@ -6,10 +6,11 @@ import { useSocial } from "@/eco/alt-radar/apps/web/lib/api/query";
 import { formatNumber, formatPercent, formatRatio, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 const SocialChart = dynamic(() => import("./social-chart").then((module) => module.SocialChart), {
   ssr: false,
-  loading: () => <div className="skeleton h-24 w-full" />,
+  loading: () => <div className="h-24 w-full animate-pulse rounded-xl bg-white/5" />,
 });
 
 interface SocialMetricProps {
@@ -20,13 +21,13 @@ interface SocialMetricProps {
 
 function SocialMetric({ label, value, tone = "neutral" }: SocialMetricProps) {
   const toneClass = {
-    positive: "text-[#d1ff00]",
+    positive: "text-emerald-400",
     warning: "text-amber-400",
     critical: "text-rose-400",
     neutral: "text-white",
   }[tone];
   return (
-    <div className="flex items-center justify-between gap-3 py-1.5 border-b border-zinc-800/50 last:border-0 font-mono">
+    <div className="flex items-center justify-between gap-3 py-1.5 border-b border-white/5 last:border-0 font-mono">
       <dt className="text-[0.68rem] text-zinc-400">{label}</dt>
       <dd className={`text-[0.72rem] font-bold ${toneClass}`}>{value}</dd>
     </div>
@@ -41,13 +42,16 @@ export function SocialPanel({
   compact?: boolean;
 }) {
   const social = useSocial(tokenId);
+  const { primary } = useEcoTheme();
 
   if (tokenId === null)
     return (
-      <EmptyState
-        title="Selecione um token"
-        message="As métricas sociais serão contextualizadas aqui."
-      />
+      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+        <EmptyState
+          title="Selecione um token"
+          message="As métricas sociais serão contextualizadas aqui."
+        />
+      </div>
     );
   if (social.isLoading) return <PanelSkeleton rows={compact ? 4 : 8} />;
   if (social.isError)
@@ -56,34 +60,36 @@ export function SocialPanel({
     );
   if (!social.data?.latest) {
     return (
-      <EmptyState
-        title="Sem sinais sociais"
-        message="Nenhum provider autorizado entregou dados para este token."
-      />
+      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+        <EmptyState
+          title="Sem sinais sociais"
+          message="Nenhum provider autorizado entregou dados para este token."
+        />
+      </div>
     );
   }
 
   const latest = social.data.latest;
   return (
-    <section className="p-3.5" aria-labelledby={`social-title-${tokenId}`}>
+    <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-3.5 shadow-xl" aria-labelledby={`social-title-${tokenId}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="eyebrow">Comunidade</p>
+          <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">Comunidade</p>
           <h2
             id={`social-title-${tokenId}`}
-            className="mt-1 flex items-center gap-2 text-sm font-extrabold"
+            className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans"
           >
-            <UsersRound className="size-4 text-radar-neutral" /> Social / Telegram
+            <UsersRound className="size-4" style={{ color: primary }} /> Social / Telegram
           </h2>
         </div>
-        <Radio className="size-4 text-radar-positive" aria-label="Série temporal disponível" />
+        <Radio className="size-4 animate-pulse" style={{ color: primary }} aria-label="Série temporal disponível" />
       </div>
 
       <div className="mt-3">
         <DataBadges demo={social.data.demo_mode || latest.is_demo} />
       </div>
       {(social.data.demo_mode || latest.is_demo) && (
-        <p className="mt-2 rounded-lg border border-radar-warning/20 bg-[#2c220d]/65 px-2.5 py-2 text-[0.6rem] leading-4 text-radar-warning">
+        <p className="mt-2 rounded-xl border border-amber-500/30 bg-amber-950/40 px-2.5 py-2 font-mono text-[0.6rem] leading-4 text-amber-300">
           Provider de demonstração. Estes valores são simulados e não representam atividade real no
           Telegram.
         </p>
@@ -91,7 +97,7 @@ export function SocialPanel({
 
       {/* Hype Velocity Gauge */}
       {latest.messages_per_minute !== null && (
-        <div className="mt-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-2 font-mono text-[0.62rem]">
+        <div className="mt-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 font-mono text-[0.62rem]">
           <div className="flex items-center justify-between">
             <span className="text-zinc-400 font-bold flex items-center gap-1">
               ⚡ Hype Velocity:
@@ -99,7 +105,7 @@ export function SocialPanel({
             <span
               className={`font-bold ${
                 latest.messages_per_minute >= 30
-                  ? "text-[#d1ff00]"
+                  ? "text-emerald-400"
                   : latest.messages_per_minute >= 15
                     ? "text-amber-400"
                     : "text-zinc-400"
@@ -113,14 +119,14 @@ export function SocialPanel({
             </span>
           </div>
 
-          <div className="mt-1.5 h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+          <div className="mt-1.5 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
             <div
               style={{
                 width: `${Math.min(100, (latest.messages_per_minute / 45) * 100)}%`,
               }}
               className={`h-full rounded-full transition-all ${
                 latest.messages_per_minute >= 30
-                  ? "bg-[#d1ff00] shadow-[0_0_8px_rgba(209,255,0,0.6)]"
+                  ? "bg-gradient-to-r from-cyan-500 to-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
                   : "bg-cyan-400"
               }`}
             />
@@ -133,7 +139,7 @@ export function SocialPanel({
         </div>
       )}
 
-      <dl className="mt-2 divide-y divide-zinc-800/60 font-mono">
+      <dl className="mt-2 divide-y divide-white/5 font-mono">
         <SocialMetric label="Membros" value={formatNumber(latest.members)} />
         <SocialMetric
           label="Crescimento 1h"
@@ -192,14 +198,14 @@ export function SocialPanel({
         )}
       </dl>
 
-      <div className="mt-2 border-t border-radar-border pt-2">
-        <div className="mb-1 flex items-center gap-1.5 text-[0.59rem] font-bold text-radar-subtle">
-          <MessageCircle className="size-3" /> Mensagens por minuto
+      <div className="mt-2 border-t border-white/10 pt-2 font-mono">
+        <div className="mb-1 flex items-center gap-1.5 text-[0.59rem] font-bold text-zinc-400">
+          <MessageCircle className="size-3 text-cyan-400" /> Mensagens por minuto
         </div>
         <SocialChart social={social.data} />
       </div>
 
-      <p className="mt-1 flex items-center gap-1 text-[0.58rem] text-radar-subtle">
+      <p className="mt-1 flex items-center gap-1 font-mono text-[0.58rem] text-zinc-500">
         <Bot className="size-3" /> Fonte: {latest.source} • qualidade {latest.data_quality ?? "N/D"}
       </p>
     </section>

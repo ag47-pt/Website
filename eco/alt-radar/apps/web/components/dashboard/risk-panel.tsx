@@ -16,7 +16,7 @@ interface RiskSignal {
 }
 
 const levelConfig: Record<SignalLevel, { label: string; icon: typeof Info; className: string }> = {
-  informative: { label: "Informativo", icon: ShieldCheck, className: "text-[#d1ff00]" },
+  informative: { label: "Informativo", icon: ShieldCheck, className: "text-emerald-400" },
   attention: { label: "Atenção", icon: AlertTriangle, className: "text-amber-400" },
   high: { label: "Alto risco", icon: AlertTriangle, className: "text-orange-400" },
   critical: { label: "Crítico", icon: AlertOctagon, className: "text-rose-400" },
@@ -153,42 +153,46 @@ export function RiskPanel({
 
   if (tokenId === null)
     return (
-      <EmptyState
-        title="Selecione um token"
-        message="Os sinais de risco surgirão aqui sem assumir que dados ausentes são seguros."
-      />
+      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+        <EmptyState
+          title="Selecione um token"
+          message="Os sinais de risco surgirão aqui sem assumir que dados ausentes são seguros."
+        />
+      </div>
     );
   if (risk.isLoading) return <PanelSkeleton rows={compact ? 4 : 8} />;
   if (risk.isError)
     return <ErrorState message={getErrorMessage(risk.error)} retry={() => void risk.refetch()} />;
   if (!risk.data)
     return (
-      <EmptyState
-        title="Sem avaliação de risco"
-        message="A ausência desta leitura não representa segurança."
-      />
+      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+        <EmptyState
+          title="Sem avaliação de risco"
+          message="A ausência desta leitura não representa segurança."
+        />
+      </div>
     );
 
   const signals = getRiskSignals(risk.data);
   const visibleSignals = compact ? signals.slice(0, 5) : signals;
 
   return (
-    <section className="p-3.5" aria-labelledby={`risk-title-${tokenId}`} data-testid="risk-panel">
+    <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-3.5 shadow-xl" aria-labelledby={`risk-title-${tokenId}`} data-testid="risk-panel">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="eyebrow">Contrato e distribuição</p>
+          <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">Contrato e Distribuição</p>
           <h2
             id={`risk-title-${tokenId}`}
-            className="mt-1 flex items-center gap-2 text-sm font-extrabold"
+            className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans"
           >
-            <AlertOctagon className="size-4 text-radar-critical" /> Sinais de risco
+            <AlertOctagon className="size-4 text-rose-400" /> Sinais de Risco
           </h2>
         </div>
-        <div className="rounded-md border border-radar-critical/25 bg-[#32171c] px-2 py-1 text-right">
-          <p className="mono text-xs font-extrabold text-radar-critical">
+        <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 px-2.5 py-1 text-right font-mono">
+          <p className="text-xs font-black text-rose-400">
             {`${risk.data.risk_score.toFixed(1)}/10`}
           </p>
-          <p className="text-[0.53rem] font-bold uppercase text-radar-muted">
+          <p className="text-[0.53rem] font-bold uppercase text-zinc-400">
             {riskLabel(risk.data.risk_score)}
           </p>
         </div>
@@ -200,24 +204,24 @@ export function RiskPanel({
 
       {risk.data.critical_flags.length > 0 && (
         <div
-          className="mt-3 rounded-lg border border-radar-critical/35 bg-[#32171c] p-2.5"
+          className="mt-3 rounded-xl border border-rose-500/35 bg-rose-950/50 p-3 font-mono"
           role="alert"
         >
           {risk.data.critical_flags.map((flag) => (
-            <p key={flag} className="text-[0.65rem] font-bold leading-4 text-radar-critical">
+            <p key={flag} className="text-[0.65rem] font-bold leading-4 text-rose-300">
               {flag}
             </p>
           ))}
         </div>
       )}
 
-      <dl className="mt-3 divide-y divide-radar-border/70">
+      <dl className="mt-3 divide-y divide-white/5 font-mono">
         {visibleSignals.map((signal) => {
           const config = levelConfig[signal.level];
           const Icon = config.icon;
           return (
             <div key={signal.label} className="grid grid-cols-[1fr_auto] items-center gap-2 py-2">
-              <dt className="flex min-w-0 items-center gap-2 text-[0.65rem] text-radar-muted">
+              <dt className="flex min-w-0 items-center gap-2 text-[0.65rem] text-zinc-400">
                 <Icon
                   aria-label={config.label}
                   className={`size-3.5 shrink-0 ${config.className}`}
@@ -240,8 +244,8 @@ export function RiskPanel({
       </dl>
 
       {!compact && risk.data.flags.length > 0 && (
-        <div className="mt-3 border-t border-radar-border pt-3">
-          <p className="eyebrow">Flags do provider</p>
+        <div className="mt-3 border-t border-white/10 pt-3 font-mono">
+          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Flags do Provider</p>
           <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
             {risk.data.flags.map((flag) => {
               const mappedLevel: SignalLevel =
@@ -257,10 +261,10 @@ export function RiskPanel({
               return (
                 <div
                   key={flag.code}
-                  className="rounded-lg border border-radar-border bg-black/10 p-2.5"
+                  className="rounded-xl border border-white/5 bg-white/[0.03] p-2.5"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[0.63rem] font-bold text-radar-ink">{flag.label}</p>
+                    <p className="text-[0.63rem] font-bold text-white">{flag.label}</p>
                     <span
                       className={`text-[0.5rem] font-extrabold uppercase ${levelConfig[mappedLevel].className}`}
                     >
@@ -268,7 +272,7 @@ export function RiskPanel({
                     </span>
                   </div>
                   {flag.description && (
-                    <p className="mt-1 text-[0.58rem] leading-4 text-radar-subtle">
+                    <p className="mt-1 text-[0.58rem] leading-4 text-zinc-400">
                       {flag.description}
                     </p>
                   )}
@@ -279,7 +283,7 @@ export function RiskPanel({
         </div>
       )}
 
-      <div className="mt-3 border-t border-radar-border pt-2 text-[0.59rem] leading-4 text-radar-subtle">
+      <div className="mt-3 border-t border-white/10 pt-2 font-mono text-[0.59rem] leading-4 text-zinc-500">
         Fonte: {risk.data.source} • qualidade {risk.data.data_quality ?? "N/D"}
         {risk.data.is_demo && " • leitura simulada, não verificação on-chain"}
       </div>

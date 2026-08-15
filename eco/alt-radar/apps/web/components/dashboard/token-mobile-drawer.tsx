@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Calculator, FileDown, ShieldCheck, TrendingUp, X } from "lucide-react";
+import { Calculator, ShieldCheck, TrendingUp, X } from "lucide-react";
 import type { Opportunity } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
-import { CopyButton } from "@/eco/alt-radar/apps/web/components/shared/copy-button";
 import { TokenAnalysis } from "./token-analysis";
 import { SwapSimulator } from "./swap-simulator";
 import { PaperTrading } from "./paper-trading";
@@ -35,36 +34,35 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
 
   const token = opportunity.token;
   const market = opportunity.market;
-  const risk = opportunity.risk;
   const score = opportunity.score;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end xl:hidden">
       {/* Dark backdrop with blur */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Drawer Card */}
-      <div className="relative z-10 flex max-h-[88vh] w-full flex-col rounded-t-3xl border-t border-zinc-800 bg-zinc-950 p-4 text-white shadow-2xl font-mono">
+      <div className="relative z-10 flex max-h-[88vh] w-full flex-col rounded-t-3xl border-t border-white/10 bg-[#050c12]/95 backdrop-blur-2xl p-4 text-white shadow-2xl font-mono">
         {/* Drag handle */}
-        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-zinc-800" />
+        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/20" />
 
         {/* Drawer Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#d1ff00]/15 text-[#d1ff00] font-bold text-sm">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-cyan-500/30 bg-cyan-950/50 text-cyan-300 font-bold text-sm shadow-[0_0_8px_rgba(0,217,255,0.2)]">
               {token.symbol.slice(0, 1)}
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h3 className="truncate text-sm font-bold text-white">{token.name}</h3>
+                <h3 className="truncate text-sm font-bold text-white font-sans">{token.name}</h3>
                 <span className="text-xs text-zinc-400 font-normal">{token.symbol}</span>
                 <ChainBadge chain={token.chain} />
               </div>
-              <p className="text-[0.62rem] text-zinc-500 truncate">
+              <p className="text-[0.62rem] text-zinc-400 truncate font-mono">
                 Preço: ${market?.price_usd ?? "N/D"} • Score: {score?.final_score ?? "N/D"}/10
               </p>
             </div>
@@ -73,7 +71,7 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
           <button
             type="button"
             onClick={onClose}
-            className="grid size-8 place-items-center rounded-full border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            className="grid size-8 place-items-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             aria-label="Fechar Gaveta"
           >
             <X className="size-4" />
@@ -81,13 +79,13 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
         </div>
 
         {/* Drawer Tab Switcher */}
-        <div className="mt-2.5 flex items-center gap-1 overflow-x-auto border-b border-zinc-800/80 pb-2 text-[0.68rem]">
+        <div className="mt-2.5 flex items-center gap-1 overflow-x-auto border-b border-white/10 pb-2 text-[0.68rem] custom-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("analysis")}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "analysis"
-                ? "border border-[#d1ff00]/40 bg-[#d1ff00]/15 text-[#d1ff00] font-bold"
+                ? "border border-cyan-500/40 bg-cyan-500/15 text-cyan-300 font-bold shadow-[0_0_8px_rgba(0,217,255,0.15)]"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -96,9 +94,9 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
           <button
             type="button"
             onClick={() => setActiveTab("swap")}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "swap"
-                ? "border border-[#d1ff00]/40 bg-[#d1ff00]/15 text-[#d1ff00] font-bold"
+                ? "border border-cyan-500/40 bg-cyan-500/15 text-cyan-300 font-bold shadow-[0_0_8px_rgba(0,217,255,0.15)]"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -108,9 +106,9 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
           <button
             type="button"
             onClick={() => setActiveTab("trade")}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "trade"
-                ? "border border-[#d1ff00]/40 bg-[#d1ff00]/15 text-[#d1ff00] font-bold"
+                ? "border border-cyan-500/40 bg-cyan-500/15 text-cyan-300 font-bold shadow-[0_0_8px_rgba(0,217,255,0.15)]"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -120,9 +118,9 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
           <button
             type="button"
             onClick={() => setActiveTab("risk")}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "risk"
-                ? "border border-[#d1ff00]/40 bg-[#d1ff00]/15 text-[#d1ff00] font-bold"
+                ? "border border-cyan-500/40 bg-cyan-500/15 text-cyan-300 font-bold shadow-[0_0_8px_rgba(0,217,255,0.15)]"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -132,7 +130,7 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
         </div>
 
         {/* Drawer Scrollable Content */}
-        <div className="mt-3 overflow-y-auto pr-1 pb-4">
+        <div className="mt-3 overflow-y-auto pr-1 pb-4 custom-scrollbar">
           {activeTab === "analysis" && (
             <TokenAnalysis holdersCount={opportunity.holders_count} tokenId={token.id} />
           )}

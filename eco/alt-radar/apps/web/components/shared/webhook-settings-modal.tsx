@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Globe, Key, Lock, Radio, Send, ShieldAlert, Sparkles, X } from "lucide-react";
+import { Check, Globe, Key, Radio, Send, X } from "lucide-react";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 interface WebhookConfig {
   url: string;
@@ -27,6 +28,7 @@ export function WebhookSettingsModal({ isOpen, onClose }: WebhookSettingsModalPr
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ status: "success" | "error"; message: string } | null>(null);
   const [saved, setSaved] = useState(false);
+  const { primary } = useEcoTheme();
 
   useEffect(() => {
     try {
@@ -83,19 +85,19 @@ export function WebhookSettingsModal({ isOpen, onClose }: WebhookSettingsModalPr
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-5 font-mono text-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-black/80 p-5 font-mono text-white shadow-2xl backdrop-blur-2xl">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
-            <Radio className="size-4 text-[#d1ff00]" />
+            <Radio className="size-4" style={{ color: primary }} />
             <div>
-              <h3 className="text-sm font-bold text-white">Outbound Webhooks & HMAC</h3>
-              <p className="text-[0.62rem] text-zinc-500">Transmissão segura de alertas em tempo real</p>
+              <h3 className="text-sm font-bold text-white">Outbound Webhooks &amp; HMAC</h3>
+              <p className="text-[0.62rem] text-zinc-400">Transmissão segura de alertas em tempo real</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="grid size-8 place-items-center rounded-full border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            className="grid size-8 place-items-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="size-4" />
           </button>
@@ -107,14 +109,14 @@ export function WebhookSettingsModal({ isOpen, onClose }: WebhookSettingsModalPr
             <label className="text-[0.62rem] font-bold uppercase tracking-wider text-zinc-400">
               Webhook Endpoint (Discord, Telegram ou HTTP):
             </label>
-            <div className="mt-1 flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2">
-              <Globe className="size-4 text-zinc-500 shrink-0" />
+            <div className="mt-1 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 focus-within:bg-black/60 transition-colors">
+              <Globe className="size-4 text-zinc-400 shrink-0" />
               <input
                 type="url"
                 value={config.url}
                 onChange={(e) => setConfig({ ...config, url: e.target.value })}
                 placeholder="https://discord.com/api/webhooks/... ou https://api.telegram.org/..."
-                className="w-full bg-transparent text-xs text-white placeholder-zinc-600 focus:outline-none"
+                className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
               />
             </div>
           </div>
@@ -124,18 +126,18 @@ export function WebhookSettingsModal({ isOpen, onClose }: WebhookSettingsModalPr
             <label className="text-[0.62rem] font-bold uppercase tracking-wider text-zinc-400">
               Chave Secreta de Assinatura (HMAC Secret):
             </label>
-            <div className="mt-1 flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2">
-              <Key className="size-4 text-[#d1ff00] shrink-0" />
+            <div className="mt-1 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 focus-within:bg-black/60 transition-colors">
+              <Key className="size-4 shrink-0" style={{ color: primary }} />
               <input
                 type="text"
                 value={config.secret}
                 onChange={(e) => setConfig({ ...config, secret: e.target.value })}
                 placeholder="sec_ag47_..."
-                className="w-full bg-transparent text-xs text-white placeholder-zinc-600 focus:outline-none"
+                className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
               />
             </div>
-            <p className="mt-1 text-[0.58rem] text-zinc-500">
-              O header <code className="text-[#d1ff00]">X-AG47-Signature</code> será enviado contendo a assinatura SHA256 do payload.
+            <p className="mt-1 text-[0.58rem] text-zinc-400">
+              O header <code className="font-bold" style={{ color: primary }}>X-AG47-Signature</code> será enviado contendo a assinatura SHA256 do payload.
             </p>
           </div>
 
@@ -156,9 +158,10 @@ export function WebhookSettingsModal({ isOpen, onClose }: WebhookSettingsModalPr
                   onClick={() => setConfig({ ...config, minSeverity: item.val })}
                   className={`py-2 px-2 rounded-xl border text-[0.65rem] font-bold transition-all cursor-pointer ${
                     config.minSeverity === item.val
-                      ? "border-[#d1ff00]/60 bg-[#d1ff00]/15 text-[#d1ff00]"
-                      : "border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-white"
+                      ? "text-white font-bold"
+                      : "border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
                   }`}
+                  style={config.minSeverity === item.val ? { borderColor: `${primary}60`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 10px ${primary}20` } : {}}
                 >
                   {item.label}
                 </button>
@@ -171,7 +174,7 @@ export function WebhookSettingsModal({ isOpen, onClose }: WebhookSettingsModalPr
             <div
               className={`rounded-xl border p-2.5 text-[0.65rem] ${
                 testResult.status === "success"
-                  ? "border-[#d1ff00]/40 bg-[#d1ff00]/10 text-[#d1ff00]"
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
                   : "border-rose-500/40 bg-rose-500/10 text-rose-300"
               }`}
             >
@@ -180,21 +183,22 @@ export function WebhookSettingsModal({ isOpen, onClose }: WebhookSettingsModalPr
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-2 pt-2 border-t border-zinc-800/80">
+          <div className="flex items-center gap-2 pt-2 border-t border-white/10">
             <button
               type="button"
               onClick={handleSendTest}
               disabled={isTesting}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800/80 py-2 text-xs font-bold text-white hover:border-[#d1ff00]/40 transition-all cursor-pointer disabled:opacity-50"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-bold text-white hover:bg-white/10 transition-all cursor-pointer disabled:opacity-50"
             >
-              <Send className="size-3.5 text-[#d1ff00]" />
+              <Send className="size-3.5" style={{ color: primary }} />
               <span>{isTesting ? "Enviando Ping..." : "Testar Envio"}</span>
             </button>
 
             <button
               type="button"
               onClick={handleSave}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#d1ff00]/60 bg-[#d1ff00] py-2 text-xs font-bold text-black hover:bg-[#b8e600] transition-all cursor-pointer"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold text-black transition-all cursor-pointer shadow-lg"
+              style={{ backgroundColor: primary, boxShadow: `0 0 15px ${primary}35` }}
             >
               {saved ? <Check className="size-3.5" /> : null}
               <span>{saved ? "Configuração Salva!" : "Salvar Webhook"}</span>

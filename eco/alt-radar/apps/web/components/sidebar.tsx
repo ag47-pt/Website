@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 import {
   Bell,
@@ -20,7 +21,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEvolution } from "@/eco/alt-radar/apps/web/lib/api/query";
 import { evolution as evolutionFallback } from "@/eco/alt-radar/apps/web/lib/evolution";
 import { LogoMark } from "./logo-mark";
@@ -28,6 +29,7 @@ import { useRadarState } from "./radar-state";
 
 function EvolutionCard() {
   const { data } = useEvolution();
+  const { primary } = useEcoTheme();
   const evolution = data
     ? {
         phase: data.phase,
@@ -39,46 +41,77 @@ function EvolutionCard() {
       }
     : evolutionFallback;
   const progress = Math.round((evolution.completedSteps / evolution.totalSteps) * 100);
+
   return (
     <div
       data-testid="evolution-card"
-      className="rounded-xl border border-zinc-800/80 bg-zinc-900/80 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md"
+      className="rounded-2xl border border-white/10 bg-white/5 p-3.5 shadow-xl backdrop-blur-xl hover:border-white/20 transition-all group"
     >
-      <p className="eyebrow text-[0.58rem] text-zinc-400">Motor de evolução</p>
-      <div className="mt-1.5 flex items-center gap-2 text-xs font-bold text-white">
-        <span className="size-2 animate-pulse rounded-full bg-[#d1ff00] shadow-[0_0_0_4px_rgba(209,255,0,0.15),0_0_12px_rgba(209,255,0,0.6)]" />
-        {evolution.phase} • {evolution.phaseTitle}
+      <div className="flex items-center justify-between">
+        <p className="text-[8px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">
+          MOTOR DE EVOLUÇÃO
+        </p>
+        <span
+          className="text-[8px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase bg-black/60 text-white border border-white/10"
+        >
+          v1.0
+        </span>
       </div>
-      <p className="mt-1.5 text-[0.68rem] leading-4.5 text-zinc-400">{evolution.now}</p>
+
+      <div className="mt-2 flex items-center gap-2 text-xs font-black text-white tracking-wide uppercase font-sans">
+        <span
+          className="size-2 animate-pulse rounded-full shrink-0"
+          style={{ backgroundColor: primary, boxShadow: `0 0 0 4px ${primary}25, 0 0 12px ${primary}` }}
+        />
+        <span className="truncate">{evolution.phase} • {evolution.phaseTitle}</span>
+      </div>
+
+      <p className="mt-1.5 text-[10px] leading-4 text-zinc-400 font-mono line-clamp-2">
+        {evolution.now}
+      </p>
+
       <div
         role="progressbar"
         aria-label="Progresso da fase fundacional"
         aria-valuenow={evolution.completedSteps}
         aria-valuemin={0}
         aria-valuemax={evolution.totalSteps}
-        className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-zinc-800"
+        className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/10 relative"
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-[#d1ff00]/60 to-[#d1ff00] shadow-[0_0_10px_rgba(209,255,0,0.6)] transition-[width] duration-700"
-          style={{ width: `${progress}%` }}
+          className="h-full rounded-full transition-[width] duration-700 relative"
+          style={{
+            width: `${progress}%`,
+            background: `linear-gradient(to right, ${primary}, ${primary}90)`,
+            boxShadow: `0 0 10px ${primary}80`,
+          }}
         />
       </div>
-      <div className="mt-1 flex items-center justify-between text-[0.58rem] font-mono font-bold text-zinc-400">
+
+      <div className="mt-1.5 flex items-center justify-between text-[9px] font-mono font-bold text-zinc-400">
         <span>
           {evolution.completedSteps}/{evolution.totalSteps} sprints
         </span>
-        <span className="text-[#d1ff00]">{progress}%</span>
+        <span style={{ color: primary }} className="font-black">{progress}%</span>
       </div>
-      <p className="mt-2 border-t border-zinc-800/80 pt-2 text-[0.6rem] leading-4 text-zinc-500">
-        <span className="font-bold text-zinc-400">Norte:</span> {evolution.goal}
+
+      <p className="mt-2 border-t border-white/5 pt-2 text-[9px] leading-3.5 text-zinc-400 font-mono line-clamp-2">
+        <span className="font-bold text-zinc-300">NORTE:</span> {evolution.goal}
       </p>
     </div>
   );
 }
 
-const navigation = [
-  { tab: "dashboard", label: "Dashboard", icon: Gauge },
-  { tab: "oportunidades", label: "Oportunidades", icon: ChartNoAxesCombined },
+interface NavItem {
+  tab: string;
+  label: string;
+  icon: typeof Gauge;
+  badge?: string;
+}
+
+const navigation: readonly NavItem[] = [
+  { tab: "dashboard", label: "Dashboard", icon: Gauge, badge: "CORE" },
+  { tab: "oportunidades", label: "Oportunidades", icon: ChartNoAxesCombined, badge: "LIVE" },
   { tab: "alertas", label: "Alertas", icon: Bell },
   { tab: "portfolio", label: "Portfolio", icon: Briefcase },
   { tab: "lab", label: "Laboratório", icon: FlaskConical },
@@ -88,17 +121,18 @@ const navigation = [
   { tab: "notificacoes", label: "Notificações", icon: BellRing },
   { tab: "logs", label: "Logs", icon: FileClock },
   { tab: "configuracoes", label: "Configurações", icon: Settings2 },
-  { tab: "landing", label: "EvoPro Showcase", icon: Sparkles },
-] as const;
+  { tab: "landing", label: "EvoPro Specs", icon: Sparkles, badge: "EVO" },
+];
 
 function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
   const searchParams = useSearchParams();
   const currentTab = searchParams ? (searchParams.get("tab") || "dashboard") : "dashboard";
   const { setNavigationOpen } = useRadarState();
+  const { primary } = useEcoTheme();
 
   return (
-    <nav aria-label="Navegação principal" className="mt-6 flex flex-1 flex-col gap-1 shrink-0 font-mono">
-      {navigation.map(({ tab, label, icon: Icon }) => {
+    <nav aria-label="Navegação principal" className="mt-5 flex flex-1 flex-col gap-1 shrink-0 font-mono">
+      {navigation.map(({ tab, label, icon: Icon, badge }) => {
         const href = tab === "landing" ? "/eco/alt-radar" : `/eco/alt-radar?tab=${tab}`;
         const isActive = currentTab === tab;
         return (
@@ -107,25 +141,54 @@ function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
             aria-current={isActive ? "page" : undefined}
             data-testid={`nav-${tab}`}
             title={collapsed ? label : undefined}
-            className={`group relative flex min-h-9 items-center gap-3 rounded-xl text-[0.8rem] font-semibold transition-all duration-200 ${
-              collapsed ? "justify-center px-0" : "px-3"
+            className={`group relative flex min-h-9 items-center gap-3 rounded-xl text-[10px] font-bold tracking-[0.14em] uppercase transition-all duration-200 ${
+              collapsed ? "justify-center px-0" : "px-3 py-2"
             } ${
               isActive
-                ? "bg-zinc-900 text-white shadow-[0_0_18px_rgba(209,255,0,0.08)] ring-1 ring-[#d1ff00]/30"
-                : "text-zinc-400 hover:bg-zinc-900/60 hover:text-white"
+                ? "font-black border"
+                : "text-white/70 hover:bg-white/5 hover:text-white border border-transparent hover:border-white/10"
             } ${!isActive && !collapsed ? "hover:translate-x-0.5" : ""}`}
             href={href}
             onClick={() => setNavigationOpen(false)}
+            style={
+              isActive
+                ? {
+                    borderColor: `${primary}50`,
+                    backgroundColor: `${primary}15`,
+                    color: primary,
+                    boxShadow: `0 0 16px ${primary}25`,
+                  }
+                : {}
+            }
           >
             {isActive && (
-              <span className="absolute inset-y-2 -left-2.5 w-1 rounded-full bg-[#d1ff00] shadow-[0_0_10px_rgba(209,255,0,0.8)]" />
+              <span
+                className="absolute inset-y-1.5 -left-1.5 w-1 rounded-r-full"
+                style={{ backgroundColor: primary, boxShadow: `0 0 10px ${primary}` }}
+              />
             )}
             <Icon
               aria-hidden="true"
-              className={`size-[1.15rem] shrink-0 transition-colors ${isActive ? "text-[#d1ff00]" : "text-zinc-500 group-hover:text-zinc-300"}`}
-              strokeWidth={1.8}
+              className={`size-4 shrink-0 transition-colors ${!isActive ? "text-zinc-400 group-hover:text-white" : ""}`}
+              strokeWidth={isActive ? 2.2 : 1.8}
+              style={isActive ? { color: primary } : {}}
             />
-            {!collapsed && <span className="truncate">{label}</span>}
+            {!collapsed && (
+              <div className="flex items-center justify-between flex-1 min-w-0">
+                <span className="truncate">{label}</span>
+                {badge && (
+                  <span
+                    className={`text-[8px] font-mono px-1.5 py-0.2 rounded tracking-widest font-black uppercase ${
+                      isActive
+                        ? "bg-black/60 text-white border border-white/20"
+                        : "bg-white/5 text-zinc-400 border border-white/5 group-hover:text-zinc-200"
+                    }`}
+                  >
+                    {badge}
+                  </span>
+                )}
+              </div>
+            )}
             {collapsed && <span className="sr-only">{label}</span>}
           </Link>
         );
@@ -138,12 +201,12 @@ function SidebarContent({ mobile = false }: { mobile?: boolean }) {
   const { setNavigationOpen } = useRadarState();
   return (
     <>
-      <div className="flex items-center justify-between shrink-0">
+      <div className="flex items-center justify-between shrink-0 pb-2 border-b border-white/10">
         <LogoMark />
         {mobile && (
           <button
             aria-label="Fechar menu"
-            className="grid size-9 place-items-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white"
+            className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-white transition-colors"
             onClick={() => setNavigationOpen(false)}
             type="button"
           >
@@ -152,7 +215,7 @@ function SidebarContent({ mobile = false }: { mobile?: boolean }) {
         )}
       </div>
       <NavigationLinks />
-      <div className="mt-6 shrink-0">
+      <div className="mt-5 shrink-0">
         <EvolutionCard />
       </div>
     </>
@@ -167,8 +230,8 @@ function SidebarResizer() {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      // 160px min, 480px max
-      const newWidth = Math.min(Math.max(e.clientX, 160), 480);
+      // 180px min, 480px max
+      const newWidth = Math.min(Math.max(e.clientX, 180), 480);
       setSidebarWidth(newWidth);
     };
 
@@ -178,7 +241,7 @@ function SidebarResizer() {
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-    
+
     document.body.classList.add("is-sidebar-resizing");
     document.body.style.userSelect = "none";
     document.body.style.cursor = "col-resize";
@@ -195,7 +258,7 @@ function SidebarResizer() {
   return (
     <div
       className={`absolute top-0 right-0 w-1.5 h-full cursor-col-resize z-50 transition-colors group ${
-        isDragging ? "bg-[#d1ff00]/30" : "hover:bg-zinc-700/50 bg-transparent"
+        isDragging ? "bg-white/20" : "hover:bg-white/10 bg-transparent"
       }`}
       onMouseDown={(e) => {
         e.preventDefault();
@@ -204,7 +267,7 @@ function SidebarResizer() {
     >
       <div
         className={`absolute top-1/2 -translate-y-1/2 -left-0.5 w-1 h-8 rounded-full transition-colors ${
-          isDragging ? "bg-[#d1ff00]" : "bg-zinc-700 opacity-0 group-hover:opacity-100"
+          isDragging ? "bg-white/60" : "bg-zinc-600 opacity-0 group-hover:opacity-100"
         }`}
       />
     </div>
@@ -219,15 +282,20 @@ export function Sidebar() {
   return (
     <>
       <aside
-        className={`fixed inset-y-0 left-0 z-30 hidden w-[var(--radar-sidebar-width)] border-r border-zinc-800/80 bg-zinc-950/95 backdrop-blur-2xl transition-[width] duration-300 xl:flex xl:flex-col ${
-          isSidebarCollapsed ? "items-center p-3" : "py-4 px-3"
+        className={`fixed inset-y-0 left-0 z-30 hidden w-[var(--radar-sidebar-width)] border-r border-white/20 bg-white/5 backdrop-blur-2xl shadow-2xl transition-[width] duration-300 xl:flex xl:flex-col ${
+          isSidebarCollapsed ? "items-center p-3" : "py-4 px-3.5"
         }`}
       >
+        {/* Glass shine beam effect */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-0 h-full w-[150%] bg-gradient-to-b from-transparent via-white/[0.04] to-transparent animate-glass-shine mix-blend-overlay" />
+        </div>
+
         {!isSidebarCollapsed && <SidebarResizer />}
-        <div className="flex flex-1 w-full flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-2">
+        <div className="relative z-10 flex flex-1 w-full flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-2">
           {isSidebarCollapsed ? (
             <>
-              <div className="flex shrink-0 justify-center">
+              <div className="flex shrink-0 justify-center pb-2 border-b border-white/10">
                 <LogoMark compact />
               </div>
               <NavigationLinks collapsed />
@@ -240,7 +308,7 @@ export function Sidebar() {
           aria-label={isSidebarCollapsed ? "Expandir menu" : "Recolher menu"}
           aria-expanded={!isSidebarCollapsed}
           data-testid="sidebar-toggle"
-          className={`mt-3 shrink-0 flex min-h-9 items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 text-[0.72rem] font-mono font-bold text-zinc-400 transition-colors hover:border-zinc-700 hover:text-white ${
+          className={`relative z-10 mt-3 shrink-0 flex min-h-9 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 text-[10px] font-mono font-bold tracking-widest uppercase text-zinc-400 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white ${
             isSidebarCollapsed ? "w-9" : "w-full"
           }`}
           onClick={toggleSidebar}
@@ -258,7 +326,7 @@ export function Sidebar() {
             onClick={() => setNavigationOpen(false)}
             type="button"
           />
-          <aside className="relative flex h-full w-[min(88vw,20rem)] flex-col border-r border-zinc-800 bg-zinc-950 py-4 px-3 shadow-2xl">
+          <aside className="relative flex h-full w-[min(88vw,20rem)] flex-col border-r border-white/20 bg-[#0a0a0a]/95 backdrop-blur-2xl py-4 px-3.5 shadow-2xl">
             <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-2">
               <SidebarContent mobile />
             </div>

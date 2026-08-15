@@ -17,12 +17,12 @@ export function generateChartSnapshotPng(
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // 1. OLED Black Background
-  ctx.fillStyle = "#000000";
+  // 1. Obsidian Black Background
+  ctx.fillStyle = "#050c12";
   ctx.fillRect(0, 0, width, height);
 
   // 2. Blueprint Grid Layer (40px)
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.035)";
+  ctx.strokeStyle = "rgba(0, 217, 255, 0.04)";
   ctx.lineWidth = 1;
   for (let x = 0; x < width; x += 40) {
     ctx.beginPath();
@@ -39,20 +39,20 @@ export function generateChartSnapshotPng(
 
   // 3. Radial Glow Top-Left
   const radialGlow = ctx.createRadialGradient(200, 150, 10, 200, 150, 450);
-  radialGlow.addColorStop(0, "rgba(209, 255, 0, 0.12)");
-  radialGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  radialGlow.addColorStop(0, "rgba(0, 217, 255, 0.15)");
+  radialGlow.addColorStop(1, "rgba(5, 12, 18, 0)");
   ctx.fillStyle = radialGlow;
   ctx.fillRect(0, 0, width, height);
 
   // 4. Header Bar with Brand
-  ctx.fillStyle = "#09090b";
+  ctx.fillStyle = "#0a121d";
   ctx.fillRect(40, 40, width - 80, 70);
   ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
   ctx.strokeRect(40, 40, width - 80, 70);
 
-  ctx.fillStyle = "#d1ff00";
+  ctx.fillStyle = "#00d9ff";
   ctx.font = "bold 16px 'Courier New', monospace";
-  ctx.fillText("AG47 RADAR ALTCOIN (R-A) — EVOPRO TELEMETRY", 60, 80);
+  ctx.fillText("AG47 RADAR ALTCOIN (R-A) — LABS BLUEPRINT TELEMETRY", 60, 80);
 
   ctx.fillStyle = "#a1a1aa";
   ctx.font = "12px 'Courier New', monospace";
@@ -63,15 +63,15 @@ export function generateChartSnapshotPng(
   ctx.font = "bold 38px 'Courier New', monospace";
   ctx.fillText(`${token.name} (${token.symbol})`, 40, 175);
 
-  ctx.fillStyle = "#06b6d4";
+  ctx.fillStyle = "#00d9ff";
   ctx.font = "bold 18px 'Courier New', monospace";
   ctx.fillText(`CHAIN: ${token.chain.toUpperCase()} • CONTRATO: ${token.contract_address.slice(0, 8)}...${token.contract_address.slice(-6)}`, 40, 210);
 
   // 6. Metrics Bento Grid
   const drawCard = (x: number, y: number, w: number, h: number, label: string, val: string, valColor = "#ffffff") => {
-    ctx.fillStyle = "rgba(18, 18, 22, 0.85)";
+    ctx.fillStyle = "rgba(10, 18, 29, 0.9)";
     ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     ctx.strokeRect(x, y, w, h);
 
     ctx.fillStyle = "#71717a";
@@ -88,18 +88,18 @@ export function generateChartSnapshotPng(
   const startY = 240;
 
   drawCard(40, startY, cardW, cardH, "Preço Atual", `$${market?.price_usd ?? 0}`, "#ffffff");
-  drawCard(320, startY, cardW, cardH, "Variação 24h", `${market?.price_change_24h ? (market.price_change_24h >= 0 ? "+" : "") + market.price_change_24h.toFixed(2) + "%" : "0.00%"}`, (market?.price_change_24h ?? 0) >= 0 ? "#d1ff00" : "#f43f5e");
-  drawCard(600, startY, cardW, cardH, "Liquidez Total", `$${market?.liquidity_usd ? market.liquidity_usd.toLocaleString() : 0}`, "#06b6d4");
-  drawCard(880, startY, cardW, cardH, "Score AG47", `${score?.final_score ?? "N/D"}/10`, "#d1ff00");
+  drawCard(320, startY, cardW, cardH, "Variação 24h", `${market?.price_change_24h ? (market.price_change_24h >= 0 ? "+" : "") + market.price_change_24h.toFixed(2) + "%" : "0.00%"}`, (market?.price_change_24h ?? 0) >= 0 ? "#10b981" : "#f43f5e");
+  drawCard(600, startY, cardW, cardH, "Liquidez Total", `$${market?.liquidity_usd ? market.liquidity_usd.toLocaleString() : 0}`, "#00d9ff");
+  drawCard(880, startY, cardW, cardH, "Score AG47", `${score?.final_score ?? "N/D"}/10`, "#00d9ff");
 
   // 7. Security & Risk Strip
   const secY = 350;
-  ctx.fillStyle = "rgba(18, 18, 22, 0.95)";
+  ctx.fillStyle = "rgba(10, 18, 29, 0.95)";
   ctx.fillRect(40, secY, width - 80, 110);
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
   ctx.strokeRect(40, secY, width - 80, 110);
 
-  ctx.fillStyle = "#d1ff00";
+  ctx.fillStyle = "#00d9ff";
   ctx.font = "bold 14px 'Courier New', monospace";
   ctx.fillText("🛡️ AUDITORIA ZERO-TRUST & DETECÇÃO DE RISCO:", 60, secY + 32);
 
@@ -117,7 +117,7 @@ export function generateChartSnapshotPng(
   ctx.font = "11px 'Courier New', monospace";
   ctx.fillText("VERIFICADO POR AG47 ALTCOIN RADAR • SISTEMA DE TELEMETRIA MULTI-CHAIN AUTÔNOMA", 40, height - 40);
 
-  ctx.fillStyle = "#d1ff00";
+  ctx.fillStyle = "#00d9ff";
   ctx.font = "bold 12px 'Courier New', monospace";
   ctx.fillText("AG47.PT/ECO/ALT-RADAR", width - 260, height - 40);
 

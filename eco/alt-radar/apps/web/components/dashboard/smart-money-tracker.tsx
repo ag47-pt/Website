@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ExternalLink, Flame, ShieldAlert, Sparkles, UserCheck, Wallet } from "lucide-react";
+import { ExternalLink, Sparkles, Wallet } from "lucide-react";
 import type { Token } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { CopyButton } from "@/eco/alt-radar/apps/web/components/shared/copy-button";
-import { formatCurrency, formatNumber, shortenAddress } from "@/eco/alt-radar/apps/web/lib/format";
+import { formatNumber, shortenAddress } from "@/eco/alt-radar/apps/web/lib/format";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 interface SmartMoneyTrackerProps {
   token: Token;
 }
 
 export function SmartMoneyTracker({ token }: SmartMoneyTrackerProps) {
-  const [copiedWallet, setCopiedWallet] = useState<string | null>(null);
-
+  const { primary } = useEcoTheme();
   // Deterministic top 5 smart money wallets for this token
   const wallets = [
     {
@@ -80,18 +80,21 @@ export function SmartMoneyTracker({ token }: SmartMoneyTrackerProps) {
         : "https://etherscan.io/address/";
 
   return (
-    <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/80 p-3.5 font-mono text-xs text-white">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3.5 font-mono text-xs text-white shadow-md">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5">
         <div className="flex items-center gap-2">
-          <Wallet className="size-4 text-[#d1ff00]" />
+          <Wallet className="size-4" style={{ color: primary }} />
           <div>
-            <h4 className="font-bold text-white">Smart Money & Top Traders (24h)</h4>
-            <p className="text-[0.6rem] text-zinc-500">Rastreamento de carteiras com alto win-rate</p>
+            <h4 className="font-bold text-white font-sans text-xs">Smart Money &amp; Top Traders (24h)</h4>
+            <p className="text-[0.6rem] text-zinc-400">Rastreamento de carteiras com alto win-rate</p>
           </div>
         </div>
 
-        <span className="inline-flex items-center gap-1 rounded-md border border-[#d1ff00]/40 bg-[#d1ff00]/10 px-2 py-0.5 text-[0.62rem] font-bold text-[#d1ff00]">
+        <span
+          className="inline-flex items-center gap-1 rounded-xl border px-2 py-0.5 text-[0.62rem] font-bold"
+          style={{ borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 8px ${primary}20` }}
+        >
           <Sparkles className="size-3" />
           5 Carteiras Monitoradas
         </span>
@@ -102,18 +105,18 @@ export function SmartMoneyTracker({ token }: SmartMoneyTrackerProps) {
         {wallets.map((w, idx) => (
           <div
             key={idx}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-2.5 text-[0.65rem] hover:border-zinc-700 transition-colors"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/5 bg-white/[0.03] p-2.5 text-[0.65rem] hover:border-white/15 transition-all"
           >
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white">{w.label}</span>
                 <span
-                  className={`rounded px-1.5 py-0.2 text-[0.56rem] font-bold uppercase ${
+                  className={`rounded-md px-1.5 py-0.5 text-[0.56rem] font-bold uppercase ${
                     w.status === "accumulating"
-                      ? "border border-[#d1ff00]/40 bg-[#d1ff00]/15 text-[#d1ff00]"
+                      ? "border border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
                       : w.status === "taking_profit"
                         ? "border border-amber-500/40 bg-amber-500/15 text-amber-300"
-                        : "border border-cyan-500/40 bg-cyan-500/15 text-cyan-300"
+                        : "border border-white/20 bg-white/10 text-white"
                   }`}
                 >
                   {w.status === "accumulating"
@@ -122,11 +125,11 @@ export function SmartMoneyTracker({ token }: SmartMoneyTrackerProps) {
                       ? "Realizando"
                       : "Segurando"}
                 </span>
-                <span className="text-[0.58rem] text-zinc-500">Win Rate: {w.winRate}%</span>
+                <span className="text-[0.58rem] text-zinc-400">Win Rate: {w.winRate}%</span>
               </div>
 
               <div className="mt-1 flex items-center gap-1.5 text-[0.6rem] text-zinc-400">
-                <span className="truncate" title={w.address}>
+                <span className="truncate text-zinc-300" title={w.address}>
                   {shortenAddress(w.address, 8)}
                 </span>
                 <CopyButton value={w.address} label="Copiar carteira" />
@@ -134,7 +137,7 @@ export function SmartMoneyTracker({ token }: SmartMoneyTrackerProps) {
                   href={`${explorerBase}${w.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-zinc-500 hover:text-white transition-colors"
+                  className="text-zinc-400 hover:text-white transition-colors"
                   title="Ver no Explorer"
                 >
                   <ExternalLink className="size-3" />
@@ -145,10 +148,10 @@ export function SmartMoneyTracker({ token }: SmartMoneyTrackerProps) {
             </div>
 
             <div className="text-right">
-              <p className="font-bold text-[#d1ff00]">
+              <p className="font-bold text-emerald-400">
                 +${formatNumber(w.realizedPnlUsd)} (+{w.realizedPnlPct.toFixed(1)}%)
               </p>
-              <p className="text-[0.58rem] text-zinc-500">Posição: ${formatNumber(w.investedUsd)}</p>
+              <p className="text-[0.58rem] text-zinc-400">Posição: ${formatNumber(w.investedUsd)}</p>
             </div>
           </div>
         ))}

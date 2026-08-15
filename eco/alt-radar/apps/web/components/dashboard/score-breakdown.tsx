@@ -13,15 +13,16 @@ const scoreItems: { key: keyof Score; label: string }[] = [
 
 function scoreColor(value: number | null) {
   if (value === null) return "bg-zinc-700";
-  if (value >= 8) return "bg-[#d1ff00] shadow-[0_0_8px_rgba(209,255,0,0.6)]";
-  if (value >= 6.5) return "bg-cyan-400";
+  if (value >= 8) return "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+  if (value >= 6.5) return "bg-cyan-400 shadow-[0_0_8px_rgba(0,217,255,0.4)]";
   if (value >= 5) return "bg-amber-400";
   return "bg-rose-500";
 }
 
 function scoreTone(value: number | null) {
   if (value === null) return "text-zinc-500";
-  if (value >= 8) return "text-[#d1ff00]";
+  if (value >= 8) return "text-emerald-400";
+  if (value >= 6.5) return "text-cyan-300";
   if (value >= 5) return "text-amber-400";
   return "text-rose-400";
 }
@@ -29,9 +30,9 @@ function scoreTone(value: number | null) {
 export function ScoreBreakdown({ score }: { score: Score | null }) {
   if (!score) {
     return (
-      <div className="rounded-xl border border-dashed border-radar-border p-4 text-center">
-        <p className="text-xs font-bold text-radar-ink">Score aguardando sinais</p>
-        <p className="mt-1 text-[0.68rem] leading-5 text-radar-muted">
+      <div className="rounded-xl border border-dashed border-white/10 p-4 text-center">
+        <p className="text-xs font-bold text-white">Score aguardando sinais</p>
+        <p className="mt-1 text-[0.68rem] leading-5 text-zinc-400">
           Dados ausentes não são convertidos em pontuação otimista.
         </p>
       </div>
@@ -48,43 +49,43 @@ export function ScoreBreakdown({ score }: { score: Score | null }) {
   return (
     <section
       aria-labelledby="score-breakdown-title"
-      className="border-t border-radar-border pt-3.5"
+      className="border-t border-white/10 pt-3.5"
       data-testid="score-breakdown"
     >
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 id="score-breakdown-title" className="text-xs font-extrabold text-radar-ink">
-            Breakdown do score
+          <h3 id="score-breakdown-title" className="text-xs font-bold text-white font-sans">
+            Breakdown do Score
           </h3>
-          <p className="mt-1 text-[0.62rem] text-radar-subtle">
+          <p className="mt-1 font-mono text-[0.62rem] text-zinc-400">
             {score.signals_available} sinais • confiança{" "}
             {confidence === null ? "N/D" : `${Math.round(confidence)}%`} • {score.scoring_version}
           </p>
         </div>
-        <div className="rounded-lg border border-radar-positive/35 bg-[#0d251b] px-3 py-2 text-right">
-          <p className="text-[0.57rem] font-bold uppercase tracking-wider text-radar-muted">
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-3 py-2 text-right font-mono">
+          <p className="text-[0.57rem] font-bold uppercase tracking-wider text-zinc-400">
             Score final
           </p>
-          <p className={`mono mt-0.5 text-2xl font-extrabold ${scoreTone(score.final_score)}`}>
+          <p className={`mt-0.5 text-2xl font-black ${scoreTone(score.final_score)}`}>
             {formatScore(score.final_score)}
-            <span className="text-xs text-radar-muted">/10</span>
+            <span className="text-xs text-zinc-400">/10</span>
           </p>
-          <p className="mt-0.5 text-[0.62rem] font-extrabold text-radar-positive">
+          <p className="mt-0.5 text-[0.62rem] font-bold text-emerald-400">
             {formatClassification(score.classification)}
           </p>
         </div>
       </div>
 
-      <div className="grid gap-2 xl:grid-cols-2">
+      <div className="grid gap-2 xl:grid-cols-2 font-mono">
         {scoreItems.map(({ key, label }) => {
           const value = score[key] as number | null;
           return (
             <div key={key} className="grid grid-cols-[7rem_1fr_2.1rem] items-center gap-2">
-              <span className="truncate text-[0.66rem] font-semibold text-radar-muted">
+              <span className="truncate text-[0.66rem] font-semibold text-zinc-400">
                 {label}
               </span>
               <span
-                className={`h-1.5 overflow-hidden rounded-full ${value === null ? "border border-dashed border-radar-border" : "bg-[#1a2c37]"}`}
+                className={`h-1.5 overflow-hidden rounded-full ${value === null ? "border border-dashed border-white/10" : "bg-white/10"}`}
               >
                 {value !== null && (
                   <span
@@ -93,7 +94,7 @@ export function ScoreBreakdown({ score }: { score: Score | null }) {
                   />
                 )}
               </span>
-              <span className={`mono text-right text-[0.65rem] font-bold ${scoreTone(value)}`}>
+              <span className={`text-right text-[0.65rem] font-bold ${scoreTone(value)}`}>
                 {formatScore(value)}
               </span>
             </div>
@@ -101,47 +102,47 @@ export function ScoreBreakdown({ score }: { score: Score | null }) {
         })}
       </div>
 
-      <p className="mt-3 rounded-lg border border-white/[0.045] bg-black/10 px-3 py-2.5 text-[0.68rem] leading-5 text-radar-muted">
+      <p className="mt-3 rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2.5 font-mono text-[0.68rem] leading-5 text-zinc-300">
         {score.explanation}
       </p>
 
-      <div className="mt-3 grid gap-2 md:grid-cols-2">
+      <div className="mt-3 grid gap-2 md:grid-cols-2 font-mono">
         <div>
-          <p className="mb-1.5 flex items-center gap-1.5 text-[0.63rem] font-extrabold text-radar-positive">
+          <p className="mb-1.5 flex items-center gap-1.5 text-[0.63rem] font-bold text-emerald-400">
             <CheckCircle2 className="size-3.5" /> Fatores positivos
           </p>
           {score.positive_factors.length ? (
             <ul className="space-y-1">
               {score.positive_factors.map((factor) => (
-                <li key={factor} className="text-[0.63rem] leading-4 text-radar-muted">
+                <li key={factor} className="text-[0.63rem] leading-4 text-zinc-400">
                   • {factor}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-[0.63rem] text-radar-subtle">Nenhum fator confirmado.</p>
+            <p className="text-[0.63rem] text-zinc-500">Nenhum fator confirmado.</p>
           )}
         </div>
         <div>
-          <p className="mb-1.5 flex items-center gap-1.5 text-[0.63rem] font-extrabold text-radar-warning">
+          <p className="mb-1.5 flex items-center gap-1.5 text-[0.63rem] font-bold text-amber-400">
             <CircleAlert className="size-3.5" /> Fatores negativos
           </p>
           {score.negative_factors.length ? (
             <ul className="space-y-1">
               {score.negative_factors.map((factor) => (
-                <li key={factor} className="text-[0.63rem] leading-4 text-radar-muted">
+                <li key={factor} className="text-[0.63rem] leading-4 text-zinc-400">
                   • {factor}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-[0.63rem] text-radar-subtle">Nenhum fator confirmado.</p>
+            <p className="text-[0.63rem] text-zinc-500">Nenhum fator confirmado.</p>
           )}
         </div>
       </div>
 
-      <p className="mt-3 flex items-center gap-1.5 text-[0.59rem] text-radar-subtle">
-        <Sparkles className="size-3" /> Score analítico, não recomendação de investimento.
+      <p className="mt-3 flex items-center gap-1.5 font-mono text-[0.59rem] text-zinc-500">
+        <Sparkles className="size-3 text-cyan-400" /> Score analítico, não recomendação de investimento.
       </p>
     </section>
   );

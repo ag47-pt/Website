@@ -2,26 +2,27 @@
   color-scheme: dark;
 
   --radar-ink: #f4f4f5;
-  --radar-ink-muted: #a1a1aa;
-  --radar-ink-subtle: #71717a;
-  --radar-canvas: #000000;
-  --radar-canvas-raised: #09090b;
-  --radar-surface: #09090b;
-  --radar-surface-raised: #18181b;
-  --radar-surface-hover: #27272a;
-  --radar-border: rgba(39, 39, 42, 0.8);
-  --radar-border-strong: rgba(63, 63, 70, 0.9);
-  --radar-positive: #d1ff00;
-  --radar-positive-dim: rgba(209, 255, 0, 0.12);
+  --radar-ink-muted: #94a3b8;
+  --radar-ink-subtle: #64748b;
+  --radar-canvas: #0a0a0a;
+  --radar-canvas-raised: #141414;
+  --radar-surface: rgba(255, 255, 255, 0.04);
+  --radar-surface-raised: rgba(255, 255, 255, 0.08);
+  --radar-surface-hover: rgba(255, 255, 255, 0.12);
+  --radar-border: rgba(255, 255, 255, 0.1);
+  --radar-border-strong: rgba(255, 255, 255, 0.2);
+  --radar-positive: #10b981;
+  --radar-positive-dim: rgba(16, 185, 129, 0.12);
   --radar-warning: #f59e0b;
   --radar-warning-dim: rgba(245, 158, 11, 0.15);
   --radar-critical: #f43f5e;
   --radar-critical-dim: rgba(244, 63, 94, 0.15);
-  --radar-neutral: #06b6d4;
-  --radar-neutral-dim: rgba(6, 182, 212, 0.15);
-  --radar-secondary: #8b5cf6;
-  --radar-secondary-dim: rgba(139, 92, 246, 0.15);
-  --radar-focus: #d1ff00;
+  --radar-neutral: var(--primary-color, #D1FF00);
+  --radar-neutral-dim: color-mix(in srgb, var(--primary-color, #D1FF00) 15%, transparent);
+  --radar-secondary: #3fe2ff;
+  --radar-secondary-dim: rgba(63, 226, 255, 0.15);
+  --radar-focus: var(--primary-color, #D1FF00);
+  --radar-accent: var(--primary-color, #D1FF00);
 
   --radar-radius-xs: 0.38rem;
   --radar-radius-sm: 0.55rem;
@@ -32,8 +33,8 @@
     0 16px 40px rgb(0 0 0 / 0.5);
   --radar-shadow-hover:
     0 1px 0 rgb(255 255 255 / 0.08) inset, 0 2px 8px rgb(0 0 0 / 0.7), 0 24px 56px rgb(0 0 0 / 0.6);
-  --radar-glow-positive: 0 0 24px rgba(209, 255, 0, 0.2);
-  --radar-sidebar-width: 13rem;
+  --radar-glow-positive: 0 0 24px color-mix(in srgb, var(--primary-color, #D1FF00) 30%, transparent);
+  --radar-sidebar-width: 13.5rem;
   --radar-header-height: 4.5rem;
 }
 
@@ -52,4 +53,59 @@
   --color-radar-critical: var(--radar-critical);
   --color-radar-neutral: var(--radar-neutral);
   --color-radar-secondary: var(--radar-secondary);
+}
+
+/* Ag47 Labs Custom Scrollbar System */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.ag47-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ag47-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 9999px;
+}
+
+.ag47-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+}
+
+.ag47-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color, #D1FF00);
 }

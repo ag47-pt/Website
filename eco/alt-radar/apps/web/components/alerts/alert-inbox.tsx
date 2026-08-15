@@ -19,6 +19,7 @@ import type { Alert } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { formatDateTime, formatTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
 import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 const alertIcons = {
   "rule:liquidity_volume_expansion": TrendingUp,
@@ -42,36 +43,36 @@ const alertMessages: Record<string, string> = {
 };
 
 function severityTone(severity: number | null) {
-  if (severity === null) return "border-radar-neutral/25 bg-[#132943] text-radar-neutral";
-  if (severity >= 80) return "border-radar-critical/25 bg-[#37181e] text-radar-critical";
-  if (severity >= 60) return "border-[#ff8a67]/25 bg-[#3a2118] text-[#ff8a67]";
-  if (severity >= 40) return "border-radar-warning/25 bg-[#38290e] text-radar-warning";
-  return "border-radar-neutral/25 bg-[#132943] text-radar-neutral";
+  if (severity === null) return "border-cyan-500/40 bg-cyan-500/10 text-cyan-400";
+  if (severity >= 80) return "border-rose-500/40 bg-rose-500/10 text-rose-400 font-bold";
+  if (severity >= 60) return "border-orange-500/40 bg-orange-500/10 text-orange-400 font-bold";
+  if (severity >= 40) return "border-amber-500/40 bg-amber-500/10 text-amber-400 font-bold";
+  return "border-cyan-500/40 bg-cyan-500/10 text-cyan-400";
 }
 
 function getConfidenceBadge(level: string | null | undefined) {
   switch (level) {
     case "confirmado":
       return (
-        <span className="inline-flex items-center gap-1 rounded border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 text-[0.55rem] font-semibold text-emerald-400">
+        <span className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[0.55rem] font-semibold text-emerald-400">
           <ShieldCheck className="size-3" /> Edge Confirmado
         </span>
       );
     case "suspenso":
       return (
-        <span className="inline-flex items-center gap-1 rounded border border-rose-500/25 bg-rose-500/10 px-1.5 py-0.5 text-[0.55rem] font-semibold text-rose-400">
+        <span className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[0.55rem] font-semibold text-rose-400">
           <AlertTriangle className="size-3" /> Drawdown Suspenso
         </span>
       );
     case "indeterminada":
       return (
-        <span className="inline-flex items-center gap-1 rounded border border-slate-500/25 bg-slate-500/10 px-1.5 py-0.5 text-[0.55rem] font-semibold text-slate-400">
+        <span className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[0.55rem] font-semibold text-zinc-400">
           <HelpCircle className="size-3" /> Cold Start
         </span>
       );
     case "abaixo_edge":
       return (
-        <span className="inline-flex items-center gap-1 rounded border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[0.55rem] font-semibold text-amber-400">
+        <span className="inline-flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[0.55rem] font-semibold text-amber-400">
           <Activity className="size-3" /> Abaixo do Edge
         </span>
       );
@@ -92,54 +93,55 @@ function AlertRow({
   const title = alertTitles[alert.rule_id] ?? alert.rule_id;
   const message = alertMessages[alert.rule_id] ?? `Detectado evento na regra ${alert.rule_id}`;
   const isUnread = alert.status === "unread";
+  const { primary } = useEcoTheme();
 
   return (
     <article
-      className={`grid grid-cols-[3rem_2.2rem_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-radar-border/70 px-3.5 py-3 last:border-0 sm:grid-cols-[4.5rem_2.4rem_minmax(0,1fr)_auto] transition-colors ${isUnread ? "bg-white/[0.02]" : "opacity-80 grayscale-[0.2]"}`}
+      className={`grid grid-cols-[3rem_2.2rem_minmax(0,1fr)_auto] items-center gap-2.5 border-b border-white/5 px-3.5 py-3 last:border-0 sm:grid-cols-[4.5rem_2.4rem_minmax(0,1fr)_auto] transition-colors font-mono ${isUnread ? "bg-white/[0.03]" : "opacity-80"}`}
     >
       <time
-        className="mono text-[0.62rem] text-radar-muted"
+        className="text-[0.62rem] text-zinc-400"
         dateTime={alert.triggered_at}
         title={formatDateTime(alert.triggered_at)}
       >
         {formatTime(alert.triggered_at)}
       </time>
       <span
-        className={`grid size-7 place-items-center rounded-full border ${severityTone(alert.severity)}`}
+        className={`grid size-7 place-items-center rounded-xl border ${severityTone(alert.severity)}`}
       >
         <Icon aria-hidden="true" className="size-3.5" />
       </span>
       <div className="min-w-0 pr-4">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="truncate text-[0.69rem] text-radar-muted">
-            <strong className="mr-1.5 text-radar-ink">{alert.token_symbol}</strong>
+          <p className="truncate text-[0.69rem] text-zinc-300">
+            <strong className="mr-1.5 text-white">{alert.token_symbol}</strong>
             {title}
           </p>
           {getConfidenceBadge(alert.confidence_level)}
           {alert.score_components && (
             <button
               onClick={() => setShowBreakdown(!showBreakdown)}
-              className="inline-flex items-center gap-1 rounded bg-[#102331] hover:bg-[#18364b] border border-radar-border px-1.5 py-0.5 text-[0.55rem] font-extrabold text-radar-ink transition-colors"
+              className="inline-flex items-center gap-1 rounded-lg bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/30 px-1.5 py-0.5 text-[0.55rem] font-bold text-cyan-300 transition-colors cursor-pointer"
               title="Clique para ver o breakdown do score"
             >
-              <Activity className="size-3 text-radar-positive" />
+              <Activity className="size-3 text-cyan-400" />
               Score: {alert.score_components.final_score.toFixed(1)}
             </button>
           )}
           {isUnread && (
-            <span className="inline-flex items-center rounded-full bg-blue-500/20 px-1.5 py-0.5 text-[0.55rem] font-medium text-blue-400">
+            <span className="inline-flex items-center rounded-full bg-cyan-500/20 px-2 py-0.5 text-[0.55rem] font-bold text-cyan-300">
               Novo
             </span>
           )}
         </div>
-        <p className="mt-1 line-clamp-2 text-[0.61rem] leading-4 text-radar-subtle">{message}</p>
+        <p className="mt-1 line-clamp-2 text-[0.61rem] leading-4 text-zinc-500">{message}</p>
 
         {/* Breakdown section */}
         {showBreakdown && alert.score_components && (
-          <div className="mt-3.5 border border-radar-border/50 pt-2.5 px-3 py-3 rounded-lg bg-[#070f15]/90 space-y-2">
-            <div className="font-extrabold text-radar-ink text-[0.58rem] flex justify-between items-center">
+          <div className="mt-3.5 border border-white/10 pt-2.5 px-3 py-3 rounded-xl bg-[#050c12]/90 space-y-2">
+            <div className="font-bold text-zinc-300 text-[0.58rem] flex justify-between items-center">
               <span>EXPLICAÇÃO DO SCORE (PESO PONDERADO)</span>
-              <span className="text-[0.6rem] text-radar-positive bg-radar-positive/10 px-1.5 py-0.5 rounded font-black">
+              <span className="text-[0.6rem] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded-lg border border-emerald-500/30 font-black">
                 Calculado: {alert.score_components.final_score.toFixed(2)}/10
               </span>
             </div>
@@ -150,14 +152,14 @@ function AlertRow({
                 const weightVal = alert.score_weights?.[key];
                 const weightStr = weightVal !== undefined ? `${(weightVal * 100).toFixed(0)}%` : "N/A";
                 
-                let colorClass = "text-radar-ink";
-                if (value >= 7.0) colorClass = "text-radar-positive";
-                else if (value >= 5.0) colorClass = "text-[#ff8a67]";
-                else colorClass = "text-radar-critical";
+                let colorClass = "text-white";
+                if (value >= 7.0) colorClass = "text-emerald-400";
+                else if (value >= 5.0) colorClass = "text-amber-400";
+                else colorClass = "text-rose-400";
 
                 return (
-                  <div key={key} className="bg-white/[0.02] p-2 rounded border border-radar-border/40">
-                    <span className="text-radar-muted capitalize block text-[0.52rem] mb-0.5">{cleanName} ({weightStr})</span>
+                  <div key={key} className="bg-white/[0.02] p-2 rounded-lg border border-white/5">
+                    <span className="text-zinc-400 capitalize block text-[0.52rem] mb-0.5">{cleanName} ({weightStr})</span>
                     <span className={`font-black text-[0.62rem] ${colorClass}`}>{value.toFixed(1)}/10</span>
                   </div>
                 );
@@ -171,21 +173,21 @@ function AlertRow({
           {isUnread && (
             <button
               onClick={() => mutateAlert(alert.id, "read")}
-              className="inline-flex items-center gap-1 rounded bg-[#1d283a] px-2 py-1 text-[0.55rem] font-medium text-radar-ink hover:bg-[#2a364f]"
+              className="inline-flex items-center gap-1 rounded-xl bg-white/5 border border-white/10 px-2 py-1 text-[0.55rem] font-bold text-zinc-300 hover:text-white hover:bg-white/10 cursor-pointer transition-colors"
             >
-              <Check className="size-3" /> Marcar como lido
+              <Check className="size-3 text-cyan-400" /> Marcar como lido
             </button>
           )}
           <button
             onClick={() => mutateAlert(alert.id, "acknowledged")}
-            className="inline-flex items-center gap-1 rounded bg-radar-positive/10 px-2 py-1 text-[0.55rem] font-medium text-radar-positive hover:bg-radar-positive/20"
+            className="inline-flex items-center gap-1 rounded-xl bg-emerald-950/40 border border-emerald-500/30 px-2 py-1 text-[0.55rem] font-bold text-emerald-300 hover:bg-emerald-900/50 cursor-pointer transition-colors"
             disabled={alert.status === "acknowledged"}
           >
             <Clock className="size-3" /> Ciente
           </button>
           <button
             onClick={() => mutateAlert(alert.id, "dismissed")}
-            className="inline-flex items-center gap-1 rounded bg-radar-critical/10 px-2 py-1 text-[0.55rem] font-medium text-radar-critical hover:bg-radar-critical/20"
+            className="inline-flex items-center gap-1 rounded-xl bg-rose-950/40 border border-rose-500/30 px-2 py-1 text-[0.55rem] font-bold text-rose-300 hover:bg-rose-900/50 cursor-pointer transition-colors"
             disabled={alert.status === "dismissed"}
           >
             <X className="size-3" /> Dispensar
@@ -193,10 +195,11 @@ function AlertRow({
         </div>
       </div>
       <Link
-        className="inline-flex flex-col items-end gap-1 whitespace-nowrap text-[0.62rem] font-bold text-radar-positive hover:underline"
-        href={`/oportunidades?token=${alert.token_id}`}
+        className="inline-flex items-center gap-1 whitespace-nowrap text-[0.62rem] font-bold hover:underline transition-colors"
+        style={{ color: primary }}
+        href={`/eco/alt-radar?tab=opportunities&token=${alert.token_id}`}
       >
-        <span className="hidden sm:inline">Ver detalhes</span>
+        <span className="hidden sm:inline">Ver oportunidade</span>
         <ChevronRight className="size-3.5" />
       </Link>
     </article>
@@ -210,6 +213,7 @@ export function AlertInbox() {
 
   const edgeInbox = useEdgeInbox(page, 20, confidenceFilter);
   const mutation = useAlertMutation();
+  const { primary } = useEcoTheme();
 
   const handleMutateAlert = (alertId: string, status: "read" | "acknowledged" | "dismissed") => {
     mutation.mutate({ alertId, status });
@@ -225,18 +229,18 @@ export function AlertInbox() {
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-4 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-4 items-start font-mono">
       {/* Inbox Panel */}
       <section
-        className="panel overflow-hidden"
+        className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden"
         aria-labelledby="inbox-title"
         data-testid="alerts-inbox"
       >
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-radar-border px-3.5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-3.5 py-3">
           <div>
-            <p className="eyebrow">Gestão de Alertas</p>
-            <h2 id="inbox-title" className="mt-1 flex items-center gap-2 text-sm font-extrabold">
-              <Bell className="size-4 text-radar-muted" /> Inbox do Operador
+            <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Gestão de Alertas</p>
+            <h2 id="inbox-title" className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans">
+              <Bell className="size-4" style={{ color: primary }} /> Inbox do Operador
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -245,16 +249,16 @@ export function AlertInbox() {
               partial={edgeInbox.data?.alerts.partial}
               stale={edgeInbox.data?.alerts.stale}
             />
-            <div className="flex flex-wrap items-center gap-2 border-l border-radar-border pl-2">
+            <div className="flex flex-wrap items-center gap-2 border-l border-white/10 pl-2">
               <label>
                 <span className="sr-only">Nível de Confiança</span>
                 <select
-                  className="h-8 rounded-lg border border-radar-border bg-[#09151e] px-2 text-[0.62rem] text-radar-ink"
+                  className="h-8 rounded-xl border border-white/10 bg-black/40 px-2 text-[0.62rem] text-white focus:outline-none"
                   onChange={(event) => setConfidenceFilter(event.target.value)}
                   value={confidenceFilter}
                 >
                   <option value="all">Todos os níveis</option>
-                  <option value="confirmado">Confirmados (Edge $\ge$ 65%)</option>
+                  <option value="confirmado">Confirmados (Edge &ge; 65%)</option>
                   <option value="indeterminada">Cold Start (Amostra Insuficiente)</option>
                   <option value="suspenso">Suspensos (Drawdown Ativo)</option>
                 </select>
@@ -263,7 +267,7 @@ export function AlertInbox() {
               <label>
                 <span className="sr-only">Filtrar status</span>
                 <select
-                  className="h-8 rounded-lg border border-radar-border bg-[#09151e] px-2 text-[0.62rem] text-radar-ink"
+                  className="h-8 rounded-xl border border-white/10 bg-black/40 px-2 text-[0.62rem] text-white focus:outline-none"
                   onChange={(event) => setStatusFilter(event.target.value as "all" | "unread")}
                   value={statusFilter}
                 >
@@ -292,26 +296,26 @@ export function AlertInbox() {
           </div>
         )}
 
-        <footer className="flex items-center justify-between border-t border-radar-border px-3.5 py-2.5">
-          <p className="text-[0.62rem] text-radar-muted">
+        <footer className="flex items-center justify-between border-t border-white/10 px-3.5 py-2.5">
+          <p className="text-[0.62rem] text-zinc-400">
             {edgeInbox.data ? `${edgeInbox.data.alerts.total} alertas` : "Aguardando dados"}
           </p>
           <div className="flex items-center gap-1.5">
             <button
               aria-label="Página anterior"
-              className="grid size-8 place-items-center rounded-md border border-radar-border disabled:opacity-35"
+              className="grid size-8 place-items-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-white disabled:opacity-35 transition-colors cursor-pointer"
               disabled={page <= 1}
               onClick={() => setPage((current) => Math.max(1, current - 1))}
               type="button"
             >
               <ChevronLeft className="size-4" />
             </button>
-            <span className="mono min-w-12 text-center text-[0.62rem] text-radar-muted">
+            <span className="min-w-12 text-center text-[0.62rem] text-zinc-400">
               {page}/{Math.max(1, edgeInbox.data?.alerts.pages ?? 1)}
             </span>
             <button
               aria-label="Página seguinte"
-              className="grid size-8 place-items-center rounded-md border border-radar-border disabled:opacity-35"
+              className="grid size-8 place-items-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:text-white disabled:opacity-35 transition-colors cursor-pointer"
               disabled={page >= (edgeInbox.data?.alerts.pages ?? 1)}
               onClick={() => setPage((current) => current + 1)}
               type="button"
@@ -323,26 +327,26 @@ export function AlertInbox() {
       </section>
 
       {/* Correlation Matrix Panel */}
-      <section className="panel p-3.5 space-y-3">
+      <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-3.5 space-y-3">
         <div>
-          <p className="eyebrow font-medium text-radar-subtle">Métricas Estatísticas</p>
-          <h2 className="text-sm font-extrabold tracking-tight mt-0.5">Matriz Score vs Resultado</h2>
-          <p className="text-[0.6rem] text-radar-muted mt-1 leading-relaxed">
+          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Métricas Estatísticas</p>
+          <h2 className="text-sm font-bold tracking-tight text-white font-sans mt-0.5">Matriz Score vs Resultado</h2>
+          <p className="text-[0.6rem] text-zinc-400 mt-1 leading-relaxed">
             Correlação em tempo real entre a pontuação de oportunidade e o resultado auditado pelo Truth Engine.
           </p>
         </div>
 
         {edgeInbox.isLoading ? (
           <div className="space-y-2 py-4">
-            <div className="h-6 bg-white/5 rounded animate-pulse" />
-            <div className="h-24 bg-white/5 rounded animate-pulse" />
+            <div className="h-6 bg-white/5 rounded-xl animate-pulse" />
+            <div className="h-24 bg-white/5 rounded-xl animate-pulse" />
           </div>
         ) : edgeInbox.isError ? (
-          <div className="text-[0.62rem] text-radar-critical">Não foi possível carregar a matriz.</div>
+          <div className="text-[0.62rem] text-rose-400">Não foi possível carregar a matriz.</div>
         ) : (
-          <div className="border border-radar-border/60 rounded-lg overflow-hidden text-[0.6rem] bg-[#070f15]">
+          <div className="border border-white/10 rounded-xl overflow-hidden text-[0.6rem] bg-[#050c12]">
             {/* Table Header */}
-            <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr] gap-1 px-2.5 py-1.5 bg-white/5 font-semibold text-radar-muted border-b border-radar-border/60">
+            <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr] gap-1 px-2.5 py-1.5 bg-white/5 font-bold text-zinc-400 border-b border-white/10">
               <div>Score Bucket</div>
               <div className="text-center">Amostras</div>
               <div className="text-center">Win Rate</div>
@@ -350,40 +354,40 @@ export function AlertInbox() {
             </div>
 
             {/* Table Body / Heatmap Grid */}
-            <div className="divide-y divide-radar-border/40">
+            <div className="divide-y divide-white/5">
               {edgeInbox.data?.correlation_matrix.map((row) => {
                 const hasSignificantSamples = row.total_samples >= 30;
-                let bgClass = "bg-white/5 text-radar-muted";
+                let bgClass = "bg-white/5 text-zinc-400";
                 
                 if (hasSignificantSamples) {
                   if (row.is_suspended) {
-                    bgClass = "bg-rose-500/10 text-rose-400 border border-rose-500/25";
+                    bgClass = "bg-rose-950/50 text-rose-300 border border-rose-500/30";
                   } else if (row.win_rate_pct >= 65.0) {
-                    bgClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25";
+                    bgClass = "bg-emerald-950/50 text-emerald-300 border border-emerald-500/30";
                   } else if (row.win_rate_pct >= 45.0) {
-                    bgClass = "bg-amber-500/10 text-amber-400 border border-amber-500/25";
+                    bgClass = "bg-amber-950/50 text-amber-300 border border-amber-500/30";
                   } else {
-                    bgClass = "bg-rose-500/10 text-rose-400 border border-rose-500/25";
+                    bgClass = "bg-rose-950/50 text-rose-300 border border-rose-500/30";
                   }
                 }
 
                 return (
                   <div
                     key={row.score_range}
-                    className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr] items-center gap-1 px-2.5 py-2 hover:bg-white/[0.01] transition-colors"
+                    className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr] items-center gap-1 px-2.5 py-2 hover:bg-white/[0.02] transition-colors"
                   >
-                    <div className="font-semibold text-radar-ink truncate" title={row.score_range}>
+                    <div className="font-bold text-white truncate" title={row.score_range}>
                       {row.score_range.split(" (")[0]}
                     </div>
-                    <div className="text-center mono text-radar-subtle">
+                    <div className="text-center text-zinc-400">
                       {row.total_samples}
                     </div>
                     <div className="text-center">
-                      <span className={`inline-block px-1.5 py-0.5 rounded text-[0.55rem] font-bold ${bgClass}`}>
+                      <span className={`inline-block px-1.5 py-0.5 rounded-lg text-[0.55rem] font-bold ${bgClass}`}>
                         {hasSignificantSamples ? `${row.win_rate_pct}%` : "Cold Start"}
                       </span>
                     </div>
-                    <div className={`text-center mono ${row.avg_return_pct >= 0 ? "text-radar-positive" : "text-radar-critical"}`}>
+                    <div className={`text-center font-bold ${row.avg_return_pct >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                       {row.avg_return_pct > 0 ? "+" : ""}{row.avg_return_pct}%
                     </div>
                   </div>
@@ -393,17 +397,17 @@ export function AlertInbox() {
           </div>
         )}
 
-        <div className="rounded bg-white/[0.02] border border-radar-border/40 p-2 text-[0.58rem] leading-relaxed text-radar-subtle">
-          <strong className="text-radar-ink block mb-0.5">Legenda & Regras:</strong>
+        <div className="rounded-xl bg-white/[0.02] border border-white/5 p-2.5 text-[0.58rem] leading-relaxed text-zinc-400">
+          <strong className="text-white block mb-0.5">Legenda & Regras:</strong>
           <ul className="list-disc pl-3.5 space-y-1">
             <li>
-              <span className="text-emerald-400 font-semibold">Edge Estatístico</span> ($\ge$ 65%): buckets verdes liberados para alertas imediatos.
+              <span className="text-emerald-400 font-semibold">Edge Estatístico</span> (&ge; 65%): buckets verdes liberados para alertas imediatos.
             </li>
             <li>
               <span className="text-rose-400 font-semibold">Drawdown Ativo</span> (3 falhas consecutivas): buckets suspensos temporariamente.
             </li>
             <li>
-              <span className="text-slate-400 font-semibold">Cold Start</span> (&lt; 30 amostras): tags cinzas indicando dados insuficientes para travar alertas.
+              <span className="text-zinc-400 font-semibold">Cold Start</span> (&lt; 30 amostras): tags cinzas indicando dados insuficientes para travar alertas.
             </li>
           </ul>
         </div>

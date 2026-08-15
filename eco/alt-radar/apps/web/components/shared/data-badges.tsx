@@ -1,4 +1,7 @@
+"use client";
+
 import { CircleAlert, FlaskConical, History } from "lucide-react";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 export function DataBadges({
   demo,
@@ -9,6 +12,8 @@ export function DataBadges({
   partial?: boolean;
   stale?: boolean;
 }) {
+  const { primary } = useEcoTheme();
+
   if (!demo && !partial && !stale) return null;
   return (
     <div className="flex flex-wrap items-center gap-1.5" aria-label="Estado dos dados">
@@ -18,8 +23,16 @@ export function DataBadges({
         </span>
       )}
       {partial && (
-        <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-[0.62rem] font-mono font-bold uppercase tracking-wider text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
-          <CircleAlert className="size-3 text-cyan-400" /> Dados Parciais
+        <span
+          className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[0.62rem] font-mono font-bold uppercase tracking-wider"
+          style={{
+            borderColor: `${primary}50`,
+            backgroundColor: `${primary}15`,
+            color: primary,
+            boxShadow: `0 0 10px ${primary}20`,
+          }}
+        >
+          <CircleAlert className="size-3" style={{ color: primary }} /> Dados Parciais
         </span>
       )}
       {stale && (

@@ -1,9 +1,10 @@
 "use client";
 
-import { Activity, ArrowUpRight, Coins, Flame, Layers, Network, Shuffle } from "lucide-react";
-import { formatCurrency, formatNumber, formatPercent } from "@/eco/alt-radar/apps/web/lib/format";
+import { Flame, Layers } from "lucide-react";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 export function ChainCapitalFlow() {
+  const { primary } = useEcoTheme();
   const chains = [
     {
       name: "Solana",
@@ -12,9 +13,9 @@ export function ChainCapitalFlow() {
       volume24h: 18450000,
       netInflow24h: 14200000,
       activePools: 1420,
-      color: "bg-[#62a4ff]",
-      borderColor: "border-[#62a4ff]/40",
-      textColor: "text-[#62a4ff]",
+      color: "bg-cyan-400 shadow-[0_0_10px_rgba(0,217,255,0.4)]",
+      borderColor: "border-cyan-500/30",
+      textColor: "text-cyan-300",
       status: "Líder de Influxo",
     },
     {
@@ -24,9 +25,9 @@ export function ChainCapitalFlow() {
       volume24h: 6420000,
       netInflow24h: 4800000,
       activePools: 840,
-      color: "bg-[#f4b941]",
-      borderColor: "border-[#f4b941]/40",
-      textColor: "text-[#f4b941]",
+      color: "bg-amber-400",
+      borderColor: "border-amber-500/30",
+      textColor: "text-amber-300",
       status: "Consolidado",
     },
     {
@@ -36,26 +37,29 @@ export function ChainCapitalFlow() {
       volume24h: 4680000,
       netInflow24h: 3900000,
       activePools: 510,
-      color: "bg-[#9fbfff]",
-      borderColor: "border-[#9fbfff]/40",
-      textColor: "text-[#9fbfff]",
+      color: "bg-indigo-400",
+      borderColor: "border-indigo-500/30",
+      textColor: "text-indigo-300",
       status: "Alta Liquidez",
     },
   ];
 
   return (
-    <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/80 p-3.5 font-mono text-xs text-white">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3.5 font-mono text-xs text-white shadow-md">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2.5">
         <div className="flex items-center gap-2">
-          <Layers className="size-4 text-[#d1ff00]" />
+          <Layers className="size-4" style={{ color: primary }} />
           <div>
-            <h4 className="font-bold text-white">Fluxo de Capital On-Chain (24h)</h4>
-            <p className="text-[0.6rem] text-zinc-500">Distribuição de liquidez e migração entre ecossistemas</p>
+            <h4 className="font-bold text-white font-sans text-xs">Fluxo de Capital On-Chain (24h)</h4>
+            <p className="text-[0.6rem] text-zinc-400">Distribuição de liquidez e migração entre ecossistemas</p>
           </div>
         </div>
 
-        <span className="inline-flex items-center gap-1 rounded-md border border-[#d1ff00]/40 bg-[#d1ff00]/10 px-2 py-0.5 text-[0.62rem] font-bold text-[#d1ff00]">
+        <span
+          className="inline-flex items-center gap-1 rounded-xl border px-2 py-0.5 text-[0.62rem] font-bold"
+          style={{ borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 8px ${primary}20` }}
+        >
           <Flame className="size-3" />
           Volume Total: $29.5M / 24h
         </span>
@@ -63,7 +67,7 @@ export function ChainCapitalFlow() {
 
       {/* Proportional Segmented Bar (Treemap Bar) */}
       <div className="mt-3">
-        <div className="h-3.5 w-full rounded-lg bg-zinc-900 flex overflow-hidden border border-zinc-800/80">
+        <div className="h-3.5 w-full rounded-xl bg-white/5 flex overflow-hidden border border-white/10">
           {chains.map((c) => (
             <div
               key={c.name}
@@ -80,35 +84,35 @@ export function ChainCapitalFlow() {
         {chains.map((c) => (
           <div
             key={c.name}
-            className={`rounded-lg border ${c.borderColor} bg-zinc-900/40 p-2.5 space-y-1.5`}
+            className={`rounded-xl border ${c.borderColor} bg-white/[0.03] p-2.5 space-y-1.5 hover:border-white/20 transition-all`}
           >
             <div className="flex items-center justify-between">
               <span className={`font-bold ${c.textColor}`}>{c.name}</span>
-              <span className="text-[0.58rem] rounded bg-zinc-800/90 px-1.5 py-0.5 text-zinc-400">
+              <span className="text-[0.58rem] rounded-md bg-white/10 px-1.5 py-0.5 text-zinc-300 font-mono">
                 {c.share}% Share
               </span>
             </div>
 
-            <div className="flex items-baseline justify-between pt-1 border-t border-zinc-800/60">
-              <span className="text-[0.58rem] text-zinc-500 uppercase">Volume 24h</span>
+            <div className="flex items-baseline justify-between pt-1 border-t border-white/5">
+              <span className="text-[0.58rem] text-zinc-400 uppercase">Volume 24h</span>
               <span className="font-bold text-white">${(c.volume24h / 1e6).toFixed(2)}M</span>
             </div>
 
             <div className="flex items-baseline justify-between">
-              <span className="text-[0.58rem] text-zinc-500 uppercase">Influxo Líquido</span>
-              <span className="font-bold text-[#d1ff00]">+${(c.netInflow24h / 1e6).toFixed(2)}M</span>
+              <span className="text-[0.58rem] text-zinc-400 uppercase">Influxo Líquido</span>
+              <span className="font-bold text-emerald-400">+${(c.netInflow24h / 1e6).toFixed(2)}M</span>
             </div>
 
             <div className="flex items-baseline justify-between">
-              <span className="text-[0.58rem] text-zinc-500 uppercase">Pools Monitoradas</span>
+              <span className="text-[0.58rem] text-zinc-400 uppercase">Pools Monitoradas</span>
               <span className="text-zinc-400">{c.activePools} pools</span>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-2.5 rounded-lg border border-zinc-800/60 bg-zinc-900/30 p-2 text-[0.62rem] text-zinc-400">
-        ⚡ <strong className="text-white">Rotação Dominante:</strong> Solana absorve <span className="text-[#d1ff00] font-bold">62.4% do fluxo de capital novo</span> nas últimas 24 horas com $14.2M de influxo líquido.
+      <div className="mt-2.5 rounded-xl border border-white/5 bg-white/[0.02] p-2.5 text-[0.62rem] text-zinc-400">
+        ⚡ <strong className="text-white">Rotação Dominante:</strong> Solana absorve <span className="text-cyan-300 font-bold">62.4% do fluxo de capital novo</span> nas últimas 24 horas com $14.2M de influxo líquido.
       </div>
     </div>
   );

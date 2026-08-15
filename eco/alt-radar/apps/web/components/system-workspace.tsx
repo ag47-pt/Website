@@ -31,33 +31,35 @@ import {
 import { formatDateTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
 import { ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notifications" }) {
   const status = useSystemStatus();
   const isLogs = kind === "logs";
   const isNotifications = kind === "notifications";
+  const { primary } = useEcoTheme();
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 font-mono">
       <header>
-        <p className="eyebrow">
+        <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">
           {isLogs
             ? "Observabilidade do Sprint 1"
             : isNotifications
               ? "Histórico e Auditoria de Disparos"
               : "Configuração operacional"}
         </p>
-        <h1 className="mt-1 flex items-center gap-2 text-xl font-extrabold tracking-[-0.04em]">
+        <h1 className="mt-1 flex items-center gap-2 text-xl font-bold tracking-tight text-white font-sans">
           {isLogs ? (
-            <FileClock className="size-5 text-radar-neutral" />
+            <FileClock className="size-5" style={{ color: primary }} />
           ) : isNotifications ? (
-            <Bell className="size-5 text-radar-neutral" />
+            <Bell className="size-5" style={{ color: primary }} />
           ) : (
-            <Settings2 className="size-5 text-radar-neutral" />
+            <Settings2 className="size-5" style={{ color: primary }} />
           )}
           {isLogs ? "Logs" : isNotifications ? "Notificações" : "Configurações"}
         </h1>
-        <p className="mt-1 max-w-2xl text-xs leading-5 text-radar-muted">
+        <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
           {isLogs
             ? "Estado de sincronização e diagnóstico seguro dos providers, sem payloads sensíveis ou stack traces."
             : isNotifications
@@ -67,11 +69,11 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
       </header>
 
       {status.isLoading ? (
-        <div className="panel">
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
           <PanelSkeleton rows={7} />
         </div>
       ) : status.isError ? (
-        <div className="panel">
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
           <ErrorState message={getErrorMessage(status.error)} retry={() => void status.refetch()} />
         </div>
       ) : status.data ? (
@@ -82,78 +84,78 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
           {isLogs ? (
             <>
               <div className="grid gap-3 lg:grid-cols-[1fr_1.5fr]">
-              <section className="panel p-4">
-                <h2 className="flex items-center gap-2 text-sm font-extrabold">
-                  <Clock3 className="size-4 text-radar-neutral" /> Última leitura
+              <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+                <h2 className="flex items-center gap-2 text-sm font-bold text-white font-sans">
+                  <Clock3 className="size-4 text-cyan-400" /> Última leitura
                 </h2>
-                <dl className="mt-4 space-y-3">
+                <dl className="mt-4 space-y-3 font-mono">
                   <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-radar-muted">Estado</dt>
+                    <dt className="text-xs text-zinc-400">Estado</dt>
                     <dd
-                      className={`text-xs font-extrabold ${status.data.status === "operational" ? "text-radar-positive" : "text-radar-warning"}`}
+                      className={`text-xs font-bold ${status.data.status === "operational" ? "text-emerald-400" : "text-amber-400"}`}
                     >
                       {status.data.status}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-radar-muted">Última sincronização</dt>
-                    <dd className="text-right text-xs font-bold">
+                    <dt className="text-xs text-zinc-400">Última sincronização</dt>
+                    <dd className="text-right text-xs font-bold text-white">
                       {formatDateTime(status.data.last_sync_at)}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-radar-muted">Gerado em</dt>
-                    <dd className="text-right text-xs font-bold">
+                    <dt className="text-xs text-zinc-400">Gerado em</dt>
+                    <dd className="text-right text-xs font-bold text-white">
                       {formatDateTime(status.data.generated_at)}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-radar-muted">Base de dados</dt>
-                    <dd className="text-right text-xs font-bold">{status.data.database}</dd>
+                    <dt className="text-xs text-zinc-400">Base de dados</dt>
+                    <dd className="text-right text-xs font-bold text-white">{status.data.database}</dd>
                   </div>
                 </dl>
-                <p className="mt-4 border-t border-radar-border pt-3 text-[0.63rem] leading-5 text-radar-subtle">
+                <p className="mt-4 border-t border-white/10 pt-3 text-[0.63rem] leading-5 text-zinc-500">
                   O histórico detalhado de logs e exportação fica reservado para um sprint
                   posterior. Esta página já representa o estado de runtime real.
                 </p>
               </section>
-              <section className="panel overflow-hidden">
-                <div className="border-b border-radar-border p-4">
-                  <h2 className="flex items-center gap-2 text-sm font-extrabold">
-                    <ServerCog className="size-4 text-radar-neutral" /> Providers
+              <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden">
+                <div className="border-b border-white/10 p-4">
+                  <h2 className="flex items-center gap-2 text-sm font-bold text-white font-sans">
+                    <ServerCog className="size-4 text-cyan-400" /> Providers
                   </h2>
                 </div>
-                <div className="divide-y divide-radar-border/70">
+                <div className="divide-y divide-white/5 font-mono">
                   {status.data.providers.map((provider) => {
                     const hasCircuit = provider.circuit_state !== undefined;
                     return (
-                      <article key={provider.id} className="grid gap-2 p-3.5 sm:grid-cols-[1fr_auto] items-center">
+                      <article key={provider.id} className="grid gap-2 p-3.5 sm:grid-cols-[1fr_auto] items-center hover:bg-white/[0.02] transition-colors">
                         <div>
-                          <p className="text-xs font-extrabold">{provider.name}</p>
-                          <p className="mt-0.5 text-[0.62rem] text-radar-muted">
+                          <p className="text-xs font-bold text-white">{provider.name}</p>
+                          <p className="mt-0.5 text-[0.62rem] text-zinc-400">
                             {provider.kind} • {provider.detail ?? "Sem diagnóstico adicional"}
                           </p>
                           {hasCircuit && (
                             <div className="mt-1.5 flex flex-wrap gap-2 text-[0.58rem]">
-                              <span className={`px-1.5 py-0.5 rounded font-extrabold uppercase ${
-                                provider.circuit_state === "closed" ? "bg-radar-positive/10 text-radar-positive" :
-                                provider.circuit_state === "open" ? "bg-radar-critical/10 text-radar-critical font-black animate-pulse" :
-                                "bg-radar-warning/10 text-radar-warning"
+                              <span className={`px-1.5 py-0.5 rounded-lg font-bold uppercase ${
+                                provider.circuit_state === "closed" ? "bg-emerald-950/50 text-emerald-300 border border-emerald-500/30" :
+                                provider.circuit_state === "open" ? "bg-rose-950/50 text-rose-300 border border-rose-500/30 font-black animate-pulse" :
+                                "bg-amber-950/50 text-amber-300 border border-amber-500/30"
                               }`}>
                                 Circuito: {provider.circuit_state}
                               </span>
                               {provider.consecutive_failures !== undefined && provider.consecutive_failures > 0 && (
-                                <span className="bg-radar-border/45 text-radar-warning px-1.5 py-0.5 rounded font-bold">
+                                <span className="bg-amber-950/40 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded-lg font-bold">
                                   Falhas: {provider.consecutive_failures}
                                 </span>
                               )}
                               {provider.latency_ms !== null && provider.latency_ms !== undefined && (
-                                <span className="bg-radar-border/45 text-radar-subtle px-1.5 py-0.5 rounded font-medium">
+                                <span className="bg-white/5 text-zinc-400 border border-white/10 px-1.5 py-0.5 rounded-lg font-medium">
                                   Latência: {provider.latency_ms.toFixed(0)}ms
                                 </span>
                               )}
                               {provider.remaining_cooldown !== null && provider.remaining_cooldown !== undefined && provider.remaining_cooldown > 0 && (
-                                <span className="bg-radar-critical/10 text-radar-critical px-1.5 py-0.5 rounded font-bold animate-pulse">
+                                <span className="bg-rose-950/50 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded-lg font-bold animate-pulse">
                                   Resfriamento: {provider.remaining_cooldown.toFixed(0)}s
                                 </span>
                               )}
@@ -163,11 +165,11 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
                         <div className="flex flex-col sm:items-end justify-between gap-2">
                           <div className="text-left sm:text-right">
                             <p
-                              className={`text-[0.64rem] font-extrabold uppercase ${provider.status === "active" ? "text-radar-positive" : provider.status === "degraded" ? "text-radar-warning" : "text-radar-subtle"}`}
+                              className={`text-[0.64rem] font-bold uppercase ${provider.status === "active" ? "text-emerald-400" : provider.status === "degraded" ? "text-amber-400" : "text-zinc-500"}`}
                             >
                               {provider.status} • {provider.mode}
                             </p>
-                            <p className="mt-0.5 text-[0.58rem] text-radar-subtle">
+                            <p className="mt-0.5 text-[0.58rem] text-zinc-500">
                               {formatDateTime(provider.last_checked_at)}
                             </p>
                           </div>
@@ -183,7 +185,7 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
               </section>
             </div>
             <div className="flex items-center justify-between mt-1">
-              <h2 className="text-xs font-extrabold text-radar-muted">Exportação Epistemológica</h2>
+              <h2 className="text-xs font-bold text-zinc-400">Exportação Epistemológica</h2>
               <ExportDatasetButton />
             </div>
             <MultiChainHealthMatrix />
@@ -197,34 +199,34 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
           ) : (
             <>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <section className="panel p-4">
-                  <Database className="size-5 text-radar-neutral" />
-                  <h2 className="mt-3 text-sm font-extrabold">API pública</h2>
-                  <p className="mono mt-2 break-all text-[0.68rem] text-radar-muted">
+                <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+                  <Database className="size-5 text-cyan-400" />
+                  <h2 className="mt-3 text-sm font-bold text-white font-sans">API pública</h2>
+                  <p className="mt-2 break-all text-[0.68rem] text-zinc-400">
                     {process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}
                   </p>
-                  <p className="mt-3 text-[0.63rem] leading-5 text-radar-subtle">
+                  <p className="mt-3 text-[0.63rem] leading-5 text-zinc-500">
                     Definida por NEXT_PUBLIC_API_URL. Nenhum segredo é aceite nesta variável.
                   </p>
                 </section>
-                <section className="panel p-4">
-                  <Radio className="size-5 text-radar-positive" />
-                  <h2 className="mt-3 text-sm font-extrabold">Monitoramento</h2>
-                  <p className="mt-2 text-xs font-bold text-radar-ink">
+                <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+                  <Radio className="size-5 text-emerald-400" />
+                  <h2 className="mt-3 text-sm font-bold text-white font-sans">Monitoramento</h2>
+                  <p className="mt-2 text-xs font-bold text-white">
                     {status.data.monitoring_active ? "Ativo" : "Inativo"}
                   </p>
-                  <p className="mt-3 text-[0.63rem] leading-5 text-radar-subtle">
+                  <p className="mt-3 text-[0.63rem] leading-5 text-zinc-500">
                     O agendamento é controlado pelo backend. Esta interface não executa jobs
                     diretamente.
                   </p>
                 </section>
-                <section className="panel p-4">
-                  <LockKeyhole className="size-5 text-radar-warning" />
-                  <h2 className="mt-3 text-sm font-extrabold">Limites de segurança</h2>
-                  <p className="mt-2 text-xs font-bold text-radar-ink">
+                <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
+                  <LockKeyhole className="size-5 text-amber-400" />
+                  <h2 className="mt-3 text-sm font-bold text-white font-sans">Limites de segurança</h2>
+                  <p className="mt-2 text-xs font-bold text-white">
                     {status.data.read_only ? "Blockchain read-only" : "Estado não confirmado"}
                   </p>
-                  <p className="mt-3 text-[0.63rem] leading-5 text-radar-subtle">
+                  <p className="mt-3 text-[0.63rem] leading-5 text-zinc-500">
                     Sem carteira, seed phrase, chave privada ou endpoint de execução financeira.
                   </p>
                 </section>
@@ -243,7 +245,7 @@ function ResetCircuitButton({ providerId }: { providerId: string }) {
 
   return (
     <button
-      className="inline-flex items-center gap-1 rounded bg-radar-critical/20 hover:bg-radar-critical/30 border border-radar-critical/40 px-2 py-0.5 text-[0.58rem] font-extrabold text-radar-ink disabled:opacity-50"
+      className="inline-flex items-center gap-1 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 px-2.5 py-1 text-[0.58rem] font-bold text-rose-300 disabled:opacity-50 transition-colors cursor-pointer"
       disabled={resetCircuit.isPending}
       onClick={() => resetCircuit.mutate(providerId)}
       type="button"
@@ -257,6 +259,7 @@ function ResetCircuitButton({ providerId }: { providerId: string }) {
 function NotificationSettingsForm() {
   const settingsQuery = useUserNotificationSettings();
   const updateMutation = useUpdateUserNotificationSettingsMutation();
+  const { primary } = useEcoTheme();
 
   const [minSeverity, setMinSeverity] = useState(0.0);
   const [minConfidence, setMinConfidence] = useState(0.0);
@@ -304,12 +307,12 @@ function NotificationSettingsForm() {
   if (settingsQuery.isLoading) return <PanelSkeleton rows={3} />;
 
   return (
-    <section className="panel p-4 mt-4 space-y-4">
+    <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 mt-4 space-y-4 font-mono">
       <div>
-        <h2 className="text-sm font-extrabold flex items-center gap-2">
-          <Bell className="size-4 text-radar-neutral" /> Filtros de Notificação do Telegram
+        <h2 className="text-sm font-bold flex items-center gap-2 text-white font-sans">
+          <Bell className="size-4" style={{ color: primary }} /> Filtros de Notificação do Telegram
         </h2>
-        <p className="text-[0.62rem] text-radar-muted mt-1 leading-relaxed">
+        <p className="text-[0.62rem] text-zinc-400 mt-1 leading-relaxed">
           Configure as regras mínimas estatísticas para que um alerta seja despachado ativamente para o canal do Telegram Bot.
         </p>
       </div>
@@ -317,7 +320,7 @@ function NotificationSettingsForm() {
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block font-bold text-radar-ink mb-1.5">Severidade Mínima: {minSeverity.toFixed(1)}/1.0</label>
+            <label className="block font-bold text-white mb-1.5">Severidade Mínima: {minSeverity.toFixed(1)}/1.0</label>
             <input
               type="range"
               min="0.0"
@@ -325,13 +328,13 @@ function NotificationSettingsForm() {
               step="0.1"
               value={minSeverity}
               onChange={(e) => setMinSeverity(parseFloat(e.target.value))}
-              className="w-full h-1 bg-[#09151e] border border-radar-border rounded-lg appearance-none cursor-pointer accent-radar-positive"
+              className="w-full h-1.5 bg-black/40 border border-white/10 rounded-lg appearance-none cursor-pointer"
             />
-            <span className="text-[0.55rem] text-radar-muted mt-1 block">Apenas alertas com severidade de sinal maior ou igual a esta nota.</span>
+            <span className="text-[0.55rem] text-zinc-500 mt-1 block">Apenas alertas com severidade de sinal maior ou igual a esta nota.</span>
           </div>
 
           <div>
-            <label className="block font-bold text-radar-ink mb-1.5">Confiança Mínima: {minConfidence.toFixed(1)}/1.0</label>
+            <label className="block font-bold text-white mb-1.5">Confiança Mínima: {minConfidence.toFixed(1)}/1.0</label>
             <input
               type="range"
               min="0.0"
@@ -339,14 +342,14 @@ function NotificationSettingsForm() {
               step="0.1"
               value={minConfidence}
               onChange={(e) => setMinConfidence(parseFloat(e.target.value))}
-              className="w-full h-1 bg-[#09151e] border border-radar-border rounded-lg appearance-none cursor-pointer accent-radar-positive"
+              className="w-full h-1.5 bg-black/40 border border-white/10 rounded-lg appearance-none cursor-pointer"
             />
-            <span className="text-[0.55rem] text-radar-muted mt-1 block">Apenas alertas com grau de confiança estatística maior ou igual a este limite.</span>
+            <span className="text-[0.55rem] text-zinc-500 mt-1 block">Apenas alertas com grau de confiança estatística maior ou igual a este limite.</span>
           </div>
         </div>
 
         <div>
-          <label className="block font-bold text-radar-ink mb-1.5">Blockchains Permitidas</label>
+          <label className="block font-bold text-white mb-1.5">Blockchains Permitidas</label>
           <div className="flex flex-wrap gap-2">
             {[
               { id: "all", label: "Todas as Chains" },
@@ -360,8 +363,8 @@ function NotificationSettingsForm() {
                   key={chain.id}
                   type="button"
                   onClick={() => handleChainToggle(chain.id)}
-                  className={`px-3 py-1 rounded-md text-[0.62rem] font-bold border transition-colors ${
-                    active ? "bg-radar-positive/20 border-radar-positive text-radar-positive" : "bg-[#09151e] border-radar-border text-radar-muted hover:text-radar-ink"
+                  className={`px-3 py-1 rounded-xl text-[0.62rem] font-bold border transition-all cursor-pointer ${
+                    active ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300 shadow-[0_0_8px_rgba(0,217,255,0.15)]" : "bg-[#050c12] border-white/10 text-zinc-400 hover:text-white"
                   }`}
                 >
                   {chain.label}
@@ -371,49 +374,49 @@ function NotificationSettingsForm() {
           </div>
         </div>
 
-        <div className="border-t border-radar-border/40 pt-4 mt-2 space-y-3">
-          <h3 className="text-xs font-extrabold flex items-center gap-1.5 text-radar-ink">
-            <Link2 className="size-3.5 text-radar-neutral" /> Webhook Outbound (Discord / Slack / n8n)
+        <div className="border-t border-white/10 pt-4 mt-2 space-y-3">
+          <h3 className="text-xs font-bold flex items-center gap-1.5 text-white font-sans">
+            <Link2 className="size-3.5 text-cyan-400" /> Webhook Outbound (Discord / Slack / n8n)
           </h3>
-          <p className="text-[0.55rem] text-radar-muted leading-relaxed">
+          <p className="text-[0.55rem] text-zinc-400 leading-relaxed">
             Configure uma URL de Webhook para receber alertas de Edge via HTTP POST assinado com HMAC SHA-256.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="block font-bold text-radar-ink mb-1">URL do Webhook</label>
+              <label className="block font-bold text-zinc-300 mb-1">URL do Webhook</label>
               <input
                 type="url"
                 value={webhookUrl}
                 onChange={(e) => setWebhookUrl(e.target.value)}
                 placeholder="https://discord.com/api/webhooks/..."
-                className="w-full h-7 rounded border border-radar-border bg-[#09151e] px-2 text-[0.62rem] text-radar-ink placeholder:text-radar-subtle"
+                className="w-full h-8 rounded-xl border border-white/10 bg-[#050c12] px-2.5 text-[0.62rem] text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/60"
               />
             </div>
             <div>
-              <label className="block font-bold text-radar-ink mb-1">Chave Secreta (HMAC)</label>
+              <label className="block font-bold text-zinc-300 mb-1">Chave Secreta (HMAC)</label>
               <input
                 type="password"
                 value={webhookSecret}
                 onChange={(e) => setWebhookSecret(e.target.value)}
                 placeholder="Segredo de assinatura HMAC SHA-256"
-                className="w-full h-7 rounded border border-radar-border bg-[#09151e] px-2 text-[0.62rem] text-radar-ink placeholder:text-radar-subtle"
+                className="w-full h-8 rounded-xl border border-white/10 bg-[#050c12] px-2.5 text-[0.62rem] text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/60"
               />
             </div>
           </div>
           {settingsQuery.data?.webhook_configured && (
             <div className="flex items-center gap-2">
-              <span className="text-[0.55rem] text-radar-positive font-bold">✓ Webhook configurado</span>
+              <span className="text-[0.55rem] text-emerald-400 font-bold">✓ Webhook configurado</span>
               <button
                 type="button"
                 disabled={testWebhook.isPending}
                 onClick={() => testWebhook.mutate()}
-                className="inline-flex items-center gap-1 rounded bg-radar-border/30 hover:bg-radar-border/50 border border-radar-border px-2 py-0.5 text-[0.55rem] font-bold text-radar-ink disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1 text-[0.55rem] font-bold text-zinc-300 disabled:opacity-50 cursor-pointer transition-colors"
               >
                 <Send className="size-2.5" />
                 {testWebhook.isPending ? "Testando..." : "Testar Envio"}
               </button>
               {testWebhook.data && (
-                <span className={`text-[0.55rem] font-bold ${testWebhook.data.success ? "text-radar-positive" : "text-radar-critical"}`}>
+                <span className={`text-[0.55rem] font-bold ${testWebhook.data.success ? "text-emerald-400" : "text-rose-400"}`}>
                   {testWebhook.data.success ? `OK (${testWebhook.data.status_code})` : `Falha: ${testWebhook.data.error ?? "Erro desconhecido"}`}
                 </span>
               )}
@@ -421,11 +424,12 @@ function NotificationSettingsForm() {
           )}
         </div>
 
-        <div className="flex justify-end pt-2 border-t border-radar-border/40">
+        <div className="flex justify-end pt-2 border-t border-white/10">
           <button
             type="submit"
             disabled={updateMutation.isPending}
-            className="inline-flex items-center gap-1 rounded bg-radar-positive/20 hover:bg-radar-positive/30 border border-radar-positive/45 px-3 py-1.5 text-[0.62rem] font-extrabold text-radar-positive disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-xl px-4 py-2 text-[0.68rem] font-bold text-black transition-all disabled:opacity-50 cursor-pointer shadow-lg"
+            style={{ backgroundColor: primary, boxShadow: `0 0 15px ${primary}40` }}
           >
             {updateMutation.isPending ? "Salvando..." : "Salvar Configurações"}
           </button>
@@ -439,22 +443,23 @@ function NotificationDeliveryLogs() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const notificationsQuery = useSystemNotifications(page, 10, statusFilter === "all" ? undefined : statusFilter);
+  const { primary } = useEcoTheme();
 
   return (
-    <section className="panel mt-4 overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-radar-border p-4">
+    <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl mt-4 overflow-hidden font-mono">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 p-4">
         <div>
-          <h2 className="text-sm font-extrabold flex items-center gap-2">
-            <Radio className="size-4 text-radar-neutral" /> Fila de Entrega de Notificações
+          <h2 className="text-sm font-bold flex items-center gap-2 text-white font-sans">
+            <Radio className="size-4" style={{ color: primary }} /> Fila de Entrega de Notificações
           </h2>
-          <p className="text-[0.62rem] text-radar-muted mt-0.5">
+          <p className="text-[0.62rem] text-zinc-400 mt-0.5">
             Logs de disparos da fila assíncrona do Telegram Bot com seus payloads e diagnósticos.
           </p>
         </div>
 
         <div>
           <select
-            className="h-7 rounded border border-radar-border bg-[#09151e] px-2 text-[0.62rem] text-radar-ink"
+            className="h-8 rounded-xl border border-white/10 bg-black/40 px-2.5 text-[0.62rem] text-white focus:outline-none"
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(1);
@@ -474,11 +479,11 @@ function NotificationDeliveryLogs() {
       ) : notificationsQuery.isError ? (
         <ErrorState message={getErrorMessage(notificationsQuery.error)} retry={() => void notificationsQuery.refetch()} />
       ) : !notificationsQuery.data?.items.length ? (
-        <div className="p-8 text-center text-xs text-radar-muted">
+        <div className="p-8 text-center text-xs text-zinc-500">
           Nenhuma tentativa de entrega registrada para o filtro atual.
         </div>
       ) : (
-        <div className="divide-y divide-radar-border/40 text-[0.6rem]">
+        <div className="divide-y divide-white/5 text-[0.6rem]">
           {notificationsQuery.data.items.map((delivery) => {
             const isSuccess = delivery.status === "success";
             const isFailed = delivery.status === "failed";
@@ -488,33 +493,33 @@ function NotificationDeliveryLogs() {
             const durationStr = typeof durationVal === "number" || typeof durationVal === "string" ? String(durationVal) : undefined;
 
             return (
-              <article key={delivery.id} className="p-3.5 hover:bg-white/[0.01] transition-colors grid gap-2 sm:grid-cols-[1fr_auto] items-start">
+              <article key={delivery.id} className="p-3.5 hover:bg-white/[0.02] transition-colors grid gap-2 sm:grid-cols-[1fr_auto] items-start">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-extrabold text-radar-ink">Token: {delivery.token_symbol ?? "Desconhecido"}</span>
-                    <span className="text-radar-muted">• Canal: {delivery.channel}</span>
-                    <span className={`px-1.5 py-0.5 rounded font-black uppercase text-[0.52rem] ${
-                      isSuccess ? "bg-radar-positive/10 text-radar-positive" :
-                      isFailed ? "bg-radar-critical/10 text-radar-critical" :
-                      "bg-radar-warning/10 text-radar-warning"
+                    <span className="font-bold text-white">Token: {delivery.token_symbol ?? "Desconhecido"}</span>
+                    <span className="text-zinc-400">• Canal: {delivery.channel}</span>
+                    <span className={`px-1.5 py-0.5 rounded-lg font-bold uppercase text-[0.52rem] ${
+                      isSuccess ? "bg-emerald-950/50 text-emerald-300 border border-emerald-500/30" :
+                      isFailed ? "bg-rose-950/50 text-rose-300 border border-rose-500/30" :
+                      "bg-amber-950/50 text-amber-300 border border-amber-500/30"
                     }`}>
                       {delivery.status}
                     </span>
                   </div>
                   {durationStr && (
-                    <p className="text-radar-subtle text-[0.55rem]">
+                    <p className="text-zinc-500 text-[0.55rem]">
                       Duração: {parseFloat(durationStr).toFixed(0)}ms
                     </p>
                   )}
                   {errorMsg && (
-                    <p className="text-radar-critical font-medium text-[0.55rem] bg-radar-critical/5 px-2 py-1 rounded border border-radar-critical/20">
+                    <p className="text-rose-300 font-medium text-[0.55rem] bg-rose-950/40 px-2 py-1 rounded-lg border border-rose-500/30">
                       Erro: {errorMsg}
                     </p>
                   )}
                 </div>
                 <div className="text-left sm:text-right">
-                  <p className="text-radar-muted font-mono">{formatDateTime(delivery.created_at)}</p>
-                  <p className="text-[0.52rem] text-radar-subtle mt-0.5 truncate max-w-[200px]" title={delivery.alert_id}>
+                  <p className="text-zinc-400">{formatDateTime(delivery.created_at)}</p>
+                  <p className="text-[0.52rem] text-zinc-500 mt-0.5 truncate max-w-[200px]" title={delivery.alert_id}>
                     ID Alerta: {delivery.alert_id.substring(0, 8)}...
                   </p>
                 </div>
@@ -522,27 +527,27 @@ function NotificationDeliveryLogs() {
             );
           })}
 
-          <footer className="flex items-center justify-between border-t border-radar-border/40 px-3.5 py-2.5 bg-white/[0.01]">
-            <p className="text-[0.58rem] text-radar-muted">
+          <footer className="flex items-center justify-between border-t border-white/10 px-3.5 py-2.5 bg-white/[0.01]">
+            <p className="text-[0.58rem] text-zinc-400">
               Total: {notificationsQuery.data.total} envios
             </p>
             <div className="flex items-center gap-1.5">
               <button
-                className="grid size-6 place-items-center rounded border border-radar-border disabled:opacity-35"
+                className="grid size-7 place-items-center rounded-lg border border-white/10 bg-white/5 text-zinc-400 hover:text-white disabled:opacity-35 transition-colors cursor-pointer"
                 disabled={page <= 1}
                 onClick={() => setPage(p => Math.max(1, p - 1))}
               >
-                <ChevronLeft className="size-3" />
+                <ChevronLeft className="size-3.5" />
               </button>
-              <span className="mono text-[0.58rem] text-radar-muted">
+              <span className="text-[0.58rem] text-zinc-400">
                 {page}/{Math.max(1, notificationsQuery.data.pages)}
               </span>
               <button
-                className="grid size-6 place-items-center rounded border border-radar-border disabled:opacity-35"
+                className="grid size-7 place-items-center rounded-lg border border-white/10 bg-white/5 text-zinc-400 hover:text-white disabled:opacity-35 transition-colors cursor-pointer"
                 disabled={page >= notificationsQuery.data.pages}
                 onClick={() => setPage(p => p + 1)}
               >
-                <ChevronRight className="size-3" />
+                <ChevronRight className="size-3.5" />
               </button>
             </div>
           </footer>
@@ -554,6 +559,7 @@ function NotificationDeliveryLogs() {
 
 function MultiChainHealthMatrix() {
   const chainStatus = useChainStatus();
+  const { primary } = useEcoTheme();
 
   if (chainStatus.isLoading) return <PanelSkeleton rows={3} />;
   if (chainStatus.isError) {
@@ -561,19 +567,19 @@ function MultiChainHealthMatrix() {
   }
   if (!chainStatus.data?.chains.length) {
     return (
-      <section className="panel p-4 mt-4">
-        <p className="text-xs text-radar-muted text-center">Nenhuma rede monitorada.</p>
+      <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 mt-4 font-mono">
+        <p className="text-xs text-zinc-500 text-center">Nenhuma rede monitorada.</p>
       </section>
     );
   }
 
   return (
-    <section className="panel mt-4 overflow-hidden">
-      <div className="border-b border-radar-border p-4">
-        <h2 className="flex items-center gap-2 text-sm font-extrabold">
-          <Globe className="size-4 text-radar-neutral" /> Matriz de Saúde Multi-Chain
+    <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl mt-4 overflow-hidden font-mono">
+      <div className="border-b border-white/10 p-4">
+        <h2 className="flex items-center gap-2 text-sm font-bold text-white font-sans">
+          <Globe className="size-4" style={{ color: primary }} /> Matriz de Saúde Multi-Chain
         </h2>
-        <p className="text-[0.62rem] text-radar-muted mt-0.5">
+        <p className="text-[0.62rem] text-zinc-400 mt-0.5">
           Status de cobertura por ecossistema de blockchain nas últimas 24 horas.
         </p>
       </div>
@@ -581,43 +587,43 @@ function MultiChainHealthMatrix() {
         {chainStatus.data.chains.map((chain) => {
           const statusColor =
             chain.status === "green"
-              ? "text-radar-positive border-radar-positive/30 bg-radar-positive/5"
+              ? "text-emerald-300 border-emerald-500/30 bg-emerald-950/30"
               : chain.status === "yellow"
-                ? "text-radar-warning border-radar-warning/30 bg-radar-warning/5"
-                : "text-radar-critical border-radar-critical/30 bg-radar-critical/5";
+                ? "text-amber-300 border-amber-500/30 bg-amber-950/30"
+                : "text-rose-300 border-rose-500/30 bg-rose-950/30";
           return (
             <article
               key={chain.chain}
-              className={`rounded-lg border p-3.5 transition-colors ${statusColor}`}
+              className={`rounded-xl border p-3.5 transition-colors ${statusColor}`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-extrabold uppercase">{chain.chain}</p>
+                <p className="text-xs font-bold uppercase">{chain.chain}</p>
                 <span
                   className={`size-2.5 rounded-full ${
                     chain.status === "green"
-                      ? "bg-radar-positive"
+                      ? "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
                       : chain.status === "yellow"
-                        ? "bg-radar-warning animate-pulse"
-                        : "bg-radar-critical animate-pulse"
+                        ? "bg-amber-400 animate-pulse"
+                        : "bg-rose-400 animate-pulse"
                   }`}
                 />
               </div>
               <dl className="mt-3 space-y-1.5 text-[0.6rem]">
                 <div className="flex justify-between">
-                  <dt className="text-radar-muted">Tokens ativos</dt>
-                  <dd className="font-bold">{chain.tokens_active}</dd>
+                  <dt className="text-zinc-400">Tokens ativos</dt>
+                  <dd className="font-bold text-white">{chain.tokens_active}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-radar-muted">Liquidez rastreada</dt>
-                  <dd className="font-bold">${chain.liquidity_tracked.toLocaleString("en-US", { maximumFractionDigits: 0 })}</dd>
+                  <dt className="text-zinc-400">Liquidez rastreada</dt>
+                  <dd className="font-bold text-white">${chain.liquidity_tracked.toLocaleString("en-US", { maximumFractionDigits: 0 })}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-radar-muted">Alertas (24h)</dt>
-                  <dd className="font-bold">{chain.alerts_24h}</dd>
+                  <dt className="text-zinc-400">Alertas (24h)</dt>
+                  <dd className="font-bold text-white">{chain.alerts_24h}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-radar-muted">Taxa de sucesso</dt>
-                  <dd className="font-bold">{chain.provider_success_rate.toFixed(0)}%</dd>
+                  <dt className="text-zinc-400">Taxa de sucesso</dt>
+                  <dd className="font-bold text-emerald-400">{chain.provider_success_rate.toFixed(0)}%</dd>
                 </div>
               </dl>
             </article>
@@ -631,11 +637,12 @@ function MultiChainHealthMatrix() {
 function ExportDatasetButton() {
   const downloadMutation = useDownloadTruthDataset();
   const [format, setFormat] = useState<"json" | "csv">("json");
+  const { primary } = useEcoTheme();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 font-mono">
       <select
-        className="h-7 rounded border border-radar-border bg-[#09151e] px-2 text-[0.62rem] text-radar-ink"
+        className="h-8 rounded-xl border border-white/10 bg-black/40 px-2.5 text-[0.62rem] text-white focus:outline-none"
         value={format}
         onChange={(e) => setFormat(e.target.value as "json" | "csv")}
       >
@@ -646,7 +653,8 @@ function ExportDatasetButton() {
         type="button"
         disabled={downloadMutation.isPending}
         onClick={() => downloadMutation.mutate(format)}
-        className="inline-flex items-center gap-1 rounded bg-radar-positive/20 hover:bg-radar-positive/30 border border-radar-positive/45 px-2.5 py-1 text-[0.58rem] font-extrabold text-radar-positive disabled:opacity-50"
+        className="inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-[0.58rem] font-bold disabled:opacity-50 transition-all cursor-pointer"
+        style={{ borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary }}
       >
         <Download className="size-3" />
         {downloadMutation.isPending ? "Exportando..." : "Exportar Dataset"}
@@ -654,4 +662,3 @@ function ExportDatasetButton() {
     </div>
   );
 }
-

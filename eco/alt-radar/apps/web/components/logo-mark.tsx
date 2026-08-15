@@ -1,21 +1,36 @@
-import { RadioTower } from "lucide-react";
+"use client";
+
+import Link from "next/link";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 export function LogoMark({ compact = false }: { compact?: boolean }) {
+  const { primary } = useEcoTheme();
+
   return (
-    <div className="flex min-w-0 items-center gap-3">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-radar-positive/35 bg-gradient-to-br from-[#0d281d] to-[#081a15] text-radar-positive shadow-[0_0_18px_rgb(78_229_154_/_0.18),inset_0_1px_0_rgb(255_255_255_/_0.06)]">
-        <RadioTower aria-hidden="true" className="size-6" strokeWidth={1.8} />
-      </span>
+    <Link href="/eco/alt-radar?tab=dashboard" className="flex items-center gap-3 group transition-transform hover:scale-[1.02]">
+      {/* Brand Icon Badge - Following E47 / L47 Eco/Labs Pattern */}
+      <div
+        className="w-9 h-9 flex items-center justify-center font-black text-black text-[10px] hover:scale-110 transition-transform rounded-xl shadow-lg shrink-0"
+        style={{ backgroundColor: primary, boxShadow: `0 0 16px ${primary}40` }}
+      >
+        E47
+      </div>
+
       {!compact && (
-        <span className="min-w-0">
-          <span className="block truncate text-[1.04rem] font-extrabold tracking-[-0.035em] text-radar-ink">
-            AG47 <span className="font-semibold">Altcoin Radar</span>
+        <div className="hidden sm:block min-w-0">
+          <span className="text-[9px] block leading-none text-zinc-500 font-mono tracking-widest uppercase">
+            ECOSYSTEM_RADAR
           </span>
-          <span className="mt-0.5 block text-[0.58rem] font-bold uppercase tracking-[0.18em] text-radar-subtle">
-            Intelligence desk
+          <span className="text-xs font-black tracking-[0.2em] uppercase text-white group-hover:text-white/80 transition-colors flex items-center gap-1.5 mt-0.5">
+            Alt Radar
+            <span
+              className="text-[8px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase bg-black/60 text-white border border-white/10"
+            >
+              LIVE
+            </span>
           </span>
-        </span>
+        </div>
       )}
-    </div>
+    </Link>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Calculator, Check, Copy, HelpCircle, ShieldAlert, Sparkles } from "lucide-react";
+import { Calculator, Check, Copy, ShieldAlert } from "lucide-react";
 import type { Market, Risk, Token } from "@/eco/alt-radar/apps/web/lib/api/schemas";
-import { formatCurrency, formatNumber, formatPercent } from "@/eco/alt-radar/apps/web/lib/format";
+import { formatNumber } from "@/eco/alt-radar/apps/web/lib/format";
+import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 interface SwapSimulatorProps {
   token: Token;
@@ -14,6 +15,7 @@ interface SwapSimulatorProps {
 export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
   const [orderAmountUsd, setOrderAmountUsd] = useState<number>(500);
   const [copied, setCopied] = useState(false);
+  const { primary } = useEcoTheme();
 
   const price = market?.price_usd ?? 0.000001;
   const liquidity = market?.liquidity_usd ?? 100000;
@@ -56,11 +58,11 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
   };
 
   return (
-    <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/70 p-3.5 font-mono">
-      <div className="flex items-center justify-between gap-2 border-b border-zinc-800/80 pb-2.5">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3.5 font-mono shadow-md">
+      <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
         <div className="flex items-center gap-1.5">
-          <Calculator className="size-4 text-[#d1ff00]" />
-          <h4 className="text-xs font-bold text-white">Simulador de Impacto & Slippage</h4>
+          <Calculator className="size-4" style={{ color: primary }} />
+          <h4 className="text-xs font-bold text-white font-sans">Simulador de Impacto &amp; Slippage</h4>
         </div>
         <button
           type="button"
@@ -68,7 +70,7 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
           className="inline-flex items-center gap-1 text-[0.62rem] text-zinc-400 hover:text-white transition-colors cursor-pointer"
           title="Copiar JSON do Trade Simulado"
         >
-          {copied ? <Check className="size-3 text-[#d1ff00]" /> : <Copy className="size-3" />}
+          {copied ? <Check className="size-3 text-cyan-400" /> : <Copy className="size-3" />}
           <span>{copied ? "Copiado!" : "Payload JSON"}</span>
         </button>
       </div>
@@ -76,7 +78,7 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
       <div className="mt-3 grid gap-3">
         {/* Preset Buttons */}
         <div>
-          <span className="text-[0.6rem] uppercase tracking-wider text-zinc-500 font-bold">
+          <span className="text-[0.6rem] uppercase tracking-wider text-zinc-400 font-bold">
             Tamanho da Ordem (USD):
           </span>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -85,11 +87,12 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
                 key={amount}
                 type="button"
                 onClick={() => setOrderAmountUsd(amount)}
-                className={`px-2.5 py-1 rounded-lg border text-[0.68rem] font-bold transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-xl border text-[0.68rem] font-bold transition-all cursor-pointer ${
                   orderAmountUsd === amount
-                    ? "border-[#d1ff00]/60 bg-[#d1ff00]/15 text-[#d1ff00] shadow-[0_0_8px_rgba(209,255,0,0.15)]"
-                    : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-white"
+                    ? "text-white"
+                    : "border-white/10 bg-white/5 text-zinc-400 hover:border-white/20 hover:text-white hover:bg-white/10"
                 }`}
+                style={orderAmountUsd === amount ? { borderColor: `${primary}60`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 8px ${primary}20` } : {}}
               >
                 ${amount.toLocaleString()}
               </button>
@@ -99,33 +102,33 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
 
         {/* Results Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-          <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-2">
-            <span className="text-[0.58rem] text-zinc-500 uppercase">Tokens Estimados</span>
+          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
+            <span className="text-[0.58rem] text-zinc-400 uppercase">Tokens Estimados</span>
             <p className="mt-0.5 text-xs font-bold text-white truncate">
               {formatNumber(netTokensReceived)} {token.symbol}
             </p>
           </div>
 
-          <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-2">
-            <span className="text-[0.58rem] text-zinc-500 uppercase">Price Impact</span>
+          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
+            <span className="text-[0.58rem] text-zinc-400 uppercase">Price Impact</span>
             <p
               className={`mt-0.5 text-xs font-bold ${
-                isHighImpact ? "text-rose-400" : priceImpact > 1 ? "text-amber-400" : "text-[#d1ff00]"
+                isHighImpact ? "text-rose-400" : priceImpact > 1 ? "text-amber-400" : "text-emerald-400"
               }`}
             >
               {priceImpact.toFixed(2)}%
             </p>
           </div>
 
-          <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-2">
-            <span className="text-[0.58rem] text-zinc-500 uppercase">Taxas do Contrato</span>
+          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
+            <span className="text-[0.58rem] text-zinc-400 uppercase">Taxas do Contrato</span>
             <p className="mt-0.5 text-xs font-bold text-zinc-300">
               {buyTax}% / {sellTax}%
             </p>
           </div>
 
-          <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-2">
-            <span className="text-[0.58rem] text-zinc-500 uppercase">Gas Estimado</span>
+          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
+            <span className="text-[0.58rem] text-zinc-400 uppercase">Gas Estimado</span>
             <p className="mt-0.5 text-xs font-bold text-cyan-400">
               ${networkGasUsd} ({token.chain.toUpperCase()})
             </p>
@@ -133,10 +136,10 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
         </div>
 
         {/* Break-Even Analysis Box */}
-        <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 p-2.5 text-[0.62rem]">
-          <div className="flex items-center justify-between border-b border-zinc-800/60 pb-1.5">
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-2.5 text-[0.62rem]">
+          <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
             <span className="font-bold text-zinc-300">🎯 Preço de Break-Even (Zero a Zero):</span>
-            <span className="font-bold text-[#d1ff00]">
+            <span className="font-bold text-cyan-300">
               ${formatNumber(price * (1 + (buyTax + sellTax + priceImpact * 1.5) / 100))} (+{((buyTax + sellTax + priceImpact * 1.5)).toFixed(1)}%)
             </span>
           </div>
@@ -153,9 +156,9 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
               const isProfit = netPnl > 0;
 
               return (
-                <div key={t.target} className="rounded border border-zinc-800/60 bg-zinc-900/60 p-1">
-                  <span className="text-[0.56rem] text-zinc-500">{t.target} Alvo</span>
-                  <p className={`font-bold ${isProfit ? "text-[#d1ff00]" : "text-rose-400"}`}>
+                <div key={t.target} className="rounded-lg border border-white/5 bg-white/[0.03] p-1.5">
+                  <span className="text-[0.56rem] text-zinc-400">{t.target} Alvo</span>
+                  <p className={`font-bold ${isProfit ? "text-emerald-400" : "text-rose-400"}`}>
                     {isProfit ? "+" : ""}${netPnl.toFixed(0)}
                   </p>
                 </div>
@@ -165,7 +168,7 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
         </div>
 
         {isHighImpact && (
-          <div className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-[0.65rem] text-rose-300">
+          <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-950/40 p-2.5 text-[0.65rem] text-rose-300">
             <ShieldAlert className="size-4 shrink-0 text-rose-400" />
             <span>
               Atenção: A ordem representa &gt;{((orderAmountUsd / liquidity) * 100).toFixed(1)}% do pool. Risco de slippage acentuado.

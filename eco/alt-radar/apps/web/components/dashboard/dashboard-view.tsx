@@ -76,10 +76,10 @@ export function DashboardView() {
           className="grid min-w-0 gap-3 md:grid-cols-2 xl:col-span-2 2xl:col-span-1 2xl:grid-cols-1"
           aria-label="Sinais complementares"
         >
-          <div className="panel min-w-0 overflow-hidden">
+          <div className="min-w-0">
             <SocialPanel compact tokenId={tokenId} />
           </div>
-          <div className="panel min-w-0 overflow-hidden">
+          <div className="min-w-0">
             <RiskPanel compact tokenId={tokenId} />
           </div>
         </aside>
@@ -103,9 +103,9 @@ export function DashboardView() {
         onClose={() => setMobileDrawerOpen(false)}
       />
 
-      <footer className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pb-1 text-[0.6rem] text-radar-subtle">
+      <footer className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pb-1 font-mono text-[0.6rem] text-zinc-400">
         <DatabaseZap
-          className={`size-3 ${status.data?.status === "operational" ? "text-radar-positive" : "text-radar-warning"}`}
+          className={`size-3 ${status.data?.status === "operational" ? "text-emerald-400" : "text-amber-400"}`}
         />
         <span>
           {status.data?.demo_mode ? "Fontes reais e demo rotuladas" : "Dados operacionais"}
