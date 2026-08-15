@@ -9,7 +9,7 @@ import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 interface SwapSimulatorProps {
   token: Token;
   market: Market | null;
-  risk: Risk | null;
+  risk?: (Partial<Risk> & { [key: string]: unknown }) | null;
 }
 
 export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {

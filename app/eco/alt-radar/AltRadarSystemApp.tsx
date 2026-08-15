@@ -8,6 +8,10 @@ import { OpportunitiesView } from "@/eco/alt-radar/apps/web/components/opportuni
 import { WatchlistView } from "@/eco/alt-radar/apps/web/components/watchlist/watchlist-view";
 import { AlertInbox } from "@/eco/alt-radar/apps/web/components/alerts/alert-inbox";
 import { SystemWorkspace } from "@/eco/alt-radar/apps/web/components/system-workspace";
+import { PortfolioView } from "@/eco/alt-radar/apps/web/components/portfolio/portfolio-view";
+import { LabView } from "@/eco/alt-radar/apps/web/components/lab/lab-view";
+import { SocialView } from "@/eco/alt-radar/apps/web/components/social/social-view";
+import { RiskView } from "@/eco/alt-radar/apps/web/components/risk/risk-view";
 import AltRadarClient from "./AltRadarClient";
 
 function AltRadarMainContent() {
@@ -25,10 +29,13 @@ function AltRadarMainContent() {
       {tab === "oportunidades" && <OpportunitiesView />}
       {tab === "watchlist" && <WatchlistView />}
       {tab === "alertas" && <AlertInbox />}
+      {tab === "portfolio" && <PortfolioView />}
+      {tab === "lab" && <LabView />}
+      {tab === "social" && <SocialView />}
+      {tab === "risco" && <RiskView />}
       {tab === "logs" && <SystemWorkspace kind="logs" />}
       {tab === "configuracoes" && <SystemWorkspace kind="settings" />}
       {tab === "notificacoes" && <SystemWorkspace kind="notifications" />}
-      {["portfolio", "lab", "social", "risco"].includes(tab) && <DashboardView />}
     </AppShell>
   );
 }

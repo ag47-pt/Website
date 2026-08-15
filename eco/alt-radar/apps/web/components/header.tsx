@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronDown, Menu, Search, Server, X, Sparkles, Radio, ArrowLeft } from "lucide-react";
+import { ChevronDown, Menu, Search, Server, X, Sparkles, Radio, ArrowLeft, Layers } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSystemStatus } from "@/eco/alt-radar/apps/web/lib/api/query";
 import type { Chain } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { formatDateTime } from "@/eco/alt-radar/apps/web/lib/format";
@@ -12,6 +12,7 @@ import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 import { useTheme } from "@/context/ThemeContext";
 import { useRadarState } from "./radar-state";
 import { WebhookSettingsModal } from "./shared/webhook-settings-modal";
+import { SpotlightSearchModal } from "./shared/spotlight-search-modal";
 
 const networks: { id: Chain; label: string; mark: string; color: string }[] = [
   { id: "bsc", label: "BSC", mark: "◆", color: "#f59e0b" },
@@ -23,10 +24,23 @@ export function Header() {
   const { search, setSearch, chains, toggleChain, setNavigationOpen } = useRadarState();
   const [isProviderPanelOpen, setProviderPanelOpen] = useState(false);
   const [isWebhookModalOpen, setIsWebhookModalOpen] = useState(false);
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const status = useSystemStatus();
   const monitoringActive = status.data?.monitoring_active === true;
   const { primary } = useEcoTheme();
   const { themeName, toggleTheme } = useTheme();
+
+  // Listen for ⌘K or Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsSpotlightOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/20 bg-white/5 backdrop-blur-2xl px-3 py-3 shadow-2xl sm:px-5 transition-all duration-300 relative overflow-hidden">
@@ -75,13 +89,14 @@ export function Header() {
           LIVE_TELEMETRY
         </span>
 
-        {/* Global Search with ⌘K */}
-        <label className="relative min-w-0 flex-1 xl:max-w-[28rem]">
+        {/* Global Search with ⌘K & Spotlight Trigger */}
+        <div className="relative min-w-0 flex-1 xl:max-w-[28rem]">
           <span className="sr-only">Buscar token, símbolo, contrato ou par</span>
           <Search className="pointer-events-none absolute left-3.5 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
           <input
             data-testid="global-search"
-            className="h-9 w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-12 text-[11px] font-mono text-zinc-200 placeholder:text-zinc-500 backdrop-blur-md transition-all duration-200 hover:border-white/20 focus:bg-black/50 focus:outline-none"
+            className="h-9 w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-14 text-[11px] font-mono text-zinc-200 placeholder:text-zinc-500 backdrop-blur-md transition-all duration-200 hover:border-white/20 focus:bg-black/50 focus:outline-none cursor-pointer"
+            onClick={() => setIsSpotlightOpen(true)}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Buscar token, símbolo, contrato ou par…"
             type="search"
@@ -95,23 +110,36 @@ export function Header() {
               e.currentTarget.style.boxShadow = "";
             }}
           />
-          {search ? (
+          
+          {/* Right Icon Button inside search field */}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {search && (
+              <button
+                aria-label="Limpar busca"
+                className="grid size-5 place-items-center rounded-md text-zinc-400 hover:bg-white/10 hover:text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSearch("");
+                }}
+                type="button"
+              >
+                <X className="size-3" />
+              </button>
+            )}
             <button
-              aria-label="Limpar busca"
-              className="absolute right-2 top-1/2 grid size-5 -translate-y-1/2 place-items-center rounded-md text-zinc-400 hover:bg-white/10 hover:text-white"
-              onClick={() => setSearch("")}
               type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSpotlightOpen(true);
+              }}
+              title="Abrir Spotlight de Oportunidades (⌘K)"
+              className="flex items-center gap-1 rounded-lg border border-white/10 bg-black/40 hover:bg-white/10 px-1.5 py-0.5 text-[8px] font-mono font-bold text-zinc-300 hover:text-white transition-all cursor-pointer"
+              style={{ borderColor: `${primary}30` }}
             >
-              <X className="size-3" />
+              <kbd className="text-[8px] font-mono">⌘K</kbd>
             </button>
-          ) : (
-            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center">
-              <kbd className="rounded border border-white/10 bg-black/40 px-1.5 py-0.5 text-[8px] font-mono font-bold text-zinc-400">
-                ⌘K
-              </kbd>
-            </div>
-          )}
-        </label>
+          </div>
+        </div>
 
         {/* Blockchain Chain Filters */}
         <div aria-label="Filtrar por blockchain" className="hidden items-center gap-1.5 md:flex">
@@ -281,6 +309,11 @@ export function Header() {
       <WebhookSettingsModal
         isOpen={isWebhookModalOpen}
         onClose={() => setIsWebhookModalOpen(false)}
+      />
+
+      <SpotlightSearchModal
+        isOpen={isSpotlightOpen}
+        onClose={() => setIsSpotlightOpen(false)}
       />
     </header>
   );

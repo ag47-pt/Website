@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, Home, LayoutGrid, Network, Terminal, BookOpen, Layers, UtensilsCrossed, Sparkles } from 'lucide-react';
+import { ChevronRight, Home, LayoutGrid, Network, Terminal, BookOpen, Layers, UtensilsCrossed, Sparkles, Globe2 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
 export interface BreadcrumbItem {
@@ -27,6 +27,8 @@ const ROUTE_NAME_MAP: Record<string, { label: string; icon?: React.ReactNode }> 
   'servicos': { label: 'SERVIÇOS', icon: <Layers className="w-3 h-3" /> },
   'rest': { label: 'REST.AG', icon: <UtensilsCrossed className="w-3 h-3" /> },
   'nexus': { label: 'NEXUS MEMÓRIA', icon: <Sparkles className="w-3 h-3" /> },
+  'universo-2d': { label: 'UNIVERSO 2D', icon: <Globe2 className="w-3 h-3" /> },
+  'learn': { label: 'AULA', icon: <BookOpen className="w-3 h-3" /> },
 };
 
 export function GlobalBreadcrumb({ items: customItems, className = '', showHome = true }: GlobalBreadcrumbProps) {
@@ -88,20 +90,22 @@ export function GlobalBreadcrumb({ items: customItems, className = '', showHome 
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors duration-200"
+                className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors duration-200 shrink-0"
               >
-                {item.icon && <span className="text-gray-500">{item.icon}</span>}
-                <span className="hover:underline underline-offset-2">{item.label}</span>
+                {item.icon && <span className="text-gray-500 shrink-0">{item.icon}</span>}
+                <span className="hover:underline underline-offset-2 whitespace-nowrap">{item.label}</span>
               </Link>
             ) : (
               <div
-                className="flex items-center gap-1.5 font-bold"
+                className="flex items-center gap-1.5 font-bold shrink-0 min-w-0"
                 style={{ color: theme.colors.primary }}
               >
-                {item.icon && <span>{item.icon}</span>}
-                <span>{item.label}</span>
+                {item.icon && <span className="shrink-0">{item.icon}</span>}
+                <span className="max-w-[140px] sm:max-w-[240px] md:max-w-[380px] lg:max-w-[500px] truncate" title={item.label}>
+                  {item.label}
+                </span>
                 <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5"
+                  className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5 shrink-0"
                   style={{ backgroundColor: theme.colors.primary }}
                 />
               </div>

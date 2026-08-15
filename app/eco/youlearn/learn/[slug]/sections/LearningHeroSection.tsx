@@ -3,9 +3,10 @@
 import React from 'react';
 import { KnowledgeObject } from '@/eco/youlearn/schema/types';
 import { formatDurationHuman, buildTimestampedSourceUrl, extractYoutubeId } from '@/eco/youlearn/lib/provenance';
-import { Clock, Zap, ExternalLink, Play, Sparkles, BookOpen, Layers, Film } from 'lucide-react';
+import { Clock, Zap, ExternalLink, Play, Sparkles, BookOpen, Layers, Film, Home, Network } from 'lucide-react';
 import { CinematicHeroPlayer } from '../components/CinematicHeroPlayer';
 import { ExportKnowledgeButton } from '../components/ExportKnowledgeButton';
+import { GlobalBreadcrumb } from '@/components/ui/GlobalBreadcrumb';
 
 interface LearningHeroSectionProps {
   knowledge: KnowledgeObject;
@@ -23,6 +24,18 @@ export function LearningHeroSection({ knowledge }: LearningHeroSectionProps) {
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         
+        {/* Top Breadcrumb Navigation Tag */}
+        <div className="mb-5 flex items-center justify-start">
+          <GlobalBreadcrumb
+            items={[
+              { label: 'HOME', href: '/', icon: <Home className="w-3 h-3" /> },
+              { label: 'ECO HUB', href: '/eco', icon: <Network className="w-3 h-3" /> },
+              { label: 'YOULEARN ACADEMY', href: '/eco/youlearn', icon: <BookOpen className="w-3 h-3" /> },
+              { label: knowledge.title.toUpperCase(), icon: <Sparkles className="w-3 h-3" /> }
+            ]}
+          />
+        </div>
+
         {/* Top Header Bar: Category, Source Attribution & Export Action */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
           <div className="flex flex-wrap items-center gap-2">
