@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import Image from "next/image";
-import universeBackground from "@/public/imgs/universo-nebuloso.webp";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
@@ -31,7 +30,7 @@ export function AppShell({ children, navigationMode = "standalone" }: AppShellPr
       {/* Ambient Nebula Background (matching /eco) */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 opacity-30">
-          <Image src={universeBackground} alt="" fill className="object-cover" priority />
+          <Image src="/imgs/universo-nebuloso.webp" alt="" fill className="object-cover" priority />
         </div>
         {/* Dynamic theme-colored glows */}
         <div
