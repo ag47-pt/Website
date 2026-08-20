@@ -141,7 +141,7 @@ No detalhe do token, seguir sempre a mesma ordem:
 
 ## 🌙 7. Ingestão Contínua e Backtesting — operações automáticas e CLI
 
-* **Ingestão automática 🔴 (live):** Com a ativação do Job Scheduler no Sprint 7 (`AG47_SCHEDULER_ENABLED=true`), a ingestão de snapshots e cálculo do Truth Engine ocorrem de forma autônoma a cada 300 segundos na API rodando em background. A ingestão manual via CLI torna-se estritamente opcional/emergencial.
+* **Ingestão automática 🔴 (live):** O Hardening 1 retirou o scheduler do processo HTTP. O Cloud Scheduler aciona o Cloud Run Job singleton `ag47-radar worker ingest --limit 10` a cada cinco minutos; `/system/status` só confirma monitoramento quando há um `JobRun` recente e bem-sucedido. A ingestão manual via CLI é estritamente opcional/emergencial.
 * **Ingestão manual (opcional, com o ambiente ativo em `apps/api`):**
   ```bash
   python -m ag47_radar.cli ingest --limit 10
@@ -150,7 +150,7 @@ No detalhe do token, seguir sempre a mesma ordem:
   ```bash
   python -m ag47_radar.cli backtest --horizon-hours 24
   ```
-  Enquanto o histórico do PostgreSQL estiver sendo populado, taxas de `skipped_no_entry`/`skipped_no_exit` altas são normais e tendem a diminuir com o acúmulo contínuo dos snapshots pelo scheduler.
+  Enquanto o histórico do PostgreSQL estiver sendo populado, taxas de `skipped_no_entry`/`skipped_no_exit` altas são normais e tendem a diminuir com o acúmulo contínuo dos snapshots pelo worker externo.
 * **Semanalmente:** Comparar `score_return_correlation` e hit rate por classificação; divergências alimentam a calibração manual dos pesos (sem ML prematuro).
 
 ---

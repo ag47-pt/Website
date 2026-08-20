@@ -17,23 +17,22 @@
   --radar-warning-dim: rgba(245, 158, 11, 0.15);
   --radar-critical: #f43f5e;
   --radar-critical-dim: rgba(244, 63, 94, 0.15);
-  --radar-neutral: var(--primary-color, #D1FF00);
-  --radar-neutral-dim: color-mix(in srgb, var(--primary-color, #D1FF00) 15%, transparent);
+  --radar-neutral: var(--primary-color, #d1ff00);
+  --radar-neutral-dim: color-mix(in srgb, var(--primary-color, #d1ff00) 15%, transparent);
   --radar-secondary: #3fe2ff;
   --radar-secondary-dim: rgba(63, 226, 255, 0.15);
-  --radar-focus: var(--primary-color, #D1FF00);
-  --radar-accent: var(--primary-color, #D1FF00);
+  --radar-focus: var(--primary-color, #d1ff00);
+  --radar-accent: var(--primary-color, #d1ff00);
 
   --radar-radius-xs: 0.38rem;
   --radar-radius-sm: 0.55rem;
   --radar-radius-md: 0.85rem;
   --radar-radius-lg: 1.1rem;
   --radar-shadow:
-    0 1px 0 rgb(255 255 255 / 0.04) inset, 0 1px 2px rgb(0 0 0 / 0.6),
-    0 16px 40px rgb(0 0 0 / 0.5);
+    0 1px 0 rgb(255 255 255 / 0.04) inset, 0 1px 2px rgb(0 0 0 / 0.6), 0 16px 40px rgb(0 0 0 / 0.5);
   --radar-shadow-hover:
     0 1px 0 rgb(255 255 255 / 0.08) inset, 0 2px 8px rgb(0 0 0 / 0.7), 0 24px 56px rgb(0 0 0 / 0.6);
-  --radar-glow-positive: 0 0 24px color-mix(in srgb, var(--primary-color, #D1FF00) 30%, transparent);
+  --radar-glow-positive: 0 0 24px color-mix(in srgb, var(--primary-color, #d1ff00) 30%, transparent);
   --radar-sidebar-width: 13.5rem;
   --radar-header-height: 4.5rem;
 }
@@ -107,5 +106,5 @@
 }
 
 .ag47-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color, #D1FF00);
+  background: var(--primary-color, #d1ff00);
 }

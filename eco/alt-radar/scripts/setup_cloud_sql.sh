@@ -9,7 +9,7 @@
 #   Instância: alt-radar-pg (PostgreSQL 17, db-g1-small, europe-west3-a)
 #   Base de dados: ag47_radar
 #   Utilizador: ag47_radar_app
-#   IAM: roles/cloudsql.client → 15974783507-compute@developer.gserviceaccount.com
+#   IAM: roles/cloudsql.client → service account dedicada de runtime
 #
 # DATABASE_URL (unix socket via Cloud SQL Auth Proxy):
 #   postgresql+asyncpg://ag47_radar_app:<PASSWORD>@/ag47_radar?host=/cloudsql/radar-altcoin:europe-west3:alt-radar-pg
@@ -24,7 +24,8 @@ REGION="europe-west3"
 INSTANCE="alt-radar-pg"
 DB_NAME="ag47_radar"
 DB_USER="ag47_radar_app"
-COMPUTE_SA="15974783507-compute@developer.gserviceaccount.com"
+RUNTIME_SA="${AG47_GCP_RUNTIME_SERVICE_ACCOUNT:?Defina AG47_GCP_RUNTIME_SERVICE_ACCOUNT}"
+DATABASE_SECRET="${AG47_DATABASE_SECRET_NAME:-alt-radar-database-url}"
 CONNECTION_NAME="${PROJECT}:${REGION}:${INSTANCE}"
 
 echo "==> [1/5] Criar instância Cloud SQL PostgreSQL 17..."
@@ -51,27 +52,31 @@ gcloud sql users create "${DB_USER}" \
   --project="${PROJECT}" 2>/dev/null || echo "   Utilizador já existe."
 
 DATABASE_URL="postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@/${DB_NAME}?host=/cloudsql/${CONNECTION_NAME}"
-echo ""
-echo "   ✅ PASSWORD GERADA — guardar agora:"
-echo "   AG47_DATABASE_URL=${DATABASE_URL}"
-echo ""
 
-echo "==> [4/5] Conceder roles/cloudsql.client ao Compute Service Account..."
+echo "==> [4/5] Guardar DATABASE_URL no Secret Manager sem imprimir o valor..."
+gcloud secrets describe "${DATABASE_SECRET}" \
+  --project="${PROJECT}" >/dev/null 2>&1 || \
+  gcloud secrets create "${DATABASE_SECRET}" \
+    --replication-policy=automatic \
+    --project="${PROJECT}"
+printf '%s' "${DATABASE_URL}" | gcloud secrets versions add "${DATABASE_SECRET}" \
+  --data-file=- \
+  --project="${PROJECT}"
+
+echo "==> [5/5] Conceder somente os acessos necessários à identidade de runtime..."
 gcloud projects add-iam-policy-binding "${PROJECT}" \
-  --member="serviceAccount:${COMPUTE_SA}" \
+  --member="serviceAccount:${RUNTIME_SA}" \
   --role="roles/cloudsql.client" \
   --condition=None --quiet
-
-echo "==> [5/5] Actualizar Cloud Run com Cloud SQL Auth Proxy e DATABASE_URL..."
-gcloud run services update "alt-radar-api" \
+gcloud secrets add-iam-policy-binding "${DATABASE_SECRET}" \
   --project="${PROJECT}" \
-  --region="${REGION}" \
-  --add-cloudsql-instances="${CONNECTION_NAME}" \
-  --update-env-vars="AG47_DATABASE_URL=${DATABASE_URL},AG47_ENVIRONMENT=production,AG47_DEMO_MODE=false,AG47_SCHEDULER_ENABLED=true"
+  --member="serviceAccount:${RUNTIME_SA}" \
+  --role="roles/secretmanager.secretAccessor"
 
 echo ""
 echo "✅ Cloud SQL configurado com sucesso!"
 echo ""
 echo "--- PRÓXIMOS PASSOS ---"
-echo "Adicionar nos GitHub Secrets (Settings → Secrets → Actions):"
-echo "  AG47_DATABASE_URL=${DATABASE_URL}"
+echo "No environment GitHub alt-radar-production, configure apenas a referência:"
+echo "  AG47_DATABASE_URL_SECRET=${DATABASE_SECRET}:latest"
+echo "O workflow de release liga Cloud SQL/Secret Manager e provisiona os jobs; este script não faz deploy."

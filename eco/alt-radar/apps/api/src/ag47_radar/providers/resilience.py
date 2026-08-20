@@ -5,11 +5,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from time import monotonic, perf_counter
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import httpx
 
 from ag47_radar.logging import get_logger
+
+CircuitState = Literal["closed", "open", "half-open"]
 
 
 class ProviderUnavailableError(RuntimeError):
@@ -86,7 +88,7 @@ class CircuitBreaker:
             self.failure_count = 0
             self.opened_at = None
 
-    def get_state_and_cooldown(self) -> tuple[str, float | None]:
+    def get_state_and_cooldown(self) -> tuple[CircuitState, float | None]:
         if self.opened_at is None:
             if self.failure_count == self.failure_threshold - 1:
                 return "half-open", None

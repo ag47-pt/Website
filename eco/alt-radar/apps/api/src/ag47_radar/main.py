@@ -17,7 +17,6 @@ from ag47_radar.db import close_database, configure_database, create_schema
 from ag47_radar.errors import DomainError, RateLimitExceededError
 from ag47_radar.logging import configure_logging, get_logger
 from ag47_radar.providers.registry import ProviderRegistry
-from ag47_radar.scheduler import start_scheduler, stop_scheduler
 from ag47_radar.services.seed import seed_demo_data
 
 
@@ -31,7 +30,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         providers = ProviderRegistry(resolved_settings)
         application.state.providers = providers
         application.state.settings = resolved_settings
-        scheduler = None
         try:
             await configure_database(resolved_settings.database_url)
             if resolved_settings.should_auto_create_schema:
@@ -39,7 +37,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if resolved_settings.demo_mode and resolved_settings.auto_seed_demo:
                 counts = await seed_demo_data()
                 log.info("demo_seed_ready", **counts)
-            scheduler = start_scheduler(resolved_settings, providers)
             log.info(
                 "application_started",
                 environment=resolved_settings.environment,
@@ -48,7 +45,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
             yield
         finally:
-            stop_scheduler(scheduler)
             await providers.close()
             await close_database()
             log.info("application_stopped")
@@ -70,8 +66,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         CORSMiddleware,
         allow_origins=resolved_settings.cors_origin_list,
         allow_credentials=False,
-        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-        allow_headers=["Accept", "Content-Type"],
+        allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Accept", "Content-Type", "X-AG47-API-Key"],
         expose_headers=[
             "X-Request-ID",
             "X-RateLimit-Limit",

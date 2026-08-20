@@ -44,7 +44,12 @@ export function ErrorState({ message, retry }: { message: string; retry?: () => 
         {retry && (
           <button
             className="mt-4 inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-bold text-white transition-all cursor-pointer"
-            style={{ borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 12px ${primary}20` }}
+            style={{
+              borderColor: `${primary}50`,
+              backgroundColor: `${primary}15`,
+              color: primary,
+              boxShadow: `0 0 12px ${primary}20`,
+            }}
             onClick={retry}
             type="button"
           >

@@ -1,22 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Search,
-  X,
-  Sparkles,
-  TrendingUp,
-  TrendingDown,
-  ShieldCheck,
-  Zap,
-  Star,
-  Layers,
   ArrowRight,
-  Flame,
-  Clock,
+  Minus,
+  Search,
+  Sparkles,
+  Star,
+  TrendingDown,
+  TrendingUp,
+  X,
+  Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useOpportunities, useWatchlist, useWatchlistMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
+import {
+  useOpportunities,
+  useWatchlist,
+  useWatchlistMutation,
+} from "@/eco/alt-radar/apps/web/lib/api/query";
 import type { Opportunity, Chain } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import {
   formatCurrency,
@@ -28,6 +29,10 @@ import {
 import { ChainBadge } from "./chain-badge";
 import { CopyButton } from "./copy-button";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
+import {
+  PUBLIC_OPERATOR_ACTION_TITLE,
+  PUBLIC_PORTAL_READ_ONLY,
+} from "@/eco/alt-radar/apps/web/lib/public-access";
 
 interface SpotlightSearchModalProps {
   isOpen: boolean;
@@ -40,6 +45,15 @@ export function SpotlightSearchModal({
   onClose,
   onSelectToken,
 }: SpotlightSearchModalProps) {
+  if (!isOpen) return null;
+
+  return <SpotlightSearchDialog onClose={onClose} onSelectToken={onSelectToken} />;
+}
+
+function SpotlightSearchDialog({
+  onClose,
+  onSelectToken,
+}: Omit<SpotlightSearchModalProps, "isOpen">) {
   const router = useRouter();
   const { primary } = useEcoTheme();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,32 +94,33 @@ export function SpotlightSearchModal({
       const contract = opp.token.contract_address.toLowerCase();
       const pair = opp.pair?.pair_address?.toLowerCase() ?? "";
 
-      return (
-        symbol.includes(q) ||
-        name.includes(q) ||
-        contract.includes(q) ||
-        pair.includes(q)
-      );
+      return symbol.includes(q) || name.includes(q) || contract.includes(q) || pair.includes(q);
     });
   }, [data?.items, query, selectedChain]);
 
+  const handleSelect = useCallback(
+    (opp: Opportunity) => {
+      if (onSelectToken) {
+        onSelectToken(opp);
+      }
+      // Navigate to opportunities tab focusing this token
+      router.push("/eco/alt-radar?tab=oportunidades");
+      onClose();
+    },
+    [onClose, onSelectToken, router],
+  );
+
   // Focus on mount/open
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
-      setHighlightedIndex(0);
-    } else {
-      setQuery("");
-      setSelectedChain("all");
-    }
-  }, [isOpen]);
+    const focusId = window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+
+    return () => window.clearTimeout(focusId);
+  }, []);
 
   // Keyboard navigation
   useEffect(() => {
-    if (!isOpen) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -115,14 +130,10 @@ export function SpotlightSearchModal({
 
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev < filteredOpportunities.length - 1 ? prev + 1 : 0,
-        );
+        setHighlightedIndex((prev) => (prev < filteredOpportunities.length - 1 ? prev + 1 : 0));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev > 0 ? prev - 1 : filteredOpportunities.length - 1,
-        );
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : filteredOpportunities.length - 1));
       } else if (e.key === "Enter") {
         e.preventDefault();
         const selected = filteredOpportunities[highlightedIndex];
@@ -134,35 +145,22 @@ export function SpotlightSearchModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, filteredOpportunities, highlightedIndex]);
+  }, [filteredOpportunities, handleSelect, highlightedIndex, onClose]);
 
   // Scroll active item into view
   useEffect(() => {
     if (!listRef.current) return;
-    const activeEl = listRef.current.querySelector(
-      `[data-index="${highlightedIndex}"]`,
-    );
+    const activeEl = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`);
     if (activeEl) {
       activeEl.scrollIntoView({ block: "nearest" });
     }
   }, [highlightedIndex]);
-
-  const handleSelect = (opp: Opportunity) => {
-    if (onSelectToken) {
-      onSelectToken(opp);
-    }
-    // Navigate to opportunities tab focusing this token
-    router.push(`/eco/alt-radar?tab=oportunidades`);
-    onClose();
-  };
 
   const toggleWatchlist = (e: React.MouseEvent, tokenId: string) => {
     e.stopPropagation();
     const isWatchlisted = watchlistedIds.has(tokenId);
     watchlistMutation.mutate({ tokenId, isWatchlisted });
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 md:p-10 font-mono">
@@ -215,9 +213,7 @@ export function SpotlightSearchModal({
           {/* Quick Filter Chips */}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-white/5 pt-2.5 text-[10px]">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              <span className="text-zinc-500 font-bold uppercase tracking-wider mr-1">
-                Redes:
-              </span>
+              <span className="text-zinc-500 font-bold uppercase tracking-wider mr-1">Redes:</span>
               {[
                 { id: "all", label: "Todas" },
                 { id: "bsc", label: "BSC" },
@@ -255,10 +251,8 @@ export function SpotlightSearchModal({
             </div>
 
             <div className="text-zinc-500 text-[10px]">
-              <span className="font-bold text-zinc-300">
-                {filteredOpportunities.length}
-              </span>{" "}
-              ativos ordenados por score
+              <span className="font-bold text-zinc-300">{filteredOpportunities.length}</span> ativos
+              ordenados por score
             </div>
           </div>
         </div>
@@ -285,8 +279,8 @@ export function SpotlightSearchModal({
               const isHighlighted = index === highlightedIndex;
               const isWatchlisted = watchlistedIds.has(opp.token.id);
               const change24h = opp.market?.price_change_24h ?? null;
-              const isPositive = (change24h ?? 0) >= 0;
-              const score = opp.score?.final_score ?? 0;
+              const isPositive = change24h === null ? null : change24h >= 0;
+              const score = opp.score?.final_score ?? null;
 
               return (
                 <div
@@ -363,7 +357,9 @@ export function SpotlightSearchModal({
                               : "text-rose-400"
                         }`}
                       >
-                        {isPositive ? (
+                        {isPositive === null ? (
+                          <Minus className="size-3" />
+                        ) : isPositive ? (
                           <TrendingUp className="size-3" />
                         ) : (
                           <TrendingDown className="size-3" />
@@ -393,17 +389,21 @@ export function SpotlightSearchModal({
                       className="flex flex-col items-center justify-center rounded-xl border px-2.5 py-1 font-mono text-center shrink-0 min-w-[58px]"
                       style={{
                         borderColor:
-                          score >= 8
-                            ? "#10b98160"
-                            : score >= 5
-                              ? "#f59e0b60"
-                              : "#f43f5e60",
+                          score === null
+                            ? "#71717a40"
+                            : score >= 8
+                              ? "#10b98160"
+                              : score >= 5
+                                ? "#f59e0b60"
+                                : "#f43f5e60",
                         backgroundColor:
-                          score >= 8
-                            ? "#10b98115"
-                            : score >= 5
-                              ? "#f59e0b15"
-                              : "#f43f5e15",
+                          score === null
+                            ? "#71717a10"
+                            : score >= 8
+                              ? "#10b98115"
+                              : score >= 5
+                                ? "#f59e0b15"
+                                : "#f43f5e15",
                       }}
                     >
                       <span className="text-[8px] uppercase tracking-wider font-bold text-zinc-400">
@@ -411,11 +411,13 @@ export function SpotlightSearchModal({
                       </span>
                       <span
                         className={`text-xs font-black ${
-                          score >= 8
-                            ? "text-emerald-400"
-                            : score >= 5
-                              ? "text-amber-400"
-                              : "text-rose-400"
+                          score === null
+                            ? "text-zinc-400"
+                            : score >= 8
+                              ? "text-emerald-400"
+                              : score >= 5
+                                ? "text-amber-400"
+                                : "text-rose-400"
                         }`}
                       >
                         {formatScore(score)}
@@ -426,22 +428,16 @@ export function SpotlightSearchModal({
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
+                        disabled={PUBLIC_PORTAL_READ_ONLY}
                         onClick={(e) => toggleWatchlist(e, opp.token.id)}
-                        className={`grid size-8 place-items-center rounded-xl border transition-colors ${
+                        className={`grid size-8 place-items-center rounded-xl border transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                           isWatchlisted
                             ? "border-amber-500/50 bg-amber-500/20 text-amber-300"
                             : "border-white/10 bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
                         }`}
-                        title={
-                          isWatchlisted
-                            ? "Remover da Watchlist"
-                            : "Adicionar à Watchlist"
-                        }
+                        title={`${isWatchlisted ? "Remover da Watchlist" : "Adicionar à Watchlist"}. ${PUBLIC_OPERATOR_ACTION_TITLE}`}
                       >
-                        <Star
-                          className="size-3.5"
-                          fill={isWatchlisted ? "currentColor" : "none"}
-                        />
+                        <Star className="size-3.5" fill={isWatchlisted ? "currentColor" : "none"} />
                       </button>
 
                       <div

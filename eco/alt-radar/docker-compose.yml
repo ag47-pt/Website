@@ -26,7 +26,6 @@ services:
       AG47_CORS_ORIGINS: http://localhost:3000
       AG47_AUTO_CREATE_SCHEMA: 'false'
       AG47_AUTO_SEED_DEMO: ${AG47_AUTO_SEED_DEMO:-true}
-      AG47_SCHEDULER_ENABLED: ${AG47_SCHEDULER_ENABLED:-false}
     ports:
       - '8000:8000'
     depends_on:

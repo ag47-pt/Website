@@ -16,6 +16,9 @@ out/
 # misc
 .DS_Store
 *.pem
+gha-creds-*.json
+**/.claude/settings.local.json
+.tmp-actionlint-*/
 
 # debug
 npm-debug.log*

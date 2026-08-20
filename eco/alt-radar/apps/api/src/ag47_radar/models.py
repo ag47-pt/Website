@@ -354,7 +354,15 @@ class TokenAlert(Base):
 
 class NotificationDelivery(Base):
     __tablename__ = "notification_deliveries"
-    __table_args__ = (Index("ix_notification_deliveries_pending", "status", "next_attempt_at"),)
+    __table_args__ = (
+        Index("ix_notification_deliveries_pending", "status", "next_attempt_at"),
+        Index(
+            "uq_notification_deliveries_alert_channel",
+            "alert_id",
+            "channel",
+            unique=True,
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     alert_id: Mapped[str] = mapped_column(ForeignKey("token_alerts.id"), nullable=False)
@@ -590,6 +598,42 @@ class ScoringWeights(Base):
     weights_json: Mapped[dict[str, float]] = mapped_column("weights", JSON, nullable=False)
     sample_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     correlation: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class JobRun(Base):
+    __tablename__ = "job_runs"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('running', 'succeeded', 'failed')",
+            name="status_valid",
+        ),
+        UniqueConstraint("job_name", "run_key", name="uq_job_runs_job_run_key"),
+        Index("ix_job_runs_job_completed", "job_name", "completed_at"),
+        Index(
+            "ix_job_runs_notification_due",
+            "job_name",
+            "notification_pending",
+            "notification_next_attempt_at",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    job_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    run_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    summary_json: Mapped[dict[str, Any] | None] = mapped_column("summary", JSON)
+    error_type: Mapped[str | None] = mapped_column(String(120))
+    notification_pending: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+    )
+    notification_next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class UserNotificationSettings(Base):

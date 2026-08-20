@@ -12,28 +12,48 @@ interface SwapSimulatorProps {
   risk?: (Partial<Risk> & { [key: string]: unknown }) | null;
 }
 
+function finiteMetric(value: number | null | undefined, allowZero = true): number | null {
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    (allowZero ? value < 0 : value <= 0)
+  ) {
+    return null;
+  }
+  return value;
+}
+
 export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
   const [orderAmountUsd, setOrderAmountUsd] = useState<number>(500);
   const [copied, setCopied] = useState(false);
   const { primary } = useEcoTheme();
 
-  const price = market?.price_usd ?? 0.000001;
-  const liquidity = market?.liquidity_usd ?? 100000;
-  const buyTax = risk?.buy_tax ?? 0;
-  const sellTax = risk?.sell_tax ?? 0;
+  const price = finiteMetric(market?.price_usd, false);
+  const liquidity = finiteMetric(market?.liquidity_usd, false);
+  const buyTax = finiteMetric(risk?.buy_tax);
+  const sellTax = finiteMetric(risk?.sell_tax);
 
   // Slippage approximation formula: (Order Amount / Liquidity) * 100 * K factor (0.8)
-  const priceImpact = Math.min(100, Number(((orderAmountUsd / Math.max(liquidity, 1)) * 80).toFixed(2)));
-  const effectivePrice = price * (1 + priceImpact / 100);
-  const grossTokens = orderAmountUsd / (effectivePrice || 1);
-  const taxDeductionTokens = grossTokens * (buyTax / 100);
-  const netTokensReceived = grossTokens - taxDeductionTokens;
+  const priceImpact =
+    liquidity === null
+      ? null
+      : Math.min(100, Number(((orderAmountUsd / liquidity) * 80).toFixed(2)));
+  const effectivePrice =
+    price === null || priceImpact === null ? null : price * (1 + priceImpact / 100);
+  const grossTokens = effectivePrice === null ? null : orderAmountUsd / effectivePrice;
+  const netTokensReceived =
+    grossTokens === null || buyTax === null ? null : grossTokens * (1 - buyTax / 100);
 
   // Gas estimation per chain
-  const networkGasUsd =
-    token.chain === "solana" ? 0.002 : token.chain === "bsc" ? 0.18 : 3.85;
+  const networkGasUsd = token.chain === "solana" ? 0.002 : token.chain === "bsc" ? 0.18 : 3.85;
 
-  const isHighImpact = priceImpact >= 2.5;
+  const isHighImpact = priceImpact !== null && priceImpact >= 2.5;
+  const breakEvenMarkup =
+    buyTax === null || sellTax === null || priceImpact === null
+      ? null
+      : buyTax + sellTax + priceImpact * 1.5;
+  const breakEvenPrice =
+    price === null || breakEvenMarkup === null ? null : price * (1 + breakEvenMarkup / 100);
 
   const copySimulation = () => {
     const payload = JSON.stringify(
@@ -46,11 +66,12 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
         price_impact_percent: priceImpact,
         buy_tax_percent: buyTax,
         sell_tax_percent: sellTax,
-        estimated_gas_usd: networkGasUsd,
+        assumed_gas_usd: networkGasUsd,
+        provenance: "local_theoretical_simulation",
         timestamp: new Date().toISOString(),
       },
       null,
-      2
+      2,
     );
     navigator.clipboard.writeText(payload);
     setCopied(true);
@@ -62,7 +83,9 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
       <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
         <div className="flex items-center gap-1.5">
           <Calculator className="size-4" style={{ color: primary }} />
-          <h4 className="text-xs font-bold text-white font-sans">Simulador de Impacto &amp; Slippage</h4>
+          <h4 className="text-xs font-bold text-white font-sans">
+            Simulador de Impacto &amp; Slippage
+          </h4>
         </div>
         <button
           type="button"
@@ -74,6 +97,10 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
           <span>{copied ? "Copiado!" : "Payload JSON"}</span>
         </button>
       </div>
+
+      <p className="mt-2 text-[0.6rem] leading-4 text-zinc-400">
+        Aproximação teórica local; sem cotação de rota, livro de ofertas ou execução on-chain.
+      </p>
 
       <div className="mt-3 grid gap-3">
         {/* Preset Buttons */}
@@ -92,7 +119,16 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
                     ? "text-white"
                     : "border-white/10 bg-white/5 text-zinc-400 hover:border-white/20 hover:text-white hover:bg-white/10"
                 }`}
-                style={orderAmountUsd === amount ? { borderColor: `${primary}60`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 8px ${primary}20` } : {}}
+                style={
+                  orderAmountUsd === amount
+                    ? {
+                        borderColor: `${primary}60`,
+                        backgroundColor: `${primary}15`,
+                        color: primary,
+                        boxShadow: `0 0 8px ${primary}20`,
+                      }
+                    : {}
+                }
               >
                 ${amount.toLocaleString()}
               </button>
@@ -105,7 +141,9 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
           <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
             <span className="text-[0.58rem] text-zinc-400 uppercase">Tokens Estimados</span>
             <p className="mt-0.5 text-xs font-bold text-white truncate">
-              {formatNumber(netTokensReceived)} {token.symbol}
+              {netTokensReceived === null
+                ? "N/D"
+                : `${formatNumber(netTokensReceived)} ${token.symbol}`}
             </p>
           </div>
 
@@ -113,22 +151,28 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
             <span className="text-[0.58rem] text-zinc-400 uppercase">Price Impact</span>
             <p
               className={`mt-0.5 text-xs font-bold ${
-                isHighImpact ? "text-rose-400" : priceImpact > 1 ? "text-amber-400" : "text-emerald-400"
+                priceImpact === null
+                  ? "text-zinc-400"
+                  : isHighImpact
+                    ? "text-rose-400"
+                    : priceImpact > 1
+                      ? "text-amber-400"
+                      : "text-emerald-400"
               }`}
             >
-              {priceImpact.toFixed(2)}%
+              {priceImpact === null ? "N/D" : `${priceImpact.toFixed(2)}%`}
             </p>
           </div>
 
           <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
             <span className="text-[0.58rem] text-zinc-400 uppercase">Taxas do Contrato</span>
             <p className="mt-0.5 text-xs font-bold text-zinc-300">
-              {buyTax}% / {sellTax}%
+              {buyTax === null ? "N/D" : `${buyTax}%`} / {sellTax === null ? "N/D" : `${sellTax}%`}
             </p>
           </div>
 
           <div className="rounded-xl border border-white/5 bg-white/[0.03] p-2">
-            <span className="text-[0.58rem] text-zinc-400 uppercase">Gas Estimado</span>
+            <span className="text-[0.58rem] text-zinc-400 uppercase">Gas (assunção local)</span>
             <p className="mt-0.5 text-xs font-bold text-cyan-400">
               ${networkGasUsd} ({token.chain.toUpperCase()})
             </p>
@@ -140,7 +184,9 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
           <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
             <span className="font-bold text-zinc-300">🎯 Preço de Break-Even (Zero a Zero):</span>
             <span className="font-bold text-cyan-300">
-              ${formatNumber(price * (1 + (buyTax + sellTax + priceImpact * 1.5) / 100))} (+{((buyTax + sellTax + priceImpact * 1.5)).toFixed(1)}%)
+              {breakEvenPrice === null || breakEvenMarkup === null
+                ? "N/D"
+                : `$${formatNumber(breakEvenPrice)} (+${breakEvenMarkup.toFixed(1)}%)`}
             </span>
           </div>
 
@@ -152,14 +198,28 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
               { target: "+100%", multiplier: 2.0 },
             ].map((t) => {
               const targetGrossValue = orderAmountUsd * t.multiplier;
-              const netPnl = targetGrossValue * (1 - (sellTax + priceImpact) / 100) - orderAmountUsd;
-              const isProfit = netPnl > 0;
+              const netPnl =
+                sellTax === null || priceImpact === null
+                  ? null
+                  : targetGrossValue * (1 - (sellTax + priceImpact) / 100) - orderAmountUsd;
+              const isProfit = netPnl === null ? null : netPnl > 0;
 
               return (
-                <div key={t.target} className="rounded-lg border border-white/5 bg-white/[0.03] p-1.5">
+                <div
+                  key={t.target}
+                  className="rounded-lg border border-white/5 bg-white/[0.03] p-1.5"
+                >
                   <span className="text-[0.56rem] text-zinc-400">{t.target} Alvo</span>
-                  <p className={`font-bold ${isProfit ? "text-emerald-400" : "text-rose-400"}`}>
-                    {isProfit ? "+" : ""}${netPnl.toFixed(0)}
+                  <p
+                    className={`font-bold ${
+                      isProfit === null
+                        ? "text-zinc-400"
+                        : isProfit
+                          ? "text-emerald-400"
+                          : "text-rose-400"
+                    }`}
+                  >
+                    {netPnl === null ? "N/D" : `${isProfit ? "+" : ""}$${netPnl.toFixed(0)}`}
                   </p>
                 </div>
               );
@@ -167,11 +227,20 @@ export function SwapSimulator({ token, market, risk }: SwapSimulatorProps) {
           </div>
         </div>
 
+        {(price === null || liquidity === null || buyTax === null || sellTax === null) && (
+          <p className="rounded-xl border border-white/10 bg-white/[0.02] p-2.5 text-[0.62rem] text-zinc-400">
+            Cálculo indisponível onde preço, liquidez ou taxas não foram observados. Ausências não
+            são substituídas por zero.
+          </p>
+        )}
+
         {isHighImpact && (
           <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-950/40 p-2.5 text-[0.65rem] text-rose-300">
             <ShieldAlert className="size-4 shrink-0 text-rose-400" />
             <span>
-              Atenção: A ordem representa &gt;{((orderAmountUsd / liquidity) * 100).toFixed(1)}% do pool. Risco de slippage acentuado.
+              Atenção: A ordem representa &gt;
+              {liquidity === null ? "N/D" : ((orderAmountUsd / liquidity) * 100).toFixed(1)}% do
+              pool. Risco de slippage acentuado.
             </span>
           </div>
         )}

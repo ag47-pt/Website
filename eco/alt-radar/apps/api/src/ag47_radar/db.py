@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import MetaData, text
 from sqlalchemy.exc import DBAPIError
@@ -98,15 +99,18 @@ async def close_database() -> None:
     await engine.dispose()
 
 
-async def run_transaction_with_retry(
-    session_factory,
-    transactional_callable,
-    *args,
+async def run_transaction_with_retry[*Args, R](
+    session_factory: async_sessionmaker[AsyncSession],
+    transactional_callable: Callable[[AsyncSession, *Args], Awaitable[R]],
+    *args: *Args,
     max_retries: int = 3,
     initial_backoff: float = 0.05,
-    **kwargs,
-):
+    **kwargs: Any,
+) -> R:
     """Executes a callable inside a new session, with exponential backoff retries for serialization errors or deadlocks."""
+    if max_retries < 1:
+        raise ValueError("max_retries must be at least 1")
+
     for attempt in range(max_retries):
         async with session_factory() as session:
             try:
@@ -139,3 +143,5 @@ async def run_transaction_with_retry(
             except Exception:
                 await session.rollback()
                 raise
+
+    raise RuntimeError("transaction retry loop exhausted unexpectedly")

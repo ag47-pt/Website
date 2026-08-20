@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Protocol
 
 from ag47_radar.config import Settings
 from ag47_radar.enums import Chain, ProviderStatus, SourceMode
@@ -10,6 +12,7 @@ from ag47_radar.providers.contracts import (
     ContractRiskProvider,
     HolderDataProvider,
     ProviderResult,
+    SocialDataProvider,
 )
 from ag47_radar.providers.demo import (
     DemoContractRiskProvider,
@@ -22,9 +25,29 @@ from ag47_radar.providers.dexscreener import DexScreenerMarketProvider
 from ag47_radar.providers.geckoterminal import GeckoTerminalDiscoveryProvider
 from ag47_radar.providers.goplus import GoPlusContractRiskProvider
 from ag47_radar.providers.holders import RoutingHolderProvider
+from ag47_radar.providers.resilience import CircuitState, ResilientJsonClient
 from ag47_radar.providers.solana_risk import RugCheckSolanaRiskProvider
 from ag47_radar.providers.telegram import TelegramAlertDeliveryProvider
 from ag47_radar.schemas import ProviderStatusRead
+
+
+class _CircuitAwareProvider(Protocol):
+    @property
+    def provider_id(self) -> str: ...
+
+    @property
+    def mode(self) -> SourceMode: ...
+
+    @property
+    def http(self) -> ResilientJsonClient | None: ...
+
+
+@dataclass(frozen=True, slots=True)
+class _CircuitDetails:
+    circuit_state: CircuitState
+    consecutive_failures: int
+    latency_ms: float | None
+    remaining_cooldown: float | None
 
 
 class RoutingContractRiskProvider(ContractRiskProvider):
@@ -50,31 +73,23 @@ class RoutingContractRiskProvider(ContractRiskProvider):
         await self.evm_risk.close()
 
 
-def _extract_circuit_details(provider: object) -> dict[str, Any]:
-    if not hasattr(provider, "http") or provider.http is None:
-        return {
-            "circuit_state": "closed",
-            "consecutive_failures": 0,
-            "latency_ms": None,
-            "remaining_cooldown": None,
-        }
-
+def _extract_circuit_details(provider: _CircuitAwareProvider) -> _CircuitDetails:
     http_client = provider.http
-    if not hasattr(http_client, "circuit") or http_client.circuit is None:
-        return {
-            "circuit_state": "closed",
-            "consecutive_failures": 0,
-            "latency_ms": None,
-            "remaining_cooldown": None,
-        }
+    if http_client is None:
+        return _CircuitDetails(
+            circuit_state="closed",
+            consecutive_failures=0,
+            latency_ms=None,
+            remaining_cooldown=None,
+        )
 
     state, remaining = http_client.circuit.get_state_and_cooldown()
-    return {
-        "circuit_state": state,
-        "consecutive_failures": http_client.circuit.failure_count,
-        "latency_ms": getattr(http_client, "last_latency_ms", None),
-        "remaining_cooldown": remaining,
-    }
+    return _CircuitDetails(
+        circuit_state=state,
+        consecutive_failures=http_client.circuit.failure_count,
+        latency_ms=http_client.last_latency_ms,
+        remaining_cooldown=remaining,
+    )
 
 
 class ProviderRegistry:
@@ -92,10 +107,9 @@ class ProviderRegistry:
             else RoutingContractRiskProvider(settings)
         )
         from ag47_radar.providers.social import RoutingSocialProvider
+
         self.social: SocialDataProvider = (
-            DemoSocialProvider() 
-            if settings.demo_mode 
-            else RoutingSocialProvider(settings)
+            DemoSocialProvider() if settings.demo_mode else RoutingSocialProvider(settings)
         )
         self.alert_delivery: AlertDeliveryProvider = (
             TelegramAlertDeliveryProvider(settings)
@@ -177,13 +191,13 @@ class ProviderRegistry:
             ]
 
         # Real Mode: Map actual active providers and extract their circuit status
-        result_list = []
+        result_list: list[ProviderStatusRead] = []
 
         # Helper to build status dynamically
-        def add_provider_status(provider_obj: any, name: str, kind: str):
+        def add_provider_status(provider_obj: _CircuitAwareProvider, name: str, kind: str) -> None:
             details = _extract_circuit_details(provider_obj)
             status_val = ProviderStatus.ACTIVE
-            if details["circuit_state"] == "open":
+            if details.circuit_state == "open":
                 status_val = ProviderStatus.DEGRADED
 
             result_list.append(
@@ -193,9 +207,15 @@ class ProviderRegistry:
                     kind=kind,
                     status=status_val,
                     mode=provider_obj.mode,
-                    last_checked_at=now if details["latency_ms"] is not None else None,
-                    detail=f"Circuito {details['circuit_state'].upper()}. Falhas: {details['consecutive_failures']}.",
-                    **details,
+                    last_checked_at=now if details.latency_ms is not None else None,
+                    detail=(
+                        f"Circuito {details.circuit_state.upper()}. "
+                        f"Falhas: {details.consecutive_failures}."
+                    ),
+                    circuit_state=details.circuit_state,
+                    consecutive_failures=details.consecutive_failures,
+                    latency_ms=details.latency_ms,
+                    remaining_cooldown=details.remaining_cooldown,
                 )
             )
 
@@ -218,10 +238,10 @@ class ProviderRegistry:
         if isinstance(self.holders, RoutingHolderProvider):
             add_provider_status(self.holders.solana_provider, "Helius Holders", "holder_data")
             add_provider_status(self.holders.evm_provider, "Etherscan Holders", "holder_data")
-            
+
         # 5. Routing Social
         from ag47_radar.providers.social import RoutingSocialProvider
-        
+
         if isinstance(self.social, RoutingSocialProvider):
             add_provider_status(self.social.telegram, "Telegram Public API", "social_data")
 

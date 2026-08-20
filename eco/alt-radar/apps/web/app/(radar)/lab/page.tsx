@@ -1,9 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useApplyWeightsMutation, useOptimizeWeightsMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
-import type { GridSearchCandidate, GridSearchResponse } from "@/eco/alt-radar/apps/web/lib/api/schemas";
+import {
+  useApplyWeightsMutation,
+  useOptimizeWeightsMutation,
+} from "@/eco/alt-radar/apps/web/lib/api/query";
+import type {
+  GridSearchCandidate,
+  GridSearchResponse,
+} from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { formatNumber, formatPercent } from "@/eco/alt-radar/apps/web/lib/format";
+import {
+  PUBLIC_OPERATOR_ACTION_TITLE,
+  PUBLIC_PORTAL_READ_ONLY,
+} from "@/eco/alt-radar/apps/web/lib/public-access";
 import {
   FlaskConical,
   Play,
@@ -32,7 +42,7 @@ export default function LabPage() {
     applyMutation.mutate(candidate.weights, {
       onSuccess: () => {
         setAppliedSuccessMessage(
-          `Matriz de pesos aprovada e aplicada com sucesso ao motor de scoring! (Sign-off registrado)`
+          `Matriz de pesos aprovada e aplicada com sucesso ao motor de scoring! (Sign-off registrado)`,
         );
       },
     });
@@ -57,7 +67,8 @@ export default function LabPage() {
             </span>
           </div>
           <p className="text-sm text-radar-muted">
-            Varredura determinística de parâmetros sobre dados históricos da carteira virtual para otimização de Profit Factor e Win Rate.
+            Varredura determinística de parâmetros sobre dados históricos da carteira virtual para
+            otimização de Profit Factor e Win Rate.
           </p>
         </div>
 
@@ -67,12 +78,14 @@ export default function LabPage() {
             {[12, 24, 48, 72].map((h) => (
               <button
                 key={h}
+                disabled={PUBLIC_PORTAL_READ_ONLY}
                 onClick={() => setHorizon(h)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                   horizon === h
                     ? "bg-radar-positive/20 text-radar-positive ring-1 ring-radar-positive/40"
                     : "text-radar-subtle hover:text-radar-ink"
                 }`}
+                title={PUBLIC_OPERATOR_ACTION_TITLE}
               >
                 {h}h
               </button>
@@ -81,15 +94,20 @@ export default function LabPage() {
 
           <button
             onClick={handleRunOptimization}
-            disabled={optimizeMutation.isPending}
+            disabled={PUBLIC_PORTAL_READ_ONLY || optimizeMutation.isPending}
             className="inline-flex items-center gap-2 rounded-xl bg-radar-positive px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#061118] transition-all hover:bg-radar-positive/90 active:scale-95 disabled:opacity-50"
+            title={PUBLIC_OPERATOR_ACTION_TITLE}
           >
             {optimizeMutation.isPending ? (
               <Cpu className="size-4 animate-spin" />
             ) : (
               <Play className="size-4 fill-current" />
             )}
-            {optimizeMutation.isPending ? "Processando..." : "Rodar Grid Search"}
+            {PUBLIC_PORTAL_READ_ONLY
+              ? "Ação de operador"
+              : optimizeMutation.isPending
+                ? "Processando..."
+                : "Rodar Grid Search"}
           </button>
         </div>
       </div>
@@ -110,9 +128,12 @@ export default function LabPage() {
             <div className="absolute inset-2 animate-pulse rounded-full bg-radar-positive/40" />
             <Cpu className="absolute inset-0 m-auto size-8 text-radar-positive animate-spin" />
           </div>
-          <h3 className="text-lg font-semibold text-radar-ink">Executando Varredura de Parâmetros</h3>
+          <h3 className="text-lg font-semibold text-radar-ink">
+            Executando Varredura de Parâmetros
+          </h3>
           <p className="mt-1 text-sm text-radar-muted max-w-md">
-            Simulando combinações de matrizes de peso sobre milhares de observações de score e instantâneos de preço ({horizon}h de horizonte).
+            Simulando combinações de matrizes de peso sobre milhares de observações de score e
+            instantâneos de preço ({horizon}h de horizonte).
           </p>
         </div>
       )}
@@ -123,7 +144,7 @@ export default function LabPage() {
           <Sliders className="size-12 text-radar-subtle opacity-50 mb-4" />
           <h3 className="text-base font-semibold text-radar-ink">Nenhuma simulação ativa</h3>
           <p className="mt-1 text-sm text-radar-muted max-w-md">
-            Clique em <strong>Rodar Grid Search</strong> para acionar a varredura computacional offline e descobrir a combinação de pesos de alta performance.
+            A varredura e a aplicação de pesos exigem o console autenticado do operador.
           </p>
         </div>
       )}
@@ -150,7 +171,9 @@ export default function LabPage() {
               <p className="mt-2 text-3xl font-bold tracking-tight text-radar-muted">
                 {formatNumber(data.baseline_profit_factor)}x
               </p>
-              <p className="mt-1 text-xs text-radar-muted">Win Rate: {formatPercent(data.baseline_win_rate)}</p>
+              <p className="mt-1 text-xs text-radar-muted">
+                Win Rate: {formatPercent(data.baseline_win_rate)}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-radar-positive/30 bg-radar-positive/5 p-5">
@@ -161,8 +184,8 @@ export default function LabPage() {
                 {formatNumber(data.top_candidates[0]?.profit_factor ?? 0)}x
               </p>
               <p className="mt-1 text-xs font-semibold text-radar-positive flex items-center gap-1">
-                <ArrowUpRight className="size-3" />
-                +{data.top_candidates[0]?.improvement_vs_base_pct ?? 0}% vs Atual
+                <ArrowUpRight className="size-3" />+
+                {data.top_candidates[0]?.improvement_vs_base_pct ?? 0}% vs Atual
               </p>
             </div>
 
@@ -231,8 +254,13 @@ export default function LabPage() {
                       </p>
                       <div className="space-y-1.5 text-xs">
                         {Object.entries(candidate.weights).map(([key, val]) => (
-                          <div key={key} className="flex justify-between items-center text-radar-muted">
-                            <span className="capitalize">{key.replace("_score", "").replace("_", " ")}</span>
+                          <div
+                            key={key}
+                            className="flex justify-between items-center text-radar-muted"
+                          >
+                            <span className="capitalize">
+                              {key.replace("_score", "").replace("_", " ")}
+                            </span>
                             <span className="font-mono text-radar-ink font-semibold">
                               {(val * 100).toFixed(1)}%
                             </span>
@@ -246,8 +274,9 @@ export default function LabPage() {
                         e.stopPropagation();
                         handleApplyWeights(candidate);
                       }}
-                      disabled={applyMutation.isPending}
+                      disabled={PUBLIC_PORTAL_READ_ONLY || applyMutation.isPending}
                       className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-radar-positive/20 border border-radar-positive/40 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-radar-positive transition-all hover:bg-radar-positive hover:text-[#061118] active:scale-95 disabled:opacity-50"
+                      title={PUBLIC_OPERATOR_ACTION_TITLE}
                     >
                       <CheckCircle2 className="size-4" />
                       Aprovar & Aplicar Matriz

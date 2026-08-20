@@ -11,9 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ag47_radar.api.dependencies import require_admin
 from ag47_radar.config import get_settings
 from ag47_radar.db import get_session
+from ag47_radar.models import ScoringWeights
 from ag47_radar.schemas import ApplyWeightsRequest, ApplyWeightsResponse, GridSearchResponse
 from ag47_radar.services.optimization import run_grid_search_optimization
-from ag47_radar.services.scoring import WEIGHTS
 
 router = APIRouter(prefix="/system", tags=["optimization"])
 
@@ -39,23 +39,26 @@ async def optimize_weights(
 )
 async def apply_weights(
     body: ApplyWeightsRequest,
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ApplyWeightsResponse:
     """Manually apply recommended weights to active scoring engine (Operator Sign-off)."""
-    # Normalize weights sum to 1.0 if valid
-    total_w = sum(body.weights.values())
-    if total_w <= 0:
-        return ApplyWeightsResponse(
-            status="ok",
-            active_weights=WEIGHTS,
-            applied_at=datetime.now(UTC),
-        )
-
-    for k, v in body.weights.items():
-        if k in WEIGHTS:
-            WEIGHTS[k] = round(v / total_w, 4) if total_w != 1.0 else round(v, 4)
+    requested_weights = body.weights.model_dump()
+    scale = max(requested_weights.values())
+    scaled_weights = {name: value / scale for name, value in requested_weights.items()}
+    total_weight = sum(scaled_weights.values())
+    normalized_weights = {name: value / total_weight for name, value in scaled_weights.items()}
+    applied_at = datetime.now(UTC)
+    persisted_weights = ScoringWeights(
+        calibrated_at=applied_at,
+        weights_json=normalized_weights,
+        sample_count=0,
+        correlation=None,
+    )
+    session.add(persisted_weights)
+    await session.commit()
 
     return ApplyWeightsResponse(
         status="ok",
-        active_weights=WEIGHTS,
-        applied_at=datetime.now(UTC),
+        active_weights=normalized_weights,
+        applied_at=applied_at,
     )

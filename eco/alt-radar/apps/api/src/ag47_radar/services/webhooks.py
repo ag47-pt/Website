@@ -10,15 +10,21 @@ from typing import Any
 from urllib.parse import urlparse
 
 import httpx
-from sqlalchemy import select, update
+from sqlalchemy import select
 
 from ag47_radar.config import Settings
 from ag47_radar.models import NotificationDelivery, UserNotificationSettings
+from ag47_radar.services.outbox import (
+    NotificationDispatchResult,
+    claim_delivery,
+    delivery_next_attempt_at,
+    enqueue_delivery,
+    schedule_delivery_retry,
+)
 
 logger = logging.getLogger(__name__)
 
 WEBHOOK_TIMEOUT_SECONDS = 10
-WEBHOOK_MAX_RETRIES = 3
 
 
 def validate_webhook_url(webhook_url: str, settings: Settings) -> None:
@@ -63,23 +69,49 @@ async def dispatch_webhook_alert_bg(
     severity: float,
     confidence: float,
     confidence_level: str | None = None,
-) -> None:
+) -> NotificationDispatchResult:
     """Dispatch an alert to the configured webhook endpoint with HMAC SHA-256 signature."""
 
     # 1. Read webhook config and create delivery record
     async with session_factory() as session:
         user_settings = await session.scalar(select(UserNotificationSettings))
         if not user_settings or not user_settings.webhook_url:
-            return
+            return NotificationDispatchResult(
+                channel="webhook_custom",
+                status="skipped",
+                reason="not_configured",
+            )
 
         webhook_url = user_settings.webhook_url
         webhook_secret = user_settings.webhook_secret or ""
 
-        from ag47_radar.services.outbox import enqueue_delivery
-
         delivery = await enqueue_delivery(session, alert_id=alert_id, channel="webhook_custom")
+        claimed = await claim_delivery(session, delivery)
         await session.commit()
         delivery_id = delivery.id
+
+        if not claimed:
+            if delivery.status == "success":
+                return NotificationDispatchResult(
+                    channel="webhook_custom",
+                    status="success",
+                    reason="already_delivered",
+                    delivery_id=delivery_id,
+                )
+            if delivery.status == "dead":
+                return NotificationDispatchResult(
+                    channel="webhook_custom",
+                    status="dead",
+                    reason="attempts_exhausted",
+                    delivery_id=delivery_id,
+                )
+            return NotificationDispatchResult(
+                channel="webhook_custom",
+                status="deferred",
+                reason="not_due",
+                delivery_id=delivery_id,
+                next_attempt_at=delivery_next_attempt_at(delivery),
+            )
 
     # 2. Build payload
     payload = {
@@ -95,61 +127,80 @@ async def dispatch_webhook_alert_bg(
     payload_bytes = json.dumps(payload, separators=(",", ":")).encode("utf-8")
     signature = sign_payload(payload_bytes, webhook_secret)
 
-    # 3. Dispatch with retries
+    # 3. Dispatch one durable attempt
     success = False
     response_data: dict[str, Any] | None = None
     error_msg: str | None = None
+    failure_reason = "request_error"
 
     try:
         await validate_webhook_destination(webhook_url, settings)
     except ValueError as exc:
+        failure_reason = "invalid_destination"
         error_msg = str(exc)
     else:
         async with httpx.AsyncClient(timeout=WEBHOOK_TIMEOUT_SECONDS) as client:
-            for attempt in range(WEBHOOK_MAX_RETRIES):
-                try:
-                    resp = await client.post(
-                        webhook_url,
-                        content=payload_bytes,
-                        headers={
-                            "Content-Type": "application/json",
-                            "X-AG47-Signature": signature,
-                            "X-AG47-Event": "alert.edge_confirmed",
-                        },
-                    )
-                    if 200 <= resp.status_code < 300:
-                        success = True
-                        response_data = {
-                            "status_code": resp.status_code,
-                            "duration_ms": resp.elapsed.total_seconds() * 1000
-                            if resp.elapsed
-                            else None,
-                        }
-                        break
+            try:
+                resp = await client.post(
+                    webhook_url,
+                    content=payload_bytes,
+                    headers={
+                        "Content-Type": "application/json",
+                        "X-AG47-Signature": signature,
+                        "X-AG47-Event": "alert.edge_confirmed",
+                    },
+                )
+                if 200 <= resp.status_code < 300:
+                    success = True
+                    response_data = {
+                        "status_code": resp.status_code,
+                        "duration_ms": resp.elapsed.total_seconds() * 1000
+                        if resp.elapsed
+                        else None,
+                    }
+                else:
                     error_msg = f"HTTP {resp.status_code}: {resp.text[:200]}"
-                except httpx.TimeoutException:
-                    error_msg = "Webhook request timed out"
-                except Exception as exc:
-                    error_msg = str(exc)[:200]
-
-                if attempt < WEBHOOK_MAX_RETRIES - 1:
-                    await asyncio.sleep(2**attempt)
+                    failure_reason = "http_error"
+            except httpx.TimeoutException:
+                failure_reason = "timeout"
+                error_msg = "Webhook request timed out"
+            except Exception as exc:
+                error_msg = str(exc)[:200]
 
     # 4. Update delivery status
     async with session_factory() as session:
-        final_status = "success" if success else "failed"
-        provider_resp = response_data if success else {"error": error_msg}
-        stmt = (
-            update(NotificationDelivery)
+        persisted_delivery = await session.scalar(
+            select(NotificationDelivery)
             .where(NotificationDelivery.id == delivery_id)
-            .values(status=final_status, provider_response=provider_resp)
+            .with_for_update()
         )
-        await session.execute(stmt)
+        if persisted_delivery is None:
+            raise RuntimeError("Notification delivery disappeared during dispatch")
+        persisted_delivery.provider_response = response_data if success else {"error": error_msg}
+        if success:
+            persisted_delivery.status = "success"
+            persisted_delivery.locked_at = None
+        else:
+            schedule_delivery_retry(persisted_delivery)
+        persisted_status = persisted_delivery.status
+        next_attempt_at = delivery_next_attempt_at(persisted_delivery)
         await session.commit()
 
     logger.info(
         "webhook_dispatch_complete",
-        extra={"alert_id": alert_id, "success": success, "delivery_id": delivery_id},
+        extra={
+            "alert_id": alert_id,
+            "success": success,
+            "delivery_id": delivery_id,
+            "status": persisted_status,
+        },
+    )
+    return NotificationDispatchResult(
+        channel="webhook_custom",
+        status="success" if success else ("dead" if persisted_status == "dead" else "failed"),
+        reason=None if success else failure_reason,
+        delivery_id=delivery_id,
+        next_attempt_at=next_attempt_at,
     )
 
 

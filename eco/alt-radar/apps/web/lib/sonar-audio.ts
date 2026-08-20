@@ -81,7 +81,11 @@ export function playTokenSelectSound(): void {
 /**
  * Som de alerta sonar para novas oportunidades ou detecções
  */
-export function playTacticalAlertSound(frequencyStart = 520, frequencyEnd = 880, duration = 0.16): void {
+export function playTacticalAlertSound(
+  frequencyStart = 520,
+  frequencyEnd = 880,
+  duration = 0.16,
+): void {
   if (isAudioMuted) return;
   const ctx = getContext();
   if (!ctx) return;
@@ -150,7 +154,7 @@ export function playThemeSwitchSound(): void {
     osc1.frequency.exponentialRampToValueAtTime(783.99, now + duration); // G5
 
     osc2.frequency.setValueAtTime(659.25, now); // E5
-    osc2.frequency.exponentialRampToValueAtTime(1046.50, now + duration); // C6
+    osc2.frequency.exponentialRampToValueAtTime(1046.5, now + duration); // C6
 
     gain.gain.setValueAtTime(0.001, now);
     gain.gain.linearRampToValueAtTime(0.04, now + 0.015);

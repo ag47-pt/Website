@@ -1,5 +1,7 @@
 # Plano do Sprint 7: Infraestrutura de Produção e Ingestão Contínua
 
+> **Registro histórico:** a solução de scheduler deste plano foi substituída no Hardening 1 por jobs externos duráveis.
+
 ## Objetivo Principal
 
 > **Garantir a concorrência assíncrona, persistência resiliente em produção e a execução autônoma do ciclo observacional (Discovery -> Ingestion -> Evaluation -> Truth Engine).**

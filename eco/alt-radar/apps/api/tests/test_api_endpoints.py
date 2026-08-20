@@ -1,5 +1,12 @@
 import pytest
+from fastapi import FastAPI
 from httpx import AsyncClient
+
+from ag47_radar.api.dependencies import (
+    enforce_mutation_rate_limit,
+    require_admin,
+    require_operator,
+)
 
 
 @pytest.mark.asyncio
@@ -11,12 +18,81 @@ async def test_health_ok(api_client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_cors_preflight_allows_authenticated_patch(api_client: AsyncClient):
+    response = await api_client.options(
+        "/api/v1/alerts/00000000-0000-4000-8000-000000000001",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "PATCH",
+            "Access-Control-Request-Headers": "content-type,x-ag47-api-key",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "PATCH" in response.headers["access-control-allow-methods"]
+    allowed_headers = response.headers["access-control-allow-headers"].lower()
+    assert "content-type" in allowed_headers
+    assert "x-ag47-api-key" in allowed_headers
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
+def test_all_mutation_routes_are_authenticated_and_rate_limited(test_app: FastAPI):
+    expected_guards = {
+        ("POST", "/api/v1/system/providers/{provider_id}/reset-circuit"): require_admin,
+        ("PATCH", "/api/v1/alerts/{alert_id}"): require_operator,
+        ("POST", "/api/v1/watchlist"): require_operator,
+        ("DELETE", "/api/v1/watchlist/{token_id}"): require_operator,
+        ("POST", "/api/v1/system/notification-settings"): require_admin,
+        ("POST", "/api/v1/system/webhook/test"): require_admin,
+        ("POST", "/api/v1/system/optimize-weights"): require_admin,
+        ("POST", "/api/v1/system/apply-weights"): require_admin,
+    }
+    actual: dict[tuple[str, str], set[object]] = {}
+
+    for registered_route in test_app.routes:
+        route_contexts = (
+            registered_route.effective_route_contexts()
+            if hasattr(registered_route, "effective_route_contexts")
+            else (registered_route,)
+        )
+        for route in route_contexts:
+            if not hasattr(route, "dependant"):
+                continue
+            dependency_calls = {dependency.call for dependency in route.dependant.dependencies}
+            for method in (route.methods or set()) & {"POST", "PATCH", "DELETE"}:
+                actual[(method, route.path)] = dependency_calls
+
+    assert set(actual) == set(expected_guards)
+    for route_key, expected_guard in expected_guards.items():
+        assert expected_guard in actual[route_key]
+        assert enforce_mutation_rate_limit in actual[route_key]
+
+
+@pytest.mark.asyncio
 async def test_system_status(api_client: AsyncClient):
     response = await api_client.get("/api/v1/system/status")
     assert response.status_code == 200
     data = response.json()
     assert "metrics" in data
     assert data["metrics"]["tokens_monitored"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_system_evolution_reports_current_hardening_stage(api_client: AsyncClient):
+    response = await api_client.get("/api/v1/system/evolution")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "phase": "Hardening 1",
+        "phase_title": "Estabilização operacional da beta pública",
+        "now": (
+            "Verdade operacional, ingestão durável, gates de qualidade e entrega "
+            "reprodutível sem ampliar o escopo observacional."
+        ),
+        "completed_steps": 4,
+        "total_steps": 5,
+        "goal": "Lóbulo Observacional do Organismo Cognitivo",
+    }
 
 
 @pytest.mark.asyncio
@@ -129,12 +205,22 @@ async def test_validation_error_format(api_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_reset_provider_circuit(api_client: AsyncClient):
+async def test_reset_provider_circuit(api_client: AsyncClient, test_app: FastAPI, monkeypatch):
+    async def reset_circuit(_provider_id: str) -> bool:
+        return True
+
+    monkeypatch.setattr(test_app.state.providers, "reset_circuit", reset_circuit)
     response = await api_client.post("/api/v1/system/providers/geckoterminal/reset-circuit")
     assert response.status_code == 200
-    data = response.json()
-    assert "success" in data
-    assert isinstance(data["success"], bool)
+    assert response.json() == {"success": True}
+
+
+@pytest.mark.asyncio
+async def test_reset_unknown_provider_does_not_report_http_success(api_client: AsyncClient):
+    response = await api_client.post("/api/v1/system/providers/unknown/reset-circuit")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "resource_not_found"
 
 
 @pytest.mark.asyncio
@@ -174,3 +260,13 @@ async def test_get_notifications_history(api_client: AsyncClient, seeded_db):
     data = response.json()
     assert "items" in data
     assert isinstance(data["items"], list)
+
+
+@pytest.mark.asyncio
+async def test_removed_fake_webhook_broadcast_is_not_exposed(api_client: AsyncClient):
+    response = await api_client.post(
+        "/api/v1/webhooks/broadcast",
+        json={"data": {"chosen": "message"}, "target_url": "https://example.com"},
+    )
+
+    assert response.status_code == 404

@@ -5,7 +5,11 @@ import { useRisk } from "@/eco/alt-radar/apps/web/lib/api/query";
 import type { Risk } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { formatNumber, formatPercent, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
 
 type SignalLevel = "informative" | "attention" | "high" | "critical" | "unknown";
 
@@ -177,10 +181,16 @@ export function RiskPanel({
   const visibleSignals = compact ? signals.slice(0, 5) : signals;
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-3.5 shadow-xl" aria-labelledby={`risk-title-${tokenId}`} data-testid="risk-panel">
+    <section
+      className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-3.5 shadow-xl"
+      aria-labelledby={`risk-title-${tokenId}`}
+      data-testid="risk-panel"
+    >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">Contrato e Distribuição</p>
+          <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">
+            Contrato e Distribuição
+          </p>
           <h2
             id={`risk-title-${tokenId}`}
             className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans"
@@ -245,7 +255,9 @@ export function RiskPanel({
 
       {!compact && risk.data.flags.length > 0 && (
         <div className="mt-3 border-t border-white/10 pt-3 font-mono">
-          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Flags do Provider</p>
+          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">
+            Flags do Provider
+          </p>
           <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
             {risk.data.flags.map((flag) => {
               const mappedLevel: SignalLevel =

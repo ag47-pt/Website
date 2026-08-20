@@ -3,7 +3,12 @@
 import dynamic from "next/dynamic";
 import { ExternalLink, Star, FileDown, FileJson, Camera, FileText } from "lucide-react";
 import { useState } from "react";
-import { useMarketHistory, useScore, useToken, useWatchlistMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
+import {
+  useMarketHistory,
+  useScore,
+  useToken,
+  useWatchlistMutation,
+} from "@/eco/alt-radar/apps/web/lib/api/query";
 import {
   formatAge,
   formatCurrency,
@@ -16,7 +21,11 @@ import {
 import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
 import { CopyButton } from "@/eco/alt-radar/apps/web/components/shared/copy-button";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { ScoreBreakdown } from "./score-breakdown";
 import { TokenTimeline } from "./token-timeline";
 import { SwapSimulator } from "./swap-simulator";
@@ -27,6 +36,10 @@ import { generateChartSnapshotPng } from "@/eco/alt-radar/apps/web/lib/chart-sna
 import { generateExecutiveReportPdf } from "@/eco/alt-radar/apps/web/lib/executive-dossier-pdf";
 import { playTokenSelectSound } from "@/eco/alt-radar/apps/web/lib/sonar-audio";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
+import {
+  PUBLIC_OPERATOR_ACTION_TITLE,
+  PUBLIC_PORTAL_READ_ONLY,
+} from "@/eco/alt-radar/apps/web/lib/public-access";
 
 const MarketChart = dynamic(() => import("./market-chart").then((module) => module.MarketChart), {
   ssr: false,
@@ -135,11 +148,18 @@ export function TokenAnalysis({
       <header className="border-b border-white/10 bg-white/[0.02] px-3.5 py-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">Análise Detalhada</p>
+            <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">
+              Análise Detalhada
+            </p>
             <div className="mt-2 flex items-center gap-2.5">
               <span
                 className="grid size-10 shrink-0 place-items-center rounded-2xl border text-lg font-black shadow-xl"
-                style={{ borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 12px ${primary}25` }}
+                style={{
+                  borderColor: `${primary}50`,
+                  backgroundColor: `${primary}15`,
+                  color: primary,
+                  boxShadow: `0 0 12px ${primary}25`,
+                }}
               >
                 {detail.token.symbol.slice(0, 1)}
               </span>
@@ -150,16 +170,21 @@ export function TokenAnalysis({
                     className="truncate text-base font-black tracking-tight text-white font-sans"
                   >
                     {detail.token.name}{" "}
-                    <span className="font-mono text-zinc-400 text-sm font-normal">({detail.token.symbol})</span>
+                    <span className="font-mono text-zinc-400 text-sm font-normal">
+                      ({detail.token.symbol})
+                    </span>
                   </h2>
                   <button
                     aria-label={
                       detail.watchlisted ? "Remover da watchlist" : "Adicionar à watchlist"
                     }
                     aria-pressed={detail.watchlisted}
-                    className={detail.watchlisted ? "text-amber-400" : "text-zinc-500 hover:text-zinc-300"}
-                    disabled={watchlist.isPending}
+                    className={`${
+                      detail.watchlisted ? "text-amber-400" : "text-zinc-500 hover:text-zinc-300"
+                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                    disabled={PUBLIC_PORTAL_READ_ONLY || watchlist.isPending}
                     onClick={() => watchlist.mutate({ tokenId, isWatchlisted: detail.watchlisted })}
+                    title={PUBLIC_OPERATOR_ACTION_TITLE}
                     type="button"
                   >
                     <Star className="size-4" fill={detail.watchlisted ? "currentColor" : "none"} />
@@ -193,43 +218,43 @@ export function TokenAnalysis({
 ---
 
 ## 🎯 Scoring & Classificação AG47
-- **Score Final:** **${scoreData?.final_score ?? 'N/D'}/10**
-- **Classificação:** ${scoreData?.classification ?? 'N/D'}
-- **Confiança do Modelo:** ${scoreData?.confidence ? `${Math.round(scoreData.confidence * 100)}%` : 'N/D'}
-- **Versão do Motor:** ${scoreData?.scoring_version ?? '2.4.0'}
-- **Explicação:** ${scoreData?.explanation ?? 'N/D'}
+- **Score Final:** **${scoreData?.final_score ?? "N/D"}/10**
+- **Classificação:** ${scoreData?.classification ?? "N/D"}
+- **Confiança do Modelo:** ${scoreData?.confidence ? `${Math.round(scoreData.confidence * 100)}%` : "N/D"}
+- **Versão do Motor:** ${scoreData?.scoring_version ?? "2.4.0"}
+- **Explicação:** ${scoreData?.explanation ?? "N/D"}
 
 ### Fatores de Destaque
-- **Positivos:** ${(scoreData?.positive_factors ?? []).join(', ') || 'Nenhum'}
-- **Negativos:** ${(scoreData?.negative_factors ?? []).join(', ') || 'Nenhum'}
+- **Positivos:** ${(scoreData?.positive_factors ?? []).join(", ") || "Nenhum"}
+- **Negativos:** ${(scoreData?.negative_factors ?? []).join(", ") || "Nenhum"}
 
 ---
 
 ## 🛡️ Auditoria Zero-Trust & Risco
-- **Score de Risco:** **${risk?.risk_score ?? 'N/D'}/10**
-- **Status do Pool (LP Lock):** ${risk?.liquidity_lock_status ?? 'Desconhecido'}
-- **Honeypot Check:** ${risk?.honeypot_status ?? 'Clean'}
-- **Mint Authority:** ${risk?.mintable === false ? 'Revogada (Seguro)' : risk?.mintable === true ? 'Ativa (Risco)' : 'Desconhecido'}
-- **Top 10 Holders:** ${risk?.top_holders_percentage != null ? `${risk.top_holders_percentage}%` : 'N/D'}
-- **Deployer Balance:** ${risk?.deployer_percentage != null ? `${risk.deployer_percentage}%` : 'N/D'}
-- **Buy Tax / Sell Tax:** ${risk?.buy_tax ?? 0}% / ${risk?.sell_tax ?? 0}%
+- **Score de Risco:** **${risk?.risk_score ?? "N/D"}/10**
+- **Status do Pool (LP Lock):** ${risk?.liquidity_lock_status ?? "Desconhecido"}
+- **Honeypot Check:** ${risk?.honeypot_status ?? "Desconhecido"}
+- **Mint Authority:** ${risk?.mintable === false ? "Revogada (Seguro)" : risk?.mintable === true ? "Ativa (Risco)" : "Desconhecido"}
+- **Top 10 Holders:** ${risk?.top_holders_percentage != null ? `${risk.top_holders_percentage}%` : "N/D"}
+- **Deployer Balance:** ${risk?.deployer_percentage != null ? `${risk.deployer_percentage}%` : "N/D"}
+- **Buy Tax / Sell Tax:** ${risk?.buy_tax != null ? `${risk.buy_tax}%` : "N/D"} / ${risk?.sell_tax != null ? `${risk.sell_tax}%` : "N/D"}
 
 ---
 
 ## 📊 Telemetria de Mercado
-- **Preço USD:** $${market?.price_usd ?? 0}
-- **Liquidez:** $${market?.liquidity_usd ? market.liquidity_usd.toLocaleString() : 0}
-- **Volume 24h:** $${market?.volume_24h ? market.volume_24h.toLocaleString() : 0}
-- **Market Cap:** $${market?.market_cap ? market.market_cap.toLocaleString() : 0}
-- **Holders Ativos:** ${holdersCount ?? risk?.holders_count ? (holdersCount ?? risk?.holders_count)?.toLocaleString() : 'N/D'}
+- **Preço USD:** ${market?.price_usd != null ? `$${market.price_usd}` : "N/D"}
+- **Liquidez:** ${market?.liquidity_usd != null ? `$${market.liquidity_usd.toLocaleString()}` : "N/D"}
+- **Volume 24h:** ${market?.volume_24h != null ? `$${market.volume_24h.toLocaleString()}` : "N/D"}
+- **Market Cap:** ${market?.market_cap != null ? `$${market.market_cap.toLocaleString()}` : "N/D"}
+- **Holders Ativos:** ${(holdersCount ?? risk?.holders_count) ? (holdersCount ?? risk?.holders_count)?.toLocaleString() : "N/D"}
 
 ---
 *Gerado deterministicamente por AG47 Alt Radar — Ecosystem Intelligence.*
 `;
 
-                const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8;' });
+                const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8;" });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const a = document.createElement("a");
                 a.href = url;
                 a.download = `dossie-tecnico-${token.symbol.toLowerCase()}.md`;
                 document.body.appendChild(a);
@@ -255,9 +280,11 @@ export function TokenAnalysis({
                   exported_at: new Date().toISOString(),
                   system: "AG47 Alt Radar — EvoPro Ecosystem",
                 };
-                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const blob = new Blob([JSON.stringify(payload, null, 2)], {
+                  type: "application/json",
+                });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const a = document.createElement("a");
                 a.href = url;
                 a.download = `dossie-${detail.token.symbol.toLowerCase()}.json`;
                 document.body.appendChild(a);
@@ -279,7 +306,7 @@ export function TokenAnalysis({
                   detail.token,
                   detail.latest_market,
                   detail.latest_risk,
-                  detail.latest_score
+                  detail.latest_score,
                 );
               }}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border border-white/10 bg-white/5 text-[0.65rem] font-bold text-zinc-300 hover:bg-white/10 hover:text-white transition-all cursor-pointer shadow-sm"
@@ -302,7 +329,12 @@ export function TokenAnalysis({
                 });
               }}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[0.65rem] font-bold transition-all cursor-pointer shadow-sm"
-              style={{ borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 10px ${primary}20` }}
+              style={{
+                borderColor: `${primary}50`,
+                backgroundColor: `${primary}15`,
+                color: primary,
+                boxShadow: `0 0 10px ${primary}20`,
+              }}
               title="Gerar e Imprimir Dossiê Técnico Executivo em PDF (Blueprint A4)"
             >
               <FileText className="size-3.5" />
@@ -389,7 +421,10 @@ export function TokenAnalysis({
         <section className="mt-3.5" aria-labelledby={`history-title-${tokenId}`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 id={`history-title-${tokenId}`} className="text-xs font-bold text-white font-sans">
+              <h3
+                id={`history-title-${tokenId}`}
+                className="text-xs font-bold text-white font-sans"
+              >
                 Preço e Volume
               </h3>
               <p className="mt-0.5 font-mono text-[0.59rem] text-zinc-400">
@@ -402,7 +437,16 @@ export function TokenAnalysis({
                   key={item}
                   aria-pressed={interval === item}
                   className={`rounded-lg px-2.5 py-1 text-[0.59rem] font-bold uppercase transition-all cursor-pointer ${interval === item ? "text-white" : "text-zinc-400 hover:text-white"}`}
-                  style={interval === item ? { borderColor: `${primary}60`, backgroundColor: `${primary}20`, color: primary, boxShadow: `0 0 10px ${primary}25` } : {}}
+                  style={
+                    interval === item
+                      ? {
+                          borderColor: `${primary}60`,
+                          backgroundColor: `${primary}20`,
+                          color: primary,
+                          boxShadow: `0 0 10px ${primary}25`,
+                        }
+                      : {}
+                  }
                   onClick={() => setInterval(item)}
                   type="button"
                 >

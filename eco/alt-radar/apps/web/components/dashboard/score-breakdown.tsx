@@ -81,9 +81,7 @@ export function ScoreBreakdown({ score }: { score: Score | null }) {
           const value = score[key] as number | null;
           return (
             <div key={key} className="grid grid-cols-[7rem_1fr_2.1rem] items-center gap-2">
-              <span className="truncate text-[0.66rem] font-semibold text-zinc-400">
-                {label}
-              </span>
+              <span className="truncate text-[0.66rem] font-semibold text-zinc-400">{label}</span>
               <span
                 className={`h-1.5 overflow-hidden rounded-full ${value === null ? "border border-dashed border-white/10" : "bg-white/10"}`}
               >
@@ -142,7 +140,8 @@ export function ScoreBreakdown({ score }: { score: Score | null }) {
       </div>
 
       <p className="mt-3 flex items-center gap-1.5 font-mono text-[0.59rem] text-zinc-500">
-        <Sparkles className="size-3 text-cyan-400" /> Score analítico, não recomendação de investimento.
+        <Sparkles className="size-3 text-cyan-400" /> Score analítico, não recomendação de
+        investimento.
       </p>
     </section>
   );

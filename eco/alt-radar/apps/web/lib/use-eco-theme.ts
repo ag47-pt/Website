@@ -4,7 +4,7 @@ import { useTheme } from "@/context/ThemeContext";
 
 /**
  * Hook que adapta o ThemeContext global do AG47 para os componentes do Alt-Radar.
- * Fornece as cores do tema ativo (lime, orange, blue, tomate, default) 
+ * Fornece as cores do tema ativo (lime, orange, blue, tomate, default)
  * para que o alt-radar acompanhe o design system do /eco.
  */
 export function useEcoTheme() {

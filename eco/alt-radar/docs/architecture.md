@@ -23,22 +23,23 @@ A UI nunca acessa providers externos diretamente. FastAPI concentra normalizaç�
 flowchart LR
     Web[Next.js web] -->|REST /api/v1| API[FastAPI]
     API --> DB[(PostgreSQL / SQLite)]
-    Scheduler[APScheduler] -->|every 15 min| Ingestion[Ingestion service]
-    Scheduler -->|every 6 h| TruthEng[Truth Engine]
-    Scheduler -->|every 12 h| Calibration[Scoring Calibration]
+    CloudScheduler[Cloud Scheduler + IAM] --> RunJobs[Cloud Run Jobs]
+    RunJobs -->|one-shot| Ingestion[Ingestion worker]
+    RunJobs -->|one-shot| Calibration[Calibration worker]
     Ingestion --> GeckoT[GeckoTerminal discovery]
     Ingestion --> DexS[DexScreener market]
     Ingestion --> GoPlus[GoPlus risk EVM]
     Ingestion --> RugCheck[RugCheck Solana]
     Ingestion --> Telegram[Telegram Bot API]
     Ingestion --> DB
+    Ingestion --> TruthEng[Truth Engine]
     Ingestion --> Scoring[Scoring v2 composto]
     Scoring --> Alerts[Alert engine]
-    Alerts -->|Filtros + Edge ≥ 65%| TgDispatch[Telegram dispatch bg]
+    Alerts -->|Filtros + Edge ≥ 65%| TgDispatch[Telegram/webhook delivery]
     Alerts --> NotifLog[NotificationDelivery log]
     TruthEng --> DB
     Calibration --> DB
-    Demo[Demo fixtures] --> Ingestion
+    Demo[Demo fixtures] --> API
 ```
 
 ## Componentes
@@ -51,14 +52,15 @@ flowchart LR
 - A tabela usa TanStack Table; gráficos usam Recharts carregado apenas nos painéis necessários.
 - Loading, error, empty, partial, stale e demo são estados explícitos, não variações cosméticas de sucesso.
 - A Inbox (`alert-inbox.tsx`) possui um visualizador expansível do breakdown do score por componente (DexScreener, GoPlus, RugCheck, Holders, Liquidez/Volume).
-- O workspace (`system-workspace.tsx`) possui abas ativas para Diagnóstico de Circuit Breakers, Filtros de Notificação e Histórico de Entregas.
+- O portal público usa um BFF GET-only e expõe Diagnóstico, Filtros de Notificação e Histórico de Entregas somente para leitura. Ações de operador ficam desabilitadas até existir autenticação server-side própria.
 
 ### API
 
 - Rotas HTTP ficam finas e delegam consultas, scoring, alertas e ingestão a serviços.
 - Pydantic valida entradas e respostas (`schemas.py`); um envelope de erro inclui código e request ID sem stack trace.
 - O prefixo público é `/api/v1`; `/health` permanece simples para orquestradores.
-- Endpoints principais: `/tokens`, `/alerts`, `/alerts/edge-inbox`, `/truths/stats`, `/ingest/trigger`, `/system/status`, `/system/providers/{id}/reset-circuit`, `/system/notification-settings`, `/system/notifications`.
+- Endpoints principais de leitura: `/tokens`, `/alerts`, `/alerts/edge-inbox`, `/truths/stats`, `/system/status` e `/system/notifications`. Mutações como reset de provider e configurações exigem chave operator/admin e não atravessam o BFF público.
+- A ingestão não é acionada por endpoint público nem pelo `lifespan`; workers one-shot separados são disparados por infraestrutura autenticada.
 - CORS aceita somente origens configuradas e as mutações de watchlist usam limite por IP/janela.
 
 ### Persistência
@@ -67,9 +69,10 @@ flowchart LR
 - Snapshots de mercado, social e risco são append-only para preservar procedência e evolução.
 - `OpportunityScore` armazena pesos derivados, confiança, explicação e versão do algoritmo.
 - `Alert` possui chave de deduplicação, janela configurável, campo `confidence` (`low | medium | high | critical`) e `truth_status` (`true_positive | false_positive | inconclusive`).
-- `NotificationDelivery` regista cada tentativa de entrega de alerta (Telegram), com status (`success | failed | pending`), payload, tentativas e erros.
+- `NotificationDelivery` regista uma entrega por alerta/canal, com status durável (`pending | sending | success | dead`), payload, tentativas, próximo horário e erros. Integrações não configuradas são ignoradas antes de criar uma entrega; falhas reais reutilizam a mesma linha, respeitam backoff persistente e encerram após três tentativas.
 - `UserNotificationSettings` persiste os filtros configurados pelo operador (`min_severity`, `min_confidence`, `allowed_chains`).
 - `ScoringWeights` persiste as matrizes de calibração dinâmica geradas pelo backtest periódico.
+- `JobRun` regista chave idempotente, tentativas, resultado e horário das execuções externas.
 - `TokenTruth` armazena os resultados de retrospecção do Truth Engine para feedback loop.
 - `WatchlistEntry` é única por token e persiste em banco.
 - Endereços EVM têm uma representação normalizada em lowercase para unicidade; endereços Solana preservam case.
@@ -86,7 +89,7 @@ PostgreSQL usa `TIMESTAMPTZ`; o fallback SQLite é normalizado para UTC na borda
 6. Cada coleta persiste sua fonte, qualidade, duração e horário UTC.
 7. O scoring v2 calcula sub-scores com pesos dinâmicos (calibrados via backtest a cada 12 h) sem transformar ausências em zero seguro. Cold start (< 100 truths) recua para pesos hardcoded.
 8. O alert engine aplica filtro de Edge estatístico (win rate ≥ 65% com amostra ≥ 30), suspende por Drawdown (3 falhas consecutivas) e atribui confidence tier.
-9. O dispatcher de alertas verifica os `UserNotificationSettings` (severidade mínima, confiança mínima e redes permitidas) antes de acionar a notificação assíncrona via Telegram em background com retry exponencial (3 tentativas, $2^{attempt}$ s).
+9. O worker aguarda o dispatcher de alertas, que verifica os `UserNotificationSettings` (severidade mínima, confiança mínima e redes permitidas), registra uma entrega por alerta/canal e agenda retry persistente com backoff. Somente itens vencidos são retomados; a terceira falha encerra o canal em `dead`.
 10. O Truth Engine re-avalia tokens após 24 h: price delta ≥ +20% → true_positive; ≤ −30% → false_positive; else → inconclusive.
 11. A UI consulta somente a API interna e converte horários para o timezone configurado pelo utilizador.
 
@@ -100,20 +103,19 @@ Contratos separados cobrem descoberta, mercado, blockchain, holders, risco, soci
 | DexScreener | Mercado | Multi-chain | Enriquecimento de market data |
 | GoPlus | Risco | EVM | Honeypot, mintable, blacklist, taxas, lock |
 | RugCheck | Risco | Solana | Auditoria de contrato |
-| Telegram Bot | Sinais / Alertas | N/A | `getUpdates`, disparo de alertas em background, retry exponencial |
+| Telegram Bot | Sinais / Alertas | N/A | `getUpdates`, entrega aguardada pelo worker, retry exponencial |
 | Demo fixtures | Todos | N/A | NOVA/FARMX/ORBIT/LYNX/PULSE, `source=ag47_demo_fixture` |
 
-O mecanismo HTTP compartilhado possui timeout, retry somente para falhas transitórias, respeito a `Retry-After`, cache TTL e circuit breaker per-provider (estados: CLOSED → OPEN → HALF-OPEN, cooldown 45 s). A UI expõe o estado de cada circuito e permite reset manual via `/api/v1/system/providers/{id}/reset-circuit`. Cache real stale pode ser servido como stale; fixtures só são permitidas quando o modo demo foi selecionado explicitamente.
+O mecanismo HTTP compartilhado possui timeout, retry somente para falhas transitórias, respeito a `Retry-After`, cache TTL e circuit breaker per-provider (estados: CLOSED → OPEN → HALF-OPEN, cooldown 45 s). A UI pública expõe o estado de cada circuito; o reset manual existe apenas na API protegida do operador. Cache real stale pode ser servido como stale; fixtures só são permitidas quando o modo demo foi selecionado explicitamente.
 
 ## Tarefas agendadas
 
-APScheduler executa 3 cron jobs quando `SCHEDULER_ENABLED=true`. Um lock em processo impede sobreposição por job. O MVP pressupõe uma réplica; múltiplas réplicas exigirão worker/lock distribuído em sprint futuro.
+Cloud Scheduler chama a API `jobs:run` do Cloud Run com uma service account autorizada. O processo da API web não executa cron. Cada worker termina ao concluir, reutiliza `CLOUD_RUN_EXECUTION` para deduplicar retries e mantém um advisory lock do PostgreSQL durante a unidade de trabalho. SQLite implementa somente o equivalente local em processo e não é um backend de produção.
 
 | Job | Intervalo | Serviço | Descrição |
 |-----|-----------|---------|-----------|
-| `ingestion` | 15 min | `ProviderRegistry.ingest_all()` | Busca todos os providers, normaliza, persiste, scoring + alerts |
-| `truth-engine` | 6 h | `TruthEngine.evaluate_pending()` | Re-avalia tokens com `truth_status=NULL` e age ≥ 24 h |
-| `scoring-calibration` | 12 h | Backtest dinâmico | Recalcula pesos de scoring com base em truths validadas, persiste `ScoringWeights` |
+| `market-ingestion` | 5 min | `ag47-radar worker ingest` | Busca providers, normaliza, persiste, executa scoring, alerts e Truth Engine |
+| `scoring-calibration` | 12 h | `ag47-radar worker calibrate` | Recalcula pesos com base em truths validadas e persiste `ScoringWeights` |
 
 ## Decisões principais
 
@@ -129,5 +131,6 @@ APScheduler executa 3 cron jobs quando `SCHEDULER_ENABLED=true`. Um lock em proc
 - Nenhum endpoint de transação existe.
 - URLs externas são aceitas apenas após validação de esquema HTTP/HTTPS e origem conhecida.
 - O backend não registra secrets nem headers de autenticação.
+- O disparo dos jobs usa IAM entre Cloud Scheduler e a API administrativa do Cloud Run; nenhuma chave de scheduler entra no container.
 - Erros inesperados são correlacionados por request ID e retornam mensagem genérica.
 - Dependências possuem lock no frontend e instalação reproduzível no backend.

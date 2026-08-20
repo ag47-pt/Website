@@ -1,25 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Users,
-  MessageSquare,
-  TrendingUp,
-  Sparkles,
-  Layers,
-  Radio,
-  Share2,
-  Bot,
-  Flame,
-  ShieldCheck,
-} from "lucide-react";
+import { CircleAlert, Layers, Users } from "lucide-react";
 import { useOpportunities } from "@/eco/alt-radar/apps/web/lib/api/query";
-import type { Opportunity } from "@/eco/alt-radar/apps/web/lib/api/schemas";
-import {
-  formatCurrency,
-  formatPercent,
-  shortenAddress,
-} from "@/eco/alt-radar/apps/web/lib/format";
+import { formatCurrency } from "@/eco/alt-radar/apps/web/lib/format";
 import { SocialPanel } from "@/eco/alt-radar/apps/web/components/dashboard/social-panel";
 import { SmartMoneyTracker } from "@/eco/alt-radar/apps/web/components/dashboard/smart-money-tracker";
 import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
@@ -28,7 +12,10 @@ import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 export function SocialView() {
   const { primary } = useEcoTheme();
   const opportunitiesQuery = useOpportunities({ page: 1, pageSize: 50 });
-  const allOpportunities = opportunitiesQuery.data?.items ?? [];
+  const allOpportunities = useMemo(
+    () => opportunitiesQuery.data?.items ?? [],
+    [opportunitiesQuery.data?.items],
+  );
 
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
 
@@ -63,23 +50,25 @@ export function SocialView() {
             Sentimento de Comunidade &amp; Smart Money
           </h1>
           <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
-            Rastreamento de carteiras institucionais de alta performance, detecção de bots,
-            volume social em tempo real e análise de sentimento em canais Telegram e X.
+            Dados sociais aparecem somente quando um provider autorizado responde. Rastreamento de
+            carteiras Smart Money permanece indisponível até existir uma fonte configurada.
           </p>
         </div>
 
-        {/* Global Live Indicators */}
+        {/* Global source indicators */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-            <span className="text-[9px] uppercase text-zinc-400 block font-bold">Rastreamento</span>
-            <span className="text-emerald-400 font-bold flex items-center gap-1">
-              <Radio className="size-3 animate-pulse" />
-              SMART_MONEY_ACTIVE
+            <span className="text-[9px] uppercase text-zinc-400 block font-bold">Smart Money</span>
+            <span className="text-amber-300 font-bold flex items-center gap-1">
+              <CircleAlert className="size-3" />
+              NÃO CONFIGURADO
             </span>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-            <span className="text-[9px] uppercase text-zinc-400 block font-bold">Token Selecionado</span>
+            <span className="text-[9px] uppercase text-zinc-400 block font-bold">
+              Token Selecionado
+            </span>
             <span className="text-white font-bold" style={{ color: primary }}>
               {selectedOpportunity?.token.symbol ?? "Nenhum"}
             </span>

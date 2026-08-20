@@ -24,7 +24,7 @@ function AltRadarMainContent() {
   }
 
   return (
-    <AppShell>
+    <AppShell navigationMode="embedded">
       {tab === "dashboard" && <DashboardView />}
       {tab === "oportunidades" && <OpportunitiesView />}
       {tab === "watchlist" && <WatchlistView />}

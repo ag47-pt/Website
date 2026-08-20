@@ -17,7 +17,6 @@ def test_settings() -> Settings:
         environment="test",
         auto_create_schema=True,
         auto_seed_demo=False,
-        scheduler_enabled=False,
     )
 
 

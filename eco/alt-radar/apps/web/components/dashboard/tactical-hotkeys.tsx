@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { Keyboard, Palette, Search, X } from "lucide-react";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 import { useTheme } from "@/context/ThemeContext";
-import { playThemeSwitchSound, playTokenSelectSound } from "@/eco/alt-radar/apps/web/lib/sonar-audio";
+import {
+  playThemeSwitchSound,
+  playTokenSelectSound,
+} from "@/eco/alt-radar/apps/web/lib/sonar-audio";
 
 interface TacticalHotkeysProps {
   onNextRow?: () => void;
@@ -39,7 +42,9 @@ export function TacticalHotkeys({
       // ⌘K ou Ctrl+K ou "/" -> Busca Global
       if ((isCmdOrCtrl && e.key.toLowerCase() === "k") || (!isInput && e.key === "/")) {
         e.preventDefault();
-        const searchInput = document.querySelector('input[data-testid="global-search"]') as HTMLInputElement | null;
+        const searchInput = document.querySelector(
+          'input[data-testid="global-search"]',
+        ) as HTMLInputElement | null;
         if (searchInput) {
           searchInput.focus();
           searchInput.select();
@@ -128,7 +133,11 @@ export function TacticalHotkeys({
       {toastMessage && (
         <div
           className="fixed bottom-14 right-4 z-50 rounded-2xl border bg-black/90 px-4 py-2.5 font-mono text-xs font-bold shadow-2xl backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-2 duration-200 flex items-center gap-2"
-          style={{ borderColor: `${primary}60`, color: primary, boxShadow: `0 0 25px ${primary}30` }}
+          style={{
+            borderColor: `${primary}60`,
+            color: primary,
+            boxShadow: `0 0 25px ${primary}30`,
+          }}
         >
           <span className="size-2 rounded-full animate-ping" style={{ backgroundColor: primary }} />
           <span>{toastMessage}</span>
@@ -160,36 +169,77 @@ export function TacticalHotkeys({
             </div>
             <div className="mt-3 space-y-2 text-xs">
               <div className="flex items-center justify-between py-1 border-b border-white/5">
-                <span className="text-zinc-400 flex items-center gap-1.5"><Search className="size-3 text-zinc-500" /> Busca Global</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold" style={{ color: primary }}>⌘K ou /</kbd>
+                <span className="text-zinc-400 flex items-center gap-1.5">
+                  <Search className="size-3 text-zinc-500" /> Busca Global
+                </span>
+                <kbd
+                  className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold"
+                  style={{ color: primary }}
+                >
+                  ⌘K ou /
+                </kbd>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-white/5">
-                <span className="text-zinc-400 flex items-center gap-1.5"><Palette className="size-3 text-zinc-500" /> Alternar Tema</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold" style={{ color: primary }}>T</kbd>
+                <span className="text-zinc-400 flex items-center gap-1.5">
+                  <Palette className="size-3 text-zinc-500" /> Alternar Tema
+                </span>
+                <kbd
+                  className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold"
+                  style={{ color: primary }}
+                >
+                  T
+                </kbd>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-white/5">
                 <span className="text-zinc-400">Navegar p/ Baixo</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold" style={{ color: primary }}>J ou ↓</kbd>
+                <kbd
+                  className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold"
+                  style={{ color: primary }}
+                >
+                  J ou ↓
+                </kbd>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-white/5">
                 <span className="text-zinc-400">Navegar p/ Cima</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold" style={{ color: primary }}>K ou ↑</kbd>
+                <kbd
+                  className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold"
+                  style={{ color: primary }}
+                >
+                  K ou ↑
+                </kbd>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-white/5">
                 <span className="text-zinc-400">Inspecionar Token</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold" style={{ color: primary }}>I ou Enter</kbd>
+                <kbd
+                  className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold"
+                  style={{ color: primary }}
+                >
+                  I ou Enter
+                </kbd>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-white/5">
                 <span className="text-zinc-400">Paper Trading</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold" style={{ color: primary }}>P</kbd>
+                <kbd
+                  className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold"
+                  style={{ color: primary }}
+                >
+                  P
+                </kbd>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-white/5">
                 <span className="text-zinc-400">Exibir este menu</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold" style={{ color: primary }}>?</kbd>
+                <kbd
+                  className="rounded border border-white/20 bg-white/5 px-2 py-0.5 font-bold"
+                  style={{ color: primary }}
+                >
+                  ?
+                </kbd>
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-zinc-400">Fechar Modal / Blur</span>
-                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 text-zinc-300">Esc</kbd>
+                <kbd className="rounded border border-white/20 bg-white/5 px-2 py-0.5 text-zinc-300">
+                  Esc
+                </kbd>
               </div>
             </div>
           </div>

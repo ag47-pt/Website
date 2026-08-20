@@ -1,80 +1,87 @@
-# Ações do Dev: Subida para Produção
+# Ações do Dev: release de produção
 
-Este documento consolida tudo o que o desenvolvedor precisa ajustar, configurar e validar para tirar o sistema **AG47 Altcoin Radar** do modo *demo* e colocá-lo em pleno funcionamento no ambiente de **produção**.
+Este checklist descreve o release do **AG47 Altcoin Radar** depois do Hardening 1. Preparar estes itens localmente não publica código nem altera o ambiente online.
 
----
+## 1. Configuração de runtime
 
-## 1. Variáveis de Ambiente (Obrigatório)
-O primeiro passo para ativar a produção é configurar corretamente o arquivo `.env` definitivo.
+O serviço e os workers usam exclusivamente variáveis `AG47_*`:
 
-### Flags de Ambiente e Modo
-- `APP_ENV=production` ou `AG47_ENVIRONMENT=production`
-- `DEMO_MODE=false` e `AG47_DEMO_MODE=false` (Isso desativa a geração de dados falsos e ativa o *Real Providers Routing*).
-- `AG47_AUTO_SEED_DEMO=false` (Garante que o banco de dados não injete moedas fictícias na inicialização).
+```dotenv
+AG47_ENVIRONMENT=production
+AG47_DEMO_MODE=false
+AG47_AUTO_CREATE_SCHEMA=false
+AG47_AUTO_SEED_DEMO=false
+AG47_INGESTION_MODE=external
+AG47_INGESTION_STALE_AFTER_SECONDS=900
+AG47_CORS_ORIGINS=https://ag47.pt
+AG47_TRUSTED_PROXY_CIDRS=<CIDRs verificados da borda Cloud Run>
+AG47_WEBHOOK_ALLOWED_HOSTS=hooks.exemplo.com
+```
 
-### Chaves de APIs (Secrets)
-Para que o `TelegramPublicSocialProvider` e outros provedores reais (ex: Helius) operem, é mandatório fornecer:
-- `AG47_TELEGRAM_BOT_TOKEN`: O token do bot criado no BotFather.
-- `AG47_TELEGRAM_CHAT_ID`: O ID do grupo/canal ou do admin onde os alertas deverão ser despachados e/ou lidos.
-- `AG47_HELIUS_API_KEY`: A chave da Helius para as integrações on-chain reais da rede Solana.
+O navegador deve usar o proxy same-origin `/api/eco/alt-radar`. O destino real fica apenas no servidor do host, em `ALT_RADAR_API_URL`; não publique o endereço upstream em `NEXT_PUBLIC_API_URL` sem uma necessidade explícita. O portal público é GET-only: mutações retornam `405` e não recebem chave de operador. Um futuro console operacional exige sessão e autorização server-side próprias.
 
-### Configurações de Frontend / Backend
-- `NEXT_PUBLIC_API_URL`: Deve apontar para o domínio público real do seu backend (ex: `https://api.seudominio.com`).
-- `API_HOST`: Geralmente `0.0.0.0` para containers.
-- `API_PORT`: A porta em que a aplicação vai rodar.
+## 2. PostgreSQL e migration
 
----
+- Use PostgreSQL/Cloud SQL; workers de produção rejeitam SQLite.
+- Armazene `AG47_DATABASE_URL` no Google Secret Manager.
+- Não ative criação automática de schema em produção.
+- O workflow cria uma revisão Cloud Run sem tráfego, executa `alembic upgrade head` num job singleton e só então promove a revisão. Falha de migration impede a troca de tráfego.
 
-## 2. Banco de Dados
-O SQLite (`sqlite+aiosqlite:///./data/ag47_radar.db`) foi usado para o desenvolvimento local. Em produção, ele não suporta alto paralelismo com eficiência.
+## 3. Identidades e secrets
 
-- **Ação:** Provisionar um banco de dados **PostgreSQL** (AWS RDS, Google Cloud SQL, ou Docker via `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`).
-- **Ação:** Atualizar a variável `DATABASE_URL` no `.env` para a string de conexão do PostgreSQL (ex: `postgresql+asyncpg://ag47:senha@host:5432/ag47_radar`).
-- **Ação:** Garantir que o schema do banco de dados seja criado. Dependendo de como a aplicação sobe (se `AG47_AUTO_CREATE_SCHEMA=true`), o backend fará isso sozinho na primeira inicialização, mas verifique se existe necessidade de rodar migrações (*Alembic* se configurado).
+O environment GitHub `alt-radar-production` deve proteger o deploy. Configure apenas identidades e referências de Secret Manager nos GitHub Secrets:
 
----
+| GitHub Secret | Conteúdo esperado |
+| --- | --- |
+| `WCP_PROVIDER` | provider do Workload Identity Federation |
+| `GCP_SA_EMAIL` | service account de deploy |
+| `GCP_RUNTIME_SERVICE_ACCOUNT` | service account do serviço e dos jobs |
+| `GCP_SCHEDULER_SERVICE_ACCOUNT` | service account limitada a executar os jobs |
+| `AG47_DATABASE_URL_SECRET` | referência `SECRET_NAME:VERSION` da URL PostgreSQL |
+| `AG47_OPERATOR_API_KEY_SECRET` | referência da chave de operador |
+| `AG47_ADMIN_API_KEY_SECRET` | referência da chave administrativa |
 
-## 3. Segurança, Cors e Rate Limits
-Ao abrir a aplicação para a web, proteções nativas devem ser ligadas:
+As referências opcionais `AG47_TELEGRAM_BOT_TOKEN_SECRET`, `AG47_TELEGRAM_CHAT_ID_SECRET` e `AG47_HELIUS_API_KEY_SECRET` seguem o mesmo formato. Os valores não são passados por `--set-env-vars`; Cloud Run os monta por `--set-secrets`.
 
-- **CORS_ORIGINS:** Atualize para conter estritamente o domínio onde o frontend está hospedado (ex: `["https://app.ag47.pt"]`). Remova o `localhost`.
-- **Limites (Rate Limits):** Ajuste `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS` e `AG47_MUTATION_RATE_LIMIT_REQUESTS` de acordo com o tamanho do servidor para evitar DDoS ou exaustão do banco.
+Configure também estas GitHub Environment Variables não secretas. O workflow exige valores explícitos e gera um único arquivo de runtime para o serviço e os jobs, sem preservar defaults locais por acidente:
 
----
+| GitHub Variable | Conteúdo esperado |
+| --- | --- |
+| `AG47_CORS_ORIGINS` | origens HTTPS autorizadas, separadas por vírgula |
+| `AG47_TRUSTED_PROXY_CIDRS` | CIDRs verificados da borda/proxy confiável |
+| `AG47_WEBHOOK_ALLOWED_HOSTS` | hosts de destino permitidos para webhook, separados por vírgula |
 
-## 4. Agendadores e Background Jobs (Scheduler)
-Para que o sistema passe a puxar os dados do mercado sozinho de forma periódica:
+Conceda à identidade de runtime somente `roles/secretmanager.secretAccessor` nos secrets usados e acesso ao Cloud SQL. A identidade do Scheduler precisa somente de `roles/run.invoker` nos dois worker jobs. Não use chave JSON longa como fallback do GitHub Actions.
 
-- **Ação:** Mudar `SCHEDULER_ENABLED=true` (ou `AG47_SCHEDULER_ENABLED=true`).
-- **Ação:** Validar `MARKET_SYNC_INTERVAL_SECONDS` e `AG47_SCHEDULER_INTERVAL_SECONDS`. (Para produção, 300 segundos, ou seja, 5 minutos, costuma ser o ideal para não estourar rate-limits de provedores públicos gratuitos).
+## 4. Jobs duráveis
 
----
+O processo FastAPI não executa cron interno. O workflow provisiona:
 
-## 5. Build, Execução e Deploy
+| Recurso | Comando | Agenda UTC |
+| --- | --- | --- |
+| `alt-radar-ingestion` | `ag47-radar worker ingest --limit 10` | `*/5 * * * *` |
+| `alt-radar-calibration` | `ag47-radar worker calibrate` | `17 */12 * * *` |
 
-### Backend (Python/FastAPI)
-- Não rode usando servidor de desenvolvimento. 
-- Use um gestor de processos robusto como Gunicorn com Uvicorn workers:
-  ```bash
-  gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:8000
-  ```
+Cada job usa uma task, paralelismo um, chave idempotente por `CLOUD_RUN_EXECUTION` e advisory lock PostgreSQL. Consulte [production-ingestion-worker.md](production-ingestion-worker.md) para o contrato e os limites.
 
-### Frontend (Next.js)
-- O frontend em Next.js (pasta `apps/web`) precisa ser compilado para produção:
-  ```bash
-  npm run build
-  npm run start
-  ```
-- Certifique-se de que a build foi feita **com as variáveis de ambiente de produção injetadas**, especialmente o `NEXT_PUBLIC_API_URL`.
+## 5. Gate de release
 
----
+Antes de autorizar push/deploy:
 
-## 6. Verificação Final (Checklist)
+- [ ] `npm run verify` passou num checkout limpo.
+- [ ] `npm audit --omit=dev` do miniapp não possui vulnerabilidade conhecida.
+- [ ] migration upgrade/downgrade foi validada numa base descartável.
+- [ ] os GitHub Actions passaram no `actionlint`.
+- [ ] o environment `alt-radar-production` exige aprovação adequada.
+- [ ] todas as referências do Secret Manager e permissões das service accounts existem.
+- [ ] CORS, CIDRs de proxy e hosts de webhook foram revisados e configurados nas Environment Variables.
 
-- [ ] `DEMO_MODE=false` aplicado.
-- [ ] Chaves do Telegram e Helius preenchidas.
-- [ ] PostgreSQL no ar e `DATABASE_URL` apontado para ele.
-- [ ] Domínios do frontend colocados no `CORS_ORIGINS`.
-- [ ] `SCHEDULER_ENABLED=true` para rodar sincronização automática.
-- [ ] Frontend construído com `npm run build` e servido sem erros no console apontando para localhost.
-- [ ] Teste de ponta-a-ponta: O Dashboard exibe os dados reais e os Logs mostram sucesso ao atingir as APIs públicas (GeckoTerminal, Dexscreener, Telegram).
+Depois do deploy:
+
+- [ ] `/health` responde com banco conectado e `demo_mode=false`.
+- [ ] `/api/v1/system/status` registra execução recente e `monitoring_active=true`.
+- [ ] `job_runs` mostra ingestão e calibração sem sobreposição.
+- [ ] a UI exibe dados live, demo, degradados, desatualizados e indisponíveis sem fallback sintético.
+- [ ] Telegram/webhook são confirmados por registros reais de entrega, nunca por mensagens simuladas no frontend.
+
+O deploy e a verificação online dependem de autorização separada; este documento não os executa.

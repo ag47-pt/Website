@@ -1,47 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Briefcase,
-  TrendingUp,
-  Shield,
-  Zap,
-  Activity,
-  Layers,
-  ArrowUpRight,
-  ArrowDownRight,
-  RefreshCw,
-  PieChart,
-  Sliders,
-  DollarSign,
-  Wallet,
-  CheckCircle2,
-  AlertTriangle,
-} from "lucide-react";
+import { Briefcase, Layers, RefreshCw, Sliders, CheckCircle2 } from "lucide-react";
 import {
   useOpportunities,
-  usePortfolioMetrics,
-  usePortfolioPositions,
-  usePortfolioEquityCurve,
   useOptimizeWeightsMutation,
   useApplyWeightsMutation,
 } from "@/eco/alt-radar/apps/web/lib/api/query";
-import type { Opportunity } from "@/eco/alt-radar/apps/web/lib/api/schemas";
-import {
-  formatCurrency,
-  formatNumber,
-  formatPercent,
-  formatScore,
-  shortenAddress,
-} from "@/eco/alt-radar/apps/web/lib/format";
+import { formatCurrency, formatPercent } from "@/eco/alt-radar/apps/web/lib/format";
 import { PaperTrading } from "@/eco/alt-radar/apps/web/components/dashboard/paper-trading";
 import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
+import {
+  PUBLIC_OPERATOR_ACTION_TITLE,
+  PUBLIC_PORTAL_READ_ONLY,
+} from "@/eco/alt-radar/apps/web/lib/public-access";
 
 export function PortfolioView() {
   const { primary } = useEcoTheme();
   const opportunitiesQuery = useOpportunities({ page: 1, pageSize: 50 });
-  const allOpportunities = opportunitiesQuery.data?.items ?? [];
+  const allOpportunities = useMemo(
+    () => opportunitiesQuery.data?.items ?? [],
+    [opportunitiesQuery.data?.items],
+  );
 
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
 
@@ -93,24 +74,27 @@ export function PortfolioView() {
             Portfólio &amp; Paper Trading
           </h1>
           <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
-            Ambiente completo de simulação de trades em tempo real com ordens a mercado, limites de DCA,
-            rebalanceamento automatizado de pesos e gestão de risco zero-loss.
+            Simulação local persistida neste navegador, sem execução de ordens, carteira conectada
+            ou cotação contínua. Dados ausentes permanecem como N/D.
           </p>
         </div>
 
         {/* Global Strategy Metric Cards */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-            <span className="text-[9px] uppercase text-zinc-400 block font-bold">Modo de Execução</span>
-            <span className="text-emerald-400 font-bold flex items-center gap-1">
-              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              SIMULATED_PAPER
+            <span className="text-[9px] uppercase text-zinc-400 block font-bold">
+              Escopo da Simulação
             </span>
+            <span className="text-amber-300 font-bold">LOCAL_ONLY</span>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-            <span className="text-[9px] uppercase text-zinc-400 block font-bold">Universo Radar</span>
-            <span className="text-white font-bold">{allOpportunities.length} Ativos Monitorados</span>
+            <span className="text-[9px] uppercase text-zinc-400 block font-bold">
+              Universo Radar
+            </span>
+            <span className="text-white font-bold">
+              {allOpportunities.length} Ativos Monitorados
+            </span>
           </div>
         </div>
       </header>
@@ -141,8 +125,8 @@ export function PortfolioView() {
             <div className="mt-3 max-h-[320px] overflow-y-auto space-y-1.5 pr-1 no-scrollbar">
               {allOpportunities.map((opp) => {
                 const isSelected = (selectedOpportunity?.token.id ?? "") === opp.token.id;
-                const change = opp.market?.price_change_24h ?? 0;
-                const isPos = change >= 0;
+                const change = opp.market?.price_change_24h ?? null;
+                const isPos = change === null ? null : change >= 0;
 
                 return (
                   <button
@@ -193,7 +177,11 @@ export function PortfolioView() {
                       </p>
                       <p
                         className={`text-[9px] font-bold ${
-                          isPos ? "text-emerald-400" : "text-rose-400"
+                          isPos === null
+                            ? "text-zinc-400"
+                            : isPos
+                              ? "text-emerald-400"
+                              : "text-rose-400"
                         }`}
                       >
                         {formatPercent(change, true)}
@@ -230,6 +218,9 @@ export function PortfolioView() {
               Calcula a fronteira eficiente de alocação de capital minimizando volatilidade e
               maximizando o índice Sharpe baseado no score algorítmico.
             </p>
+            <p className="mt-2 text-[10px] font-bold text-amber-300">
+              Execução disponível somente no console autenticado do operador.
+            </p>
 
             <div className="mt-3.5 space-y-3">
               <div>
@@ -245,8 +236,9 @@ export function PortfolioView() {
                     <button
                       key={item.h}
                       type="button"
+                      disabled={PUBLIC_PORTAL_READ_ONLY}
                       onClick={() => setHorizonHours(item.h)}
-                      className={`py-1.5 px-2 rounded-xl text-[10px] font-bold uppercase transition-all ${
+                      className={`py-1.5 px-2 rounded-xl text-[10px] font-bold uppercase transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
                         horizonHours === item.h
                           ? "bg-white/15 text-white border border-white/30 shadow-sm"
                           : "bg-white/5 text-zinc-400 border border-white/5 hover:text-zinc-200"
@@ -260,6 +252,7 @@ export function PortfolioView() {
                             }
                           : {}
                       }
+                      title={PUBLIC_OPERATOR_ACTION_TITLE}
                     >
                       {item.label}
                     </button>
@@ -270,18 +263,23 @@ export function PortfolioView() {
               <button
                 type="button"
                 onClick={handleRunOptimizer}
-                disabled={optimizeMutation.isPending}
-                className="w-full mt-2 py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg active:scale-95"
+                disabled={PUBLIC_PORTAL_READ_ONLY || optimizeMutation.isPending}
+                className="w-full mt-2 py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 style={{
                   backgroundColor: primary,
                   color: "#000",
                   boxShadow: `0 0 20px ${primary}30`,
                 }}
+                title={PUBLIC_OPERATOR_ACTION_TITLE}
               >
                 <RefreshCw
                   className={`size-3.5 ${optimizeMutation.isPending ? "animate-spin" : ""}`}
                 />
-                {optimizeMutation.isPending ? "Calculando Combinações..." : "Executar Grid Search"}
+                {PUBLIC_PORTAL_READ_ONLY
+                  ? "Ação de operador"
+                  : optimizeMutation.isPending
+                    ? "Calculando Combinações..."
+                    : "Executar Grid Search"}
               </button>
 
               {/* Recommended Weights Result */}
@@ -326,8 +324,9 @@ export function PortfolioView() {
                   <button
                     type="button"
                     onClick={handleApplyWeights}
-                    disabled={applyMutation.isPending}
-                    className="w-full mt-3 py-2 px-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/15 text-white text-[10px] font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    disabled={PUBLIC_PORTAL_READ_ONLY || applyMutation.isPending}
+                    className="w-full mt-3 py-2 px-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/15 text-white text-[10px] font-bold uppercase transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    title={PUBLIC_OPERATOR_ACTION_TITLE}
                   >
                     <CheckCircle2 className="size-3 text-emerald-400" />
                     {applyMutation.isPending ? "Aplicando..." : "Salvar Pesos Recomendados"}

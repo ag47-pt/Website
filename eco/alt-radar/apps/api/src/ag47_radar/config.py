@@ -52,8 +52,8 @@ class Settings(BaseSettings):
     provider_circuit_failure_threshold: int = Field(default=3, ge=1, le=20)
     provider_circuit_cooldown_seconds: int = Field(default=45, ge=1, le=3600)
 
-    scheduler_enabled: bool = False
-    scheduler_interval_seconds: int = Field(default=300, ge=30, le=86400)
+    ingestion_mode: Literal["manual", "external"] = "manual"
+    ingestion_stale_after_seconds: int = Field(default=900, ge=60, le=86400)
 
     mutation_rate_limit_requests: int = Field(default=20, ge=1, le=1000)
     mutation_rate_limit_window_seconds: int = Field(default=60, ge=1, le=3600)

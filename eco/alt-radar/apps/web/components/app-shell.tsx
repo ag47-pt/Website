@@ -2,11 +2,19 @@
 
 import type { ReactNode } from "react";
 import Image from "next/image";
+import universeBackground from "@/public/imgs/universo-nebuloso.webp";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
+import { PublicReadOnlyNotice } from "./shared/public-read-only-notice";
+import type { RadarNavigationMode } from "../lib/radar-navigation";
 
-export function AppShell({ children }: { children: ReactNode }) {
+interface AppShellProps {
+  children: ReactNode;
+  navigationMode?: RadarNavigationMode;
+}
+
+export function AppShell({ children, navigationMode = "standalone" }: AppShellProps) {
   const { primary } = useEcoTheme();
 
   return (
@@ -23,13 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Ambient Nebula Background (matching /eco) */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 opacity-30">
-          <Image
-            src="/imgs/universo-nebuloso.webp"
-            alt=""
-            fill
-            className="object-cover"
-            priority
-          />
+          <Image src={universeBackground} alt="" fill className="object-cover" priority />
         </div>
         {/* Dynamic theme-colored glows */}
         <div
@@ -43,10 +45,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.png')]" />
       </div>
 
-      <Sidebar />
+      <Sidebar navigationMode={navigationMode} />
       <div className="relative z-10 min-w-0 xl:pl-[var(--radar-sidebar-width)] transition-[padding] duration-300">
         <Header />
-        <main className="mx-auto w-full max-w-[1760px] p-3 sm:p-5 lg:p-6">{children}</main>
+        <main className="mx-auto w-full max-w-[1760px] p-3 sm:p-5 lg:p-6">
+          <PublicReadOnlyNotice />
+          {children}
+        </main>
       </div>
     </div>
   );

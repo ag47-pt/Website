@@ -2,6 +2,7 @@ import "@fontsource-variable/manrope";
 import "@fontsource-variable/jetbrains-mono";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { ThemeProvider } from "@/context/ThemeContext";
 import "./globals.css";
 import { AppProviders } from "./providers";
 
@@ -21,7 +22,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="pt-PT">
       <body>
-        <AppProviders>{children}</AppProviders>
+        <ThemeProvider>
+          <AppProviders>{children}</AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

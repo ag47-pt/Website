@@ -32,12 +32,27 @@ import { formatDateTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/fo
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
 import { ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
+import { RADAR_API_URL } from "@/eco/alt-radar/apps/web/lib/api/base-url";
+import {
+  PUBLIC_OPERATOR_ACTION_TITLE,
+  PUBLIC_PORTAL_READ_ONLY,
+} from "@/eco/alt-radar/apps/web/lib/public-access";
+
+export const RADAR_BROWSER_API_BASE = RADAR_API_URL;
+export const SYSTEM_STATUS_STALE_AFTER_MS = 15 * 60_000;
+
+export function isSystemStatusStale(lastSyncAt: string | null, now = Date.now()) {
+  if (!lastSyncAt) return true;
+  const lastSyncTime = Date.parse(lastSyncAt);
+  return !Number.isFinite(lastSyncTime) || now - lastSyncTime > SYSTEM_STATUS_STALE_AFTER_MS;
+}
 
 export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notifications" }) {
   const status = useSystemStatus();
   const isLogs = kind === "logs";
   const isNotifications = kind === "notifications";
   const { primary } = useEcoTheme();
+  const statusIsStale = status.data ? isSystemStatusStale(status.data.last_sync_at) : false;
 
   return (
     <div className="space-y-3 font-mono">
@@ -63,7 +78,7 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
           {isLogs
             ? "Estado de sincronização e diagnóstico seguro dos providers, sem payloads sensíveis ou stack traces."
             : isNotifications
-              ? "Histórico completo de entregas do bot, payloads enviados, latência e diagnóstico de falhas em tempo real."
+              ? "Snapshot paginado das entregas registradas pelo backend, com status, tentativas, latência e diagnóstico disponível."
               : "Leitura da configuração pública do frontend. Segredos e credenciais permanecem exclusivamente no backend."}
         </p>
       </header>
@@ -79,118 +94,156 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
       ) : status.data ? (
         <>
           <div className="flex justify-end">
-            <DataBadges demo={status.data.demo_mode} partial={status.data.status === "degraded"} />
+            <DataBadges
+              demo={status.data.demo_mode}
+              partial={status.data.status === "degraded"}
+              stale={statusIsStale}
+            />
           </div>
+          {(status.data.demo_mode || status.data.status === "degraded" || statusIsStale) && (
+            <section
+              aria-label="Diagnóstico do estado operacional"
+              className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[0.65rem] leading-5 text-amber-100"
+            >
+              <p className="font-bold uppercase tracking-wider">Estado operacional limitado</p>
+              {status.data.demo_mode && (
+                <p>A API declarou modo demonstração; os dados não representam o mercado ao vivo.</p>
+              )}
+              {status.data.status === "degraded" && (
+                <p>
+                  A API declarou operação degradada; providers ou infraestrutura exigem atenção.
+                </p>
+              )}
+              {statusIsStale && (
+                <p>A última sincronização excedeu 15 minutos ou ainda não foi confirmada.</p>
+              )}
+            </section>
+          )}
           {isLogs ? (
             <>
               <div className="grid gap-3 lg:grid-cols-[1fr_1.5fr]">
-              <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
-                <h2 className="flex items-center gap-2 text-sm font-bold text-white font-sans">
-                  <Clock3 className="size-4 text-cyan-400" /> Última leitura
-                </h2>
-                <dl className="mt-4 space-y-3 font-mono">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-zinc-400">Estado</dt>
-                    <dd
-                      className={`text-xs font-bold ${status.data.status === "operational" ? "text-emerald-400" : "text-amber-400"}`}
-                    >
-                      {status.data.status}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-zinc-400">Última sincronização</dt>
-                    <dd className="text-right text-xs font-bold text-white">
-                      {formatDateTime(status.data.last_sync_at)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-zinc-400">Gerado em</dt>
-                    <dd className="text-right text-xs font-bold text-white">
-                      {formatDateTime(status.data.generated_at)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-xs text-zinc-400">Base de dados</dt>
-                    <dd className="text-right text-xs font-bold text-white">{status.data.database}</dd>
-                  </div>
-                </dl>
-                <p className="mt-4 border-t border-white/10 pt-3 text-[0.63rem] leading-5 text-zinc-500">
-                  O histórico detalhado de logs e exportação fica reservado para um sprint
-                  posterior. Esta página já representa o estado de runtime real.
-                </p>
-              </section>
-              <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden">
-                <div className="border-b border-white/10 p-4">
+                <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
                   <h2 className="flex items-center gap-2 text-sm font-bold text-white font-sans">
-                    <ServerCog className="size-4 text-cyan-400" /> Providers
+                    <Clock3 className="size-4 text-cyan-400" /> Última leitura
                   </h2>
-                </div>
-                <div className="divide-y divide-white/5 font-mono">
-                  {status.data.providers.map((provider) => {
-                    const hasCircuit = provider.circuit_state !== undefined;
-                    return (
-                      <article key={provider.id} className="grid gap-2 p-3.5 sm:grid-cols-[1fr_auto] items-center hover:bg-white/[0.02] transition-colors">
-                        <div>
-                          <p className="text-xs font-bold text-white">{provider.name}</p>
-                          <p className="mt-0.5 text-[0.62rem] text-zinc-400">
-                            {provider.kind} • {provider.detail ?? "Sem diagnóstico adicional"}
-                          </p>
-                          {hasCircuit && (
-                            <div className="mt-1.5 flex flex-wrap gap-2 text-[0.58rem]">
-                              <span className={`px-1.5 py-0.5 rounded-lg font-bold uppercase ${
-                                provider.circuit_state === "closed" ? "bg-emerald-950/50 text-emerald-300 border border-emerald-500/30" :
-                                provider.circuit_state === "open" ? "bg-rose-950/50 text-rose-300 border border-rose-500/30 font-black animate-pulse" :
-                                "bg-amber-950/50 text-amber-300 border border-amber-500/30"
-                              }`}>
-                                Circuito: {provider.circuit_state}
-                              </span>
-                              {provider.consecutive_failures !== undefined && provider.consecutive_failures > 0 && (
-                                <span className="bg-amber-950/40 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded-lg font-bold">
-                                  Falhas: {provider.consecutive_failures}
-                                </span>
-                              )}
-                              {provider.latency_ms !== null && provider.latency_ms !== undefined && (
-                                <span className="bg-white/5 text-zinc-400 border border-white/10 px-1.5 py-0.5 rounded-lg font-medium">
-                                  Latência: {provider.latency_ms.toFixed(0)}ms
-                                </span>
-                              )}
-                              {provider.remaining_cooldown !== null && provider.remaining_cooldown !== undefined && provider.remaining_cooldown > 0 && (
-                                <span className="bg-rose-950/50 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded-lg font-bold animate-pulse">
-                                  Resfriamento: {provider.remaining_cooldown.toFixed(0)}s
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-col sm:items-end justify-between gap-2">
-                          <div className="text-left sm:text-right">
-                            <p
-                              className={`text-[0.64rem] font-bold uppercase ${provider.status === "active" ? "text-emerald-400" : provider.status === "degraded" ? "text-amber-400" : "text-zinc-500"}`}
-                            >
-                              {provider.status} • {provider.mode}
+                  <dl className="mt-4 space-y-3 font-mono">
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-xs text-zinc-400">Estado</dt>
+                      <dd
+                        className={`text-xs font-bold ${status.data.status === "operational" ? "text-emerald-400" : "text-amber-400"}`}
+                      >
+                        {status.data.status}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-xs text-zinc-400">Última sincronização</dt>
+                      <dd className="text-right text-xs font-bold text-white">
+                        {formatDateTime(status.data.last_sync_at)}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-xs text-zinc-400">Gerado em</dt>
+                      <dd className="text-right text-xs font-bold text-white">
+                        {formatDateTime(status.data.generated_at)}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-xs text-zinc-400">Base de dados</dt>
+                      <dd className="text-right text-xs font-bold text-white">
+                        {status.data.database}
+                      </dd>
+                    </div>
+                  </dl>
+                  <p className="mt-4 border-t border-white/10 pt-3 text-[0.63rem] leading-5 text-zinc-500">
+                    O histórico detalhado de logs e exportação fica reservado para um sprint
+                    posterior. Esta página já representa o estado de runtime real.
+                  </p>
+                </section>
+                <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden">
+                  <div className="border-b border-white/10 p-4">
+                    <h2 className="flex items-center gap-2 text-sm font-bold text-white font-sans">
+                      <ServerCog className="size-4 text-cyan-400" /> Providers
+                    </h2>
+                  </div>
+                  <div className="divide-y divide-white/5 font-mono">
+                    {status.data.providers.map((provider) => {
+                      const hasCircuit = provider.circuit_state !== undefined;
+                      return (
+                        <article
+                          key={provider.id}
+                          className="grid gap-2 p-3.5 sm:grid-cols-[1fr_auto] items-center hover:bg-white/[0.02] transition-colors"
+                        >
+                          <div>
+                            <p className="text-xs font-bold text-white">{provider.name}</p>
+                            <p className="mt-0.5 text-[0.62rem] text-zinc-400">
+                              {provider.kind} • {provider.detail ?? "Sem diagnóstico adicional"}
                             </p>
-                            <p className="mt-0.5 text-[0.58rem] text-zinc-500">
-                              {formatDateTime(provider.last_checked_at)}
-                            </p>
+                            {hasCircuit && (
+                              <div className="mt-1.5 flex flex-wrap gap-2 text-[0.58rem]">
+                                <span
+                                  className={`px-1.5 py-0.5 rounded-lg font-bold uppercase ${
+                                    provider.circuit_state === "closed"
+                                      ? "bg-emerald-950/50 text-emerald-300 border border-emerald-500/30"
+                                      : provider.circuit_state === "open"
+                                        ? "bg-rose-950/50 text-rose-300 border border-rose-500/30 font-black animate-pulse"
+                                        : "bg-amber-950/50 text-amber-300 border border-amber-500/30"
+                                  }`}
+                                >
+                                  Circuito: {provider.circuit_state}
+                                </span>
+                                {provider.consecutive_failures !== undefined &&
+                                  provider.consecutive_failures > 0 && (
+                                    <span className="bg-amber-950/40 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded-lg font-bold">
+                                      Falhas: {provider.consecutive_failures}
+                                    </span>
+                                  )}
+                                {provider.latency_ms !== null &&
+                                  provider.latency_ms !== undefined && (
+                                    <span className="bg-white/5 text-zinc-400 border border-white/10 px-1.5 py-0.5 rounded-lg font-medium">
+                                      Latência: {provider.latency_ms.toFixed(0)}ms
+                                    </span>
+                                  )}
+                                {provider.remaining_cooldown !== null &&
+                                  provider.remaining_cooldown !== undefined &&
+                                  provider.remaining_cooldown > 0 && (
+                                    <span className="bg-rose-950/50 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded-lg font-bold animate-pulse">
+                                      Resfriamento: {provider.remaining_cooldown.toFixed(0)}s
+                                    </span>
+                                  )}
+                              </div>
+                            )}
                           </div>
-                          
-                          {hasCircuit && (provider.circuit_state === "open" || provider.circuit_state === "half-open") && (
-                            <ResetCircuitButton providerId={provider.id} />
-                          )}
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              </section>
-            </div>
-            <div className="flex items-center justify-between mt-1">
-              <h2 className="text-xs font-bold text-zinc-400">Exportação Epistemológica</h2>
-              <ExportDatasetButton />
-            </div>
-            <MultiChainHealthMatrix />
-            <NotificationDeliveryLogs />
-          </>
+                          <div className="flex flex-col sm:items-end justify-between gap-2">
+                            <div className="text-left sm:text-right">
+                              <p
+                                className={`text-[0.64rem] font-bold uppercase ${provider.status === "active" ? "text-emerald-400" : provider.status === "degraded" ? "text-amber-400" : "text-zinc-500"}`}
+                              >
+                                {provider.status} • {provider.mode}
+                              </p>
+                              <p className="mt-0.5 text-[0.58rem] text-zinc-500">
+                                {formatDateTime(provider.last_checked_at)}
+                              </p>
+                            </div>
+
+                            {hasCircuit &&
+                              (provider.circuit_state === "open" ||
+                                provider.circuit_state === "half-open") && (
+                                <ResetCircuitButton providerId={provider.id} />
+                              )}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <h2 className="text-xs font-bold text-zinc-400">Exportação Epistemológica</h2>
+                <ExportDatasetButton />
+              </div>
+              <MultiChainHealthMatrix />
+              <NotificationDeliveryLogs />
+            </>
           ) : isNotifications ? (
             <>
               <NotificationDeliveryLogs />
@@ -203,26 +256,34 @@ export function SystemWorkspace({ kind }: { kind: "logs" | "settings" | "notific
                   <Database className="size-5 text-cyan-400" />
                   <h2 className="mt-3 text-sm font-bold text-white font-sans">API pública</h2>
                   <p className="mt-2 break-all text-[0.68rem] text-zinc-400">
-                    {process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}
+                    {RADAR_BROWSER_API_BASE}
                   </p>
                   <p className="mt-3 text-[0.63rem] leading-5 text-zinc-500">
-                    Definida por NEXT_PUBLIC_API_URL. Nenhum segredo é aceite nesta variável.
+                    Endpoint efetivamente usado pelo navegador. O destino upstream e as credenciais
+                    permanecem exclusivamente no proxy do servidor.
                   </p>
                 </section>
                 <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
                   <Radio className="size-5 text-emerald-400" />
                   <h2 className="mt-3 text-sm font-bold text-white font-sans">Monitoramento</h2>
                   <p className="mt-2 text-xs font-bold text-white">
-                    {status.data.monitoring_active ? "Ativo" : "Inativo"}
+                    {status.data.demo_mode
+                      ? "Não confirmado — modo demo"
+                      : status.data.monitoring_active
+                        ? "Ativo"
+                        : "Inativo"}
                   </p>
                   <p className="mt-3 text-[0.63rem] leading-5 text-zinc-500">
-                    O agendamento é controlado pelo backend. Esta interface não executa jobs
-                    diretamente.
+                    {statusIsStale
+                      ? "Sem sincronização recente confirmada. Esta interface não executa jobs diretamente."
+                      : "Sincronização recente confirmada pela API. Esta interface não executa jobs diretamente."}
                   </p>
                 </section>
                 <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-xl">
                   <LockKeyhole className="size-5 text-amber-400" />
-                  <h2 className="mt-3 text-sm font-bold text-white font-sans">Limites de segurança</h2>
+                  <h2 className="mt-3 text-sm font-bold text-white font-sans">
+                    Limites de segurança
+                  </h2>
                   <p className="mt-2 text-xs font-bold text-white">
                     {status.data.read_only ? "Blockchain read-only" : "Estado não confirmado"}
                   </p>
@@ -246,8 +307,9 @@ function ResetCircuitButton({ providerId }: { providerId: string }) {
   return (
     <button
       className="inline-flex items-center gap-1 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 px-2.5 py-1 text-[0.58rem] font-bold text-rose-300 disabled:opacity-50 transition-colors cursor-pointer"
-      disabled={resetCircuit.isPending}
+      disabled={PUBLIC_PORTAL_READ_ONLY || resetCircuit.isPending}
       onClick={() => resetCircuit.mutate(providerId)}
+      title={PUBLIC_OPERATOR_ACTION_TITLE}
       type="button"
     >
       <RefreshCw className={`size-2.5 ${resetCircuit.isPending ? "animate-spin" : ""}`} />
@@ -293,10 +355,10 @@ function NotificationSettingsForm() {
       setAllowedChains(["all"]);
       return;
     }
-    
-    let updated = allowedChains.filter(c => c !== "all");
+
+    let updated = allowedChains.filter((c) => c !== "all");
     if (updated.includes(chain)) {
-      updated = updated.filter(c => c !== chain);
+      updated = updated.filter((c) => c !== chain);
       if (updated.length === 0) updated = ["all"];
     } else {
       updated.push(chain);
@@ -313,38 +375,54 @@ function NotificationSettingsForm() {
           <Bell className="size-4" style={{ color: primary }} /> Filtros de Notificação do Telegram
         </h2>
         <p className="text-[0.62rem] text-zinc-400 mt-1 leading-relaxed">
-          Configure as regras mínimas estatísticas para que um alerta seja despachado ativamente para o canal do Telegram Bot.
+          Configure as regras mínimas estatísticas para que um alerta seja despachado ativamente
+          para o canal do Telegram Bot.
+        </p>
+        <p className="mt-2 text-[0.6rem] font-bold text-amber-300">
+          Visualização pública: edição disponível somente no console autenticado do operador.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block font-bold text-white mb-1.5">Severidade Mínima: {minSeverity.toFixed(1)}/1.0</label>
+            <label className="block font-bold text-white mb-1.5">
+              Severidade Mínima: {minSeverity.toFixed(1)}/1.0
+            </label>
             <input
               type="range"
               min="0.0"
               max="1.0"
               step="0.1"
               value={minSeverity}
+              disabled={PUBLIC_PORTAL_READ_ONLY}
               onChange={(e) => setMinSeverity(parseFloat(e.target.value))}
               className="w-full h-1.5 bg-black/40 border border-white/10 rounded-lg appearance-none cursor-pointer"
+              title={PUBLIC_OPERATOR_ACTION_TITLE}
             />
-            <span className="text-[0.55rem] text-zinc-500 mt-1 block">Apenas alertas com severidade de sinal maior ou igual a esta nota.</span>
+            <span className="text-[0.55rem] text-zinc-500 mt-1 block">
+              Apenas alertas com severidade de sinal maior ou igual a esta nota.
+            </span>
           </div>
 
           <div>
-            <label className="block font-bold text-white mb-1.5">Confiança Mínima: {minConfidence.toFixed(1)}/1.0</label>
+            <label className="block font-bold text-white mb-1.5">
+              Confiança Mínima: {minConfidence.toFixed(1)}/1.0
+            </label>
             <input
               type="range"
               min="0.0"
               max="1.0"
               step="0.1"
               value={minConfidence}
+              disabled={PUBLIC_PORTAL_READ_ONLY}
               onChange={(e) => setMinConfidence(parseFloat(e.target.value))}
               className="w-full h-1.5 bg-black/40 border border-white/10 rounded-lg appearance-none cursor-pointer"
+              title={PUBLIC_OPERATOR_ACTION_TITLE}
             />
-            <span className="text-[0.55rem] text-zinc-500 mt-1 block">Apenas alertas com grau de confiança estatística maior ou igual a este limite.</span>
+            <span className="text-[0.55rem] text-zinc-500 mt-1 block">
+              Apenas alertas com grau de confiança estatística maior ou igual a este limite.
+            </span>
           </div>
         </div>
 
@@ -356,16 +434,20 @@ function NotificationSettingsForm() {
               { id: "solana", label: "Solana" },
               { id: "ethereum", label: "Ethereum" },
               { id: "bsc", label: "BNB Chain" },
-            ].map(chain => {
+            ].map((chain) => {
               const active = allowedChains.includes(chain.id);
               return (
                 <button
                   key={chain.id}
                   type="button"
+                  disabled={PUBLIC_PORTAL_READ_ONLY}
                   onClick={() => handleChainToggle(chain.id)}
-                  className={`px-3 py-1 rounded-xl text-[0.62rem] font-bold border transition-all cursor-pointer ${
-                    active ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300 shadow-[0_0_8px_rgba(0,217,255,0.15)]" : "bg-[#050c12] border-white/10 text-zinc-400 hover:text-white"
+                  className={`px-3 py-1 rounded-xl text-[0.62rem] font-bold border transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                    active
+                      ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-300 shadow-[0_0_8px_rgba(0,217,255,0.15)]"
+                      : "bg-[#050c12] border-white/10 text-zinc-400 hover:text-white"
                   }`}
+                  title={PUBLIC_OPERATOR_ACTION_TITLE}
                 >
                   {chain.label}
                 </button>
@@ -379,7 +461,8 @@ function NotificationSettingsForm() {
             <Link2 className="size-3.5 text-cyan-400" /> Webhook Outbound (Discord / Slack / n8n)
           </h3>
           <p className="text-[0.55rem] text-zinc-400 leading-relaxed">
-            Configure uma URL de Webhook para receber alertas de Edge via HTTP POST assinado com HMAC SHA-256.
+            Configure uma URL de Webhook para receber alertas de Edge via HTTP POST assinado com
+            HMAC SHA-256.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -387,9 +470,11 @@ function NotificationSettingsForm() {
               <input
                 type="url"
                 value={webhookUrl}
+                disabled={PUBLIC_PORTAL_READ_ONLY}
                 onChange={(e) => setWebhookUrl(e.target.value)}
                 placeholder="https://discord.com/api/webhooks/..."
                 className="w-full h-8 rounded-xl border border-white/10 bg-[#050c12] px-2.5 text-[0.62rem] text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/60"
+                title={PUBLIC_OPERATOR_ACTION_TITLE}
               />
             </div>
             <div>
@@ -397,27 +482,36 @@ function NotificationSettingsForm() {
               <input
                 type="password"
                 value={webhookSecret}
+                disabled={PUBLIC_PORTAL_READ_ONLY}
                 onChange={(e) => setWebhookSecret(e.target.value)}
                 placeholder="Segredo de assinatura HMAC SHA-256"
                 className="w-full h-8 rounded-xl border border-white/10 bg-[#050c12] px-2.5 text-[0.62rem] text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/60"
+                title={PUBLIC_OPERATOR_ACTION_TITLE}
               />
             </div>
           </div>
           {settingsQuery.data?.webhook_configured && (
             <div className="flex items-center gap-2">
-              <span className="text-[0.55rem] text-emerald-400 font-bold">✓ Webhook configurado</span>
+              <span className="text-[0.55rem] text-emerald-400 font-bold">
+                ✓ Webhook configurado
+              </span>
               <button
                 type="button"
-                disabled={testWebhook.isPending}
+                disabled={PUBLIC_PORTAL_READ_ONLY || testWebhook.isPending}
                 onClick={() => testWebhook.mutate()}
                 className="inline-flex items-center gap-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1 text-[0.55rem] font-bold text-zinc-300 disabled:opacity-50 cursor-pointer transition-colors"
+                title={PUBLIC_OPERATOR_ACTION_TITLE}
               >
                 <Send className="size-2.5" />
                 {testWebhook.isPending ? "Testando..." : "Testar Envio"}
               </button>
               {testWebhook.data && (
-                <span className={`text-[0.55rem] font-bold ${testWebhook.data.success ? "text-emerald-400" : "text-rose-400"}`}>
-                  {testWebhook.data.success ? `OK (${testWebhook.data.status_code})` : `Falha: ${testWebhook.data.error ?? "Erro desconhecido"}`}
+                <span
+                  className={`text-[0.55rem] font-bold ${testWebhook.data.success ? "text-emerald-400" : "text-rose-400"}`}
+                >
+                  {testWebhook.data.success
+                    ? `OK (${testWebhook.data.status_code})`
+                    : `Falha: ${testWebhook.data.error ?? "Erro desconhecido"}`}
                 </span>
               )}
             </div>
@@ -427,11 +521,16 @@ function NotificationSettingsForm() {
         <div className="flex justify-end pt-2 border-t border-white/10">
           <button
             type="submit"
-            disabled={updateMutation.isPending}
+            disabled={PUBLIC_PORTAL_READ_ONLY || updateMutation.isPending}
             className="inline-flex items-center gap-1 rounded-xl px-4 py-2 text-[0.68rem] font-bold text-black transition-all disabled:opacity-50 cursor-pointer shadow-lg"
             style={{ backgroundColor: primary, boxShadow: `0 0 15px ${primary}40` }}
+            title={PUBLIC_OPERATOR_ACTION_TITLE}
           >
-            {updateMutation.isPending ? "Salvando..." : "Salvar Configurações"}
+            {PUBLIC_PORTAL_READ_ONLY
+              ? "Somente leitura"
+              : updateMutation.isPending
+                ? "Salvando..."
+                : "Salvar Configurações"}
           </button>
         </div>
       </form>
@@ -442,7 +541,11 @@ function NotificationSettingsForm() {
 function NotificationDeliveryLogs() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const notificationsQuery = useSystemNotifications(page, 10, statusFilter === "all" ? undefined : statusFilter);
+  const notificationsQuery = useSystemNotifications(
+    page,
+    10,
+    statusFilter === "all" ? undefined : statusFilter,
+  );
   const { primary } = useEcoTheme();
 
   return (
@@ -477,7 +580,10 @@ function NotificationDeliveryLogs() {
       {notificationsQuery.isLoading ? (
         <PanelSkeleton rows={5} />
       ) : notificationsQuery.isError ? (
-        <ErrorState message={getErrorMessage(notificationsQuery.error)} retry={() => void notificationsQuery.refetch()} />
+        <ErrorState
+          message={getErrorMessage(notificationsQuery.error)}
+          retry={() => void notificationsQuery.refetch()}
+        />
       ) : !notificationsQuery.data?.items.length ? (
         <div className="p-8 text-center text-xs text-zinc-500">
           Nenhuma tentativa de entrega registrada para o filtro atual.
@@ -490,19 +596,31 @@ function NotificationDeliveryLogs() {
             const errorVal = delivery.provider_response?.error;
             const errorMsg = typeof errorVal === "string" ? errorVal : undefined;
             const durationVal = delivery.provider_response?.duration_ms;
-            const durationStr = typeof durationVal === "number" || typeof durationVal === "string" ? String(durationVal) : undefined;
+            const durationStr =
+              typeof durationVal === "number" || typeof durationVal === "string"
+                ? String(durationVal)
+                : undefined;
 
             return (
-              <article key={delivery.id} className="p-3.5 hover:bg-white/[0.02] transition-colors grid gap-2 sm:grid-cols-[1fr_auto] items-start">
+              <article
+                key={delivery.id}
+                className="p-3.5 hover:bg-white/[0.02] transition-colors grid gap-2 sm:grid-cols-[1fr_auto] items-start"
+              >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-white">Token: {delivery.token_symbol ?? "Desconhecido"}</span>
+                    <span className="font-bold text-white">
+                      Token: {delivery.token_symbol ?? "Desconhecido"}
+                    </span>
                     <span className="text-zinc-400">• Canal: {delivery.channel}</span>
-                    <span className={`px-1.5 py-0.5 rounded-lg font-bold uppercase text-[0.52rem] ${
-                      isSuccess ? "bg-emerald-950/50 text-emerald-300 border border-emerald-500/30" :
-                      isFailed ? "bg-rose-950/50 text-rose-300 border border-rose-500/30" :
-                      "bg-amber-950/50 text-amber-300 border border-amber-500/30"
-                    }`}>
+                    <span
+                      className={`px-1.5 py-0.5 rounded-lg font-bold uppercase text-[0.52rem] ${
+                        isSuccess
+                          ? "bg-emerald-950/50 text-emerald-300 border border-emerald-500/30"
+                          : isFailed
+                            ? "bg-rose-950/50 text-rose-300 border border-rose-500/30"
+                            : "bg-amber-950/50 text-amber-300 border border-amber-500/30"
+                      }`}
+                    >
                       {delivery.status}
                     </span>
                   </div>
@@ -519,7 +637,10 @@ function NotificationDeliveryLogs() {
                 </div>
                 <div className="text-left sm:text-right">
                   <p className="text-zinc-400">{formatDateTime(delivery.created_at)}</p>
-                  <p className="text-[0.52rem] text-zinc-500 mt-0.5 truncate max-w-[200px]" title={delivery.alert_id}>
+                  <p
+                    className="text-[0.52rem] text-zinc-500 mt-0.5 truncate max-w-[200px]"
+                    title={delivery.alert_id}
+                  >
                     ID Alerta: {delivery.alert_id.substring(0, 8)}...
                   </p>
                 </div>
@@ -535,7 +656,7 @@ function NotificationDeliveryLogs() {
               <button
                 className="grid size-7 place-items-center rounded-lg border border-white/10 bg-white/5 text-zinc-400 hover:text-white disabled:opacity-35 transition-colors cursor-pointer"
                 disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
                 <ChevronLeft className="size-3.5" />
               </button>
@@ -545,7 +666,7 @@ function NotificationDeliveryLogs() {
               <button
                 className="grid size-7 place-items-center rounded-lg border border-white/10 bg-white/5 text-zinc-400 hover:text-white disabled:opacity-35 transition-colors cursor-pointer"
                 disabled={page >= notificationsQuery.data.pages}
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage((p) => p + 1)}
               >
                 <ChevronRight className="size-3.5" />
               </button>
@@ -563,7 +684,12 @@ function MultiChainHealthMatrix() {
 
   if (chainStatus.isLoading) return <PanelSkeleton rows={3} />;
   if (chainStatus.isError) {
-    return <ErrorState message={getErrorMessage(chainStatus.error)} retry={() => void chainStatus.refetch()} />;
+    return (
+      <ErrorState
+        message={getErrorMessage(chainStatus.error)}
+        retry={() => void chainStatus.refetch()}
+      />
+    );
   }
   if (!chainStatus.data?.chains.length) {
     return (
@@ -615,7 +741,9 @@ function MultiChainHealthMatrix() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-zinc-400">Liquidez rastreada</dt>
-                  <dd className="font-bold text-white">${chain.liquidity_tracked.toLocaleString("en-US", { maximumFractionDigits: 0 })}</dd>
+                  <dd className="font-bold text-white">
+                    ${chain.liquidity_tracked.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-zinc-400">Alertas (24h)</dt>
@@ -623,7 +751,9 @@ function MultiChainHealthMatrix() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-zinc-400">Taxa de sucesso</dt>
-                  <dd className="font-bold text-emerald-400">{chain.provider_success_rate.toFixed(0)}%</dd>
+                  <dd className="font-bold text-emerald-400">
+                    {chain.provider_success_rate.toFixed(0)}%
+                  </dd>
                 </div>
               </dl>
             </article>

@@ -1,97 +1,84 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 export interface LiveTokenItem {
   id: string;
   symbol: string;
   name: string;
-  chain: 'solana' | 'ethereum' | 'base' | 'bsc';
+  chain: "solana" | "ethereum" | "base" | "bsc";
   liquidity: string;
   score: number;
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  riskLevel: "LOW" | "MEDIUM" | "HIGH";
   timestamp: string;
 }
 
 export interface AltRadarStreamState {
-  isConnected: boolean;
+  isApiReachable: boolean;
   statusMessage: string;
-  lastPing: string | null;
+  lastCheck: string | null;
   liveFeed: LiveTokenItem[];
-  reconnect: () => void;
+  recheck: () => void;
 }
 
-const INITIAL_MOCK_FEED: LiveTokenItem[] = [
-  {
-    id: 'token-1',
-    symbol: 'AGAI',
-    name: 'AG47 Intelligence Engine',
-    chain: 'solana',
-    liquidity: '$145,200',
-    score: 94,
-    riskLevel: 'LOW',
-    timestamp: 'Agora'
-  },
-  {
-    id: 'token-2',
-    symbol: 'NEOFLOW',
-    name: 'NeoFlow Liquidity',
-    chain: 'base',
-    liquidity: '$89,400',
-    score: 88,
-    riskLevel: 'LOW',
-    timestamp: 'há 12s'
-  },
-  {
-    id: 'token-3',
-    symbol: 'SOLRADAR',
-    name: 'Solana Sentinel',
-    chain: 'solana',
-    liquidity: '$42,100',
-    score: 76,
-    riskLevel: 'MEDIUM',
-    timestamp: 'há 45s'
-  }
-];
+const NO_LIVE_FEED: LiveTokenItem[] = [];
 
 export function useAltRadarStream(): AltRadarStreamState {
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [statusMessage, setStatusMessage] = useState<string>('Conectando à API /api/eco/alt-radar...');
-  const [lastPing, setLastPing] = useState<string | null>(null);
-  const [liveFeed, setLiveFeed] = useState<LiveTokenItem[]>(INITIAL_MOCK_FEED);
+  const [isApiReachable, setIsApiReachable] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(
+    "Feed em tempo real não disponibilizado neste portal.",
+  );
+  const [lastCheck, setLastCheck] = useState<string | null>(null);
 
   const checkTelemetry = useCallback(async () => {
     try {
-      const res = await fetch('/api/eco/alt-radar/status', { cache: 'no-store' });
+      const res = await fetch("/api/eco/alt-radar/health", {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+        method: "GET",
+      });
+
+      setLastCheck(new Date().toLocaleTimeString("pt-PT"));
+
       if (res.ok) {
-        const data = await res.json();
-        setIsConnected(true);
-        setStatusMessage(data.message || 'Stream Ativo & Telemetria Sincronizada');
-        setLastPing(new Date().toLocaleTimeString('pt-PT'));
+        setIsApiReachable(true);
+        setStatusMessage(
+          "API pública acessível. Esta verificação não confirma WebSocket nem feed em tempo real.",
+        );
       } else {
-        setIsConnected(false);
-        setStatusMessage('Modo Standby / Reconectando...');
+        setIsApiReachable(false);
+        setStatusMessage(
+          `API pública respondeu HTTP ${res.status}; nenhum feed ao vivo está disponível.`,
+        );
       }
-    } catch (_err) {
-      setIsConnected(false);
-      setStatusMessage('Ponte de API Ativa (Modo Standby)');
+    } catch {
+      setLastCheck(new Date().toLocaleTimeString("pt-PT"));
+      setIsApiReachable(false);
+      setStatusMessage(
+        "API pública indisponível; nenhum feed ao vivo está disponível.",
+      );
     }
   }, []);
 
   useEffect(() => {
-    checkTelemetry();
-    const interval = setInterval(() => {
-      checkTelemetry();
+    const initialCheck = window.setTimeout(() => {
+      void checkTelemetry();
+    }, 0);
+    const interval = window.setInterval(() => {
+      void checkTelemetry();
     }, 15000);
 
-    return () => clearInterval(interval);
+    return () => {
+      window.clearTimeout(initialCheck);
+      window.clearInterval(interval);
+    };
   }, [checkTelemetry]);
 
   return {
-    isConnected,
+    isApiReachable,
     statusMessage,
-    lastPing,
-    liveFeed,
-    reconnect: checkTelemetry
+    lastCheck,
+    liveFeed: NO_LIVE_FEED,
+    recheck: checkTelemetry,
   };
 }

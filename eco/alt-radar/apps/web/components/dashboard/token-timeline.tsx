@@ -2,7 +2,11 @@
 
 import { useTimeline } from "@/eco/alt-radar/apps/web/lib/api/query";
 import { formatDateTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { Activity, Zap } from "lucide-react";
 
 export function TokenTimeline({ tokenId }: { tokenId: string | null }) {

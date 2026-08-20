@@ -4,13 +4,13 @@
  */
 export const evolution = {
   /** Fase em curso */
-  phase: "Sprint 11",
-  phaseTitle: "Webhook Outbound Assinado, Painel Multi-Chain e Exportação Epistemológica",
+  phase: "Hardening 1",
+  phaseTitle: "Estabilização operacional da beta pública",
   /** O que estamos a fazer agora */
-  now: "envio de webhooks HMAC assinados via API, visualização multi-chain no dashboard e exportação de dataset epistemológico em JSON/CSV).",
-  /** Sprints concluídos / total mapeado da fase fundacional */
-  completedSteps: 10,
-  totalSteps: 12,
+  now: "Verdade operacional, ingestão durável, gates de qualidade e entrega reprodutível sem ampliar o escopo observacional.",
+  /** Gates concluídos / total mapeado da etapa atual */
+  completedSteps: 4,
+  totalSteps: 5,
   /** O norte final do projeto */
   goal: "Lóbulo Observacional do Organismo Cognitivo",
 } as const;

@@ -48,14 +48,23 @@ export function MarketCorrelationMatrix({ token }: MarketCorrelationMatrixProps)
         <div className="flex items-center gap-2">
           <GitCompare className="size-4" style={{ color: primary }} />
           <div>
-            <h4 className="font-bold text-white font-sans text-xs">Matriz de Correlação &amp; Beta (&beta;)</h4>
-            <p className="text-[0.6rem] text-zinc-400">Sensibilidade e covariação com ativos base</p>
+            <h4 className="font-bold text-white font-sans text-xs">
+              Matriz de Correlação &amp; Beta (&beta;)
+            </h4>
+            <p className="text-[0.6rem] text-zinc-400">
+              Sensibilidade e covariação com ativos base
+            </p>
           </div>
         </div>
 
         <span
           className="inline-flex items-center gap-1 rounded-xl border px-2 py-0.5 text-[0.62rem] font-bold"
-          style={{ borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 8px ${primary}20` }}
+          style={{
+            borderColor: `${primary}50`,
+            backgroundColor: `${primary}15`,
+            color: primary,
+            boxShadow: `0 0 8px ${primary}20`,
+          }}
         >
           <Gauge className="size-3" />
           Beta Médio: 1.68x
@@ -76,9 +85,7 @@ export function MarketCorrelationMatrix({ token }: MarketCorrelationMatrixProps)
 
             <div className="flex items-baseline justify-between pt-1 border-t border-white/5">
               <span className="text-[0.58rem] text-zinc-400 uppercase">Correlação (r)</span>
-              <span className="font-bold text-emerald-400">
-                +{(c.corr * 100).toFixed(0)}%
-              </span>
+              <span className="font-bold text-emerald-400">+{(c.corr * 100).toFixed(0)}%</span>
             </div>
 
             <div className="flex items-baseline justify-between">
@@ -95,7 +102,9 @@ export function MarketCorrelationMatrix({ token }: MarketCorrelationMatrixProps)
       </div>
 
       <div className="mt-2.5 rounded-xl border border-white/5 bg-white/[0.02] p-2.5 text-[0.62rem] text-zinc-400">
-        💡 <strong className="text-white">Diagnóstico Tático:</strong> Este ativo opera como <span className="text-cyan-300 font-bold">High Beta (1.68x)</span>. Amplifica os movimentos do benchmark com alta sensibilidade direcional.
+        💡 <strong className="text-white">Diagnóstico Tático:</strong> Este ativo opera como{" "}
+        <span className="text-cyan-300 font-bold">High Beta (1.68x)</span>. Amplifica os movimentos
+        do benchmark com alta sensibilidade direcional.
       </div>
     </div>
   );

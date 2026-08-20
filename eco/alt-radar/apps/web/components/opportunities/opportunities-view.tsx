@@ -28,8 +28,12 @@ export function OpportunitiesView({ initialTokenId = null }: { initialTokenId?: 
     <div className="space-y-3 font-mono">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Scanner operacional</p>
-          <h1 className="mt-1 text-xl font-bold tracking-tight text-white font-sans">Oportunidades</h1>
+          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">
+            Scanner operacional
+          </p>
+          <h1 className="mt-1 text-xl font-bold tracking-tight text-white font-sans">
+            Oportunidades
+          </h1>
           <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
             Ordene e filtre tokens monitorados; cada seleção atualiza histórico, score, social e
             risco sem recarregar a página.

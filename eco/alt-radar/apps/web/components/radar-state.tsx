@@ -58,7 +58,7 @@ export function RadarStateProvider({ children }: { children: ReactNode }) {
     readSidebarCollapsed,
     () => false,
   );
-  
+
   const [sidebarWidth, setSidebarWidth] = useState(192); // 12rem by default
 
   useEffect(() => {

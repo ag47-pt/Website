@@ -1,25 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  FlaskConical,
-  Zap,
-  Activity,
-  Layers,
-  BarChart3,
-  Sliders,
-  TrendingUp,
-  Cpu,
-  ArrowRightLeft,
-  Flame,
-} from "lucide-react";
+import { Cpu, FlaskConical, Layers } from "lucide-react";
 import { useOpportunities, useRisk } from "@/eco/alt-radar/apps/web/lib/api/query";
-import type { Opportunity } from "@/eco/alt-radar/apps/web/lib/api/schemas";
-import {
-  formatCurrency,
-  formatPercent,
-  shortenAddress,
-} from "@/eco/alt-radar/apps/web/lib/format";
+import { formatCurrency } from "@/eco/alt-radar/apps/web/lib/format";
 import { SwapSimulator } from "@/eco/alt-radar/apps/web/components/dashboard/swap-simulator";
 import { LiquidityDepthChart } from "@/eco/alt-radar/apps/web/components/dashboard/liquidity-depth-chart";
 import { MarketCorrelationMatrix } from "@/eco/alt-radar/apps/web/components/dashboard/market-correlation-matrix";
@@ -30,7 +14,10 @@ import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 export function LabView() {
   const { primary } = useEcoTheme();
   const opportunitiesQuery = useOpportunities({ page: 1, pageSize: 50 });
-  const allOpportunities = opportunitiesQuery.data?.items ?? [];
+  const allOpportunities = useMemo(
+    () => opportunitiesQuery.data?.items ?? [],
+    [opportunitiesQuery.data?.items],
+  );
 
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
 
@@ -42,7 +29,7 @@ export function LabView() {
   }, [allOpportunities, selectedTokenId]);
 
   const riskQuery = useRisk(selectedOpportunity?.token.id ?? null);
-  const riskData = riskQuery.data ?? (selectedOpportunity?.risk as any) ?? null;
+  const riskData = riskQuery.data ?? selectedOpportunity?.risk ?? null;
 
   return (
     <div className="space-y-4 font-mono">
@@ -84,7 +71,9 @@ export function LabView() {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-            <span className="text-[9px] uppercase text-zinc-400 block font-bold">Ativo em Teste</span>
+            <span className="text-[9px] uppercase text-zinc-400 block font-bold">
+              Ativo em Teste
+            </span>
             <span className="text-white font-bold" style={{ color: primary }}>
               {selectedOpportunity?.token.symbol ?? "Nenhum"}
             </span>

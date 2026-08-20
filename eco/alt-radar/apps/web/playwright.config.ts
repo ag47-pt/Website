@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 0,
   reporter: "list",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://127.0.0.1:3107",
     trace: "on-first-retry",
   },
   projects: [
@@ -15,9 +15,13 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer:
+    process.env.PLAYWRIGHT_EXTERNAL_SERVER === "1"
+      ? undefined
+      : {
+          command:
+            "node node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port 3107",
+          url: "http://127.0.0.1:3107",
+          reuseExistingServer: false,
+        },
 });

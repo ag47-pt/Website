@@ -150,13 +150,19 @@ class LogOnlyAlertDeliveryProvider(AlertDeliveryProvider):
         self, *, alert_id: str, title: str, message: str, payload: dict[str, Any]
     ) -> ProviderResult[DeliveryReceipt]:
         started = perf_counter()
-        self.log.info("demo_alert_delivery", alert_id=alert_id, title=title)
+        self.log.info("demo_alert_not_delivered", alert_id=alert_id, title=title)
         return ProviderResult(
-            data=DeliveryReceipt(accepted=True, destination="structured-log", external_id=None),
+            data=DeliveryReceipt(accepted=False, destination="not-configured", external_id=None),
             source=self.provider_id,
             collected_at=datetime.now(UTC),
-            quality=DataQuality.HIGH,
-            partial_errors=[],
+            quality=DataQuality.UNKNOWN,
+            partial_errors=[
+                ProviderError(
+                    code="not_configured",
+                    message="Telegram delivery is not configured",
+                    retryable=False,
+                )
+            ],
             duration_ms=(perf_counter() - started) * 1000,
             mode=self.mode,
         )

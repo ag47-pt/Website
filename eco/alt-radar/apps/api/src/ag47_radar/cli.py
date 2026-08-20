@@ -3,6 +3,9 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import sys
+from collections.abc import Coroutine
+from dataclasses import asdict
 from typing import Any
 
 from ag47_radar.config import get_settings
@@ -16,6 +19,7 @@ from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.services.backtest import run_backtest
 from ag47_radar.services.ingestion import run_ingestion_cycle
 from ag47_radar.services.seed import seed_demo_data, seed_global_rules
+from ag47_radar.worker import resolve_run_key, run_calibration_job, run_ingestion_job
 
 
 async def _init_db() -> None:
@@ -54,6 +58,33 @@ async def _ingest(limit: int) -> None:
         )
     finally:
         await providers.close()
+        await close_database()
+
+
+async def _worker_ingest(limit: int, run_key: str | None) -> None:
+    settings = get_settings()
+    resolved_run_key = resolve_run_key(run_key)
+    providers = ProviderRegistry(settings)
+    try:
+        result = await run_ingestion_job(
+            settings,
+            providers,
+            limit=limit,
+            run_key=resolved_run_key,
+        )
+        print(json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
+    finally:
+        await providers.close()
+        await close_database()
+
+
+async def _worker_calibrate(run_key: str | None) -> None:
+    settings = get_settings()
+    resolved_run_key = resolve_run_key(run_key)
+    try:
+        result = await run_calibration_job(settings, run_key=resolved_run_key)
+        print(json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
+    finally:
         await close_database()
 
 
@@ -107,6 +138,19 @@ def build_parser() -> argparse.ArgumentParser:
     subcommands.add_parser("seed", help="Idempotently seed explicit demo fixtures")
     ingest = subcommands.add_parser("ingest", help="Run one real provider ingestion cycle")
     ingest.add_argument("--limit", type=int, default=10)
+    worker = subcommands.add_parser("worker", help="Run a durable one-shot worker command")
+    worker_commands = worker.add_subparsers(dest="worker_command", required=True)
+    worker_ingest = worker_commands.add_parser(
+        "ingest",
+        help="Run one singleton, retry-idempotent real ingestion execution",
+    )
+    worker_ingest.add_argument("--limit", type=int, default=10)
+    worker_ingest.add_argument("--run-key")
+    worker_calibrate = worker_commands.add_parser(
+        "calibrate",
+        help="Run one singleton, retry-idempotent scoring calibration",
+    )
+    worker_calibrate.add_argument("--run-key")
     backtest = subcommands.add_parser(
         "backtest", help="Evaluate persisted scores against observed forward returns"
     )
@@ -114,6 +158,18 @@ def build_parser() -> argparse.ArgumentParser:
     backtest.add_argument("--tolerance-hours", type=float, default=6.0)
     backtest.add_argument("--include-demo", action="store_true")
     return parser
+
+
+def _run_one_shot(command: Coroutine[Any, Any, None]) -> int:
+    try:
+        asyncio.run(command)
+    except Exception as exc:
+        print(
+            json.dumps({"status": "failed", "error_type": type(exc).__name__}),
+            file=sys.stderr,
+        )
+        return 1
+    return 0
 
 
 def main(argv: list[str] | None = None) -> Any:
@@ -133,10 +189,14 @@ def main(argv: list[str] | None = None) -> Any:
         return asyncio.run(_seed())
     if args.command == "ingest":
         return asyncio.run(_ingest(args.limit))
+    if args.command == "worker" and args.worker_command == "ingest":
+        return _run_one_shot(_worker_ingest(args.limit, args.run_key))
+    if args.command == "worker" and args.worker_command == "calibrate":
+        return _run_one_shot(_worker_calibrate(args.run_key))
     if args.command == "backtest":
         return asyncio.run(_backtest(args.horizon_hours, args.tolerance_hours, args.include_demo))
     raise RuntimeError("Unknown command")
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

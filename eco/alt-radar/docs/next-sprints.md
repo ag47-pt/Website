@@ -28,5 +28,21 @@ Abaixo está o registro histórico da nossa cadência e as tarefas já mapeadas 
 
 ---
 
+## Etapa Atual: Hardening 1
+
+O produto está em beta pública funcional. A etapa atual não adiciona execução financeira nem amplia o escopo de funcionalidades; ela transforma a implementação existente numa operação verificável e reproduzível.
+
+### Gates de conclusão
+
+- [x] A UI e o proxy distinguem dados live, demo, degradados e indisponíveis sem fabricar sucesso.
+- [x] A ingestão periódica roda como job singleton durável, fora do ciclo de vida das réplicas HTTP.
+- [x] Lint, tipos, testes e build passam no checkout atual.
+- [x] CI e automação de deploy ficam válidos e bloqueiam publicação quando os gates falham.
+- [ ] A revisão é publicada e verificada em produção com evidência de sincronização recente.
+
+> **Limite desta execução:** os quatro primeiros gates podem ser preparados e validados localmente. O quinto depende de autorização separada para push e deploy.
+
+---
+
 > _Lembrete Crítico:_ Nenhum item desta lista autoriza armazenamento de seed phrase, chave privada ou automação de disparo e execução autônoma de trades. O radar é um Lóbulo Observacional e preditivo, nunca um robô de ordens de mercado.
 

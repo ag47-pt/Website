@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Menu, Search, Server, X, Sparkles, Radio, ArrowLeft, Layers } from "lucide-react";
+import { ChevronDown, Menu, Search, Server, X, Sparkles, Radio, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSystemStatus } from "@/eco/alt-radar/apps/web/lib/api/query";
@@ -11,7 +11,6 @@ import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 import { useTheme } from "@/context/ThemeContext";
 import { useRadarState } from "./radar-state";
-import { WebhookSettingsModal } from "./shared/webhook-settings-modal";
 import { SpotlightSearchModal } from "./shared/spotlight-search-modal";
 
 const networks: { id: Chain; label: string; mark: string; color: string }[] = [
@@ -23,10 +22,25 @@ const networks: { id: Chain; label: string; mark: string; color: string }[] = [
 export function Header() {
   const { search, setSearch, chains, toggleChain, setNavigationOpen } = useRadarState();
   const [isProviderPanelOpen, setProviderPanelOpen] = useState(false);
-  const [isWebhookModalOpen, setIsWebhookModalOpen] = useState(false);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const status = useSystemStatus();
   const monitoringActive = status.data?.monitoring_active === true;
+  const runtimeLabel = status.isLoading
+    ? "A consultar"
+    : status.isError
+      ? "Indisponível"
+      : status.data?.demo_mode
+        ? "Demo"
+        : monitoringActive
+          ? "Ativo"
+          : status.data?.status === "degraded"
+            ? "Degradado"
+            : "Inativo";
+  const telemetryLabel = monitoringActive
+    ? "TELEMETRIA_ATIVA"
+    : status.isError
+      ? "API_INDISPONÍVEL"
+      : "TELEMETRIA_NÃO_CONFIRMADA";
   const { primary } = useEcoTheme();
   const { themeName, toggleTheme } = useTheme();
 
@@ -82,11 +96,15 @@ export function Header() {
 
         <div className="h-5 w-[1px] bg-white/10 mx-1 hidden 2xl:block" />
 
-        <span
-          className="hidden 2xl:inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] font-mono font-bold tracking-wider uppercase text-zinc-400"
-        >
-          <span className="size-1.5 rounded-full animate-pulse" style={{ backgroundColor: primary, boxShadow: `0 0 6px ${primary}` }} />
-          LIVE_TELEMETRY
+        <span className="hidden 2xl:inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] font-mono font-bold tracking-wider uppercase text-zinc-400">
+          <span
+            className={`size-1.5 rounded-full ${monitoringActive ? "animate-pulse" : ""}`}
+            style={{
+              backgroundColor: status.isError ? "#f43f5e" : monitoringActive ? primary : "#f59e0b",
+              boxShadow: monitoringActive ? `0 0 6px ${primary}` : "none",
+            }}
+          />
+          {telemetryLabel}
         </span>
 
         {/* Global Search with ⌘K & Spotlight Trigger */}
@@ -110,7 +128,7 @@ export function Header() {
               e.currentTarget.style.boxShadow = "";
             }}
           />
-          
+
           {/* Right Icon Button inside search field */}
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
             {search && (
@@ -178,15 +196,14 @@ export function Header() {
 
         {/* Right Actions */}
         <div className="relative ml-auto flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsWebhookModalOpen(true)}
+          <Link
+            href="/eco/alt-radar?tab=configuracoes"
             className="flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-all cursor-pointer shadow-sm"
-            title="Configurar Webhook Outbound & Assinatura HMAC"
+            title="Abrir a configuração real de Webhook Outbound e assinatura HMAC"
           >
             <Radio className="size-3" style={{ color: primary }} />
             <span className="hidden lg:inline">Webhooks</span>
-          </button>
+          </Link>
 
           <Link
             href="/eco/alt-radar?tab=landing"
@@ -225,13 +242,7 @@ export function Header() {
                     : "bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]"
               }`}
             />
-            <span className="hidden xl:inline">
-              {monitoringActive
-                ? "Ativo"
-                : status.isError
-                  ? "Fallback"
-                  : "Sync"}
-            </span>
+            <span className="hidden xl:inline">{runtimeLabel}</span>
             <ChevronDown className="size-3 text-zinc-400" />
           </button>
 
@@ -278,7 +289,9 @@ export function Header() {
                 {!status.data && (
                   <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] px-3 py-3 text-xs font-mono text-zinc-400">
                     <Server className="size-4 text-zinc-500" />
-                    {status.isError ? "Estado offline (Fallback ativo)" : "A consultar providers…"}
+                    {status.isError
+                      ? "API indisponível — nenhum fallback de dados ativo"
+                      : "A consultar providers…"}
                   </div>
                 )}
               </div>
@@ -297,7 +310,11 @@ export function Header() {
                 ? "text-white font-black"
                 : "border-white/10 bg-white/5 text-zinc-400"
             }`}
-            style={chains.includes(network.id) ? { borderColor: `${primary}60`, backgroundColor: `${primary}15` } : {}}
+            style={
+              chains.includes(network.id)
+                ? { borderColor: `${primary}60`, backgroundColor: `${primary}15` }
+                : {}
+            }
             onClick={() => toggleChain(network.id)}
             type="button"
           >
@@ -306,15 +323,7 @@ export function Header() {
         ))}
       </div>
 
-      <WebhookSettingsModal
-        isOpen={isWebhookModalOpen}
-        onClose={() => setIsWebhookModalOpen(false)}
-      />
-
-      <SpotlightSearchModal
-        isOpen={isSpotlightOpen}
-        onClose={() => setIsSpotlightOpen(false)}
-      />
+      <SpotlightSearchModal isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} />
     </header>
   );
 }

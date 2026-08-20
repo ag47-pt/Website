@@ -187,8 +187,13 @@ export function useUpdateUserNotificationSettingsMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: { min_severity: number; min_confidence: number; allowed_chains: string[]; webhook_url?: string; webhook_secret?: string }) =>
-      radarApi.updateUserNotificationSettings(payload),
+    mutationFn: (payload: {
+      min_severity: number;
+      min_confidence: number;
+      allowed_chains: string[];
+      webhook_url?: string;
+      webhook_secret?: string;
+    }) => radarApi.updateUserNotificationSettings(payload),
     onSuccess: () => {
       return queryClient.invalidateQueries({ queryKey: ["notification-settings"] });
     },
@@ -261,4 +266,3 @@ export function useApplyWeightsMutation() {
     },
   });
 }
-

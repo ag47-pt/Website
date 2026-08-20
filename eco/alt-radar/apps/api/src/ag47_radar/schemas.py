@@ -742,12 +742,29 @@ class GridSearchResponse(ApiModel):
     demo_mode: bool
 
 
+FiniteNonNegativeWeight = Annotated[float, Field(ge=0, allow_inf_nan=False)]
+
+
+class ScoringWeightsInput(ApiModel):
+    momentum_score: FiniteNonNegativeWeight
+    liquidity_score: FiniteNonNegativeWeight
+    community_score: FiniteNonNegativeWeight
+    distribution_score: FiniteNonNegativeWeight
+    safety_score: FiniteNonNegativeWeight
+    data_quality_score: FiniteNonNegativeWeight
+
+    @model_validator(mode="after")
+    def require_positive_total(self) -> ScoringWeightsInput:
+        if sum(self.model_dump().values()) <= 0:
+            raise ValueError("Scoring weight sum must be greater than zero")
+        return self
+
+
 class ApplyWeightsRequest(ApiModel):
-    weights: dict[str, float]
+    weights: ScoringWeightsInput
 
 
 class ApplyWeightsResponse(ApiModel):
     status: Literal["ok"] = "ok"
     active_weights: dict[str, float]
     applied_at: datetime
-

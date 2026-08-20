@@ -3,9 +3,18 @@
 import dynamic from "next/dynamic";
 import { Bot, MessageCircle, Radio, UsersRound } from "lucide-react";
 import { useSocial } from "@/eco/alt-radar/apps/web/lib/api/query";
-import { formatNumber, formatPercent, formatRatio, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
+import {
+  formatNumber,
+  formatPercent,
+  formatRatio,
+  getErrorMessage,
+} from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 const SocialChart = dynamic(() => import("./social-chart").then((module) => module.SocialChart), {
@@ -71,10 +80,15 @@ export function SocialPanel({
 
   const latest = social.data.latest;
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-3.5 shadow-xl" aria-labelledby={`social-title-${tokenId}`}>
+    <section
+      className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-3.5 shadow-xl"
+      aria-labelledby={`social-title-${tokenId}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">Comunidade</p>
+          <p className="text-[0.62rem] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">
+            Comunidade
+          </p>
           <h2
             id={`social-title-${tokenId}`}
             className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans"
@@ -82,7 +96,11 @@ export function SocialPanel({
             <UsersRound className="size-4" style={{ color: primary }} /> Social / Telegram
           </h2>
         </div>
-        <Radio className="size-4 animate-pulse" style={{ color: primary }} aria-label="Série temporal disponível" />
+        <Radio
+          className="size-4 animate-pulse"
+          style={{ color: primary }}
+          aria-label="Série temporal disponível"
+        />
       </div>
 
       <div className="mt-3">

@@ -4,7 +4,7 @@ export function generateChartSnapshotPng(
   token: Token,
   market: Market | null,
   risk: Risk | null,
-  score: Score | null
+  score: Score | null,
 ): void {
   if (typeof window === "undefined") return;
 
@@ -56,7 +56,11 @@ export function generateChartSnapshotPng(
 
   ctx.fillStyle = "#a1a1aa";
   ctx.font = "12px 'Courier New', monospace";
-  ctx.fillText(`DATA: ${new Date().toISOString().replace("T", " ").slice(0, 19)} UTC`, width - 360, 80);
+  ctx.fillText(
+    `DATA: ${new Date().toISOString().replace("T", " ").slice(0, 19)} UTC`,
+    width - 360,
+    80,
+  );
 
   // 5. Main Token Header
   ctx.fillStyle = "#ffffff";
@@ -65,10 +69,22 @@ export function generateChartSnapshotPng(
 
   ctx.fillStyle = "#00d9ff";
   ctx.font = "bold 18px 'Courier New', monospace";
-  ctx.fillText(`CHAIN: ${token.chain.toUpperCase()} • CONTRATO: ${token.contract_address.slice(0, 8)}...${token.contract_address.slice(-6)}`, 40, 210);
+  ctx.fillText(
+    `CHAIN: ${token.chain.toUpperCase()} • CONTRATO: ${token.contract_address.slice(0, 8)}...${token.contract_address.slice(-6)}`,
+    40,
+    210,
+  );
 
   // 6. Metrics Bento Grid
-  const drawCard = (x: number, y: number, w: number, h: number, label: string, val: string, valColor = "#ffffff") => {
+  const drawCard = (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    label: string,
+    val: string,
+    valColor = "#ffffff",
+  ) => {
     ctx.fillStyle = "rgba(10, 18, 29, 0.9)";
     ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
@@ -88,8 +104,24 @@ export function generateChartSnapshotPng(
   const startY = 240;
 
   drawCard(40, startY, cardW, cardH, "Preço Atual", `$${market?.price_usd ?? 0}`, "#ffffff");
-  drawCard(320, startY, cardW, cardH, "Variação 24h", `${market?.price_change_24h ? (market.price_change_24h >= 0 ? "+" : "") + market.price_change_24h.toFixed(2) + "%" : "0.00%"}`, (market?.price_change_24h ?? 0) >= 0 ? "#10b981" : "#f43f5e");
-  drawCard(600, startY, cardW, cardH, "Liquidez Total", `$${market?.liquidity_usd ? market.liquidity_usd.toLocaleString() : 0}`, "#00d9ff");
+  drawCard(
+    320,
+    startY,
+    cardW,
+    cardH,
+    "Variação 24h",
+    `${market?.price_change_24h ? (market.price_change_24h >= 0 ? "+" : "") + market.price_change_24h.toFixed(2) + "%" : "0.00%"}`,
+    (market?.price_change_24h ?? 0) >= 0 ? "#10b981" : "#f43f5e",
+  );
+  drawCard(
+    600,
+    startY,
+    cardW,
+    cardH,
+    "Liquidez Total",
+    `$${market?.liquidity_usd ? market.liquidity_usd.toLocaleString() : 0}`,
+    "#00d9ff",
+  );
   drawCard(880, startY, cardW, cardH, "Score AG47", `${score?.final_score ?? "N/D"}/10`, "#00d9ff");
 
   // 7. Security & Risk Strip
@@ -107,15 +139,31 @@ export function generateChartSnapshotPng(
   ctx.font = "14px 'Courier New', monospace";
   ctx.fillText(`• LP Lock Status: ${risk?.liquidity_lock_status ?? "Locked 100%"}`, 60, secY + 62);
   ctx.fillText(`• Honeypot: ${risk?.honeypot_status ?? "Clean"}`, 60, secY + 88);
-  ctx.fillText(`• Mint Authority: ${risk?.mintable === false ? "Revogada (Seguro)" : "Ativa"}`, 460, secY + 62);
-  ctx.fillText(`• Top 10 Holders: ${risk?.top_holders_percentage ? risk.top_holders_percentage + "%" : "18.4%"}`, 460, secY + 88);
+  ctx.fillText(
+    `• Mint Authority: ${risk?.mintable === false ? "Revogada (Seguro)" : "Ativa"}`,
+    460,
+    secY + 62,
+  );
+  ctx.fillText(
+    `• Top 10 Holders: ${risk?.top_holders_percentage ? risk.top_holders_percentage + "%" : "18.4%"}`,
+    460,
+    secY + 88,
+  );
   ctx.fillText(`• Score de Risco: ${risk?.risk_score ?? "1.8"}/10`, 840, secY + 62);
-  ctx.fillText(`• Taxas Compra/Venda: ${risk?.buy_tax ?? 0}% / ${risk?.sell_tax ?? 0}%`, 840, secY + 88);
+  ctx.fillText(
+    `• Taxas Compra/Venda: ${risk?.buy_tax ?? 0}% / ${risk?.sell_tax ?? 0}%`,
+    840,
+    secY + 88,
+  );
 
   // 8. Footer Watermark & Official Seal
   ctx.fillStyle = "#52525b";
   ctx.font = "11px 'Courier New', monospace";
-  ctx.fillText("VERIFICADO POR AG47 ALTCOIN RADAR • SISTEMA DE TELEMETRIA MULTI-CHAIN AUTÔNOMA", 40, height - 40);
+  ctx.fillText(
+    "VERIFICADO POR AG47 ALTCOIN RADAR • SISTEMA DE TELEMETRIA MULTI-CHAIN AUTÔNOMA",
+    40,
+    height - 40,
+  );
 
   ctx.fillStyle = "#00d9ff";
   ctx.font = "bold 12px 'Courier New', monospace";

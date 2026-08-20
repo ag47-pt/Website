@@ -5,7 +5,11 @@ import { useOpportunities } from "@/eco/alt-radar/apps/web/lib/api/query";
 import { useRadarState } from "@/eco/alt-radar/apps/web/components/radar-state";
 import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { RiskPanel } from "./risk-panel";
 import { SocialPanel } from "./social-panel";
@@ -27,7 +31,9 @@ export function SignalWorkspace({ kind }: { kind: "social" | "risk" }) {
   return (
     <div className="space-y-3 font-mono">
       <header>
-        <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">{isSocial ? "Inteligência de comunidade" : "Análise defensiva"}</p>
+        <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">
+          {isSocial ? "Inteligência de comunidade" : "Análise defensiva"}
+        </p>
         <h1 className="mt-1 text-xl font-bold tracking-tight text-white font-sans">
           {isSocial ? "Social" : "Risco"}
         </h1>
@@ -38,7 +44,10 @@ export function SignalWorkspace({ kind }: { kind: "social" | "risk" }) {
         </p>
       </header>
       <div className="grid gap-3 xl:grid-cols-[19rem_minmax(0,1fr)]">
-        <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden" aria-label="Selecionar token monitorado">
+        <section
+          className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden"
+          aria-label="Selecionar token monitorado"
+        >
           <div className="border-b border-white/10 p-3">
             <DataBadges
               demo={opportunities.data?.demo_mode}

@@ -5,6 +5,19 @@
 **/test-results/**
 **/.venv/**
 **/__pycache__/**
+**/.pytest_cache/**
+**/.mypy_cache/**
+**/.ruff_cache/**
+**/.claude/**
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.claude/
+.evolution/**
+.evolution/
+AG47_RADAR_DUMP/**
+AG47_RADAR_DUMP/
 apps/api/alembic/versions/**
 package-lock.json
 

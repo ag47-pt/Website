@@ -1,5 +1,7 @@
 # Plano do Sprint 5: Motor de Edge Estatístico, Análise de Performance e Conectividade Live
 
+> **Registro histórico:** qualquer referência a `AG47_SCHEDULER_ENABLED` abaixo foi substituída no Hardening 1 por jobs externos duráveis.
+
 ## Objetivo Principal
 
 > **Transicionar o AG47 Altcoin Radar de um sistema que "mede a si mesmo" (Truth Engine) para um sistema que "encontra e prova a vantagem estatística real (Edge)" e opera em modo real (`AG47_DEMO_MODE=false`).**

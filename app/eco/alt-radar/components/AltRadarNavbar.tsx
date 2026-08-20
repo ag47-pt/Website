@@ -69,11 +69,6 @@ export function AltRadarNavbar({ activeSection }: AltRadarNavbarProps) {
     { id: 'ecosystem', label: 'Ecossistema AG47', icon: GitBranch }
   ];
 
-  // Centraliza o botão ativo no carrossel quando muda a secção ativa
-  useEffect(() => {
-    centerActiveButton(activeSection);
-  }, [activeSection]);
-
   const centerActiveButton = (id: string) => {
     const container = carouselRef.current;
     const btn = buttonRefs.current[id];
@@ -85,6 +80,11 @@ export function AltRadarNavbar({ activeSection }: AltRadarNavbarProps) {
       container.scrollTo({ left: targetScroll, behavior: 'smooth' });
     }
   };
+
+  // Centraliza o botão ativo no carrossel quando muda a secção ativa
+  useEffect(() => {
+    centerActiveButton(activeSection);
+  }, [activeSection]);
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
@@ -132,7 +132,7 @@ export function AltRadarNavbar({ activeSection }: AltRadarNavbarProps) {
               <span className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
                 ALT RADAR
                 <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  LIVE
+                  READ ONLY
                 </span>
               </span>
             </div>

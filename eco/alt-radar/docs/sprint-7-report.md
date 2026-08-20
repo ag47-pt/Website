@@ -1,5 +1,7 @@
 # Relatório do Sprint 7: Infraestrutura de Produção e Ingestão Contínua
 
+> **Registro histórico:** o APScheduler descrito neste relatório foi removido no Hardening 1 e substituído por Cloud Run Jobs singleton externos.
+
 ## Resumo da Execução
 
 O **Sprint 7** foi concluído com sucesso. Toda a infraestrutura para conexão assíncrona com PostgreSQL (`asyncpg`), resiliência a transações concorrentes e suite de testes de concorrência foi finalizada e validada.

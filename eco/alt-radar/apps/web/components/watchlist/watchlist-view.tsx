@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Star, Trash2 } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useWatchlist, useWatchlistMutation } from "@/eco/alt-radar/apps/web/lib/api/query";
 import type { WatchlistItem } from "@/eco/alt-radar/apps/web/lib/api/schemas";
@@ -14,9 +14,17 @@ import {
 } from "@/eco/alt-radar/apps/web/lib/format";
 import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { TokenAnalysis } from "@/eco/alt-radar/apps/web/components/dashboard/token-analysis";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
+import {
+  PUBLIC_OPERATOR_ACTION_TITLE,
+  PUBLIC_PORTAL_READ_ONLY,
+} from "@/eco/alt-radar/apps/web/lib/public-access";
 
 function WatchlistCard({
   item,
@@ -35,19 +43,25 @@ function WatchlistCard({
   return (
     <article
       className={`rounded-2xl border p-3.5 transition-all font-mono ${
-        selected
-          ? "bg-white/[0.08] text-white"
-          : "border-white/10 bg-white/5 hover:border-white/20"
+        selected ? "bg-white/[0.08] text-white" : "border-white/10 bg-white/5 hover:border-white/20"
       }`}
       style={selected ? { borderColor: `${primary}60`, boxShadow: `0 0 15px ${primary}20` } : {}}
       data-testid={`watchlist-card-${item.token.symbol.toLowerCase()}`}
     >
       <div className="flex items-start justify-between gap-3">
-        <button className="min-w-0 flex-1 text-left cursor-pointer" onClick={onSelect} type="button">
+        <button
+          className="min-w-0 flex-1 text-left cursor-pointer"
+          onClick={onSelect}
+          type="button"
+        >
           <div className="flex items-center gap-2">
             <span
               className="grid size-9 place-items-center rounded-xl border font-bold shadow-sm"
-              style={{ borderColor: `${primary}40`, backgroundColor: `${primary}15`, color: primary }}
+              style={{
+                borderColor: `${primary}40`,
+                backgroundColor: `${primary}15`,
+                color: primary,
+              }}
             >
               {item.token.symbol[0]}
             </span>
@@ -119,8 +133,10 @@ function WatchlistCard({
           </button>
           <button
             aria-label={`Remover ${item.token.symbol} da watchlist`}
-            className="grid size-8 place-items-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:border-rose-500/40 hover:text-rose-400 cursor-pointer transition-colors"
+            className="grid size-8 place-items-center rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:border-rose-500/40 hover:text-rose-400 cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={PUBLIC_PORTAL_READ_ONLY}
             onClick={onRemove}
+            title={PUBLIC_OPERATOR_ACTION_TITLE}
             type="button"
           >
             <Trash2 className="size-3.5" />
@@ -135,7 +151,6 @@ export function WatchlistView() {
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const watchlist = useWatchlist();
   const mutation = useWatchlistMutation();
-  const { primary } = useEcoTheme();
 
   return (
     <div className="space-y-4">
@@ -166,7 +181,7 @@ export function WatchlistView() {
           ) : !watchlist.data?.items.length ? (
             <EmptyState
               title="Watchlist vazia"
-              message="Marque tokens com a estrela na tabela de oportunidades ou no dossiê técnico para acompanhá-los de perto."
+              message="A watchlist pode ser consultada aqui, mas sua edição exige acesso autenticado de operador."
             />
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
@@ -176,9 +191,7 @@ export function WatchlistView() {
                   item={item}
                   selected={item.token.id === selectedTokenId}
                   onSelect={() => setSelectedTokenId(item.token.id)}
-                  onRemove={() =>
-                    mutation.mutate({ tokenId: item.token.id, isWatchlisted: true })
-                  }
+                  onRemove={() => mutation.mutate({ tokenId: item.token.id, isWatchlisted: true })}
                 />
               ))}
             </div>

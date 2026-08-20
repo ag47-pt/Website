@@ -443,4 +443,3 @@ export const applyWeightsResponseSchema = z.object({
 export type GridSearchCandidate = z.infer<typeof gridSearchCandidateSchema>;
 export type GridSearchResponse = z.infer<typeof gridSearchResponseSchema>;
 export type ApplyWeightsResponse = z.infer<typeof applyWeightsResponseSchema>;
-

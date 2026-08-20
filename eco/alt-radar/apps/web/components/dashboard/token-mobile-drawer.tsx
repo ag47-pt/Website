@@ -135,11 +135,35 @@ export function TokenMobileDrawer({ opportunity, isOpen, onClose }: TokenMobileD
             <TokenAnalysis holdersCount={opportunity.holders_count} tokenId={token.id} />
           )}
           {activeTab === "swap" && (
-            <SwapSimulator token={token} market={market} risk={opportunity.risk ? { ...opportunity.risk, id: "risk_mobile", token_id: token.id, liquidity_lock_status: "locked", top_holders_percentage: 15, deployer_percentage: 1, owner_privileges: "None", mintable: false, blacklist_capability: false, holders_count: opportunity.holders_count, can_change_tax: false, buy_tax: 0, sell_tax: 0, proxy_contract: false, contract_age_days: 120, honeypot_status: "Clean", flags: [] } : null} />
+            <SwapSimulator
+              token={token}
+              market={market}
+              risk={
+                opportunity.risk
+                  ? {
+                      ...opportunity.risk,
+                      id: "risk_mobile",
+                      token_id: token.id,
+                      liquidity_lock_status: "locked",
+                      top_holders_percentage: 15,
+                      deployer_percentage: 1,
+                      owner_privileges: "None",
+                      mintable: false,
+                      blacklist_capability: false,
+                      holders_count: opportunity.holders_count,
+                      can_change_tax: false,
+                      buy_tax: 0,
+                      sell_tax: 0,
+                      proxy_contract: false,
+                      contract_age_days: 120,
+                      honeypot_status: "Clean",
+                      flags: [],
+                    }
+                  : null
+              }
+            />
           )}
-          {activeTab === "trade" && (
-            <PaperTrading selectedOpportunity={opportunity} />
-          )}
+          {activeTab === "trade" && <PaperTrading selectedOpportunity={opportunity} />}
           {activeTab === "risk" && (
             <div className="space-y-3">
               <RiskPanel compact={false} tokenId={token.id} />

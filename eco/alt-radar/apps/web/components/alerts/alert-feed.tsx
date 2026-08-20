@@ -1,14 +1,31 @@
 "use client";
 
-import { AlertTriangle, Bell, ChevronLeft, ChevronRight, TrendingUp, Volume2, VolumeX } from "lucide-react";
+import {
+  AlertTriangle,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAlerts } from "@/eco/alt-radar/apps/web/lib/api/query";
 import type { Alert } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { formatDateTime, formatTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
-import { getAudioMuted, playCriticalAlertSound, playTacticalAlertSound, toggleAudioMuted } from "@/eco/alt-radar/apps/web/lib/sonar-audio";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  getAudioMuted,
+  playCriticalAlertSound,
+  playTacticalAlertSound,
+  toggleAudioMuted,
+} from "@/eco/alt-radar/apps/web/lib/sonar-audio";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 
 const alertIcons = {
@@ -66,9 +83,7 @@ function AlertRow({ alert, compact }: { alert: Alert; compact?: boolean }) {
           {compact ? message : title}
         </p>
         {!compact && (
-          <p className="mt-0.5 line-clamp-2 text-[0.61rem] leading-4 text-zinc-500">
-            {message}
-          </p>
+          <p className="mt-0.5 line-clamp-2 text-[0.61rem] leading-4 text-zinc-500">{message}</p>
         )}
       </div>
       <Link
@@ -89,14 +104,18 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
   const [pushEnabled, setPushEnabled] = useState(false);
   const lastAlertIdRef = useRef<string | null>(null);
   const alerts = useAlerts(page, compact ? 4 : 20);
-  const visibleAlerts = alerts.data?.items ?? [];
+  const visibleAlerts = useMemo(() => alerts.data?.items ?? [], [alerts.data?.items]);
   const { primary } = useEcoTheme();
 
   useEffect(() => {
-    setMuted(getAudioMuted());
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setPushEnabled(Notification.permission === "granted");
-    }
+    const syncId = window.setTimeout(() => {
+      setMuted(getAudioMuted());
+      if ("Notification" in window) {
+        setPushEnabled(Notification.permission === "granted");
+      }
+    }, 0);
+
+    return () => window.clearTimeout(syncId);
   }, []);
 
   useEffect(() => {
@@ -110,13 +129,17 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
         }
 
         // Native Web Push Notification
-        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        if (
+          typeof window !== "undefined" &&
+          "Notification" in window &&
+          Notification.permission === "granted"
+        ) {
           try {
             new Notification(`🚨 AG47 Radar: ${topAlert.token_symbol}`, {
               body: `Alerta Tático: ${alertTitles[topAlert.rule_id] ?? topAlert.rule_id}`,
               icon: "/icon.svg",
             });
-          } catch (_e) {
+          } catch {
             // Ignore notification errors
           }
         }
@@ -151,7 +174,9 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-3.5 py-3 font-mono">
         <div>
-          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Eventos deduplicados</p>
+          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">
+            Eventos deduplicados
+          </p>
           <h2
             id={compact ? "recent-alerts-title" : "alerts-title"}
             className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans"
@@ -169,8 +194,21 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
                 ? "text-white"
                 : "border-white/10 bg-white/5 text-zinc-400 hover:text-white"
             }`}
-            style={pushEnabled ? { borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 8px ${primary}20` } : {}}
-            title={pushEnabled ? "Notificações push do navegador ativas" : "Clique para permitir notificações no navegador"}
+            style={
+              pushEnabled
+                ? {
+                    borderColor: `${primary}50`,
+                    backgroundColor: `${primary}15`,
+                    color: primary,
+                    boxShadow: `0 0 8px ${primary}20`,
+                  }
+                : {}
+            }
+            title={
+              pushEnabled
+                ? "Notificações push do navegador ativas"
+                : "Clique para permitir notificações no navegador"
+            }
           >
             <Bell className="size-3.5" style={{ color: pushEnabled ? primary : undefined }} />
             <span>{pushEnabled ? "Push ON" : "Push OFF"}</span>
@@ -179,14 +217,29 @@ export function AlertFeed({ compact = false }: { compact?: boolean }) {
             type="button"
             onClick={handleToggleMute}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[0.65rem] font-bold transition-all cursor-pointer ${
-              !muted
-                ? "text-white"
-                : "border-white/10 bg-white/5 text-zinc-400 hover:text-white"
+              !muted ? "text-white" : "border-white/10 bg-white/5 text-zinc-400 hover:text-white"
             }`}
-            style={!muted ? { borderColor: `${primary}50`, backgroundColor: `${primary}15`, color: primary, boxShadow: `0 0 8px ${primary}20` } : {}}
-            title={!muted ? "Sonar de áudio ativo (clique para silenciar)" : "Sonar silenciado (clique para ativar)"}
+            style={
+              !muted
+                ? {
+                    borderColor: `${primary}50`,
+                    backgroundColor: `${primary}15`,
+                    color: primary,
+                    boxShadow: `0 0 8px ${primary}20`,
+                  }
+                : {}
+            }
+            title={
+              !muted
+                ? "Sonar de áudio ativo (clique para silenciar)"
+                : "Sonar silenciado (clique para ativar)"
+            }
           >
-            {!muted ? <Volume2 className="size-3.5" style={{ color: primary }} /> : <VolumeX className="size-3.5 text-zinc-500" />}
+            {!muted ? (
+              <Volume2 className="size-3.5" style={{ color: primary }} />
+            ) : (
+              <VolumeX className="size-3.5 text-zinc-500" />
+            )}
             <span>{!muted ? "Sonar ON" : "Sonar OFF"}</span>
           </button>
           <DataBadges

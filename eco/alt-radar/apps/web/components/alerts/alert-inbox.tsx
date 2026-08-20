@@ -18,8 +18,16 @@ import { useEdgeInbox, useAlertMutation } from "@/eco/alt-radar/apps/web/lib/api
 import type { Alert } from "@/eco/alt-radar/apps/web/lib/api/schemas";
 import { formatDateTime, formatTime, getErrorMessage } from "@/eco/alt-radar/apps/web/lib/format";
 import { DataBadges } from "@/eco/alt-radar/apps/web/components/shared/data-badges";
-import { EmptyState, ErrorState, PanelSkeleton } from "@/eco/alt-radar/apps/web/components/shared/query-state";
+import {
+  EmptyState,
+  ErrorState,
+  PanelSkeleton,
+} from "@/eco/alt-radar/apps/web/components/shared/query-state";
 import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
+import {
+  PUBLIC_OPERATOR_ACTION_TITLE,
+  PUBLIC_PORTAL_READ_ONLY,
+} from "@/eco/alt-radar/apps/web/lib/public-access";
 
 const alertIcons = {
   "rule:liquidity_volume_expansion": TrendingUp,
@@ -150,8 +158,9 @@ function AlertRow({
                 if (key === "final_score") return null;
                 const cleanName = key.replace("_score", "").replace("_", " ");
                 const weightVal = alert.score_weights?.[key];
-                const weightStr = weightVal !== undefined ? `${(weightVal * 100).toFixed(0)}%` : "N/A";
-                
+                const weightStr =
+                  weightVal !== undefined ? `${(weightVal * 100).toFixed(0)}%` : "N/A";
+
                 let colorClass = "text-white";
                 if (value >= 7.0) colorClass = "text-emerald-400";
                 else if (value >= 5.0) colorClass = "text-amber-400";
@@ -159,8 +168,12 @@ function AlertRow({
 
                 return (
                   <div key={key} className="bg-white/[0.02] p-2 rounded-lg border border-white/5">
-                    <span className="text-zinc-400 capitalize block text-[0.52rem] mb-0.5">{cleanName} ({weightStr})</span>
-                    <span className={`font-black text-[0.62rem] ${colorClass}`}>{value.toFixed(1)}/10</span>
+                    <span className="text-zinc-400 capitalize block text-[0.52rem] mb-0.5">
+                      {cleanName} ({weightStr})
+                    </span>
+                    <span className={`font-black text-[0.62rem] ${colorClass}`}>
+                      {value.toFixed(1)}/10
+                    </span>
                   </div>
                 );
               })}
@@ -173,22 +186,26 @@ function AlertRow({
           {isUnread && (
             <button
               onClick={() => mutateAlert(alert.id, "read")}
-              className="inline-flex items-center gap-1 rounded-xl bg-white/5 border border-white/10 px-2 py-1 text-[0.55rem] font-bold text-zinc-300 hover:text-white hover:bg-white/10 cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1 rounded-xl bg-white/5 border border-white/10 px-2 py-1 text-[0.55rem] font-bold text-zinc-300 hover:text-white hover:bg-white/10 cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={PUBLIC_PORTAL_READ_ONLY}
+              title={PUBLIC_OPERATOR_ACTION_TITLE}
             >
               <Check className="size-3 text-cyan-400" /> Marcar como lido
             </button>
           )}
           <button
             onClick={() => mutateAlert(alert.id, "acknowledged")}
-            className="inline-flex items-center gap-1 rounded-xl bg-emerald-950/40 border border-emerald-500/30 px-2 py-1 text-[0.55rem] font-bold text-emerald-300 hover:bg-emerald-900/50 cursor-pointer transition-colors"
-            disabled={alert.status === "acknowledged"}
+            className="inline-flex items-center gap-1 rounded-xl bg-emerald-950/40 border border-emerald-500/30 px-2 py-1 text-[0.55rem] font-bold text-emerald-300 hover:bg-emerald-900/50 cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={PUBLIC_PORTAL_READ_ONLY || alert.status === "acknowledged"}
+            title={PUBLIC_OPERATOR_ACTION_TITLE}
           >
             <Clock className="size-3" /> Ciente
           </button>
           <button
             onClick={() => mutateAlert(alert.id, "dismissed")}
-            className="inline-flex items-center gap-1 rounded-xl bg-rose-950/40 border border-rose-500/30 px-2 py-1 text-[0.55rem] font-bold text-rose-300 hover:bg-rose-900/50 cursor-pointer transition-colors"
-            disabled={alert.status === "dismissed"}
+            className="inline-flex items-center gap-1 rounded-xl bg-rose-950/40 border border-rose-500/30 px-2 py-1 text-[0.55rem] font-bold text-rose-300 hover:bg-rose-900/50 cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={PUBLIC_PORTAL_READ_ONLY || alert.status === "dismissed"}
+            title={PUBLIC_OPERATOR_ACTION_TITLE}
           >
             <X className="size-3" /> Dispensar
           </button>
@@ -238,8 +255,13 @@ export function AlertInbox() {
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-3.5 py-3">
           <div>
-            <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Gestão de Alertas</p>
-            <h2 id="inbox-title" className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans">
+            <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">
+              Gestão de Alertas
+            </p>
+            <h2
+              id="inbox-title"
+              className="mt-1 flex items-center gap-2 text-sm font-bold text-white font-sans"
+            >
               <Bell className="size-4" style={{ color: primary }} /> Inbox do Operador
             </h2>
           </div>
@@ -282,7 +304,10 @@ export function AlertInbox() {
         {edgeInbox.isLoading ? (
           <PanelSkeleton rows={8} />
         ) : edgeInbox.isError ? (
-          <ErrorState message={getErrorMessage(edgeInbox.error)} retry={() => void edgeInbox.refetch()} />
+          <ErrorState
+            message={getErrorMessage(edgeInbox.error)}
+            retry={() => void edgeInbox.refetch()}
+          />
         ) : !visibleAlerts.length ? (
           <EmptyState
             title="Inbox limpa"
@@ -329,10 +354,15 @@ export function AlertInbox() {
       {/* Correlation Matrix Panel */}
       <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-3.5 space-y-3">
         <div>
-          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">Métricas Estatísticas</p>
-          <h2 className="text-sm font-bold tracking-tight text-white font-sans mt-0.5">Matriz Score vs Resultado</h2>
+          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-zinc-400">
+            Métricas Estatísticas
+          </p>
+          <h2 className="text-sm font-bold tracking-tight text-white font-sans mt-0.5">
+            Matriz Score vs Resultado
+          </h2>
           <p className="text-[0.6rem] text-zinc-400 mt-1 leading-relaxed">
-            Correlação em tempo real entre a pontuação de oportunidade e o resultado auditado pelo Truth Engine.
+            Snapshot da correlação entre a pontuação de oportunidade e os resultados já auditados
+            pelo Truth Engine.
           </p>
         </div>
 
@@ -358,7 +388,7 @@ export function AlertInbox() {
               {edgeInbox.data?.correlation_matrix.map((row) => {
                 const hasSignificantSamples = row.total_samples >= 30;
                 let bgClass = "bg-white/5 text-zinc-400";
-                
+
                 if (hasSignificantSamples) {
                   if (row.is_suspended) {
                     bgClass = "bg-rose-950/50 text-rose-300 border border-rose-500/30";
@@ -379,16 +409,19 @@ export function AlertInbox() {
                     <div className="font-bold text-white truncate" title={row.score_range}>
                       {row.score_range.split(" (")[0]}
                     </div>
-                    <div className="text-center text-zinc-400">
-                      {row.total_samples}
-                    </div>
+                    <div className="text-center text-zinc-400">{row.total_samples}</div>
                     <div className="text-center">
-                      <span className={`inline-block px-1.5 py-0.5 rounded-lg text-[0.55rem] font-bold ${bgClass}`}>
+                      <span
+                        className={`inline-block px-1.5 py-0.5 rounded-lg text-[0.55rem] font-bold ${bgClass}`}
+                      >
                         {hasSignificantSamples ? `${row.win_rate_pct}%` : "Cold Start"}
                       </span>
                     </div>
-                    <div className={`text-center font-bold ${row.avg_return_pct >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                      {row.avg_return_pct > 0 ? "+" : ""}{row.avg_return_pct}%
+                    <div
+                      className={`text-center font-bold ${row.avg_return_pct >= 0 ? "text-emerald-400" : "text-rose-400"}`}
+                    >
+                      {row.avg_return_pct > 0 ? "+" : ""}
+                      {row.avg_return_pct}%
                     </div>
                   </div>
                 );
@@ -401,13 +434,16 @@ export function AlertInbox() {
           <strong className="text-white block mb-0.5">Legenda & Regras:</strong>
           <ul className="list-disc pl-3.5 space-y-1">
             <li>
-              <span className="text-emerald-400 font-semibold">Edge Estatístico</span> (&ge; 65%): buckets verdes liberados para alertas imediatos.
+              <span className="text-emerald-400 font-semibold">Edge Estatístico</span> (&ge; 65%):
+              buckets verdes liberados para alertas imediatos.
             </li>
             <li>
-              <span className="text-rose-400 font-semibold">Drawdown Ativo</span> (3 falhas consecutivas): buckets suspensos temporariamente.
+              <span className="text-rose-400 font-semibold">Drawdown Ativo</span> (3 falhas
+              consecutivas): buckets suspensos temporariamente.
             </li>
             <li>
-              <span className="text-zinc-400 font-semibold">Cold Start</span> (&lt; 30 amostras): tags cinzas indicando dados insuficientes para travar alertas.
+              <span className="text-zinc-400 font-semibold">Cold Start</span> (&lt; 30 amostras):
+              tags cinzas indicando dados insuficientes para travar alertas.
             </li>
           </ul>
         </div>

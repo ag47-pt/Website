@@ -1,64 +1,328 @@
 name: Deploy Alt-Radar to Google Cloud Run
 
 on:
-  push:
+  workflow_run:
+    workflows: ["AG47 Altcoin Radar CI"]
     branches: [main]
-    paths:
-      - "eco/alt-radar/apps/api/**"
-      - ".github/workflows/deploy-alt-radar-cloudrun.yml"
+    types: [completed]
   workflow_dispatch:
+
+concurrency:
+  group: alt-radar-production
+  cancel-in-progress: false
 
 env:
   PROJECT_ID: radar-altcoin
   REGION: europe-west3
   SERVICE_NAME: alt-radar-api
-  # Cloud SQL connection name: project:region:instance
+  MIGRATION_JOB_NAME: alt-radar-migrate
+  INGESTION_JOB_NAME: alt-radar-ingestion
+  CALIBRATION_JOB_NAME: alt-radar-calibration
+  INGESTION_SCHEDULER_NAME: alt-radar-ingestion-every-5m
+  CALIBRATION_SCHEDULER_NAME: alt-radar-calibration-every-12h
   CLOUD_SQL_CONNECTION_NAME: radar-altcoin:europe-west3:alt-radar-pg
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  deploy:
-    name: Build and Deploy to Cloud Run
+  verify:
+    name: Re-verify release candidate
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: eco/alt-radar
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Authenticate to Google Cloud (Workload Identity)
-        if: secrets.WCP_PROVIDER != ''
-        uses: google-github-actions/auth@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            eco/alt-radar/package-lock.json
+            eco/alt-radar/apps/web/package-lock.json
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.5"
+      - run: npm ci
+      - run: npm --prefix apps/web ci
+      - run: uv sync --project apps/api --extra dev --frozen
+      - run: npm run verify
+
+  deploy:
+    name: Deploy API and durable workers
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: alt-radar-production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Validate required deployment configuration
+        shell: bash
+        env:
+          RADAR_WIF_PROVIDER: ${{ secrets.WCP_PROVIDER }}
+          RADAR_DEPLOY_SERVICE_ACCOUNT: ${{ secrets.GCP_SA_EMAIL }}
+          RADAR_RUNTIME_SERVICE_ACCOUNT: ${{ secrets.GCP_RUNTIME_SERVICE_ACCOUNT }}
+          RADAR_SCHEDULER_SERVICE_ACCOUNT: ${{ secrets.GCP_SCHEDULER_SERVICE_ACCOUNT }}
+          RADAR_DATABASE_SECRET: ${{ secrets.AG47_DATABASE_URL_SECRET }}
+          RADAR_OPERATOR_KEY_SECRET: ${{ secrets.AG47_OPERATOR_API_KEY_SECRET }}
+          RADAR_ADMIN_KEY_SECRET: ${{ secrets.AG47_ADMIN_API_KEY_SECRET }}
+          RADAR_CORS_ORIGINS: ${{ vars.AG47_CORS_ORIGINS }}
+          RADAR_TRUSTED_PROXY_CIDRS: ${{ vars.AG47_TRUSTED_PROXY_CIDRS }}
+          RADAR_WEBHOOK_ALLOWED_HOSTS: ${{ vars.AG47_WEBHOOK_ALLOWED_HOSTS }}
+        run: |
+          for variable_name in \
+            RADAR_WIF_PROVIDER \
+            RADAR_DEPLOY_SERVICE_ACCOUNT \
+            RADAR_RUNTIME_SERVICE_ACCOUNT \
+            RADAR_SCHEDULER_SERVICE_ACCOUNT \
+            RADAR_DATABASE_SECRET \
+            RADAR_OPERATOR_KEY_SECRET \
+            RADAR_ADMIN_KEY_SECRET \
+            RADAR_CORS_ORIGINS \
+            RADAR_TRUSTED_PROXY_CIDRS \
+            RADAR_WEBHOOK_ALLOWED_HOSTS
+          do
+            if [ -z "${!variable_name}" ]; then
+              echo "Missing required production configuration: ${variable_name}" >&2
+              exit 1
+            fi
+          done
+
+      - name: Authenticate with Workload Identity Federation
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: ${{ secrets.WCP_PROVIDER }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
 
-      - name: Authenticate to Google Cloud (Service Account Key Fallback)
-        if: secrets.WCP_PROVIDER == '' && secrets.GCP_SA_KEY != ''
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+        with:
+          project_id: ${{ env.PROJECT_ID }}
 
-      - name: Deploy to Cloud Run
+      - name: Build reproducible non-secret runtime configuration
+        shell: bash
+        env:
+          RADAR_CORS_ORIGINS: ${{ vars.AG47_CORS_ORIGINS }}
+          RADAR_TRUSTED_PROXY_CIDRS: ${{ vars.AG47_TRUSTED_PROXY_CIDRS }}
+          RADAR_WEBHOOK_ALLOWED_HOSTS: ${{ vars.AG47_WEBHOOK_ALLOWED_HOSTS }}
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
+          jq -n \
+            --arg cors_origins "${RADAR_CORS_ORIGINS}" \
+            --arg trusted_proxy_cidrs "${RADAR_TRUSTED_PROXY_CIDRS}" \
+            --arg webhook_allowed_hosts "${RADAR_WEBHOOK_ALLOWED_HOSTS}" \
+            '{
+              AG47_ENVIRONMENT: "production",
+              AG47_DEBUG: "false",
+              AG47_DEMO_MODE: "false",
+              AG47_AUTO_CREATE_SCHEMA: "false",
+              AG47_AUTO_SEED_DEMO: "false",
+              AG47_INGESTION_MODE: "external",
+              AG47_INGESTION_STALE_AFTER_SECONDS: "900",
+              AG47_CORS_ORIGINS: $cors_origins,
+              AG47_TRUSTED_PROXY_CIDRS: $trusted_proxy_cidrs,
+              AG47_WEBHOOK_ALLOWED_HOSTS: $webhook_allowed_hosts
+            }' > "${RUNNER_TEMP}/alt-radar-runtime-env.json"
+
+      - name: Build a no-traffic API release candidate
+        shell: bash
+        env:
+          RADAR_RUNTIME_SERVICE_ACCOUNT: ${{ secrets.GCP_RUNTIME_SERVICE_ACCOUNT }}
+          RADAR_DATABASE_SECRET: ${{ secrets.AG47_DATABASE_URL_SECRET }}
+          RADAR_OPERATOR_KEY_SECRET: ${{ secrets.AG47_OPERATOR_API_KEY_SECRET }}
+          RADAR_ADMIN_KEY_SECRET: ${{ secrets.AG47_ADMIN_API_KEY_SECRET }}
+        run: |
+          secret_bindings="AG47_DATABASE_URL=${RADAR_DATABASE_SECRET},AG47_OPERATOR_API_KEY=${RADAR_OPERATOR_KEY_SECRET},AG47_ADMIN_API_KEY=${RADAR_ADMIN_KEY_SECRET}"
+
+          gcloud run deploy "${SERVICE_NAME}" \
             --source eco/alt-radar/apps/api \
-            --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }} \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --service-account="${RADAR_RUNTIME_SERVICE_ACCOUNT}" \
             --allow-unauthenticated \
-            --add-cloudsql-instances=${{ env.CLOUD_SQL_CONNECTION_NAME }} \
-            --set-env-vars="\
-              AG47_ENVIRONMENT=production,\
-              AG47_DEMO_MODE=false,\
-              AG47_SCHEDULER_ENABLED=true,\
-              AG47_SCHEDULER_INTERVAL_SECONDS=300,\
-              AG47_DATABASE_URL=${{ secrets.AG47_DATABASE_URL }},\
-              AG47_OPERATOR_API_KEY=${{ secrets.AG47_OPERATOR_API_KEY }},\
-              AG47_ADMIN_API_KEY=${{ secrets.AG47_ADMIN_API_KEY }},\
-              AG47_TELEGRAM_BOT_TOKEN=${{ secrets.AG47_TELEGRAM_BOT_TOKEN }},\
-              AG47_TELEGRAM_CHAT_ID=${{ secrets.AG47_TELEGRAM_CHAT_ID }},\
-              AG47_HELIUS_API_KEY=${{ secrets.AG47_HELIUS_API_KEY }}"
+            --no-traffic \
+            --set-cloudsql-instances="${CLOUD_SQL_CONNECTION_NAME}" \
+            --env-vars-file="${RUNNER_TEMP}/alt-radar-runtime-env.json" \
+            --set-secrets="${secret_bindings}"
+
+      - name: Run the migration for the release candidate
+        shell: bash
+        env:
+          RADAR_RUNTIME_SERVICE_ACCOUNT: ${{ secrets.GCP_RUNTIME_SERVICE_ACCOUNT }}
+          RADAR_DATABASE_SECRET: ${{ secrets.AG47_DATABASE_URL_SECRET }}
+        run: |
+          latest_revision="$(gcloud run services describe "${SERVICE_NAME}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --format='value(status.latestCreatedRevisionName)')"
+          radar_image="$(gcloud run revisions describe "${latest_revision}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --format='value(spec.containers[0].image)')"
+          test -n "${latest_revision}"
+          test -n "${radar_image}"
+
+          gcloud run jobs deploy "${MIGRATION_JOB_NAME}" \
+            --image="${radar_image}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --service-account="${RADAR_RUNTIME_SERVICE_ACCOUNT}" \
+            --tasks=1 \
+            --parallelism=1 \
+            --max-retries=0 \
+            --task-timeout=10m \
+            --set-cloudsql-instances="${CLOUD_SQL_CONNECTION_NAME}" \
+            --command=/app/.venv/bin/alembic \
+            --args=upgrade,head \
+            --env-vars-file="${RUNNER_TEMP}/alt-radar-runtime-env.json" \
+            --set-secrets="AG47_DATABASE_URL=${RADAR_DATABASE_SECRET}"
+          gcloud run jobs execute "${MIGRATION_JOB_NAME}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --wait
+
+      - name: Deploy singleton worker jobs from the release-candidate image
+        shell: bash
+        env:
+          RADAR_RUNTIME_SERVICE_ACCOUNT: ${{ secrets.GCP_RUNTIME_SERVICE_ACCOUNT }}
+          RADAR_DATABASE_SECRET: ${{ secrets.AG47_DATABASE_URL_SECRET }}
+          RADAR_TELEGRAM_BOT_TOKEN_SECRET: ${{ secrets.AG47_TELEGRAM_BOT_TOKEN_SECRET }}
+          RADAR_TELEGRAM_CHAT_ID_SECRET: ${{ secrets.AG47_TELEGRAM_CHAT_ID_SECRET }}
+          RADAR_HELIUS_API_KEY_SECRET: ${{ secrets.AG47_HELIUS_API_KEY_SECRET }}
+        run: |
+          radar_image="$(gcloud run services describe "${SERVICE_NAME}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --format='value(spec.template.spec.containers[0].image)')"
+          test -n "${radar_image}"
+
+          database_secret_binding="AG47_DATABASE_URL=${RADAR_DATABASE_SECRET}"
+          ingestion_secret_bindings="${database_secret_binding}"
+          if [ -n "${RADAR_TELEGRAM_BOT_TOKEN_SECRET}" ]; then
+            ingestion_secret_bindings+=",AG47_TELEGRAM_BOT_TOKEN=${RADAR_TELEGRAM_BOT_TOKEN_SECRET}"
+          fi
+          if [ -n "${RADAR_TELEGRAM_CHAT_ID_SECRET}" ]; then
+            ingestion_secret_bindings+=",AG47_TELEGRAM_CHAT_ID=${RADAR_TELEGRAM_CHAT_ID_SECRET}"
+          fi
+          if [ -n "${RADAR_HELIUS_API_KEY_SECRET}" ]; then
+            ingestion_secret_bindings+=",AG47_HELIUS_API_KEY=${RADAR_HELIUS_API_KEY_SECRET}"
+          fi
+
+          deploy_worker_job() {
+            local job_name="$1"
+            local worker_args="$2"
+            local job_secret_bindings="$3"
+            gcloud run jobs deploy "${job_name}" \
+              --image="${radar_image}" \
+              --region="${REGION}" \
+              --project="${PROJECT_ID}" \
+              --service-account="${RADAR_RUNTIME_SERVICE_ACCOUNT}" \
+              --tasks=1 \
+              --parallelism=1 \
+              --max-retries=2 \
+              --task-timeout=10m \
+              --set-cloudsql-instances="${CLOUD_SQL_CONNECTION_NAME}" \
+              --command=/app/.venv/bin/ag47-radar \
+              --args="${worker_args}" \
+              --env-vars-file="${RUNNER_TEMP}/alt-radar-runtime-env.json" \
+              --set-secrets="${job_secret_bindings}"
+          }
+
+          deploy_worker_job "${INGESTION_JOB_NAME}" "worker,ingest,--limit,10" "${ingestion_secret_bindings}"
+          deploy_worker_job "${CALIBRATION_JOB_NAME}" "worker,calibrate" "${database_secret_binding}"
+
+      - name: Grant the scheduler permission to execute both worker jobs
+        shell: bash
+        env:
+          RADAR_SCHEDULER_SERVICE_ACCOUNT: ${{ secrets.GCP_SCHEDULER_SERVICE_ACCOUNT }}
+        run: |
+          for job_name in "${INGESTION_JOB_NAME}" "${CALIBRATION_JOB_NAME}"
+          do
+            gcloud run jobs add-iam-policy-binding "${job_name}" \
+              --region="${REGION}" \
+              --project="${PROJECT_ID}" \
+              --member="serviceAccount:${RADAR_SCHEDULER_SERVICE_ACCOUNT}" \
+              --role="roles/run.invoker"
+          done
+
+      - name: Upsert Cloud Scheduler triggers
+        shell: bash
+        env:
+          RADAR_SCHEDULER_SERVICE_ACCOUNT: ${{ secrets.GCP_SCHEDULER_SERVICE_ACCOUNT }}
+        run: |
+          upsert_scheduler() {
+            local scheduler_name="$1"
+            local job_name="$2"
+            local schedule="$3"
+            local scheduler_uri="https://run.googleapis.com/v2/projects/${PROJECT_ID}/locations/${REGION}/jobs/${job_name}:run"
+            local scheduler_args=(
+              --location="${REGION}"
+              --project="${PROJECT_ID}"
+              --schedule="${schedule}"
+              --time-zone="UTC"
+              --uri="${scheduler_uri}"
+              --http-method=POST
+              --oauth-service-account-email="${RADAR_SCHEDULER_SERVICE_ACCOUNT}"
+              --oauth-token-scope="https://www.googleapis.com/auth/cloud-platform"
+            )
+            if gcloud scheduler jobs describe "${scheduler_name}" \
+              --location="${REGION}" \
+              --project="${PROJECT_ID}" >/dev/null 2>&1
+            then
+              gcloud scheduler jobs update http "${scheduler_name}" "${scheduler_args[@]}"
+            else
+              gcloud scheduler jobs create http "${scheduler_name}" "${scheduler_args[@]}"
+            fi
+          }
+
+          upsert_scheduler "${INGESTION_SCHEDULER_NAME}" "${INGESTION_JOB_NAME}" "*/5 * * * *"
+          upsert_scheduler "${CALIBRATION_SCHEDULER_NAME}" "${CALIBRATION_JOB_NAME}" "17 */12 * * *"
+
+      - name: Promote the fully prepared release candidate
+        shell: bash
+        run: |
+          gcloud run services update-traffic "${SERVICE_NAME}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --to-latest
+
+      - name: Verify deployed API, jobs, and schedules
+        shell: bash
+        run: |
+          service_url="$(gcloud run services describe "${SERVICE_NAME}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --format='value(status.url)')"
+          curl --fail --show-error --silent \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            "${service_url}/health"
+          for job_name in "${MIGRATION_JOB_NAME}" "${INGESTION_JOB_NAME}" "${CALIBRATION_JOB_NAME}"
+          do
+            gcloud run jobs describe "${job_name}" \
+              --region="${REGION}" \
+              --project="${PROJECT_ID}" \
+              --format='value(name)'
+          done
+          for scheduler_name in "${INGESTION_SCHEDULER_NAME}" "${CALIBRATION_SCHEDULER_NAME}"
+          do
+            gcloud scheduler jobs describe "${scheduler_name}" \
+              --location="${REGION}" \
+              --project="${PROJECT_ID}" \
+              --format='value(name)'
+          done

@@ -60,7 +60,7 @@ class TelegramPublicSocialProvider(SocialDataProvider):
         # For now, since we cannot map token_id to a chat_id inherently, we return None gracefully.
         # Once we have the chat_id, we would call:
         # /bot{self.bot_token}/getChatMemberCount?chat_id={chat_id}
-        
+
         errors.append(
             ProviderError(
                 code="telegram_chat_id_unknown",

@@ -26,6 +26,7 @@ from ag47_radar.models import (
     WatchlistEntry,
 )
 from ag47_radar.schemas import (
+    ChainHealthRead,
     CorrelationBucket,
     GlobalKnowledgeRead,
     MarketHistoryPoint,
@@ -47,6 +48,7 @@ from ag47_radar.schemas import (
     TokenDetailResponse,
     TokenRead,
     TradingPairRead,
+    TruthDatasetRow,
     WatchlistRead,
 )
 
@@ -474,7 +476,7 @@ async def list_alerts(
 
     # Batch load latest score components for the token IDs
     token_ids = {alert.token_id for alert, symbol in rows}
-    latest_scores = {}
+    latest_scores: dict[str, OpportunityScore] = {}
     if token_ids:
         from ag47_radar.models import OpportunityScore
 
@@ -497,17 +499,17 @@ async def list_alerts(
 
     items = []
     for alert, symbol in rows:
-        sc = latest_scores.get(alert.token_id)
+        latest_score = latest_scores.get(alert.token_id)
         score_components = None
-        if sc:
+        if latest_score:
             score_components = {
-                "momentum_score": float(sc.momentum_score),
-                "liquidity_score": float(sc.liquidity_score),
-                "community_score": float(sc.community_score),
-                "distribution_score": float(sc.distribution_score),
-                "safety_score": float(sc.safety_score),
-                "data_quality_score": float(sc.data_quality_score),
-                "final_score": float(sc.final_score),
+                "momentum_score": float(latest_score.momentum_score),
+                "liquidity_score": float(latest_score.liquidity_score),
+                "community_score": float(latest_score.community_score),
+                "distribution_score": float(latest_score.distribution_score),
+                "safety_score": float(latest_score.safety_score),
+                "data_quality_score": float(latest_score.data_quality_score),
+                "final_score": float(latest_score.final_score),
             }
         items.append(
             TokenAlertRead(
@@ -802,7 +804,7 @@ async def list_edge_alerts(
 
     # Batch load latest score components for the token IDs
     token_ids = {alert.token_id for alert, symbol in rows}
-    latest_scores = {}
+    latest_scores: dict[str, OpportunityScore] = {}
     if token_ids:
         from ag47_radar.models import OpportunityScore
 
@@ -825,17 +827,17 @@ async def list_edge_alerts(
 
     alert_items = []
     for alert, symbol in rows:
-        sc = latest_scores.get(alert.token_id)
+        latest_score = latest_scores.get(alert.token_id)
         score_components = None
-        if sc:
+        if latest_score:
             score_components = {
-                "momentum_score": float(sc.momentum_score),
-                "liquidity_score": float(sc.liquidity_score),
-                "community_score": float(sc.community_score),
-                "distribution_score": float(sc.distribution_score),
-                "safety_score": float(sc.safety_score),
-                "data_quality_score": float(sc.data_quality_score),
-                "final_score": float(sc.final_score),
+                "momentum_score": float(latest_score.momentum_score),
+                "liquidity_score": float(latest_score.liquidity_score),
+                "community_score": float(latest_score.community_score),
+                "distribution_score": float(latest_score.distribution_score),
+                "safety_score": float(latest_score.safety_score),
+                "data_quality_score": float(latest_score.data_quality_score),
+                "final_score": float(latest_score.final_score),
             }
         alert_items.append(
             TokenAlertRead(
@@ -967,21 +969,19 @@ async def get_chain_health_stats(
     from sqlalchemy import func
 
     from ag47_radar.models import MarketSnapshot, Token, TokenAlert, TradingPair
-    from ag47_radar.schemas import ChainHealthRead
 
     now = datetime.now(UTC)
     cutoff_24h = now - timedelta(hours=24)
 
     # Tokens active per chain
-    token_counts = dict(
-        (
-            await session.execute(
-                select(Token.chain, func.count(Token.id))
-                .where(Token.is_demo.is_(settings.demo_mode))
-                .group_by(Token.chain)
-            )
-        ).all()
-    )
+    token_count_rows = (
+        await session.execute(
+            select(Token.chain, func.count(Token.id))
+            .where(Token.is_demo.is_(settings.demo_mode))
+            .group_by(Token.chain)
+        )
+    ).all()
+    token_counts: dict[str, int] = {chain: count for chain, count in token_count_rows}
 
     # Liquidity tracked per chain (latest snapshot per pair)
     liq_results = (
@@ -1021,13 +1021,14 @@ async def get_chain_health_stats(
         )
     )
 
-    result = []
+    result: list[ChainHealthRead] = []
     for chain in known_chains:
         tokens_active = token_counts.get(chain, 0)
         liq = liquidity_by_chain.get(chain, 0.0)
         alerts_count = alerts_by_chain.get(chain, 0)
 
         # Determine status heuristically
+        health_status: Literal["green", "yellow", "red"]
         if tokens_active == 0:
             health_status = "red"
         elif liq < 1000:
@@ -1046,7 +1047,7 @@ async def get_chain_health_stats(
                 else 80.0
                 if health_status == "yellow"
                 else 0.0,
-                status=health_status,  # type: ignore[arg-type]
+                status=health_status,
             )
         )
 
@@ -1058,7 +1059,6 @@ async def get_truth_dataset_rows(
 ) -> list[TruthDatasetRow]:
     """Export epistemological truth dataset for out-of-sample validation."""
     from ag47_radar.models import Token, TokenHypothesis, TokenTruth
-    from ag47_radar.schemas import TruthDatasetRow
 
     stmt = (
         select(
@@ -1077,12 +1077,13 @@ async def get_truth_dataset_rows(
 
     results = (await session.execute(stmt)).all()
 
-    rows = []
+    rows: list[TruthDatasetRow] = []
     for symbol, chain, truth_status, validated_at, gain, hyp_meta in results:
         meta = hyp_meta or {}
         score_val = meta.get("score")
 
         # Map truth status to hit_result
+        hit_result: Literal["win", "loss", "neutral"]
         if truth_status == "success":
             hit_result = "win"
         elif truth_status == "failure":
@@ -1097,7 +1098,7 @@ async def get_truth_dataset_rows(
                 score_at_alert=float(score_val) if score_val is not None else None,
                 breakdown_summary=meta.get("explanation", ""),
                 price_after_24h=float(gain) if gain is not None else None,
-                hit_result=hit_result,  # type: ignore[arg-type]
+                hit_result=hit_result,
                 validated_at=validated_at,
             )
         )

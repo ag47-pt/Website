@@ -1,25 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  ShieldAlert,
-  ShieldCheck,
-  Lock,
-  FileCode,
-  Layers,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Cpu,
-  Search,
-} from "lucide-react";
+import { Cpu, Layers, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useOpportunities, useScore } from "@/eco/alt-radar/apps/web/lib/api/query";
-import type { Opportunity } from "@/eco/alt-radar/apps/web/lib/api/schemas";
-import {
-  formatCurrency,
-  formatPercent,
-  shortenAddress,
-} from "@/eco/alt-radar/apps/web/lib/format";
+import { formatCurrency } from "@/eco/alt-radar/apps/web/lib/format";
 import { RiskPanel } from "@/eco/alt-radar/apps/web/components/dashboard/risk-panel";
 import { ScoreBreakdown } from "@/eco/alt-radar/apps/web/components/dashboard/score-breakdown";
 import { ChainBadge } from "@/eco/alt-radar/apps/web/components/shared/chain-badge";
@@ -28,7 +12,10 @@ import { useEcoTheme } from "@/eco/alt-radar/apps/web/lib/use-eco-theme";
 export function RiskView() {
   const { primary } = useEcoTheme();
   const opportunitiesQuery = useOpportunities({ page: 1, pageSize: 50 });
-  const allOpportunities = opportunitiesQuery.data?.items ?? [];
+  const allOpportunities = useMemo(
+    () => opportunitiesQuery.data?.items ?? [],
+    [opportunitiesQuery.data?.items],
+  );
 
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
 
@@ -66,8 +53,8 @@ export function RiskView() {
             Segurança de Smart Contracts &amp; Score Audit
           </h1>
           <p className="mt-1 max-w-2xl text-xs leading-5 text-zinc-400">
-            Varredura algorítmica profunda de contratos, verificação de honeypot, bloqueio de liquidez LP,
-            taxas de transação ocultas e decomposição de score multivariável.
+            Varredura algorítmica profunda de contratos, verificação de honeypot, bloqueio de
+            liquidez LP, taxas de transação ocultas e decomposição de score multivariável.
           </p>
         </div>
 
@@ -82,7 +69,9 @@ export function RiskView() {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-            <span className="text-[9px] uppercase text-zinc-400 block font-bold">Ativo sob Auditoria</span>
+            <span className="text-[9px] uppercase text-zinc-400 block font-bold">
+              Ativo sob Auditoria
+            </span>
             <span className="text-white font-bold" style={{ color: primary }}>
               {selectedOpportunity?.token.symbol ?? "Nenhum"}
             </span>

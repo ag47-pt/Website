@@ -21,11 +21,16 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEvolution } from "@/eco/alt-radar/apps/web/lib/api/query";
 import { evolution as evolutionFallback } from "@/eco/alt-radar/apps/web/lib/evolution";
 import { LogoMark } from "./logo-mark";
 import { useRadarState } from "./radar-state";
+import {
+  getRadarHref,
+  getStandaloneRadarTab,
+  type RadarNavigationMode,
+} from "@/eco/alt-radar/apps/web/lib/radar-navigation";
 
 function EvolutionCard() {
   const { data } = useEvolution();
@@ -51,9 +56,7 @@ function EvolutionCard() {
         <p className="text-[8px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">
           MOTOR DE EVOLUÇÃO
         </p>
-        <span
-          className="text-[8px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase bg-black/60 text-white border border-white/10"
-        >
+        <span className="text-[8px] font-mono px-1.5 py-0.5 rounded tracking-widest font-black uppercase bg-black/60 text-white border border-white/10">
           v1.0
         </span>
       </div>
@@ -61,9 +64,14 @@ function EvolutionCard() {
       <div className="mt-2 flex items-center gap-2 text-xs font-black text-white tracking-wide uppercase font-sans">
         <span
           className="size-2 animate-pulse rounded-full shrink-0"
-          style={{ backgroundColor: primary, boxShadow: `0 0 0 4px ${primary}25, 0 0 12px ${primary}` }}
+          style={{
+            backgroundColor: primary,
+            boxShadow: `0 0 0 4px ${primary}25, 0 0 12px ${primary}`,
+          }}
         />
-        <span className="truncate">{evolution.phase} • {evolution.phaseTitle}</span>
+        <span className="truncate">
+          {evolution.phase} • {evolution.phaseTitle}
+        </span>
       </div>
 
       <p className="mt-1.5 text-[10px] leading-4 text-zinc-400 font-mono line-clamp-2">
@@ -90,9 +98,11 @@ function EvolutionCard() {
 
       <div className="mt-1.5 flex items-center justify-between text-[9px] font-mono font-bold text-zinc-400">
         <span>
-          {evolution.completedSteps}/{evolution.totalSteps} sprints
+          {evolution.completedSteps}/{evolution.totalSteps} etapas
         </span>
-        <span style={{ color: primary }} className="font-black">{progress}%</span>
+        <span style={{ color: primary }} className="font-black">
+          {progress}%
+        </span>
       </div>
 
       <p className="mt-2 border-t border-white/5 pt-2 text-[9px] leading-3.5 text-zinc-400 font-mono line-clamp-2">
@@ -111,7 +121,7 @@ interface NavItem {
 
 const navigation: readonly NavItem[] = [
   { tab: "dashboard", label: "Dashboard", icon: Gauge, badge: "CORE" },
-  { tab: "oportunidades", label: "Oportunidades", icon: ChartNoAxesCombined, badge: "LIVE" },
+  { tab: "oportunidades", label: "Oportunidades", icon: ChartNoAxesCombined, badge: "READ" },
   { tab: "alertas", label: "Alertas", icon: Bell },
   { tab: "portfolio", label: "Portfolio", icon: Briefcase },
   { tab: "lab", label: "Laboratório", icon: FlaskConical },
@@ -124,16 +134,29 @@ const navigation: readonly NavItem[] = [
   { tab: "landing", label: "EvoPro Specs", icon: Sparkles, badge: "EVO" },
 ];
 
-function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
+function NavigationLinks({
+  collapsed = false,
+  navigationMode,
+}: {
+  collapsed?: boolean;
+  navigationMode: RadarNavigationMode;
+}) {
   const searchParams = useSearchParams();
-  const currentTab = searchParams ? (searchParams.get("tab") || "dashboard") : "dashboard";
+  const pathname = usePathname();
+  const currentTab =
+    navigationMode === "embedded"
+      ? searchParams?.get("tab") || "landing"
+      : getStandaloneRadarTab(pathname);
   const { setNavigationOpen } = useRadarState();
   const { primary } = useEcoTheme();
 
   return (
-    <nav aria-label="Navegação principal" className="mt-5 flex flex-1 flex-col gap-1 shrink-0 font-mono">
+    <nav
+      aria-label="Navegação principal"
+      className="mt-5 flex flex-1 flex-col gap-1 shrink-0 font-mono"
+    >
       {navigation.map(({ tab, label, icon: Icon, badge }) => {
-        const href = tab === "landing" ? "/eco/alt-radar" : `/eco/alt-radar?tab=${tab}`;
+        const href = getRadarHref(tab, navigationMode);
         const isActive = currentTab === tab;
         return (
           <Link
@@ -197,12 +220,18 @@ function NavigationLinks({ collapsed = false }: { collapsed?: boolean }) {
   );
 }
 
-function SidebarContent({ mobile = false }: { mobile?: boolean }) {
+function SidebarContent({
+  mobile = false,
+  navigationMode,
+}: {
+  mobile?: boolean;
+  navigationMode: RadarNavigationMode;
+}) {
   const { setNavigationOpen } = useRadarState();
   return (
     <>
       <div className="flex items-center justify-between shrink-0 pb-2 border-b border-white/10">
-        <LogoMark />
+        <LogoMark navigationMode={navigationMode} />
         {mobile && (
           <button
             aria-label="Fechar menu"
@@ -214,7 +243,7 @@ function SidebarContent({ mobile = false }: { mobile?: boolean }) {
           </button>
         )}
       </div>
-      <NavigationLinks />
+      <NavigationLinks navigationMode={navigationMode} />
       <div className="mt-5 shrink-0">
         <EvolutionCard />
       </div>
@@ -274,7 +303,11 @@ function SidebarResizer() {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({
+  navigationMode = "standalone",
+}: {
+  navigationMode?: RadarNavigationMode;
+}) {
   const { isNavigationOpen, setNavigationOpen, isSidebarCollapsed, toggleSidebar } =
     useRadarState();
   const ToggleIcon = isSidebarCollapsed ? PanelLeftOpen : PanelLeftClose;
@@ -296,12 +329,12 @@ export function Sidebar() {
           {isSidebarCollapsed ? (
             <>
               <div className="flex shrink-0 justify-center pb-2 border-b border-white/10">
-                <LogoMark compact />
+                <LogoMark compact navigationMode={navigationMode} />
               </div>
-              <NavigationLinks collapsed />
+              <NavigationLinks collapsed navigationMode={navigationMode} />
             </>
           ) : (
-            <SidebarContent />
+            <SidebarContent navigationMode={navigationMode} />
           )}
         </div>
         <button
@@ -328,7 +361,7 @@ export function Sidebar() {
           />
           <aside className="relative flex h-full w-[min(88vw,20rem)] flex-col border-r border-white/20 bg-[#0a0a0a]/95 backdrop-blur-2xl py-4 px-3.5 shadow-2xl">
             <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-2">
-              <SidebarContent mobile />
+              <SidebarContent mobile navigationMode={navigationMode} />
             </div>
           </aside>
         </div>

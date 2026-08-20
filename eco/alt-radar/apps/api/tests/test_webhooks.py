@@ -54,9 +54,42 @@ async def test_webhook_settings_crud(api_client: AsyncClient):
 async def test_webhook_test_no_config(api_client: AsyncClient):
     # Before any webhook is configured
     response = await api_client.post("/api/v1/system/webhook/test")
-    assert response.status_code == 200
+    assert response.status_code == 409
     data = response.json()
-    assert data["success"] is False
+    assert data["error"]["code"] == "resource_conflict"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("result", "expected_status"),
+    [
+        ({"success": False, "status_code": 503}, 502),
+        ({"success": False, "error": "Timeout"}, 504),
+    ],
+)
+async def test_webhook_test_failure_uses_failure_http_status(
+    api_client: AsyncClient, monkeypatch, result: dict[str, object], expected_status: int
+):
+    response = await api_client.post(
+        "/api/v1/system/notification-settings",
+        json={
+            "webhook_url": "https://example.com/webhook",
+            "webhook_secret": "test-secret-123",
+        },
+    )
+    assert response.status_code == 200
+
+    async def failed_test_webhook(*_args: object) -> dict[str, object]:
+        return result
+
+    monkeypatch.setattr(
+        "ag47_radar.services.webhooks.send_test_webhook",
+        failed_test_webhook,
+    )
+    test_response = await api_client.post("/api/v1/system/webhook/test")
+
+    assert test_response.status_code == expected_status
+    assert test_response.json() == result
 
 
 @pytest.mark.asyncio

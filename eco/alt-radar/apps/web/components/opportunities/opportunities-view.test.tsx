@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { OpportunitiesView } from "./opportunities-view";
 
 // Mock das dependências principais para isolar a view
@@ -54,13 +55,21 @@ vi.mock("@/eco/alt-radar/apps/web/components/dashboard/token-analysis", () => ({
   TokenAnalysis: () => <div data-testid="token-analysis" />,
 }));
 
+function renderView() {
+  return render(
+    <ThemeProvider>
+      <OpportunitiesView />
+    </ThemeProvider>,
+  );
+}
+
 describe("OpportunitiesView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("renderiza o estado inicial corretamente (carregamento da lista)", () => {
-    render(<OpportunitiesView />);
+    renderView();
 
     // Verifica elementos base
     expect(screen.getByText("Oportunidades")).toBeInTheDocument();
@@ -71,7 +80,7 @@ describe("OpportunitiesView", () => {
   });
 
   it("abre os detalhes do ativo ao clicar na linha", () => {
-    render(<OpportunitiesView />);
+    renderView();
 
     const row = screen.getAllByTestId("opportunity-row-btc")[0];
     fireEvent.click(row);
@@ -83,7 +92,7 @@ describe("OpportunitiesView", () => {
   });
 
   it("permite interação de pesquisa e filtros (abre painel de filtros)", () => {
-    render(<OpportunitiesView />);
+    renderView();
 
     const filtersBtn = screen.getAllByRole("button", { name: /Filtros/i })[0];
     fireEvent.click(filtersBtn);
@@ -93,10 +102,14 @@ describe("OpportunitiesView", () => {
     expect(screen.getByTestId("risk-filter")).toBeInTheDocument();
   });
 
-  it("tem botões de watchlist na tabela", () => {
-    render(<OpportunitiesView />);
+  it("mantém a watchlist visível, mas bloqueada no portal público", () => {
+    renderView();
 
-    // O botão de watchlist do mock (BTC) deve existir
-    expect(screen.getAllByTestId("watchlist-toggle-btc").length).toBeGreaterThan(0);
+    const watchlistButtons = screen.getAllByTestId("watchlist-toggle-btc");
+    expect(watchlistButtons.length).toBeGreaterThan(0);
+    watchlistButtons.forEach((button) => {
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute("title", expect.stringMatching(/operador/i));
+    });
   });
 });

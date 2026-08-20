@@ -16,7 +16,7 @@ from ag47_radar.api.dependencies import (
 from ag47_radar.config import Settings, get_settings
 from ag47_radar.db import database_is_healthy, get_session
 from ag47_radar.enums import Chain, ProviderStatus
-from ag47_radar.errors import DomainError
+from ag47_radar.errors import ConflictError, DomainError, ResourceNotFoundError
 from ag47_radar.evolution import EVOLUTION_STATUS
 from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.schemas import (
@@ -91,7 +91,7 @@ async def token_microstructure(
     )
     return MicrostructureResponse(
         token_id=result.token_id,
-        priority_tier=result.priority_tier,  # type: ignore
+        priority_tier=result.priority_tier,
         tracking_frequency_minutes=result.tracking_frequency_minutes,
         reaction=ReactionRead(**result.reaction.__dict__),
         structure=StructureRead(**result.structure.__dict__),
@@ -139,6 +139,7 @@ from ag47_radar.services.queries import (
     system_metrics,
 )
 from ag47_radar.services.watchlist import add_to_watchlist, remove_from_watchlist
+from ag47_radar.worker import latest_successful_ingestion_at, worker_monitoring_is_active
 
 
 @health_router.get(
@@ -174,6 +175,7 @@ async def system_status(
     statuses = providers.statuses()
     if database_ok:
         metrics, last_sync = await system_metrics(session, settings)
+        last_worker_success = await latest_successful_ingestion_at(session)
     else:
         metrics = SystemMetrics(
             tokens_monitored=0,
@@ -183,13 +185,20 @@ async def system_status(
             active_providers=0,
         )
         last_sync = None
+        last_worker_success = None
     active_count = sum(item.status == ProviderStatus.ACTIVE for item in statuses)
     metrics = metrics.model_copy(update={"active_providers": active_count})
-    degraded = not database_ok or any(item.status == ProviderStatus.DEGRADED for item in statuses)
+    monitoring_active = worker_monitoring_is_active(settings, last_worker_success)
+    monitoring_expected = settings.ingestion_mode == "external" and not settings.demo_mode
+    degraded = (
+        not database_ok
+        or any(item.status == ProviderStatus.DEGRADED for item in statuses)
+        or (monitoring_expected and not monitoring_active)
+    )
     return SystemStatusResponse(
         status="degraded" if degraded else "operational",
         demo_mode=settings.demo_mode,
-        monitoring_active=settings.scheduler_enabled and not settings.demo_mode,
+        monitoring_active=monitoring_active,
         database="connected" if database_ok else "unavailable",
         last_sync_at=last_sync,
         generated_at=datetime.now(UTC),
@@ -209,7 +218,9 @@ async def reset_provider_circuit(
     providers: ProviderRegistry = Depends(get_provider_registry),
 ) -> dict[str, bool]:
     success = await providers.reset_circuit(provider_id)
-    return {"success": success}
+    if not success:
+        raise ResourceNotFoundError("Provider circuit not found or not resettable")
+    return {"success": True}
 
 
 @api_router.get(
@@ -429,7 +440,6 @@ async def update_alert(
 ) -> TokenAlertRead:
     from sqlalchemy import select
 
-    from ag47_radar.errors import ResourceNotFoundError
     from ag47_radar.models import Token, TokenAlert
     from ag47_radar.services.queries import ensure_utc
 
@@ -653,7 +663,7 @@ async def token_insight(
         risk_level = "high"
 
     return ActionableInsightRead(
-        action=action,  # type: ignore[arg-type]
+        action=action,
         reason=reason,
         empirical_confidence=score.confidence,
         risk_level=risk_level,
@@ -824,6 +834,7 @@ async def get_system_notifications(
     dependencies=[Depends(require_admin), Depends(enforce_mutation_rate_limit)],
 )
 async def test_webhook(
+    response: Response,
     session: AsyncSession = Depends(get_session),
     runtime_settings: Settings = Depends(get_settings),
 ) -> dict[str, Any]:
@@ -834,11 +845,17 @@ async def test_webhook(
 
     settings = await session.scalar(select(UserNotificationSettings))
     if not settings or not settings.webhook_url:
-        return {"success": False, "error": "Nenhum webhook configurado."}
+        raise ConflictError("No webhook is configured")
 
     result = await send_test_webhook(
         settings.webhook_url, settings.webhook_secret or "", runtime_settings
     )
+    if not result.get("success"):
+        response.status_code = (
+            status.HTTP_504_GATEWAY_TIMEOUT
+            if result.get("error") == "Timeout"
+            else status.HTTP_502_BAD_GATEWAY
+        )
     return result
 
 
@@ -905,39 +922,11 @@ async def export_truth_dataset(
         )
 
 
-@api_router.post(
-    "/webhooks/broadcast",
-    summary="Disparo de webhook outbound com HMAC-SHA256 para eventos de alta severidade",
-    tags=["webhooks"],
-)
-async def broadcast_webhook_event(
-    payload: dict[str, Any],
-    settings: Annotated[Settings, Depends(get_settings)],
-) -> dict[str, Any]:
-    import hashlib
-    import hmac
-    import json
-
-    secret = (
-        payload.get("secret")
-        or settings.admin_api_key
-        or settings.operator_api_key
-        or "sec_ag47_radar"
-    )
-    data_to_sign = json.dumps(payload.get("data", {}), sort_keys=True).encode()
-    signature = hmac.new(secret.encode(), data_to_sign, hashlib.sha256).hexdigest()
-
-    return {
-        "status": "delivered",
-        "signature": f"sha256={signature}",
-        "timestamp": datetime.now(UTC).isoformat(),
-        "recipient": payload.get("target_url", "internal_broadcast"),
-        "payload_size_bytes": len(data_to_sign),
-    }
-
-
 from ag47_radar.api.v1.optimization import router as optimization_router
 from ag47_radar.api.v1.portfolio import router as portfolio_router
 
 api_router.include_router(portfolio_router)
-api_router.include_router(optimization_router)
+api_router.include_router(
+    optimization_router,
+    dependencies=[Depends(enforce_mutation_rate_limit)],
+)

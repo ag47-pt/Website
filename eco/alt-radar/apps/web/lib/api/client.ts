@@ -23,9 +23,9 @@ import {
   gridSearchResponseSchema,
   applyWeightsResponseSchema,
 } from "./schemas";
+import { PUBLIC_PORTAL_READ_ONLY } from "@/eco/alt-radar/apps/web/lib/public-access";
+import { RADAR_API_URL } from "./base-url";
 
-
-const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api/eco/alt-radar").replace(/\/$/, "");
 const REQUEST_TIMEOUT_MS = 12_000;
 
 export class ApiError extends Error {
@@ -41,6 +41,12 @@ export class ApiError extends Error {
 function createRequestSignal(signal?: AbortSignal) {
   const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
   return signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+}
+
+function assertPublicPortalMethod(method = "GET") {
+  if (PUBLIC_PORTAL_READ_ONLY && method.toUpperCase() !== "GET") {
+    throw new ApiError("O portal público do Radar é somente leitura.", 405);
+  }
 }
 
 async function parseResponse<T>(response: Response, schema: ZodType<T>): Promise<T> {
@@ -63,8 +69,9 @@ async function parseResponse<T>(response: Response, schema: ZodType<T>): Promise
 }
 
 async function apiRequest<T>(path: string, schema: ZodType<T>, init: RequestInit = {}): Promise<T> {
+  assertPublicPortalMethod(init.method);
   try {
-    const response = await fetch(`${API_URL}${path}`, {
+    const response = await fetch(`${RADAR_API_URL}${path}`, {
       ...init,
       headers: { "Content-Type": "application/json", ...init.headers },
       signal: createRequestSignal(init.signal ?? undefined),
@@ -154,9 +161,13 @@ export const radarApi = {
     if (confidenceLevel && confidenceLevel !== "all") {
       params.set("confidence_level", confidenceLevel);
     }
-    return apiRequest(`/api/v1/alerts/edge-inbox?${params.toString()}`, operatorInboxResponseSchema, {
-      signal,
-    });
+    return apiRequest(
+      `/api/v1/alerts/edge-inbox?${params.toString()}`,
+      operatorInboxResponseSchema,
+      {
+        signal,
+      },
+    );
   },
   updateAlert(alertId: string, status: "unread" | "read" | "acknowledged" | "dismissed") {
     return apiRequest(
@@ -182,7 +193,8 @@ export const radarApi = {
     });
   },
   async removeFromWatchlist(tokenId: string) {
-    const response = await fetch(`${API_URL}/api/v1/watchlist/${tokenId}`, {
+    assertPublicPortalMethod("DELETE");
+    const response = await fetch(`${RADAR_API_URL}/api/v1/watchlist/${tokenId}`, {
       method: "DELETE",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
@@ -200,20 +212,19 @@ export const radarApi = {
     );
   },
   getUserNotificationSettings() {
-    return apiRequest(
-      "/api/v1/system/notification-settings",
-      userNotificationSettingsSchema
-    );
+    return apiRequest("/api/v1/system/notification-settings", userNotificationSettingsSchema);
   },
-  updateUserNotificationSettings(payload: { min_severity: number; min_confidence: number; allowed_chains: string[]; webhook_url?: string; webhook_secret?: string }) {
-    return apiRequest(
-      "/api/v1/system/notification-settings",
-      userNotificationSettingsSchema,
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }
-    );
+  updateUserNotificationSettings(payload: {
+    min_severity: number;
+    min_confidence: number;
+    allowed_chains: string[];
+    webhook_url?: string;
+    webhook_secret?: string;
+  }) {
+    return apiRequest("/api/v1/system/notification-settings", userNotificationSettingsSchema, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   },
   getSystemNotifications(page = 1, pageSize = 20, status?: string) {
     const params = new URLSearchParams({
@@ -221,10 +232,10 @@ export const radarApi = {
       page_size: pageSize.toString(),
     });
     if (status) params.set("status", status);
-    
+
     return apiRequest(
       `/api/v1/system/notifications?${params.toString()}`,
-      paginatedSchema(notificationDeliveryDetailSchema)
+      paginatedSchema(notificationDeliveryDetailSchema),
     );
   },
   getChainStatus(signal?: AbortSignal) {
@@ -233,13 +244,18 @@ export const radarApi = {
   testWebhook() {
     return apiRequest(
       "/api/v1/system/webhook/test",
-      z.object({ success: z.boolean(), status_code: z.number().optional(), error: z.string().optional(), duration_ms: z.number().nullable().optional() }),
+      z.object({
+        success: z.boolean(),
+        status_code: z.number().optional(),
+        error: z.string().optional(),
+        duration_ms: z.number().nullable().optional(),
+      }),
       { method: "POST" },
     );
   },
   async downloadTruthDataset(format: "json" | "csv" = "json") {
     const response = await fetch(
-      `${API_URL}/api/v1/system/export/truth-dataset?format=${format}`,
+      `${RADAR_API_URL}/api/v1/system/export/truth-dataset?format=${format}`,
       { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
     );
     if (!response.ok) throw new ApiError(`Export failed (${response.status}).`, response.status);
@@ -260,25 +276,23 @@ export const radarApi = {
     return apiRequest("/api/v1/portfolio/positions", z.array(virtualPositionSchema), { signal });
   },
   getPortfolioEquityCurve(interval: string = "1d", signal?: AbortSignal) {
-    return apiRequest(`/api/v1/portfolio/equity-curve?interval=${interval}`, z.array(z.object({ timestamp: z.string(), value: z.number() })), { signal });
+    return apiRequest(
+      `/api/v1/portfolio/equity-curve?interval=${interval}`,
+      z.array(z.object({ timestamp: z.string(), value: z.number() })),
+      { signal },
+    );
   },
   optimizeWeights(horizonHours: number = 24, signal?: AbortSignal) {
     return apiRequest(
       `/api/v1/system/optimize-weights?horizon_hours=${horizonHours}`,
       gridSearchResponseSchema,
-      { method: "POST", signal }
+      { method: "POST", signal },
     );
   },
   applyWeights(weights: Record<string, number>) {
-    return apiRequest(
-      "/api/v1/system/apply-weights",
-      applyWeightsResponseSchema,
-      {
-        method: "POST",
-        body: JSON.stringify({ weights }),
-      }
-    );
+    return apiRequest("/api/v1/system/apply-weights", applyWeightsResponseSchema, {
+      method: "POST",
+      body: JSON.stringify({ weights }),
+    });
   },
 };
-
-

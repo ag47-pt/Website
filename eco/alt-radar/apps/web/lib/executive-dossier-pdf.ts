@@ -299,8 +299,8 @@ export function generateExecutiveReportPdf({
       </div>
       <div class="card">
         <div class="card-label">Variação 24h</div>
-        <div class="card-val ${isPositive ? 'val-positive' : 'val-negative'}">
-          ${isPositive ? '+' : ''}${Number(change24h).toFixed(2)}%
+        <div class="card-val ${isPositive ? "val-positive" : "val-negative"}">
+          ${isPositive ? "+" : ""}${Number(change24h).toFixed(2)}%
         </div>
       </div>
       <div class="card">
@@ -330,19 +330,19 @@ export function generateExecutiveReportPdf({
             </tr>
             <tr>
               <td>Confiança Estatística</td>
-              <td class="value">${score?.confidence ? Math.round(score.confidence * 100) + '%' : '94%'}</td>
+              <td class="value">${score?.confidence ? Math.round(score.confidence * 100) + "%" : "94%"}</td>
             </tr>
             <tr>
               <td>Score de Momentum</td>
-              <td class="value">${score?.momentum_score ? Number(score.momentum_score).toFixed(1) : '8.5'}/10</td>
+              <td class="value">${score?.momentum_score ? Number(score.momentum_score).toFixed(1) : "8.5"}/10</td>
             </tr>
             <tr>
               <td>Score de Liquidez</td>
-              <td class="value">${score?.liquidity_score ? Number(score.liquidity_score).toFixed(1) : '7.9'}/10</td>
+              <td class="value">${score?.liquidity_score ? Number(score.liquidity_score).toFixed(1) : "7.9"}/10</td>
             </tr>
             <tr>
               <td>Score de Segurança</td>
-              <td class="value">${score?.safety_score ? Number(score.safety_score).toFixed(1) : '9.1'}/10</td>
+              <td class="value">${score?.safety_score ? Number(score.safety_score).toFixed(1) : "9.1"}/10</td>
             </tr>
             <tr>
               <td>Versão do Scoring Engine</td>
@@ -362,7 +362,7 @@ export function generateExecutiveReportPdf({
           <tbody>
             <tr>
               <td>Status da Liquidez (LP)</td>
-              <td class="value" style="color: #10b981;">${risk?.liquidity_lock_status === 'locked' ? '🔒 Bloqueada / Queimada' : '⚠️ Desconhecido'}</td>
+              <td class="value" style="color: #10b981;">${risk?.liquidity_lock_status === "locked" ? "🔒 Bloqueada / Queimada" : "⚠️ Desconhecido"}</td>
             </tr>
             <tr>
               <td>Honeypot / Verificação de Código</td>
@@ -370,24 +370,24 @@ export function generateExecutiveReportPdf({
             </tr>
             <tr>
               <td>Autoridade de Mint</td>
-              <td class="value">${risk?.mintable === false ? '✓ Revogada (Seguro)' : '⚠️ Ativa'}</td>
+              <td class="value">${risk?.mintable === false ? "✓ Revogada (Seguro)" : "⚠️ Ativa"}</td>
             </tr>
             <tr>
               <td>Top 10 Holders Concentration</td>
-              <td class="value">${risk?.top_holders_percentage ? risk.top_holders_percentage + '%' : '18.4%'}</td>
+              <td class="value">${risk?.top_holders_percentage ? risk.top_holders_percentage + "%" : "18.4%"}</td>
             </tr>
             <tr>
               <td>Deployer Wallet Balance</td>
-              <td class="value">${risk?.deployer_percentage ? risk.deployer_percentage + '%' : '< 1.5%'}</td>
+              <td class="value">${risk?.deployer_percentage ? risk.deployer_percentage + "%" : "< 1.5%"}</td>
             </tr>
             <tr>
               <td>Holders Ativos Mapeados</td>
-              <td class="value">${holdersCount ? holdersCount.toLocaleString() : (risk?.holders_count ? risk.holders_count.toLocaleString() : 'N/D')}</td>
+              <td class="value">${holdersCount ? holdersCount.toLocaleString() : risk?.holders_count ? risk.holders_count.toLocaleString() : "N/D"}</td>
             </tr>
           </tbody>
         </table>
         <div style="margin-top: 10px; font-size: 9px; color: #a1a1aa;">
-          <strong>Avaliação de Risco:</strong> ${riskScore !== 'N/D' && Number(riskScore) <= 3 ? "Nível de risco baixo com proteções contratuais padrão validadas." : "Monitorar volatilidade inicial e movimentações de carteiras institucionais."}
+          <strong>Avaliação de Risco:</strong> ${riskScore !== "N/D" && Number(riskScore) <= 3 ? "Nível de risco baixo com proteções contratuais padrão validadas." : "Monitorar volatilidade inicial e movimentações de carteiras institucionais."}
         </div>
       </div>
     </div>

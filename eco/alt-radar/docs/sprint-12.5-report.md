@@ -1,5 +1,7 @@
 # Relatório do Sprint 12.5: Social Provider Pré-Produção
 
+> **Registro histórico:** as instruções de scheduler abaixo foram substituídas no Hardening 1 por Cloud Run Jobs externos. Consulte `acoes-do-dev.md` para o procedimento atual.
+
 Este relatório encerra a etapa de transição e pavimenta o caminho para a ativação do Radar de Altcoins em produção. A base de código está preparada para ingerir dados sociais no ambiente produtivo.
 
 ## Resumo das Modificações

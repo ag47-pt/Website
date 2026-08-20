@@ -1,6 +1,12 @@
 from datetime import UTC, datetime, timedelta
-import pytest
 
+import pytest
+from httpx import AsyncClient
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ag47_radar.models import ScoringWeights
+from ag47_radar.schemas import ScoringWeightsInput
 from ag47_radar.services.backtest import PricePoint, ScoreObservation
 from ag47_radar.services.optimization import (
     evaluate_weight_matrix,
@@ -47,3 +53,83 @@ def test_evaluate_weight_matrix():
     assert eval_res.win_rate == 1.0
     assert eval_res.profit_factor >= 1.0
     assert eval_res.mean_return_pct == 50.0
+
+
+VALID_WEIGHT_INPUT = {
+    "momentum_score": 3.0,
+    "liquidity_score": 2.0,
+    "community_score": 1.0,
+    "distribution_score": 1.0,
+    "safety_score": 2.0,
+    "data_quality_score": 1.0,
+}
+
+
+def test_apply_weights_schema_matches_scoring_engine_keys():
+    assert set(ScoringWeightsInput.model_fields) == set(WEIGHTS)
+
+
+@pytest.mark.asyncio
+async def test_apply_weights_normalizes_and_persists(
+    api_client: AsyncClient,
+    db_session: AsyncSession,
+):
+    baseline_weights = WEIGHTS.copy()
+
+    response = await api_client.post(
+        "/api/v1/system/apply-weights",
+        json={"weights": VALID_WEIGHT_INPUT},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert sum(data["active_weights"].values()) == pytest.approx(1.0)
+    assert data["active_weights"]["momentum_score"] == pytest.approx(0.3)
+    assert WEIGHTS == baseline_weights
+
+    persisted = await db_session.scalar(
+        select(ScoringWeights).order_by(ScoringWeights.calibrated_at.desc()).limit(1)
+    )
+    assert persisted is not None
+    assert persisted.weights_json == pytest.approx(data["active_weights"])
+    assert persisted.sample_count == 0
+    assert persisted.correlation is None
+
+
+@pytest.mark.asyncio
+async def test_apply_weights_normalizes_large_finite_values(api_client: AsyncClient):
+    response = await api_client.post(
+        "/api/v1/system/apply-weights",
+        json={"weights": {name: 1e308 for name in VALID_WEIGHT_INPUT}},
+    )
+
+    assert response.status_code == 200
+    assert sum(response.json()["active_weights"].values()) == pytest.approx(1.0)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "weights",
+    [
+        {name: 0.0 for name in VALID_WEIGHT_INPUT},
+        {**VALID_WEIGHT_INPUT, "momentum_score": -1.0},
+        {**VALID_WEIGHT_INPUT, "unknown_score": 1.0},
+        {name: value for name, value in VALID_WEIGHT_INPUT.items() if name != "safety_score"},
+        {**VALID_WEIGHT_INPUT, "momentum_score": "NaN"},
+    ],
+    ids=["zero-total", "negative", "unknown", "missing", "non-finite"],
+)
+async def test_apply_weights_rejects_invalid_payload_without_persisting(
+    api_client: AsyncClient,
+    db_session: AsyncSession,
+    weights: dict[str, object],
+):
+    response = await api_client.post(
+        "/api/v1/system/apply-weights",
+        json={"weights": weights},
+    )
+
+    assert response.status_code == 422
+    persisted_count = await db_session.scalar(select(func.count(ScoringWeights.id)))
+    assert persisted_count == 0

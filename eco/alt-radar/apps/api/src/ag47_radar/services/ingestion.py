@@ -1,16 +1,20 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import asyncio
+from dataclasses import dataclass, field, replace
+from datetime import datetime, timedelta
 from math import log10
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ag47_radar.config import Settings
+from ag47_radar.db import utc_now
 from ag47_radar.enums import AlertSeverity, AlertType, Chain, DataQuality
 from ag47_radar.errors import ProviderModeError
 from ag47_radar.models import (
     MarketSnapshot,
+    NotificationDelivery,
     OpportunityScore,
     Token,
     TokenEvent,
@@ -21,6 +25,10 @@ from ag47_radar.providers.registry import ProviderRegistry
 from ag47_radar.schemas import ScoreComponentsInput
 from ag47_radar.services.alerts import AlertCommand, create_alert_if_new, process_alert_rules
 from ag47_radar.services.events import generate_market_events
+from ag47_radar.services.outbox import (
+    NotificationChannel,
+    NotificationDispatchResult,
+)
 from ag47_radar.services.scoring import calculate_score, safety_from_risk
 from ag47_radar.services.signals import generate_signals
 
@@ -30,6 +38,135 @@ class IngestionSummary:
     discovered: int = 0
     persisted: int = 0
     partial_failures: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class ConfirmedAlert:
+    alert_id: str
+    symbol: str
+    signal_type: str
+    severity: float
+    confidence: float
+    pending_channels: tuple[NotificationChannel, ...] = ("telegram", "webhook_custom")
+
+
+@dataclass(slots=True)
+class NotificationBatchResult:
+    partial_failures: int = 0
+    pending_alerts: list[ConfirmedAlert] = field(default_factory=list)
+    next_attempt_at: datetime | None = None
+
+
+@dataclass(slots=True)
+class PreparedIngestion:
+    summary: IngestionSummary
+    confirmed_alerts: list[ConfirmedAlert]
+
+
+async def _dispatch_confirmed_alerts(
+    settings: Settings,
+    alerts: list[ConfirmedAlert],
+) -> NotificationBatchResult:
+    """Await every notification and report isolated dispatch errors."""
+
+    if not alerts:
+        return NotificationBatchResult()
+
+    from ag47_radar.db import get_session_factory
+    from ag47_radar.services.alerts import dispatch_telegram_alert_bg
+    from ag47_radar.services.webhooks import dispatch_webhook_alert_bg
+
+    session_factory = get_session_factory()
+    scheduled: list[
+        tuple[ConfirmedAlert, NotificationChannel, asyncio.Task[NotificationDispatchResult]]
+    ] = []
+    for alert in alerts:
+        async with session_factory() as session:
+            successful_channels = set(
+                (
+                    await session.scalars(
+                        select(NotificationDelivery.channel).where(
+                            NotificationDelivery.alert_id == alert.alert_id,
+                            NotificationDelivery.status == "success",
+                        )
+                    )
+                ).all()
+            )
+        for channel in alert.pending_channels:
+            if channel in successful_channels:
+                continue
+            if channel == "telegram":
+                task = asyncio.create_task(
+                    dispatch_telegram_alert_bg(
+                        session_factory,
+                        settings,
+                        alert.alert_id,
+                        alert.symbol,
+                        alert.signal_type,
+                        alert.severity,
+                        alert.confidence,
+                    )
+                )
+            else:
+                task = asyncio.create_task(
+                    dispatch_webhook_alert_bg(
+                        session_factory,
+                        settings,
+                        alert.alert_id,
+                        alert.symbol,
+                        alert.signal_type,
+                        alert.severity,
+                        alert.confidence,
+                    )
+                )
+            scheduled.append((alert, channel, task))
+
+    results = await asyncio.gather(
+        *(task for _, _, task in scheduled),
+        return_exceptions=True,
+    )
+    pending_channels: dict[str, list[NotificationChannel]] = {}
+    partial_failures = 0
+    next_attempt_at: datetime | None = None
+
+    def retain_channel(
+        alert: ConfirmedAlert,
+        channel: NotificationChannel,
+        retry_at: datetime | None,
+    ) -> None:
+        nonlocal next_attempt_at
+        pending_channels.setdefault(alert.alert_id, []).append(channel)
+        candidate = retry_at or (utc_now() + timedelta(seconds=1))
+        if next_attempt_at is None or candidate < next_attempt_at:
+            next_attempt_at = candidate
+
+    for (alert, channel, _), result in zip(scheduled, results, strict=True):
+        if isinstance(result, Exception):
+            partial_failures += 1
+            retain_channel(alert, channel, None)
+        elif isinstance(result, BaseException):
+            raise result
+        elif not isinstance(result, NotificationDispatchResult) or result.channel != channel:
+            partial_failures += 1
+            retain_channel(alert, channel, None)
+        elif result.status == "failed":
+            partial_failures += 1
+            retain_channel(alert, channel, result.next_attempt_at)
+        elif result.status == "deferred":
+            retain_channel(alert, channel, result.next_attempt_at)
+        elif result.status == "dead":
+            partial_failures += 1
+
+    remaining_alerts = [
+        replace(alert, pending_channels=tuple(pending_channels[alert.alert_id]))
+        for alert in alerts
+        if alert.alert_id in pending_channels
+    ]
+    return NotificationBatchResult(
+        partial_failures=partial_failures,
+        pending_alerts=remaining_alerts,
+        next_attempt_at=next_attempt_at,
+    )
 
 
 def _momentum_score(change_1h: float | None, volume_1h: float | None) -> float | None:
@@ -46,19 +183,19 @@ def _liquidity_score(liquidity_usd: float | None) -> float | None:
     return round(min(10, max(0, (log10(max(1, liquidity_usd)) - 3) * 3.2)), 2)
 
 
-async def run_ingestion_cycle(
+async def prepare_ingestion_cycle(
     session: AsyncSession,
     settings: Settings,
     providers: ProviderRegistry,
     *,
     limit: int = 10,
-) -> IngestionSummary:
-    """Discover and persist only real data; demo fallback is deliberately forbidden here."""
+) -> PreparedIngestion:
+    """Prepare real ingestion effects without deciding the transaction boundary."""
 
     if settings.demo_mode:
         raise ProviderModeError("Real ingestion is disabled while demo mode is active")
 
-    confirmed_alerts_to_dispatch = []
+    confirmed_alerts_to_dispatch: list[ConfirmedAlert] = []
 
     from sqlalchemy import func
 
@@ -209,14 +346,18 @@ async def run_ingestion_cycle(
                             for a in new_alerts:
                                 if a.confidence_level == "confirmado":
                                     confirmed_alerts_to_dispatch.append(
-                                        (
-                                            a.id,
-                                            token.symbol,
-                                            sig.signal_type,
-                                            float(a.severity) if a.severity is not None else 0.0,
-                                            float(a.confidence)
-                                            if a.confidence is not None
-                                            else 0.0,
+                                        ConfirmedAlert(
+                                            alert_id=a.id,
+                                            symbol=token.symbol,
+                                            signal_type=sig.signal_type,
+                                            severity=(
+                                                float(a.severity) if a.severity is not None else 0.0
+                                            ),
+                                            confidence=(
+                                                float(a.confidence)
+                                                if a.confidence is not None
+                                                else 0.0
+                                            ),
                                         )
                                     )
 
@@ -291,38 +432,33 @@ async def run_ingestion_cycle(
 
     await run_truth_engine(session)
 
+    return PreparedIngestion(
+        summary=summary,
+        confirmed_alerts=confirmed_alerts_to_dispatch,
+    )
+
+
+async def run_ingestion_cycle(
+    session: AsyncSession,
+    settings: Settings,
+    providers: ProviderRegistry,
+    *,
+    limit: int = 10,
+) -> IngestionSummary:
+    """Discover and persist only real data; demo fallback is deliberately forbidden here."""
+
+    prepared = await prepare_ingestion_cycle(
+        session,
+        settings,
+        providers,
+        limit=limit,
+    )
     await session.commit()
 
-    if confirmed_alerts_to_dispatch:
-        import asyncio
+    notification_result = await _dispatch_confirmed_alerts(
+        settings,
+        prepared.confirmed_alerts,
+    )
+    prepared.summary.partial_failures += notification_result.partial_failures
 
-        from ag47_radar.db import get_session_factory
-        from ag47_radar.services.alerts import dispatch_telegram_alert_bg
-        from ag47_radar.services.webhooks import dispatch_webhook_alert_bg
-
-        session_factory = get_session_factory()
-        for alert_id, symbol, sig_type, severity, confidence in confirmed_alerts_to_dispatch:
-            asyncio.create_task(
-                dispatch_telegram_alert_bg(
-                    session_factory,
-                    settings,
-                    alert_id,
-                    symbol,
-                    sig_type,
-                    severity,
-                    confidence,
-                )
-            )
-            asyncio.create_task(
-                dispatch_webhook_alert_bg(
-                    session_factory,
-                    settings,
-                    alert_id,
-                    symbol,
-                    sig_type,
-                    severity,
-                    confidence,
-                )
-            )
-
-    return summary
+    return prepared.summary
