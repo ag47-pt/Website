@@ -6,6 +6,7 @@ import pytest
 
 from ag47_radar.config import Settings
 from ag47_radar.enums import Chain
+from ag47_radar.providers.dexscreener import DexScreenerMarketProvider
 from ag47_radar.providers.holders import (
     EtherscanHolderProvider,
     HeliusHolderProvider,
@@ -24,6 +25,58 @@ def settings():
         telegram_chat_id="test_chat_id",
         helius_api_key="test_helius_key",
     )
+
+
+@pytest.mark.asyncio
+async def test_dexscreener_marks_unpersistable_price_changes_unknown(settings):
+    provider = DexScreenerMarketProvider(settings)
+    try:
+        outlier_pair = provider._normalize_pair(
+            {
+                "chainId": "bsc",
+                "pairAddress": "0xpair",
+                "baseToken": {
+                    "address": "0xtoken",
+                    "name": "Token",
+                    "symbol": "TKN",
+                },
+                "quoteToken": {"symbol": "USDC"},
+                "priceChange": {
+                    "m5": "41.04",
+                    "h1": "5880436780429",
+                    "h24": "Infinity",
+                },
+            }
+        )
+        boundary_pair = provider._normalize_pair(
+            {
+                "chainId": "bsc",
+                "pairAddress": "0xboundary",
+                "baseToken": {
+                    "address": "0xboundarytoken",
+                    "name": "Boundary Token",
+                    "symbol": "BOUND",
+                },
+                "quoteToken": {"symbol": "USDC"},
+                "priceChange": {
+                    "m5": "99999999.9999",
+                    "h1": "100000000",
+                    "h24": "-100000000",
+                },
+            }
+        )
+    finally:
+        await provider.close()
+
+    assert outlier_pair is not None
+    assert outlier_pair.price_change_5m == 41.04
+    assert outlier_pair.price_change_1h is None
+    assert outlier_pair.price_change_24h is None
+
+    assert boundary_pair is not None
+    assert boundary_pair.price_change_5m == 99_999_999.9999
+    assert boundary_pair.price_change_1h is None
+    assert boundary_pair.price_change_24h is None
 
 
 @pytest.mark.asyncio

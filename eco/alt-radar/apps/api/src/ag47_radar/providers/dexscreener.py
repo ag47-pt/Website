@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from math import isfinite
 from time import perf_counter
 from typing import Any, ClassVar
 
@@ -21,6 +22,7 @@ class DexScreenerMarketProvider(MarketDataProvider):
     provider_id = "dexscreener"
     mode = SourceMode.REAL
     base_url = "https://api.dexscreener.com"
+    max_persistable_price_change: ClassVar[float] = 99_999_999.9999
     chain_ids: ClassVar[dict[Chain, str]] = {
         Chain.BSC: "bsc",
         Chain.SOLANA: "solana",
@@ -160,9 +162,9 @@ class DexScreenerMarketProvider(MarketDataProvider):
             volume_5m=self._optional_float(volume.get("m5")),
             volume_1h=self._optional_float(volume.get("h1")),
             volume_24h=self._optional_float(volume.get("h24")),
-            price_change_5m=self._optional_float(changes.get("m5")),
-            price_change_1h=self._optional_float(changes.get("h1")),
-            price_change_24h=self._optional_float(changes.get("h24")),
+            price_change_5m=self._optional_price_change(changes.get("m5")),
+            price_change_1h=self._optional_price_change(changes.get("h1")),
+            price_change_24h=self._optional_price_change(changes.get("h24")),
             market_cap=self._optional_float(raw.get("marketCap")),
             fdv=self._optional_float(raw.get("fdv")),
             buyers=self._optional_int(txns_h1.get("buys")),
@@ -175,6 +177,13 @@ class DexScreenerMarketProvider(MarketDataProvider):
             return float(value) if value is not None else None
         except (TypeError, ValueError):
             return None
+
+    @classmethod
+    def _optional_price_change(cls, value: Any) -> float | None:
+        parsed = cls._optional_float(value)
+        if parsed is None or not isfinite(parsed) or abs(parsed) > cls.max_persistable_price_change:
+            return None
+        return parsed
 
     @staticmethod
     def _optional_int(value: Any) -> int | None:
