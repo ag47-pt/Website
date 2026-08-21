@@ -32,6 +32,13 @@ def test_confidence_calculation():
     assert conf_zero < Decimal("50.0")
 
 
+def test_global_knowledge_confidence_column_supports_percentages():
+    confidence_column = GlobalKnowledge.__table__.c.historical_confidence
+
+    assert confidence_column.type.precision == 7
+    assert confidence_column.type.scale == 4
+
+
 def test_infer_hypotheses():
     s1 = TokenSignal(
         id="sig1",

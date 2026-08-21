@@ -118,6 +118,22 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
 
+      - name: Pause existing worker schedules during deployment
+        shell: bash
+        run: |
+          for scheduler_name in "${INGESTION_SCHEDULER_NAME}" "${CALIBRATION_SCHEDULER_NAME}"
+          do
+            scheduler_state="$(gcloud scheduler jobs describe "${scheduler_name}" \
+              --location="${REGION}" \
+              --project="${PROJECT_ID}" \
+              --format='value(state)' 2>/dev/null || true)"
+            if [ -n "${scheduler_state}" ] && [ "${scheduler_state}" != "PAUSED" ]; then
+              gcloud scheduler jobs pause "${scheduler_name}" \
+                --location="${REGION}" \
+                --project="${PROJECT_ID}"
+            fi
+          done
+
       - name: Build reproducible non-secret runtime configuration
         shell: bash
         env:
@@ -249,6 +265,14 @@ jobs:
           deploy_worker_job "${INGESTION_JOB_NAME}" "worker,ingest,--limit,10" "${ingestion_secret_bindings}"
           deploy_worker_job "${CALIBRATION_JOB_NAME}" "worker,calibrate" "${database_secret_binding}"
 
+      - name: Smoke-test singleton ingestion before promotion
+        shell: bash
+        run: |
+          gcloud run jobs execute "${INGESTION_JOB_NAME}" \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --wait
+
       - name: Grant the scheduler permission to execute both worker jobs
         shell: bash
         env:
@@ -303,6 +327,25 @@ jobs:
             --region="${REGION}" \
             --project="${PROJECT_ID}" \
             --to-latest
+
+      - name: Resume worker schedules after successful promotion
+        shell: bash
+        run: |
+          for scheduler_name in "${INGESTION_SCHEDULER_NAME}" "${CALIBRATION_SCHEDULER_NAME}"
+          do
+            scheduler_state="$(gcloud scheduler jobs describe "${scheduler_name}" \
+              --location="${REGION}" \
+              --project="${PROJECT_ID}" \
+              --format='value(state)')"
+            if [ "${scheduler_state}" = "PAUSED" ]; then
+              gcloud scheduler jobs resume "${scheduler_name}" \
+                --location="${REGION}" \
+                --project="${PROJECT_ID}"
+            elif [ "${scheduler_state}" != "ENABLED" ]; then
+              echo "Unexpected scheduler state for ${scheduler_name}: ${scheduler_state}" >&2
+              exit 1
+            fi
+          done
 
       - name: Verify deployed API, jobs, and schedules
         shell: bash

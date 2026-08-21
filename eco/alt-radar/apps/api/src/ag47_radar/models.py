@@ -543,7 +543,7 @@ class GlobalKnowledge(Base):
     success_count: Mapped[int] = mapped_column(Integer, default=0)
     failure_count: Mapped[int] = mapped_column(Integer, default=0)
     neutral_count: Mapped[int] = mapped_column(Integer, default=0)
-    historical_confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4), default=Decimal("0.0000"))
+    historical_confidence: Mapped[Decimal] = mapped_column(Numeric(7, 4), default=Decimal("0.0000"))
     validation_window: Mapped[str] = mapped_column(String(20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
