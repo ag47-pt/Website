@@ -49,11 +49,15 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
+            package-lock.json
             eco/alt-radar/package-lock.json
             eco/alt-radar/apps/web/package-lock.json
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           version: "0.12.5"
+      - name: Install host integration dependencies
+        run: npm ci
+        working-directory: ${{ github.workspace }}
       - run: npm ci
       - run: npm --prefix apps/web ci
       - run: uv sync --project apps/api --extra dev --frozen
