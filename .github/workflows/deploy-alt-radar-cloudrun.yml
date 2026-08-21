@@ -98,9 +98,7 @@ jobs:
             RADAR_DATABASE_SECRET \
             RADAR_OPERATOR_KEY_SECRET \
             RADAR_ADMIN_KEY_SECRET \
-            RADAR_CORS_ORIGINS \
-            RADAR_TRUSTED_PROXY_CIDRS \
-            RADAR_WEBHOOK_ALLOWED_HOSTS
+            RADAR_CORS_ORIGINS
           do
             if [ -z "${!variable_name}" ]; then
               echo "Missing required production configuration: ${variable_name}" >&2
