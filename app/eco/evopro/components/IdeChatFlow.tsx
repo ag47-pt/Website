@@ -1,122 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useTheme } from '@/context/ThemeContext';
-import { 
-  MessageSquare, 
-  Copy, 
-  Check, 
-  Terminal, 
-  ArrowRight, 
-  Bot, 
-  Sparkles,
-  Layers,
-  ShieldCheck
-} from 'lucide-react';
+import React,{useState} from 'react';
+import {motion} from 'framer-motion';
+import {useTheme} from '@/context/ThemeContext';
+import {MessageSquare,Copy,Check,Bot,ShieldCheck,BrainCircuit,Route,Terminal,UserRound,ChevronDown} from 'lucide-react';
 
-export function IdeChatFlow() {
-  const { theme } = useTheme();
-  const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
-
-  const prompts = [
-    {
-      title: '01. Reconhecimento Inicial e Continuidade',
-      desc: 'Instrução para um agente que acaba de abrir o repositório a frio.',
-      prompt: `Lê o ficheiro .evolution/CONTINUITY.md e o .evolution/goal/global-goal.json neste repositório.
-Reconstrói o estado atual do host, identifica o sprint ativo e explica qual é a única próxima ação recomendada pelo protocolo.`
-    },
-    {
-      title: '02. Execução de Pedido Cognitivo (03_cognitive_request)',
-      desc: 'Instrução para o agente inspecionar a demanda pendente do ciclo e propor código.',
-      prompt: `Inspeciona o ficheiro .evolution/runtime/active-task/03_cognitive_request.json.
-Formula a mutação necessária para satisfazer os critérios do sprint ativo e grava a proposta em .evolution/runtime/active-task/03_proposed_changeset.json.
-Em seguida, executa "evolution tick" para avançar a validação determinística.`
-    },
-    {
-      title: '03. Correção de Findings do Gauntlet',
-      desc: 'Instrução após um veredito REVISE do Judge.',
-      prompt: `O Judge emitiu um veredito REVISE. Lê o relatório em .evolution/runtime/gauntlet/report.json e a comparação de baseline em .evolution/runtime/baselines/comparison.json.
-Corrige os findings pontados pelos críticos sem violar os caminhos protegidos do host_contract.`
-    }
-  ];
-
-  const handleCopy = (text: string, idx: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedPrompt(idx);
-    setTimeout(() => setCopiedPrompt(null), 2000);
-  };
-
-  return (
-    <section id="ide-chat" className="py-16 md:py-24 border-t border-white/5 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-4">
-            <MessageSquare className="w-3.5 h-3.5" />
-            INTEGRAÇÃO COM CODING AGENTS
-          </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Como Usar no Chat da sua IDE
-          </h2>
-          <p className="text-zinc-400 text-sm sm:text-base font-sans">
-            Abra o seu repositório no <strong>Claude Code, Codex, Antigravity, VS Code ou Cursor</strong> e utilize prompts padronizados para interagir com o kernel.
-          </p>
-        </div>
-
-        {/* Prompts Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-xs mb-12">
-          {prompts.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.05 }}
-              className="p-6 rounded-3xl bg-zinc-950/80 border border-zinc-800 backdrop-blur-xl flex flex-col justify-between shadow-xl"
-            >
-              <div>
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                  <div className="flex items-center gap-2">
-                    <Bot className="w-4 h-4 text-purple-400" />
-                    <span className="font-bold text-white text-xs">{item.title}</span>
-                  </div>
-                  <button
-                    onClick={() => handleCopy(item.prompt, idx)}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-[11px] border border-zinc-700/60 transition-all cursor-pointer"
-                  >
-                    {copiedPrompt === idx ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedPrompt === idx ? 'Copiado' : 'Copiar'}</span>
-                  </button>
-                </div>
-
-                <p className="text-[11px] text-zinc-400 font-sans leading-relaxed mb-4">
-                  {item.desc}
-                </p>
-
-                <div className="p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-zinc-300 leading-relaxed font-mono whitespace-pre-wrap">
-                  {item.prompt}
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-zinc-800/80 text-[10px] text-zinc-500 flex items-center justify-between">
-                <span>Contrato: .evolution/runtime/</span>
-                <span className="text-purple-400">Prompt validado</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Permissões Requeridas Callout */}
-        <div className="p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 font-mono text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-            <span>
-              <strong>Requisitos de Execução:</strong> O agente de IA precisa de permissões de leitura/escrita no filesystem do host e acesso ao terminal para executar os comandos <code className="text-zinc-300">evolution</code>.
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+export function IdeChatFlow(){const{theme}=useTheme();const[copied,setCopied]=useState<number|null>(null);const intents=[
+{title:'Entender o estado',text:'Analise este repositório e me diga onde estamos, quais são os riscos relevantes e qual é a próxima prioridade.'},
+{title:'Continuar o trabalho',text:'Continue o trabalho do EvoPro a partir do estado atual, respeitando memória, contratos e decisões existentes.'},
+{title:'Avaliar uma mudança',text:'Quero implementar esta mudança. Avalie impacto, contexto necessário e riscos antes de propor execução.'}
+];const copy=(t:string,i:number)=>{navigator.clipboard.writeText(t);setCopied(i);setTimeout(()=>setCopied(null),2000)};
+const internal=['Detecta estado do host','Adota / recupera memória','Classifica a intenção','Roteia contexto mínimo','Consulta riscos e governança','Seleciona workflow / skill','Usa ferramentas necessárias','Explica evidência e próxima ação'];
+return <section id="ide-chat" className="py-20 md:py-28 border-t border-white/5 relative"><div className="max-w-7xl mx-auto px-4 sm:px-6">
+<div className="text-center max-w-4xl mx-auto mb-14"><div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-4"><MessageSquare className="w-3.5 h-3.5"/>IDE · AGENT INTERFACE</div><h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">Fale com o objetivo.<br/><span className="text-zinc-500">Não com a implementação do protocolo.</span></h2><p className="text-zinc-400 text-sm sm:text-base leading-relaxed">Você não deveria precisar saber que arquivo contém o estado ativo, qual comando avança um ciclo ou onde mora um relatório. Isso é contexto operacional do agente, não carga cognitiva do usuário.</p></div>
+<div className="grid lg:grid-cols-[.9fr_1.1fr] gap-6 mb-10"><div className="space-y-3">{intents.map((x,i)=><motion.div key={x.title} initial={{opacity:0,x:-10}} whileInView={{opacity:1,x:0}} viewport={{once:true}} transition={{delay:i*.06}} className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5"><div className="flex justify-between gap-4 mb-3"><div className="flex items-center gap-2"><UserRound className="w-4 h-4 text-purple-400"/><span className="text-xs font-mono font-bold text-white">{x.title}</span></div><button onClick={()=>copy(x.text,i)} className="text-[11px] text-zinc-500 hover:text-white flex items-center gap-1 cursor-pointer">{copied===i?<Check className="w-3 h-3 text-emerald-400"/>:<Copy className="w-3 h-3"/>}{copied===i?'Copiado':'Copiar'}</button></div><p className="text-sm leading-relaxed text-zinc-300">“{x.text}”</p></motion.div>)}</div>
+<div className="rounded-3xl border border-emerald-500/15 bg-black/70 p-6"><div className="flex items-center gap-2 pb-4 mb-5 border-b border-zinc-800"><BrainCircuit className="w-5 h-5" style={{color:theme.colors.primary}}/><div><div className="font-bold text-white text-sm">EvoPro Agent</div><div className="text-[10px] font-mono text-zinc-600">INTERNAL ORCHESTRATION · NOT USER BURDEN</div></div></div><div className="grid sm:grid-cols-2 gap-2">{internal.map((x,i)=><div key={x} className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/45 px-3 py-2.5 text-xs text-zinc-400"><span className="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center font-mono text-[9px] text-zinc-500">{String(i+1).padStart(2,'0')}</span>{x}</div>)}</div><div className="mt-5 rounded-xl bg-emerald-500/[.04] border border-emerald-500/15 p-3 text-xs text-zinc-400"><span className="text-emerald-400 font-mono">result › </span>Resposta humana estruturada + evidência + risco + próxima tarefa recomendada.</div></div></div>
+<div className="grid md:grid-cols-3 gap-4 mb-8"><div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-950/60"><Route className="w-4 h-4 text-cyan-400 mb-3"/><h3 className="text-sm font-bold text-white mb-1">Paths são internos</h3><p className="text-xs text-zinc-500 leading-relaxed">O agente resolve quais artefatos .evolution precisa consultar.</p></div><div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-950/60"><Terminal className="w-4 h-4 text-amber-400 mb-3"/><h3 className="text-sm font-bold text-white mb-1">Shell é responsabilidade do agente</h3><p className="text-xs text-zinc-500 leading-relaxed">Bash, PowerShell, Git, testes e CLI são escolhidos conforme ambiente e capacidade.</p></div><div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-950/60"><ShieldCheck className="w-4 h-4 text-emerald-400 mb-3"/><h3 className="text-sm font-bold text-white mb-1">Humano mantém autoridade</h3><p className="text-xs text-zinc-500 leading-relaxed">Ambiguidade material, decisões críticas ou limites de permissão são escalados.</p></div></div>
+<details className="group rounded-2xl border border-zinc-800 bg-zinc-950/50"><summary className="cursor-pointer list-none p-5 flex items-center justify-between gap-4"><div className="flex items-center gap-3"><Bot className="w-4 h-4 text-zinc-500"/><div><div className="text-sm font-bold text-zinc-300">E os comandos manuais?</div><div className="text-xs text-zinc-600 mt-1">Continuam disponíveis para debugging, CI e operadores avançados.</div></div></div><ChevronDown className="w-4 h-4 text-zinc-600 group-open:rotate-180 transition-transform"/></summary><div className="px-5 pb-5 pt-0 text-xs text-zinc-500 border-t border-zinc-800/60"><p className="pt-4">A interface Agent-first não remove a CLI. Ela remove a obrigação de o usuário conhecer a CLI para operar o EvoPro. A referência completa permanece na seção <strong className="text-zinc-300">Advanced CLI</strong>.</p></div></details>
+</div></section>}
