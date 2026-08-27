@@ -61,3 +61,23 @@ export const CODE_GRAPH_BENCHMARK={repository:'ag47-evolution-protocol',language
 
 export const CLI_COMMANDS:CliCommand[]=[
 {command:'evolution doctor',category:'verification',description:'Verifica instalação e ambiente.'},{command:'evolution second-brain init',category:'bootstrap',description:'Inicia ou retoma bootstrap cognitivo.'},{command:'evolution second-brain assess',category:'intelligence',description:'Avalia saúde e próxima ação cognitiva.'},{command:'evolution second-brain adopt-memory --memory evolution',category:'intelligence',description:'Adota memória canônica existente read-only.'},{command:'evolution second-brain route "<task intent>"',category:'intelligence',description:'Constrói contexto limitado para uma intenção.'},{command:'evolution second-brain pilot-compare --gold evolution',category:'audit',description:'Compara cognição gerada contra gold standard humano.'},{command:'evolution goal set "<objective>"',category:'goal_sprint',description:'Define Global Goal verificável.'},{command:'evolution run --mode goal-driven',category:'lifecycle',description:'Executa evolução orientada ao Goal.'},{command:'evolution audit',category:'audit',description:'Executa auditoria do estado governado.'}];
+
+export const CONTINUITY_QUESTIONS=[
+{q:'WHO AM I?',a:'Versão do protocolo, identidade AG47.pt / EvoPro e capacidades disponíveis.'},
+{q:'WHAT IS THIS HOST?',a:'Arquitetura, stack, domínios, boundaries e fontes primárias do repositório.'},
+{q:'WHAT MEMORY EXISTS?',a:'Memória cognitiva construída pelo EvoPro ou memória canônica existente adotada read-only.'},
+{q:'WHAT HAS ALREADY HAPPENED?',a:'Decisões, riscos, histórico semântico, sprints, ciclos e evidências persistidas.'},
+{q:'WHAT IS THE CURRENT STATE?',a:'CURRENT separado de TARGET, saúde, gates e limitações conhecidas.'},
+{q:'WHAT IS RELEVANT NOW?',a:'Context Router seleciona domínios, contratos, riscos, decisões e evidências para a intenção atual.'},
+{q:'WHAT IS BLOCKED?',a:'Guardrails, riscos, capacidade ausente e decisões que exigem autoridade humana.'},
+{q:'WHAT SHOULD HAPPEN NEXT?',a:'Uma ação recomendada com razão, impacto esperado e forma de validação.'}
+];
+
+export const USE_CASES=[
+{title:'Repositórios existentes',icon:'Layers',desc:'Adota memória existente, reconcilia documentação com código e orienta evolução sem recomeçar o contexto do zero.'},
+{title:'Sessões longas com coding agents',icon:'Cpu',desc:'Mantém continuidade, riscos, contratos e decisões disponíveis entre LLMs e sessões.'},
+{title:'Mudanças arquiteturais',icon:'GitCompare',desc:'Roteia contexto, estima impacto, preserva boundaries e exige validação proporcional ao blast radius.'},
+{title:'Evolução governada',icon:'FlaskConical',desc:'Transforma objetivos verificáveis em sprints, baseline A/B, Gauntlet, Judge e aprendizagem persistente.'},
+{title:'Troca de harness ou modelo',icon:'Sparkles',desc:'Permite substituir Codex, Claude, Gemini ou outras LLMs sem perder a memória operacional do projeto.'},
+{title:'Auditoria e risco contínuo',icon:'ShieldCheck',desc:'Mantém fragilidades, dívida técnica, vulnerabilidades e gaps visíveis em vez de enterrados em chats.'}
+];
