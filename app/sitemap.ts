@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { services } from '@/data/services'
+import { PUBLIC_PRESENTATIONS } from '@/app/labs/liveskills/lib/registry'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const servicePages = services.map((s) => ({
@@ -7,6 +8,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
+  }))
+
+  const liveSkillPages = PUBLIC_PRESENTATIONS.map((presentation) => ({
+    url: `https://ag47.pt/labs/liveskills/${presentation.slug}`,
+    lastModified: new Date(presentation.metadata.updatedAt),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
   }))
 
   return [
@@ -34,6 +42,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.95,
     },
+    {
+      url: 'https://ag47.pt/labs/liveskills',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    ...liveSkillPages,
     ...servicePages,
   ]
 }

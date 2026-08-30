@@ -15,6 +15,7 @@ import {
   Network,
   Globe2,
   LayoutGrid,
+  BadgeCheck,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -45,6 +46,20 @@ export interface SitemapItem {
 }
 
 export const LABS_CORE_ITEMS: SitemapItem[] = [
+  {
+    id: 'liveskills',
+    title: 'LiveSkills',
+    shortName: 'LIVESKILLS',
+    description: 'Motor de apresentações orientado a evidência: capacidades, projetos e provas reais convertidos em páginas personalizadas por oportunidade.',
+    icon: BadgeCheck,
+    path: '/labs/liveskills',
+    status: 'NEW_RELEASE',
+    category: 'labs_core',
+    nodeId: 'NODE_0x47_LIVESKILLS',
+    releaseDate: 'Agosto 2026',
+    techStack: ['Next.js 16', 'React 19', 'TypeScript', 'Evidence Graph'],
+    features: ['Grafo de evidência com nível de confiança explícito', 'Matriz requisito → capacidade → prova', 'Rota dinâmica: uma apresentação por oportunidade'],
+  },
   {
     id: 'pitch-deck-library',
     title: 'Pitch Deck Library',
