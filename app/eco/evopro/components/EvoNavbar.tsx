@@ -16,7 +16,12 @@ import {
   X,
   Compass,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BrainCircuit,
+  Activity,
+  ShieldCheck,
+  Search,
+  MessageSquare
 } from 'lucide-react';
 
 function GithubIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
@@ -49,26 +54,25 @@ export function EvoNavbar({ activeSection }: EvoNavbarProps) {
 
   const navLinks = [
     { id: 'overview', label: 'Visão Geral', icon: Compass },
+    { id: 'cognitive-architecture', label: 'Second Brain & Memória', icon: BrainCircuit },
+    { id: 'context-routing', label: 'Context Router', icon: Search },
+    { id: 'agent-first', label: 'Agent-First Workflow', icon: MessageSquare },
+    { id: 'telemetry', label: 'Telemetria & Amortização', icon: Activity },
+    { id: 'real-host', label: 'Host Real (AG Menu)', icon: ShieldCheck },
     { id: 'problem', label: 'Comparativo', icon: Layers },
     { id: 'lifecycle', label: 'Ciclo 10 Etapas', icon: Layers },
     { id: 'baseline', label: 'Baseline & Judge', icon: ShieldAlert },
     { id: 'gauntlet', label: 'Gauntlet Critics', icon: ShieldAlert },
     { id: 'goal', label: 'Global Goal', icon: Compass },
-    { id: 'architecture', label: 'Arquitetura Core', icon: GitBranch },
-    { id: 'host-model', label: 'Host Model', icon: GitBranch },
-    { id: 'harnesses', label: 'Harness Agnostic', icon: Terminal },
-    { id: 'continuity', label: 'Continuity Flow', icon: Play },
     { id: 'modes', label: 'Modos de Execução', icon: Terminal },
-    { id: 'graph', label: 'Graph Intel', icon: Terminal },
+    { id: 'graph', label: 'Graph Intel AST', icon: GitBranch },
     { id: 'quickstart', label: 'Quick Start', icon: Play },
     { id: 'terminal-demo', label: 'Terminal Interativo', icon: Terminal },
-    { id: 'ide-chat', label: 'IDE Chat Flow', icon: BookOpen },
     { id: 'cli', label: 'CLI Reference', icon: BookOpen },
-    { id: 'capabilities', label: 'Matriz de Capacidades', icon: Layers },
+    { id: 'capabilities', label: 'Capacidades & Evidências', icon: Layers },
     { id: 'guardrails', label: 'Guardrails', icon: ShieldAlert },
-    { id: 'observability', label: 'Auditoria & Ledger', icon: BookOpen },
+    { id: 'status', label: 'Status & Roadmap', icon: Activity },
     { id: 'use-cases', label: 'Casos de Uso', icon: Compass },
-    { id: 'status', label: 'Status & Roadmap', icon: Layers },
     { id: 'ecosystem', label: 'Ecossistema AG47', icon: GitBranch }
   ];
 

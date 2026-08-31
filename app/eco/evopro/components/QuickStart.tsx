@@ -12,7 +12,9 @@ import {
   ArrowRight, 
   CheckCircle2,
   Sparkles,
-  Download
+  Download,
+  BrainCircuit,
+  MessageSquare
 } from 'lucide-react';
 
 export function QuickStart() {
@@ -22,38 +24,38 @@ export function QuickStart() {
   const steps = [
     {
       num: '01',
-      title: 'Instalar o Protocolo',
-      desc: 'Instale o pacote EvoPro via pip diretamente do repositório oficial.',
+      title: 'Instalar o Pacote EvoPro',
+      desc: 'Instale o kernel via pip diretamente a partir do repositório oficial.',
       cmd: 'pip install git+https://github.com/ag47-pt/ag47-evolution-protocol.git'
     },
     {
       num: '02',
       title: 'Verificar Saúde do Ambiente',
-      desc: 'Valide a instalação, integridade dos schemas JSON e dependências.',
+      desc: 'Valide a instalação, schemas JSON vinculados e disponibilidade de AST.',
       cmd: 'evolution doctor'
     },
     {
       num: '03',
-      title: 'Inicializar o Host',
-      desc: 'Navegue para o seu projeto e inicialize a árvore .evolution/ e o contrato.',
-      cmd: 'evolution init'
+      title: 'Iniciação do Second Brain',
+      desc: 'Inicialize o Second Brain para descobrir contratos e adotar memória soberana (evolution/).',
+      cmd: 'evolution second-brain init'
     },
     {
       num: '04',
-      title: 'Diagnosticar e Mapear Realidade',
-      desc: 'Execute o Observer e o spec engine para mapear arquivos, gaps e scope.',
-      cmd: 'evolution inspect && evolution spec --regenerate'
+      title: 'Interagir por Intenção no Chat',
+      desc: 'Abra a IDE e forneça uma intenção em linguagem natural sem memorizar comandos.',
+      cmd: '"Analise este repositório e determine a próxima prioridade arquitetural."'
     },
     {
       num: '05',
-      title: 'Definir o Global Goal',
-      desc: 'Estabeleça o objetivo mensurável com critérios verificáveis derivados do host.',
-      cmd: 'evolution goal set "Construir a primeira versão estável deste serviço"'
+      title: 'Roteamento Contextual Delimitado',
+      desc: 'O Context Router prepara índices e entrega o pacote estritamente relevante.',
+      cmd: 'evolution second-brain route "corrigir permissões de funcionários"'
     },
     {
       num: '06',
-      title: 'Iniciar Evolução Governada',
-      desc: 'Execute o loop no modo desejado a partir do terminal ou do seu agente de IA.',
+      title: 'Evolução Governada e Validação',
+      desc: 'Execute mutações com isolamento, baselines A/B e vereditos determinísticos do Judge.',
       cmd: 'evolution run --mode goal-driven'
     }
   ];
@@ -75,9 +77,7 @@ export function QuickStart() {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.08);
-    } catch {
-      // Ignora silenciosamente se o navegador proibir áudio automático
-    }
+    } catch {}
   };
 
   const handleCopy = (cmd: string, idx: number) => {
@@ -88,25 +88,33 @@ export function QuickStart() {
   };
 
   const downloadDocs = () => {
-    const markdownContent = `# Evolution Protocol (EvoPro) v0.3.0 — Executive Spec & Guide
-    
+    const markdownContent = `# Evolution Protocol (EvoPro) v0.3.1 — Executive Spec & Guide
+
 Repository-native, harness-agnostic, model-agnostic, goal-driven and evidence-based governance protocol for software evolution assisted by AI coding agents.
 
-## Quick Installation
+## Core Principles
+1. Agent-First Operation
+2. Existing-Memory Adoption (HOST_CANONICAL_READ_ONLY)
+3. Strict Memory Isolation (evolution/ vs .evolution/runtime/ vs .evolution/knowledge/)
+4. Context Router Index Readiness & Explicit Routing Modes
+5. Epistemological Classification (NATIVE, ESTIMATED, UNKNOWN)
+6. Fail-Open Instrumentation
+7. Cognitive Continuity (CONTINUITY.md)
+8. Cognitive Reuse & Empirical Telemetry
+9. Universal Reference Isolation
+
+## Quick Installation & Initiation
 \`\`\`bash
 pip install git+https://github.com/ag47-pt/ag47-evolution-protocol.git
 evolution doctor
-evolution init
+evolution second-brain init
 \`\`\`
 
-## Core CLI Commands
-- \`evolution status\`: Inspection of active state and Global Goal progress
-- \`evolution inspect\`: Observer diagnosis of workspace structure and gaps
-- \`evolution goal set "<objective>"\`: Set measurable Global Goal
-- \`evolution baseline measure\`: Capture State A baseline metrics
-- \`evolution gauntlet run\`: Execute 12 adversarial critics
-- \`evolution judge\`: Evaluate deterministic verdicts (ACCEPT, REVISE, ROLLBACK, BLOCKED)
-- \`evolution run --mode goal-driven\`: Run autonomous goal-driven loop
+## Normal Agent-First Usage in IDE Chat
+\`\`\`text
+"Analise este repositório e determine a próxima prioridade."
+"Precisamos melhorar as permissões dos funcionários sem violar contratos existentes."
+\`\`\`
 
 -- Developed by Agência 47 Labs (https://ag47.pt/eco/evopro)
 `;
@@ -115,7 +123,7 @@ evolution init
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'evopro-spec-v0.3.0.md';
+    link.download = `evopro-spec-v${EVOPRO_CONFIG.version}.md`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -132,10 +140,10 @@ evolution init
             COMEÇAR EM MENOS DE 2 MINUTOS
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Quick Start Guide
+            Quick Start Guide (v{EVOPRO_CONFIG.version})
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base font-sans mb-6">
-            Do primeiro comando ao primeiro ciclo governado pelo Judge em qualquer repositório.
+            Da instalação via pip à primeira interação agent-first governada em qualquer repositório.
           </p>
 
           <button
@@ -143,7 +151,7 @@ evolution init
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-mono border border-zinc-700/80 transition-all active:scale-95 cursor-pointer shadow"
           >
             <Download className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Descarregar Specs (.md)</span>
+            <span>Descarregar Specs v{EVOPRO_CONFIG.version} (.md)</span>
           </button>
         </div>
 

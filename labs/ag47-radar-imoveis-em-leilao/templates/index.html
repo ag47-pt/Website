@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radar de Leilões Imobiliários</title>
+    <meta
+      name="description"
+      content="Descubra imóveis em leilão com upside real, custos ocultos e score de viabilidade antes de arrematar."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <header class="topbar container">
+      <div class="brand">
+        <span class="brand-mark">R</span>
+        <span>Radar Leilão</span>
+      </div>
+      <nav>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#cases">Casos</a>
+        <a href="#contato">Contato</a>
+      </nav>
+      <a class="btn btn-primary" href="#avaliacao">Quero analisar</a>
+    </header>
+
+    <main>
+      <section class="hero container">
+        <div class="hero-copy">
+          <span class="eyebrow">Investimento imobiliário com edge real</span>
+          <h1>Descubra imóveis em leilão antes do mercado.</h1>
+          <p>
+            Avaliamos valor venal, débitos, risco jurídico e potencial de retorno para
+            identificar oportunidades que o mercado ainda não viu.
+          </p>
+
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#avaliacao">Verificar oportunidade</a>
+            <a class="btn btn-secondary" href="#como-funciona">Entender o modelo</a>
+          </div>
+
+          <ul class="proof-list">
+            <li>Score de viabilidade em minutos</li>
+            <li>Foco em apartamentos, salas e terrenos</li>
+            <li>Risco legal e custos ocultos antes do lance</li>
+          </ul>
+        </div>
+
+        <div class="hero-card" id="avaliacao">
+          <div class="card-header">
+            <span>Checklist de viabilidade</span>
+            <strong>Leilão / Imóvel</strong>
+          </div>
+
+          <form id="assessment-form">
+            <div class="field-grid">
+              <label>
+                Valor venal (€)
+                <input type="number" name="market_value" value="520000" min="0" required />
+              </label>
+              <label>
+                Valor do lance (€)
+                <input type="number" name="auction_price" value="285000" min="0" required />
+              </label>
+              <label>
+                IPTU anual (€)
+                <input type="number" name="iptu" value="1800" min="0" />
+              </label>
+              <label>
+                Condomínio anual (€)
+                <input type="number" name="condo" value="2400" min="0" />
+              </label>
+              <label>
+                Custo legal (€)
+                <input type="number" name="legal_cost" value="6000" min="0" />
+              </label>
+              <label>
+                Reforma (€)
+                <input type="number" name="renovation" value="12000" min="0" />
+              </label>
+              <label>
+                Risco jurídico (0-1)
+                <input type="number" step="0.1" name="court_risk" value="0.3" min="0" max="1" />
+              </label>
+              <label>
+                Ocupação (0-1)
+                <input type="number" step="0.1" name="occupancy" value="0.2" min="0" max="1" />
+              </label>
+              <label class="full">
+                Renda líquida esperada (€ / mês)
+                <input type="number" name="expected_rent" value="1800" min="0" />
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary wide">Analisar oportunidade</button>
+          </form>
+
+          <div id="result-box" class="result-box hidden">
+            <div class="result-topline">
+              <span>Score</span>
+              <strong id="score-value">0</strong>
+            </div>
+            <p id="recommendation-text"></p>
+            <dl>
+              <div>
+                <dt>Invest. total</dt>
+                <dd id="total-cost">€0</dd>
+              </div>
+              <div>
+                <dt>Yield</dt>
+                <dd id="yield-value">0%</dd>
+              </div>
+              <div>
+                <dt>Desconto</dt>
+                <dd id="discount-value">0%</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="metrics container" id="como-funciona">
+        <div class="metric">
+          <strong>01</strong>
+          <h3>Captura</h3>
+          <p>Identificamos lotes em destaque por capital, setor e perfil de risco.</p>
+        </div>
+        <div class="metric">
+          <strong>02</strong>
+          <h3>Validação</h3>
+          <p>Comparamos valor de mercado, custo real e risco jurídico antes do lance.</p>
+        </div>
+        <div class="metric">
+          <strong>03</strong>
+          <h3>Decisão</h3>
+          <p>Definimos se a operação compensa ou se o risco supera a oportunidade.</p>
+        </div>
+      </section>
+
+      <section class="cases container" id="cases">
+        <h2>Casos focados em retorno</h2>
+        <div class="case-grid">
+          <article>
+            <span>• Apartamentos em capitais</span>
+            <p>Entradas menores e liquidez mais alta, mas competitividade mais forte.</p>
+          </article>
+          <article>
+            <span>• Salas comerciais desocupadas</span>
+            <p>Risco de desocupação compensado por descontos agressivos em leilão.</p>
+          </article>
+          <article>
+            <span>• Terrenos industriais</span>
+            <p>Upside de requalificação, porém exige análise profunda de uso do solo e custos.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="container footer" id="contato">
+      <p>Radar de Leilões Imobiliários • Validação rápida para investidores.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

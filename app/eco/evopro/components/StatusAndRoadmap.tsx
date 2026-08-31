@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { ROADMAP_ITEMS } from '@/data/evopro';
+import { ROADMAP_ITEMS, KNOWN_LIMITATIONS_DATA } from '@/data/evopro';
 import { 
   CheckCircle2, 
   FlaskConical, 
@@ -12,35 +12,14 @@ import {
   Layers, 
   ShieldCheck, 
   Sparkles,
-  Search
+  Search,
+  Activity,
+  GitBranch
 } from 'lucide-react';
 
 export function StatusAndRoadmap() {
   const { theme } = useTheme();
   const [tab, setTab] = useState<'status' | 'roadmap'>('status');
-
-  const knownLimits = [
-    {
-      title: 'O Kernel não escreve código por iniciativa própria',
-      desc: 'O planeamento requer sempre um agente cognitivo externo (Claude Code, Codex, Antigravity, etc.). A autonomia total só ocorre quando o harness responde aos pedidos cognitivos (03_cognitive_request.json).'
-    },
-    {
-      title: 'Críticos de Performance, UX e Code Quality estão Registados mas Indisponíveis',
-      desc: 'Requerem profiles específicos do host ou browser capability. Reportam UNAVAILABLE em vez de aprovação silenciosa.'
-    },
-    {
-      title: 'Apenas Python possui parsing AST completo e exato',
-      desc: 'JS/TS utiliza inferência regex a confiança 0.5; outras linguagens ainda não são indexadas pelo Code Graph.'
-    },
-    {
-      title: 'Despacho de Críticos Independentes ainda não fecha o ciclo cognitivo',
-      desc: 'Os pedidos para críticos independentes são gerados para subagentes, mas os críticos determinísticos correm em modo sequencial estrito.'
-    },
-    {
-      title: 'Rollback abandona o branch de isolamento sem destruir histórico',
-      desc: 'O working tree permanece no branch original e a mutação é preservada em evolution/<id> para inspeção e auditoria humana.'
-    }
-  ];
 
   return (
     <section id="status" className="py-16 md:py-24 border-t border-white/5 relative">
@@ -52,10 +31,10 @@ export function StatusAndRoadmap() {
             TRANSPARÊNCIA TOTAL & EVOLUÇÃO CONTÍNUA
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Status Atual & Roadmap
+            Maturidade Atual, Limitações & Roadmap
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base font-sans">
-            Credibilidade é mais importante que promessas. Documentamos explicitamente o que está pronto, o que é experimental, as limitações conhecidas e onde o protocolo está a caminhar.
+            Credibilidade exige rigor. Documentamos explicitamente o que está validado, as limitações conhecidas, os portões de validação ativos e as próximas etapas de engenharia.
           </p>
 
           {/* Toggle Tab */}
@@ -66,7 +45,7 @@ export function StatusAndRoadmap() {
                 tab === 'status' ? 'bg-zinc-800 text-white font-bold' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Status & Limitações Conhecidas
+              Maturidade & Limitações Conhecidas
             </button>
             <button
               onClick={() => setTab('roadmap')}
@@ -74,71 +53,67 @@ export function StatusAndRoadmap() {
                 tab === 'roadmap' ? 'bg-zinc-800 text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Roadmap de Engenharia
+              Roadmap de Engenharia & Portões
             </button>
           </div>
         </div>
 
         {tab === 'status' ? (
           <div className="space-y-8 font-mono text-xs">
-            {/* Available vs Experimental Status Grid */}
+            {/* Available vs Validation Status Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Ready Now */}
+              {/* Ready & Validated Now */}
               <div className="p-6 rounded-3xl bg-zinc-950 border border-emerald-500/30 backdrop-blur-xl shadow-xl">
                 <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm pb-3 mb-4 border-b border-zinc-800">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>DISPONÍVEL AGORA (v0.3.0)</span>
+                  <span>VALIDADO EM HOST REAL (v0.3.1)</span>
                 </div>
                 <ul className="space-y-2.5 text-zinc-300 font-sans text-xs">
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>Global Goal com 4 tipos de critérios estritamente verificáveis.</span>
+                    <span><strong>Adoção de Memória Soberana:</strong> Indexação de <code className="text-emerald-300">evolution/</code> em modo leitura restrita sem mutação.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>Medição de baseline State A/B com classificação dimensional e is_improvement tri-valorado.</span>
+                    <span><strong>Context Router com Auto-Readiness:</strong> Preparação automática de índices e 5 modos explícitos de roteamento contextual.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>Gauntlet adversarial com 9 críticos determinísticos funcionais.</span>
+                    <span><strong>Telemetria de Amortização Fail-Open:</strong> Registo de duração, tokens estimados e reuso cognitivo comprovado no disco.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>Judge com 4 vereditos ordenados (ACCEPT, REVISE, ROLLBACK, BLOCKED).</span>
+                    <span><strong>Interação Agent-First:</strong> Execução conversacional onde o agente seleciona e opera ferramentas com segurança.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>CONTINUITY.md e reconstrução de estado a frio entre agentes.</span>
+                    <span><strong>Gauntlet Adversarial & Judge:</strong> 9 críticos determinísticos e vereditos ordenados (ACCEPT, REVISE, ROLLBACK, BLOCKED).</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>Code Graph AST sem dependências pesadas e cálculo de raio de impacto.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold font-mono">✓</span>
-                    <span>8 guardrails e stop conditions configuráveis pelo host contract.</span>
+                    <span><strong>Grafo AST sem Dependências Pesadas:</strong> Indexação em Python stdlib AST e cálculo de raio de impacto.</span>
                   </li>
                 </ul>
               </div>
 
-              {/* Experimental */}
-              <div className="p-6 rounded-3xl bg-zinc-950 border border-purple-500/30 backdrop-blur-xl shadow-xl">
-                <div className="flex items-center gap-2 text-purple-400 font-bold text-sm pb-3 mb-4 border-b border-zinc-800">
-                  <FlaskConical className="w-4 h-4" />
-                  <span>EXPERIMENTAL / LABORATÓRIO</span>
+              {/* Active Validation Gate */}
+              <div className="p-6 rounded-3xl bg-zinc-950 border border-cyan-500/30 backdrop-blur-xl shadow-xl">
+                <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm pb-3 mb-4 border-b border-zinc-800">
+                  <Activity className="w-4 h-4" />
+                  <span>PORTÃO ATIVO: VALIDAÇÃO MULTI-HOST</span>
                 </div>
                 <ul className="space-y-2.5 text-zinc-300 font-sans text-xs">
                   <li className="flex items-start gap-2">
-                    <span className="text-purple-400 font-bold font-mono">⚡</span>
-                    <span><strong>Self-Hosting Lab:</strong> O EvoPro governa uma cópia isolada de si mesmo em ambiente de teste controlado.</span>
+                    <span className="text-cyan-400 font-bold font-mono">⚡</span>
+                    <span><strong>Telemetria a Nível de Interação:</strong> Evolução da instrumentação de fases internas para modelo de amortização de diálogos multi-turno completos.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-purple-400 font-bold font-mono">⚡</span>
-                    <span><strong>Evolution Graph Histórico:</strong> Rastreamento de mutações passadas para detecção de abordagens anteriormente rejeitadas.</span>
+                    <span className="text-cyan-400 font-bold font-mono">⚡</span>
+                    <span><strong>Pilotos em Múltiplos Ecossistemas:</strong> Repetição dos ensaios empíricos em repositórios adicionais e diferentes harnesses de IA.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-purple-400 font-bold font-mono">⚡</span>
-                    <span><strong>Inferência Regex para JS/TS:</strong> Cobertura de grafos em TypeScript com nível de confiança 0.5 (INFERRED).</span>
+                    <span className="text-cyan-400 font-bold font-mono">⚡</span>
+                    <span><strong>Refinamento de AST Multi-Language:</strong> Expansão do parsing estrutural de TypeScript e Rust para confiança nativa 1.0.</span>
                   </li>
                 </ul>
               </div>
@@ -148,10 +123,10 @@ export function StatusAndRoadmap() {
             <div className="rounded-3xl bg-zinc-950 border border-zinc-800 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
               <div className="flex items-center gap-2 text-amber-400 font-bold text-sm pb-3 mb-4 border-b border-zinc-800">
                 <AlertTriangle className="w-4 h-4" />
-                <span>LIMITAÇÕES DECLARADAS (Known Limitations)</span>
+                <span>LIMITAÇÕES DECLARADAS (Known Limitations do Manifesto)</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {knownLimits.map((limit, idx) => (
+                {KNOWN_LIMITATIONS_DATA.map((limit, idx) => (
                   <div key={idx} className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80">
                     <h4 className="font-bold text-white text-xs mb-1.5">{limit.title}</h4>
                     <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">{limit.desc}</p>
@@ -178,11 +153,9 @@ export function StatusAndRoadmap() {
                     <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
                       item.status === 'Available' 
                         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                        : item.status === 'Experimental'
-                        ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                        : item.status === 'Planned'
+                        : item.status === 'In Validation'
                         ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                        : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
                     }`}>
                       {item.badge}
                     </span>

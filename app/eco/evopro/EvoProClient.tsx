@@ -6,27 +6,27 @@ import { usePageScroll } from '@/hooks/usePageScroll';
 import { ScrollProgressBar } from '@/components/ui/ScrollProgressBar';
 import { EvoNavbar } from './components/EvoNavbar';
 import { EvoHero } from './components/EvoHero';
+import { DeterministicVsCognitive } from './components/DeterministicVsCognitive';
+import { ContextRoutingSection } from './components/ContextRoutingSection';
+import { IdeChatFlow } from './components/IdeChatFlow';
+import { ObservabilitySection } from './components/ObservabilitySection';
+import { HostModelSection } from './components/HostModelSection';
 import { ProblemComparison } from './components/ProblemComparison';
 import { EvolutionCycle } from './components/EvolutionCycle';
 import { ChangeVsEvolution } from './components/ChangeVsEvolution';
 import { GauntletSection } from './components/GauntletSection';
 import { JudgeSection } from './components/JudgeSection';
 import { GlobalGoalSection } from './components/GlobalGoalSection';
-import { DeterministicVsCognitive } from './components/DeterministicVsCognitive';
-import { HostModelSection } from './components/HostModelSection';
-import { HarnessIndependence } from './components/HarnessIndependence';
 import { ContinuityFlow } from './components/ContinuityFlow';
 import { ExecutionModes } from './components/ExecutionModes';
 import { GraphIntelligence } from './components/GraphIntelligence';
 import { QuickStart } from './components/QuickStart';
 import { TerminalInteractive } from './components/TerminalInteractive';
-import { IdeChatFlow } from './components/IdeChatFlow';
 import { CliReference } from './components/CliReference';
 import { CapabilityMatrix } from './components/CapabilityMatrix';
 import { GuardrailsSection } from './components/GuardrailsSection';
-import { ObservabilitySection } from './components/ObservabilitySection';
-import { UseCasesSection } from './components/UseCasesSection';
 import { StatusAndRoadmap } from './components/StatusAndRoadmap';
+import { UseCasesSection } from './components/UseCasesSection';
 import { GitHubEcosystemCTA } from './components/GitHubEcosystemCTA';
 import { EvoFooter } from './components/EvoFooter';
 import { EvoPitchDeck } from './components/EvoPitchDeck';
@@ -44,27 +44,25 @@ export default function EvoProClient() {
 
   const sections = [
     'overview',
+    'cognitive-architecture',
+    'context-routing',
+    'agent-first',
+    'telemetry',
+    'real-host',
     'problem',
     'lifecycle',
-    'baseline',
     'gauntlet',
     'judge',
     'goal',
-    'architecture',
-    'host-model',
-    'harnesses',
-    'continuity',
     'modes',
     'graph',
     'quickstart',
     'terminal-demo',
-    'ide-chat',
     'cli',
     'capabilities',
     'guardrails',
-    'observability',
-    'use-cases',
     'status',
+    'use-cases',
     'ecosystem'
   ];
 
@@ -219,27 +217,26 @@ export default function EvoProClient() {
       {/* Main Content Layers */}
       <main className="relative z-10">
         <EvoHero />
+        <DeterministicVsCognitive />
+        <ContextRoutingSection />
+        <IdeChatFlow />
+        <ObservabilitySection />
+        <HostModelSection />
         <ProblemComparison />
         <EvolutionCycle />
         <ChangeVsEvolution />
         <GauntletSection />
         <JudgeSection />
         <GlobalGoalSection />
-        <DeterministicVsCognitive />
-        <HostModelSection />
-        <HarnessIndependence />
-        <ContinuityFlow />
         <ExecutionModes />
         <GraphIntelligence />
         <QuickStart />
         <TerminalInteractive />
-        <IdeChatFlow />
         <CliReference />
         <CapabilityMatrix />
         <GuardrailsSection />
-        <ObservabilitySection />
-        <UseCasesSection />
         <StatusAndRoadmap />
+        <UseCasesSection />
         <GitHubEcosystemCTA />
       </main>
 

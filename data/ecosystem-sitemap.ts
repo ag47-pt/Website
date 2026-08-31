@@ -47,6 +47,25 @@ export interface SitemapItem {
 
 export const LABS_CORE_ITEMS: SitemapItem[] = [
   {
+    id: 'labs-skills',
+    title: 'Labs Skills — Design System Lab',
+    shortName: 'DS LAB',
+    description: 'Validação determinística de contratos de Design System em Markdown, cálculo matemático de cobertura e bancada de teste visual isolada.',
+    icon: Sparkles,
+    path: '/labs/skills',
+    status: 'NEW_RELEASE',
+    category: 'labs_core',
+    nodeId: 'NODE_0x47_SKILLS',
+    releaseDate: 'Setembro 2026',
+    techStack: ['Next.js 16', 'React 19', 'Zod', 'Deterministic Parser', 'Scoped CSS'],
+    features: [
+      'Validação de schema de Design System v1.0 sem alucinação de LLM',
+      'Motor de cobertura matemática com dedução de NOT_APPLICABLE',
+      'Bancada multi-estados: botões, formulários, badges, cards e padrões',
+      'Visualização responsiva (Mobile/Tablet/Desktop) e alternância Dark/Light',
+    ],
+  },
+  {
     id: 'liveskills',
     title: 'LiveSkills',
     shortName: 'LIVESKILLS',
@@ -284,6 +303,7 @@ export const LABS_NAV_CONFIG = {
     { name: 'SLIDES', path: '/labs/slides', icon: Presentation },
   ] as NavLinkItem[],
   overflow: [
+    { name: 'DS LAB', path: '/labs/skills', icon: Sparkles },
     { name: 'ECO HUB', path: '/eco', icon: Globe2, isSitemap: true, badge: 'SITEMAP' },
     { name: 'YOULEARN', path: '/eco/youlearn', icon: GraduationCap },
     { name: 'MENUAG', path: '/menuag', icon: UtensilsCrossed },
@@ -304,6 +324,7 @@ export const ECO_NAV_CONFIG = {
     { name: 'LABS HUB', path: '/labs', icon: LayoutGrid, isSitemap: true, badge: 'SITEMAP' },
   ] as NavLinkItem[],
   overflow: [
+    { name: 'DS LAB', path: '/labs/skills', icon: Sparkles },
     { name: 'PITCH DECK LIB', path: '/labs/ag47-lib-pith-deck', icon: Layers },
     { name: 'APEX PREDICTOR', path: '/labs/apex', icon: TrendingUp },
     { name: 'ORACLE TRADER', path: '/labs/oracle-trader', icon: Brain },

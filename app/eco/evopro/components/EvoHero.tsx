@@ -13,7 +13,10 @@ import {
   ShieldCheck, 
   Cpu, 
   GitFork,
-  Sparkles
+  Sparkles,
+  BrainCircuit,
+  Activity,
+  Database
 } from 'lucide-react';
 
 function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -66,7 +69,11 @@ export function EvoHero() {
             </span>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
               <Sparkles className="w-3 h-3" />
-              v{EVOPRO_CONFIG.version} Goal-Driven & Graph-Enhanced
+              v{EVOPRO_CONFIG.version} • {EVOPRO_CONFIG.maturityLabel}
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">
+              <BrainCircuit className="w-3 h-3" />
+              Agent-First & Memory-Aware
             </span>
           </motion.div>
 
@@ -93,9 +100,9 @@ export function EvoHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg sm:text-xl font-mono text-zinc-300 font-medium tracking-tight mb-6 px-4 py-2 rounded-xl bg-zinc-900/40 border border-white/5 backdrop-blur-sm"
+            className="text-base sm:text-lg font-mono text-zinc-300 font-medium tracking-tight mb-6 px-4 py-2 rounded-xl bg-zinc-900/40 border border-white/5 backdrop-blur-sm"
           >
-            &ldquo;{EVOPRO_CONFIG.subtitle}&rdquo;
+            &ldquo;{EVOPRO_CONFIG.tagline}&rdquo;
           </motion.div>
 
           {/* Supporting Copy */}
@@ -105,9 +112,9 @@ export function EvoHero() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base sm:text-lg text-zinc-400 font-sans max-w-3xl leading-relaxed mb-10"
           >
-            O <strong>EvoPro</strong> é o kernel determinístico que instala no próprio repositório uma arquitetura persistente de 
-            <span className="text-zinc-200"> objetivos mensuráveis, ciclos governados, baselines State A/B, Gauntlet adversarial, memória contínua e Code Graph AST</span>. 
-            A inteligência dos modelos é intercambiável — a governança pertence ao código.
+            O <strong>EvoPro</strong> é o protocolo operacional cognitivo que instala no próprio repositório uma arquitetura persistente de 
+            <span className="text-zinc-200"> adoção de memória soberana, Context Routing delimitado, governança de agentes, telemetria de amortização fail-open e validação comportamental A/B</span>. 
+            A inteligência dos modelos é intercambiável — o protocolo e o conhecimento durável pertencem ao projeto.
           </motion.p>
 
           {/* CTAs */}
@@ -118,12 +125,12 @@ export function EvoHero() {
             className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-12"
           >
             <button
-              onClick={() => scrollTo('lifecycle')}
+              onClick={() => scrollTo('cognitive-architecture')}
               className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-mono font-bold text-xs uppercase tracking-wider text-black transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl cursor-pointer"
               style={{ backgroundColor: theme.colors.primary }}
             >
-              <Layers className="w-4 h-4" />
-              <span>Explorar Arquitetura</span>
+              <BrainCircuit className="w-4 h-4" />
+              <span>Explorar Second Brain</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -138,10 +145,11 @@ export function EvoHero() {
             </a>
 
             <button
-              onClick={() => scrollTo('quickstart')}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-mono text-xs font-semibold text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+              onClick={() => scrollTo('real-host')}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-mono text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors cursor-pointer border border-cyan-500/30"
             >
-              <span>Quick Start</span>
+              <Activity className="w-3.5 h-3.5" />
+              <span>Evidência em Host Real</span>
             </button>
           </motion.div>
 
@@ -174,7 +182,7 @@ export function EvoHero() {
             </div>
             <div className="mt-2 text-[11px] text-zinc-500">
               <span className="text-zinc-600 select-none"># </span>
-              Depois execute: <code className="text-zinc-400">evolution doctor</code> e <code className="text-zinc-400">evolution init</code>
+              Em seguida no chat da IDE: <code className="text-zinc-400">&ldquo;Analise este repositório e determine a próxima prioridade.&rdquo;</code>
             </div>
           </motion.div>
 
@@ -187,21 +195,21 @@ export function EvoHero() {
           >
             <div className="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-sm">
               <div className="flex items-center gap-2 text-zinc-200 text-xs font-semibold mb-1">
-                <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Repo-Native</span>
+                <BrainCircuit className="w-3.5 h-3.5 text-purple-400" />
+                <span>Agent-First</span>
               </div>
               <p className="text-[11px] text-zinc-400 font-sans">
-                O estado e o objetivo vivem no disco, não no chat.
+                O humano dá intenção; o agente orquestra ferramentas com segurança.
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-sm">
               <div className="flex items-center gap-2 text-zinc-200 text-xs font-semibold mb-1">
-                <GitFork className="w-3.5 h-3.5 text-purple-400" />
-                <span>Harness-Agnostic</span>
+                <Database className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Memory-Aware</span>
               </div>
               <p className="text-[11px] text-zinc-400 font-sans">
-                Compatível com Codex, Claude Code, Antigravity e IDEs.
+                Adota memória soberana (evolution/) sem destruir documentação prévia.
               </p>
             </div>
 
@@ -211,17 +219,17 @@ export function EvoHero() {
                 <span>Evidence-Driven</span>
               </div>
               <p className="text-[11px] text-zinc-400 font-sans">
-                Nenhum agente valida o seu próprio código.
+                Nenhum agente valida o seu código; vereditos requerem testes A/B.
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-sm">
               <div className="flex items-center gap-2 text-zinc-200 text-xs font-semibold mb-1">
-                <Terminal className="w-3.5 h-3.5 text-amber-400" />
-                <span>Graph-Enhanced</span>
+                <Activity className="w-3.5 h-3.5 text-amber-400" />
+                <span>Fail-Open Telemetry</span>
               </div>
               <p className="text-[11px] text-zinc-400 font-sans">
-                AST Code Graph determinístico sem dependências pesadas.
+                Classificação epistêmica NATIVE/ESTIMATED sem bloquear o fluxo.
               </p>
             </div>
           </motion.div>

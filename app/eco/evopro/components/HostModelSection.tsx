@@ -1,171 +1,115 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { REAL_HOST_VALIDATION_DATA } from '@/data/evopro';
 import { 
-  FolderTree, 
-  FileCode, 
-  Sliders, 
-  Copy, 
-  Check, 
-  Folder, 
-  FileJson, 
-  FileText,
-  Shield,
-  Layers
+  CheckCircle2, 
+  ShieldCheck, 
+  FileText, 
+  Lock, 
+  ArrowRight,
+  Sparkles,
+  Search,
+  Activity,
+  AlertTriangle,
+  FolderGit2
 } from 'lucide-react';
-import { ConfigGeneratorWizard } from './ConfigGeneratorWizard';
 
 export function HostModelSection() {
   const { theme } = useTheme();
-  const [copiedConfig, setCopiedConfig] = useState(false);
-
-  const sampleConfig = `{
-  "host_contract": {
-    "commands": {
-      "test": "pytest -q",
-      "build": "npm run build",
-      "lint": "eslint .",
-      "typecheck": "tsc --noEmit"
-    },
-    "protected_paths": [
-      ".evolution/**",
-      ".git/**"
-    ],
-    "critics": ["architecture", "security", "dependency_impact"],
-    "architecture": {
-      "forbidden_paths": []
-    },
-    "limits": {
-      "max_revision_cycles": 3,
-      "max_sprints": 25,
-      "no_progress_threshold": 3
-    }
-  }
-}`;
-
-  const copyConfig = () => {
-    navigator.clipboard.writeText(sampleConfig);
-    setCopiedConfig(true);
-    setTimeout(() => setCopiedConfig(false), 2000);
-  };
 
   return (
-    <section id="host-model" className="py-16 md:py-24 border-t border-white/5 relative bg-zinc-950/40">
+    <section id="real-host" className="py-16 md:py-24 border-t border-white/5 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-4">
-            <FolderTree className="w-3.5 h-3.5" />
-            THE REPOSITORY IS THE HOST
+            <Activity className="w-3.5 h-3.5" />
+            EMPIRICAL FIELD VALIDATION • 2026-08-28
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Arquitetura do Host
+            Validação Empírica em Host Real (Piloto AG Menu)
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base font-sans">
-            O seu projeto de software atua como o <strong>Host</strong>. O EvoPro instala-se de forma limpa numa pasta dedicada <code className="text-emerald-400 font-mono">.evolution/</code> e governa a evolução através do <code className="text-zinc-300 font-mono">evolution.config.json</code>.
+            Evidência empírica vale mais do que hipóteses teóricas. O EvoPro concluiu com sucesso o seu primeiro piloto em ambiente real maduro com o resultado <strong className="text-emerald-400 font-mono">PASS</strong>, comprovando viabilidade de ponta a ponta.
           </p>
         </div>
 
-        {/* Wizard Interativo de Configuração */}
-        <ConfigGeneratorWizard />
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* File Tree Visualizer */}
-          <div className="lg:col-span-5 rounded-3xl bg-zinc-950 border border-zinc-800 p-6 sm:p-8 font-mono text-xs shadow-2xl backdrop-blur-xl">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
-              <span className="text-zinc-400 font-bold uppercase tracking-wider text-[11px]">Estrutura no Repositório</span>
-              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Instalado</span>
+        {/* Validation Scorecard */}
+        <div className="rounded-3xl bg-zinc-950 border border-emerald-500/30 p-6 sm:p-10 shadow-2xl backdrop-blur-xl mb-12 font-mono text-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 mb-6 border-b border-zinc-800 gap-2">
+            <div className="flex items-center gap-2 text-white font-bold text-sm">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              <span>Relatório de Validação de Host Real: {REAL_HOST_VALIDATION_DATA.hostName}</span>
             </div>
-
-            <div className="space-y-1.5 text-zinc-300 font-mono leading-relaxed">
-              <div className="flex items-center gap-2 text-white font-bold">
-                <Folder className="w-4 h-4 text-amber-400" />
-                <span>your-project/</span>
-              </div>
-              <div className="pl-4 flex items-center gap-2 text-zinc-400">
-                <Folder className="w-3.5 h-3.5 text-zinc-500" />
-                <span>src/</span>
-              </div>
-              <div className="pl-4 flex items-center gap-2 text-zinc-400">
-                <Folder className="w-3.5 h-3.5 text-zinc-500" />
-                <span>tests/</span>
-              </div>
-              <div className="pl-4 flex items-center gap-2 text-cyan-300 font-semibold">
-                <FileJson className="w-3.5 h-3.5 text-cyan-400" />
-                <span>evolution.config.json</span>
-                <span className="text-[10px] text-zinc-500 font-normal">← Host Contract</span>
-              </div>
-              <div className="pl-4 flex items-center gap-2 text-emerald-400 font-bold pt-1">
-                <Folder className="w-4 h-4 text-emerald-400" />
-                <span>.evolution/</span>
-              </div>
-              <div className="pl-8 flex items-center gap-2 text-zinc-400">
-                <FileText className="w-3.5 h-3.5 text-purple-400" />
-                <span className="text-purple-300 font-semibold">CONTINUITY.md</span>
-                <span className="text-[10px] text-zinc-500">← Memória viva</span>
-              </div>
-              <div className="pl-8 flex items-center gap-2 text-zinc-400">
-                <Folder className="w-3.5 h-3.5 text-zinc-500" />
-                <span>goal/</span>
-                <span className="text-[10px] text-zinc-500">(global-goal.json)</span>
-              </div>
-              <div className="pl-8 flex items-center gap-2 text-zinc-400">
-                <Folder className="w-3.5 h-3.5 text-zinc-500" />
-                <span>sprints/</span>
-                <span className="text-[10px] text-zinc-500">(active-sprint.json)</span>
-              </div>
-              <div className="pl-8 flex items-center gap-2 text-zinc-400">
-                <Folder className="w-3.5 h-3.5 text-zinc-500" />
-                <span>runtime/</span>
-                <span className="text-[10px] text-zinc-500">(baselines, gauntlet, judge)</span>
-              </div>
-              <div className="pl-8 flex items-center gap-2 text-zinc-400">
-                <Folder className="w-3.5 h-3.5 text-zinc-500" />
-                <span>knowledge/</span>
-                <span className="text-[10px] text-zinc-500">(ledger, learnings)</span>
-              </div>
-              <div className="pl-8 flex items-center gap-2 text-zinc-400">
-                <Folder className="w-3.5 h-3.5 text-zinc-500" />
-                <span>graph/</span>
-                <span className="text-[10px] text-zinc-500">(code-graph.json)</span>
-              </div>
-              <div className="pl-8 flex items-center gap-2 text-zinc-400">
-                <FileJson className="w-3.5 h-3.5 text-zinc-500" />
-                <span>schema-lock.json</span>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-zinc-800 text-[11px] text-zinc-500">
-              Tudo o que é necessário para continuar o desenvolvimento reside dentro do próprio repositório.
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-bold">
+                PILOTO: {REAL_HOST_VALIDATION_DATA.verdict}
+              </span>
+              <span className="text-[11px] text-zinc-500">{REAL_HOST_VALIDATION_DATA.pilotDate}</span>
             </div>
           </div>
 
-          {/* Configuration File & Host Contract */}
-          <div className="lg:col-span-7 rounded-3xl bg-zinc-950 border border-zinc-800 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
-              <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-cyan-400" />
-                <span className="text-white font-bold text-xs font-mono">evolution.config.json</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+              <span className="text-[10px] text-zinc-500 uppercase block mb-1">Adoção de Memória Canónica</span>
+              <div className="text-zinc-200 font-semibold mb-1">evolution/ Adotada</div>
+              <div className="text-zinc-400 text-[11px] font-sans">
+                Modo HOST_CANONICAL_READ_ONLY sem qualquer mutação na documentação soberana.
               </div>
-              <button
-                onClick={copyConfig}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-[11px] font-mono border border-zinc-700/60 transition-all cursor-pointer"
-              >
-                {copiedConfig ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedConfig ? 'Copiado' : 'Copiar Config'}</span>
-              </button>
             </div>
 
-            <pre className="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 font-mono text-xs text-zinc-300 overflow-x-auto leading-relaxed max-h-[340px] overflow-y-auto">
-              <code>{sampleConfig}</code>
-            </pre>
+            <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+              <span className="text-[10px] text-zinc-500 uppercase block mb-1">Validação Comportamental A/B</span>
+              <div className="text-emerald-400 font-semibold mb-1">44/44 Testes Aprovados</div>
+              <div className="text-zinc-400 text-[11px] font-sans">
+                29 falhas pré-correção demonstrando baseline A/B real e remediação cirúrgica de RBAC.
+              </div>
+            </div>
 
-            <div className="mt-4 text-xs text-zinc-400 font-sans leading-relaxed">
-              <strong>Inferência Automática:</strong> Se os comandos não forem explicitamente declarados, o EvoPro infere a partir do <code className="text-zinc-300 font-mono">package.json</code> ou <code className="text-zinc-300 font-mono">pyproject.toml</code> e anota a evidência utilizada.
+            <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+              <span className="text-[10px] text-zinc-500 uppercase block mb-1">Reuso Cognitivo Qualitativo</span>
+              <div className="text-cyan-400 font-semibold mb-1">Cross-Turn Validado</div>
+              <div className="text-zinc-400 text-[11px] font-sans">
+                Segunda tarefa reutilizou contexto adquirido sem re-inspeção cega do repositório.
+              </div>
             </div>
           </div>
+
+          {/* Key Findings List */}
+          <div className="space-y-3">
+            <span className="text-[10px] text-zinc-500 uppercase block font-bold">
+              Evidências Observadas no Piloto:
+            </span>
+            {REAL_HOST_VALIDATION_DATA.keyFindings.map((finding, idx) => (
+              <div key={idx} className="p-3.5 rounded-xl bg-black/60 border border-zinc-800/80 flex items-start gap-3">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-white font-bold text-xs">{finding.title}: </span>
+                  <span className="text-zinc-400 text-[11px] font-sans">{finding.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Document Reference */}
+          <div className="mt-6 pt-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-zinc-500 gap-2">
+            <span>Registro completo: <code>{REAL_HOST_VALIDATION_DATA.evidenceDocument}</code></span>
+            <span className="text-zinc-400">Status: Validação empírica concluída</span>
+          </div>
+        </div>
+
+        {/* Boundary Invariant Note */}
+        <div className="p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800 font-mono text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <FolderGit2 className="w-5 h-5 text-purple-400 shrink-0" />
+            <span>
+              <strong>Isolamento Universal:</strong> O AG Menu atua estritamente como evidência de validação. Nenhum detalhe ou domínio de restaurante é incorporado ao núcleo do EvoPro.
+            </span>
+          </div>
+          <span className="text-purple-400 font-bold shrink-0">Universal & Host-Agnostic</span>
         </div>
       </div>
     </section>

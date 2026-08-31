@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 import { 
   Calculator, 
@@ -12,7 +12,8 @@ import {
   ShieldCheck, 
   ArrowRight,
   Sparkles,
-  Sliders
+  Sliders,
+  AlertCircle
 } from 'lucide-react';
 
 export function DynamicBenchmarkCalculator() {
@@ -23,19 +24,13 @@ export function DynamicBenchmarkCalculator() {
   const [sprintsPerMonth, setSprintsPerMonth] = useState<number>(24);
   const [teamSize, setTeamSize] = useState<number>(6);
 
-  // Cálculos Dinâmicos
-  // Sem EvoPro: ~45k tokens por ciclo de inspeção cega, com EvoPro: ~12k tokens via AST Graph (-73%)
+  // Cálculos Dinâmicos (Classificação Epistemológica: ESTIMATED)
   const tokensWithout = filesCount * sprintsPerMonth * 1450;
   const tokensWithEvo = Math.round(tokensWithout * 0.28);
   const tokensSaved = tokensWithout - tokensWithEvo;
 
-  // Tempo de verificação humana/diagnóstico: ~25min por sprint vs ~45s com Gauntlet A/B
   const hoursSavedPerMonth = Math.round(((sprintsPerMonth * 25) - (sprintsPerMonth * 1.5)) / 60);
-
-  // Custo de engenharia estimado poupado (base média €45/h) + economia de tokens de LLM (€0.003 / 1k tokens)
   const financialSavings = Math.round((hoursSavedPerMonth * 45) + ((tokensSaved / 1000) * 0.0035));
-
-  // Taxa de regressões evitadas (estimativa de 92% com Gauntlet Critics)
   const regressionsCaught = Math.round(sprintsPerMonth * 0.35 * teamSize);
 
   return (
@@ -45,15 +40,15 @@ export function DynamicBenchmarkCalculator() {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 mb-1">
             <Calculator className="w-4 h-4" />
-            <span>CALCULADORA DE EFICIÊNCIA DETERMINÍSTICA</span>
+            <span>SIMULAÇÃO DE AMORTIZAÇÃO COGNITIVA & ROI</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-white">
-            Simulador de Economia & ROI EvoPro
+            Simulador de Eficiência Operacional Estimada
           </h3>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-700/60 text-zinc-300 text-xs">
-          <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Ajuste os parâmetros do seu host</span>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Status Epistêmico: ESTIMATED</span>
         </div>
       </div>
 
@@ -87,7 +82,7 @@ export function DynamicBenchmarkCalculator() {
           {/* Slider 2: Sprints de Evolução / Mês */}
           <div className="p-4 rounded-2xl bg-zinc-900/40 border border-zinc-800/80">
             <div className="flex justify-between items-center mb-2 text-xs">
-              <span className="text-zinc-400 font-sans">Sprints de Mutação / Mês (Intervenções de IA)</span>
+              <span className="text-zinc-400 font-sans">Ciclos de Mutação / Mês (Intervenções de Agentes)</span>
               <span className="text-white font-bold px-2 py-0.5 rounded bg-zinc-800 text-emerald-300">
                 {sprintsPerMonth} ciclos/mês
               </span>
@@ -139,13 +134,13 @@ export function DynamicBenchmarkCalculator() {
           <div className="p-5 rounded-2xl bg-zinc-900/70 border border-cyan-500/30 shadow-lg relative overflow-hidden group">
             <div className="flex items-center gap-2 text-cyan-400 text-xs mb-1">
               <Zap className="w-4 h-4" />
-              <span>Tokens Poupados</span>
+              <span>Tokens Poupados (ESTIMATED)</span>
             </div>
             <div className="text-2xl sm:text-3xl font-black text-white my-2 tracking-tight">
               -{(tokensSaved / 1000).toFixed(0)}k
             </div>
             <p className="text-[11px] text-zinc-400 font-sans leading-tight">
-              Redução de <strong>72% no context bloat</strong> via indexação AST seletiva.
+              Redução estimada de <strong>72% no context bloat</strong> via Context Router seletivo.
             </p>
           </div>
 
@@ -153,13 +148,13 @@ export function DynamicBenchmarkCalculator() {
           <div className="p-5 rounded-2xl bg-zinc-900/70 border border-emerald-500/30 shadow-lg relative overflow-hidden group">
             <div className="flex items-center gap-2 text-emerald-400 text-xs mb-1">
               <Clock className="w-4 h-4" />
-              <span>Horas Salvas/Mês</span>
+              <span>Horas Salvas/Mês (ESTIMATED)</span>
             </div>
             <div className="text-2xl sm:text-3xl font-black text-white my-2 tracking-tight">
               +{hoursSavedPerMonth}h
             </div>
             <p className="text-[11px] text-zinc-400 font-sans leading-tight">
-              Eliminação de inspeção manual e reversões de código quebrado.
+              Redução de inspeção manual e reversões de código quebrado via Gauntlet A/B.
             </p>
           </div>
 
@@ -167,13 +162,13 @@ export function DynamicBenchmarkCalculator() {
           <div className="p-5 rounded-2xl bg-zinc-900/70 border border-purple-500/30 shadow-lg relative overflow-hidden group">
             <div className="flex items-center gap-2 text-purple-400 text-xs mb-1">
               <ShieldCheck className="w-4 h-4" />
-              <span>Regressões Evitadas</span>
+              <span>Regressões Evitadas (ESTIMATED)</span>
             </div>
             <div className="text-2xl sm:text-3xl font-black text-white my-2 tracking-tight">
               ~{regressionsCaught}
             </div>
             <p className="text-[11px] text-zinc-400 font-sans leading-tight">
-              Barradas antes do commit pelos 12 Gauntlet Critics.
+              Barradas antes do commit pelos Gauntlet Critics e vereditos do Judge.
             </p>
           </div>
 
@@ -187,16 +182,24 @@ export function DynamicBenchmarkCalculator() {
           >
             <div className="flex items-center gap-2 text-xs mb-1" style={{ color: theme.colors.primary }}>
               <Coins className="w-4 h-4" />
-              <span>Valor Gerado/Mês</span>
+              <span>Valor Gerado/Mês (ESTIMATED)</span>
             </div>
             <div className="text-2xl sm:text-3xl font-black text-white my-2 tracking-tight">
               €{financialSavings.toLocaleString()}
             </div>
             <p className="text-[11px] text-zinc-300 font-sans leading-tight">
-              Economia direta em custo de refatoração e infraestrutura de LLM.
+              Economia direta em refatoração e infraestrutura de LLM (base calculada declarada).
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Epistemic Note */}
+      <div className="mt-6 pt-4 border-t border-zinc-800/80 text-[11px] text-zinc-500 flex items-center gap-2">
+        <AlertCircle className="w-4 h-4 text-zinc-400 shrink-0" />
+        <span>
+          <strong>Nota de Rigor:</strong> Valores simulados possuem status epistêmico <code>ESTIMATED</code> baseado em modelos de referência. O EvoPro não transforma estimativas em benchmarks universais de produção.
+        </span>
       </div>
     </div>
   );

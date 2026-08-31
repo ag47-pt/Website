@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AG47DesignSystemSpec",
+  "description": "Deterministic Design System Specification Contract v1.0 for AG47 Labs Skills",
+  "type": "object",
+  "required": ["meta", "colors", "typography"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["spec_version", "name", "version", "platform", "supported_modes"],
+      "properties": {
+        "spec_version": { "type": "string", "enum": ["1.0"] },
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "platform": { "type": "string", "enum": ["web", "mobile", "universal"] },
+        "description": { "type": "string" },
+        "theme": { "type": "string" },
+        "supported_modes": { "type": "string", "enum": ["light", "dark", "both"] }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "properties": {
+        "principles": { "type": "array", "items": { "type": "string" } },
+        "brand_personality": { "type": "array", "items": { "type": "string" } },
+        "visual_direction": { "type": "string" },
+        "dos": { "type": "array", "items": { "type": "string" } },
+        "donts": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "colors": {
+      "type": "object",
+      "required": ["primary"],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "value", "status"],
+        "properties": {
+          "name": { "type": "string" },
+          "value": { "type": "string" },
+          "dark_value": { "type": "string" },
+          "usage": { "type": "string" },
+          "forbidden_usage": { "type": "string" },
+          "status": { "type": "string", "enum": ["DEFINED", "NOT_DEFINED", "NOT_APPLICABLE", "INHERITED"] }
+        }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "size", "status"],
+        "properties": {
+          "name": { "type": "string" },
+          "font_family": { "type": "string" },
+          "size": { "type": "string" },
+          "mobile_size": { "type": "string" },
+          "weight": { "type": ["string", "number"] },
+          "line_height": { "type": ["string", "number"] },
+          "tracking": { "type": "string" },
+          "status": { "type": "string", "enum": ["DEFINED", "NOT_DEFINED", "NOT_APPLICABLE", "INHERITED"] }
+        }
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "name", "status", "states"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "category": { "type": "string", "enum": ["button", "input", "selection", "feedback", "card", "navigation", "overlay", "display"] },
+          "status": { "type": "string", "enum": ["DEFINED", "NOT_DEFINED", "NOT_APPLICABLE", "INHERITED"] },
+          "inherited_from": { "type": "string" },
+          "states": { "type": "object" }
+        }
+      }
+    }
+  }
+}

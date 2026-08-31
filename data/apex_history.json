@@ -19,5 +19,12 @@
     "fearGreed": 50,
     "marketPhase": "UNCERTAINTY",
     "proposalsCount": 0
+  },
+  {
+    "timestamp": "2026-08-30T19:40:15.155Z",
+    "btcPrice": 78778.01,
+    "fearGreed": 50,
+    "marketPhase": "UNCERTAINTY",
+    "proposalsCount": 0
   }
 ]

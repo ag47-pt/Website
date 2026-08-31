@@ -17,7 +17,10 @@ import {
   Maximize2,
   Minimize2,
   Download,
-  Printer
+  Printer,
+  BrainCircuit,
+  Activity,
+  Database
 } from 'lucide-react';
 
 interface Slide {
@@ -34,71 +37,71 @@ const SLIDES: Slide[] = [
     id: 1,
     tag: 'EVOPRO PITCH DECK • SLIDE 01',
     title: 'Software that knows how to keep evolving.',
-    subtitle: '“The intelligence can change. The protocol stays with the project.”',
+    subtitle: '“Understand before changing. Prove before remembering. Measure before claiming improvement.”',
     points: [
-      { title: 'Repository-Native', desc: 'Objetivos, baselines e memória residem no próprio repositório, não em chats voláteis.' },
-      { title: 'Governança Determinística', desc: 'Nenhum agente de IA pode validar ou aprovar o seu próprio código.' },
-      { title: 'Zero Bloat', desc: 'Construído em Python stdlib puro sem dependências pesadas de frameworks externos.' }
+      { title: 'Repository-Native', desc: 'Objetivos, memória soberana e telemetria residem no repositório, não em janelas de chat efêmeras.' },
+      { title: 'Agent-First Workflow', desc: 'O humano fornece intenção e autoridade; o agente coordena descoberta, ferramentas e recomendações.' },
+      { title: 'Maturidade Comprovada', desc: 'v0.3.1 em Validação em Host Real com 425 testes e piloto empírico concluído.' }
     ],
     accentColor: '#3b82f6'
   },
   {
     id: 2,
     tag: 'O PROBLEMA REAL • SLIDE 02',
-    title: 'A Degradação Silenciosa por Agentes de IA',
-    subtitle: 'LLMs geram mutações locais desconectadas que acumulam dívida técnica catastrófica.',
+    title: 'Amnésia, Context Bloat e Auto-Validação',
+    subtitle: 'Agentes operando sem protocolo degradam a arquitetura e acumulam riscos silenciosos.',
     points: [
-      { title: 'Sem Baseline A/B', desc: 'Agentes não sabem o estado do sistema antes de aplicar alterações.' },
-      { title: 'Alucinação de Sucesso', desc: 'O agente reporta que a tarefa foi concluída, mas suites de teste e tipos falham silenciosamente.' },
-      { title: 'Amnésia de Sessão', desc: 'Cada novo contexto começa do zero, repetindo erros anteriormente descartados.' }
+      { title: 'Amnésia Entre Sessões', desc: 'Cada nova conversa recomeça do zero, esquecendo decisões passadas e repetindo falhas.' },
+      { title: 'Context Bloat Cego', desc: 'Injetar o repositório inteiro desperdiça milhares de tokens e confunde os modelos.' },
+      { title: 'Auto-Aprovação Ilusória', desc: 'Nenhum ator deve ser o juiz exclusivo das suas próprias alterações de código.' }
     ],
     accentColor: '#f43f5e'
   },
   {
     id: 3,
-    tag: 'ARQUITETURA CANÓNICA • SLIDE 03',
-    title: 'O Ciclo de 10 Etapas Governadas',
-    subtitle: 'Da intenção humana à persistência no ledger de auditoria.',
+    tag: 'ARQUITETURA COGNITIVA • SLIDE 03',
+    title: 'Second Brain & Separação de Memória',
+    subtitle: 'Adoção de memória soberana sem destruir a documentação pré-existente do host.',
     points: [
-      { title: '01-03: Spec & Baseline A', desc: 'Congelamento do estado prévio e definição do Sprint Goal estrito.' },
-      { title: '04-06: Build & Baseline B', desc: 'Execução isolada e medição diferencial de impacto.' },
-      { title: '07-10: Gauntlet, Judge & Persist', desc: '12 critics adversariais, juiz determinístico e registo no histórico.' }
+      { title: 'Memória Soberana (evolution/)', desc: 'Indexada em modo leitura (HOST_CANONICAL_READ_ONLY) e nunca modificada durante a adoção.' },
+      { title: 'Runtime Efêmero (.evolution/runtime/)', desc: 'Isolamento estrito de índices, baselines A/B, relatórios do Gauntlet e logs de telemetria.' },
+      { title: 'Conhecimento Curado (.evolution/knowledge/)', desc: 'Decisões validadas (ADRs), lições do Judge e CONTINUITY.md para handoff sem fricção.' }
+    ],
+    accentColor: '#8b5cf6'
+  },
+  {
+    id: 4,
+    tag: 'ROTEAMENTO DELIMITADO • SLIDE 04',
+    title: 'Context Router & Auto-Readiness',
+    subtitle: 'Recuperação seletiva de contexto delimitado em 5 modos explícitos.',
+    points: [
+      { title: 'Auto-Index Preparation', desc: 'ensure_router_index_ready() verifica e gera candidatos a partir de fontes nativas ou adotadas.' },
+      { title: '5 Modos de Routing', desc: 'NATIVE, ADOPTED_MEMORY, FALLBACK_CANONICAL_INDEX, COLD_BOOT e DEGRADED_OPERATION.' },
+      { title: 'Redução de ~75% de Tokens', desc: 'Injeta apenas domínios, contratos, riscos e referências estritamente relevantes para a tarefa.' }
     ],
     accentColor: '#06b6d4'
   },
   {
-    id: 4,
-    tag: 'VERIFICAÇÃO ADVERSARIAL • SLIDE 04',
-    title: 'Os 12 Gauntlet Critics',
-    subtitle: 'Uma bateria de validação estática e dinâmica independente.',
+    id: 5,
+    tag: 'TELEMETRIA FAIL-OPEN • SLIDE 05',
+    title: 'Amortização & Taxonomia Epistêmica',
+    subtitle: 'Instrumentação no disco classificando cada dado como NATIVE, ESTIMATED ou UNKNOWN.',
     points: [
-      { title: 'Scope & Boundary Critics', desc: 'Garantem que arquivos fora do escopo ou diretórios protegidos nunca são tocados.' },
-      { title: 'Regression & Security Scan', desc: 'Comparam deltas de baseline e barram padrões vulneráveis ou hardcoded.' },
-      { title: 'Historical Failure Critic', desc: 'Impede que o agente tente uma abordagem que já falhou no passado do repositório.' }
+      { title: 'Classificação NATIVE vs ESTIMATED', desc: 'Fatos medidos são NATIVE; aproximações declaram a base de cálculo. O protocolo nunca inventa.' },
+      { title: 'Instrumentação Fail-Open', desc: 'Registo de métricas não bloqueante: falhas de I/O nunca interrompem tarefas funcionais.' },
+      { title: 'Reuso Cognitivo Real', desc: 'Sessões subsequentes reutilizam entendimento prévio com redução comprovada de re-leituras.' }
     ],
     accentColor: '#10b981'
   },
   {
-    id: 5,
-    tag: 'GRAPH INTELLIGENCE • SLIDE 05',
-    title: 'Code Graph & Evolution Graph (AST)',
-    subtitle: 'Graph-enhanced, not graph-dependent.',
-    points: [
-      { title: 'Indexação AST Relâmpago', desc: 'Mapeamento de 270 nós e 1.340 arestas em menos de 100ms via stdlib Python.' },
-      { title: 'Blast Radius Cirúrgico', desc: 'Identifica exatamente quais arquivos e testes são afetados por uma mudança.' },
-      { title: '72% Menos Context Bloat', desc: 'Injeta apenas o subgrafo relevante no contexto da LLM, poupando milhares de tokens.' }
-    ],
-    accentColor: '#a855f7'
-  },
-  {
     id: 6,
-    tag: 'AGNOSTICISMO TOTAL • SLIDE 06',
-    title: 'Harness-Agnostic & Model-Agnostic',
-    subtitle: 'O protocolo funciona com qualquer harness, IDE ou modelo de IA.',
+    tag: 'EVIDÊNCIA EMPÍRICA • SLIDE 06',
+    title: 'Validação em Host Real (Piloto AG Menu)',
+    subtitle: 'Comprovado em repositório real maduro com veredito PASS e 44/44 testes A/B.',
     points: [
-      { title: 'Compatibilidade Ampla', desc: 'Suporta Claude Code, Codex, Antigravity, Cursor, VS Code ou CLI pura.' },
-      { title: 'LLM Intercambiável', desc: 'Mude de Claude para Gemini ou GPT sem perder a governança do repositório.' },
-      { title: 'Adote em 60 Segundos', desc: 'Basta executar `pip install` e `evolution init` na raiz de qualquer projeto.' }
+      { title: 'Adoção Sem Mutação', desc: 'Adotou com sucesso documentação soberana e descobriu 14 domínios de negócio.' },
+      { title: 'Validação A/B Comportamental', desc: '44/44 testes aprovados após remediação cirúrgica de RBAC (com 29 falhas pré-correção).' },
+      { title: 'Transparência de Maturidade', desc: 'Validação em host real comprovada; certificação de produção universal em andamento.' }
     ],
     accentColor: '#f59e0b'
   }
@@ -128,7 +131,7 @@ export function EvoPitchDeck({ isOpen, onClose }: EvoPitchDeckProps) {
 <html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
-  <title>EvoPro — Evolution Protocol Pitch Deck</title>
+  <title>EvoPro — Evolution Protocol Pitch Deck (v0.3.1)</title>
   <style>
     body { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: #000; color: #fff; margin: 0; padding: 40px; }
     .slide { max-width: 900px; margin: 0 auto 80px auto; padding: 40px; border: 1px solid #27272a; border-radius: 24px; background: #09090b; page-break-after: always; }
@@ -144,7 +147,7 @@ export function EvoPitchDeck({ isOpen, onClose }: EvoPitchDeckProps) {
 </head>
 <body>
   <div style="text-align: center; margin-bottom: 40px;">
-    <h2>EVOPRO — EVOLUTION PROTOCOL</h2>
+    <h2>EVOPRO — EVOLUTION PROTOCOL (v0.3.1)</h2>
     <p style="color: #71717a; font-size: 12px;">Executive Technical Slide Deck • AG47 Labs</p>
   </div>
   ${SLIDES.map(s => `
@@ -162,11 +165,6 @@ export function EvoPitchDeck({ isOpen, onClose }: EvoPitchDeckProps) {
       </div>
     </div>
   `).join('')}
-  <script>
-    window.onload = function() {
-      // Pronto para leitura ou impressão
-    };
-  </script>
 </body>
 </html>`;
 
@@ -174,7 +172,7 @@ export function EvoPitchDeck({ isOpen, onClose }: EvoPitchDeckProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'evopro-pitch-deck.html');
+    link.setAttribute('download', 'evopro-pitch-deck-v0.3.1.html');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -220,7 +218,7 @@ export function EvoPitchDeck({ isOpen, onClose }: EvoPitchDeckProps) {
               AG
             </div>
             <div>
-              <span className="text-white font-bold text-sm">EVOPRO PITCH DECK</span>
+              <span className="text-white font-bold text-sm">EVOPRO PITCH DECK (v0.3.1)</span>
               <span className="text-[10px] text-zinc-500 block">MODO APRESENTAÇÃO TÉCNICA</span>
             </div>
           </div>

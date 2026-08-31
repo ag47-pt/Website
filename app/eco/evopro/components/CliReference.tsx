@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { CLI_COMMANDS, CliCommand } from '@/data/evopro';
+import { CLI_COMMANDS, CliCommand, EVOPRO_CONFIG } from '@/data/evopro';
 import { 
   BookOpen, 
   Search, 
@@ -12,7 +12,9 @@ import {
   Terminal, 
   ChevronDown, 
   ChevronUp,
-  Sliders
+  Sliders,
+  BrainCircuit,
+  Activity
 } from 'lucide-react';
 
 export function CliReference() {
@@ -24,12 +26,13 @@ export function CliReference() {
 
   const categories = [
     { id: 'all', label: 'Todos' },
+    { id: 'second_brain', label: 'Second Brain & Context' },
+    { id: 'telemetry', label: 'Telemetria & Amortização' },
     { id: 'bootstrap', label: 'Bootstrap & Init' },
-    { id: 'lifecycle', label: 'Diagnosis & Spec' },
     { id: 'goal_sprint', label: 'Goals & Sprints' },
     { id: 'verification', label: 'Baseline & Gauntlet' },
     { id: 'runtime', label: 'Runtime Loop' },
-    { id: 'intelligence', label: 'Graph & Context' },
+    { id: 'intelligence', label: 'Graph Intel' },
     { id: 'audit', label: 'Audit & Continuity' }
   ];
 
@@ -59,13 +62,13 @@ export function CliReference() {
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-4">
             <BookOpen className="w-3.5 h-3.5" />
-            REFERÊNCIA DA LINHA DE COMANDOS
+            OPERATOR / ADVANCED CLI REFERENCE
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            CLI Reference
+            Referência de Comandos da CLI (v{EVOPRO_CONFIG.version})
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base font-sans">
-            Comandos oficiais implementados na versão v0.3.0. Clique em qualquer comando para ver flags, argumentos e exemplos.
+            Embora a experiência principal seja conversacional (Agent-First), a CLI está sempre disponível para engenheiros, scripts de automação e CI/CD. Clique em qualquer comando para ver detalhes e flags.
           </p>
         </div>
 
@@ -78,7 +81,7 @@ export function CliReference() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Pesquisar comando (ex: goal, baseline, gauntlet, graph, continuity)..."
+              placeholder="Pesquisar comando (ex: second-brain, route, telemetry, goal, baseline, gauntlet)..."
               className="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl py-3.5 pl-11 pr-4 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors"
             />
           </div>
