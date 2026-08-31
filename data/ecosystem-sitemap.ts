@@ -16,6 +16,7 @@ import {
   Globe2,
   LayoutGrid,
   BadgeCheck,
+  Wand2,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -59,6 +60,20 @@ export const LABS_CORE_ITEMS: SitemapItem[] = [
     releaseDate: 'Agosto 2026',
     techStack: ['Next.js 16', 'React 19', 'TypeScript', 'Evidence Graph'],
     features: ['Grafo de evidência com nível de confiança explícito', 'Matriz requisito → capacidade → prova', 'Rota dinâmica: uma apresentação por oportunidade'],
+  },
+  {
+    id: 'labs-skills',
+    title: 'Labs Skills — Design System Lab',
+    shortName: 'SKILLS LAB',
+    description: 'Validador determinístico, motor de cobertura e bancada universal multi-viewport para especificações de Design System em Markdown.',
+    icon: Wand2,
+    path: '/labs/skills',
+    status: 'NEW_RELEASE',
+    category: 'labs_core',
+    nodeId: 'NODE_0x47_SKILLS',
+    releaseDate: 'Setembro 2026',
+    techStack: ['Next.js 16', 'React 19', 'Zod v1.0 Contract', 'AST Parser', 'Isolated Canvas'],
+    features: ['Validador determinístico sem chamadas LLM', 'Bancada universal isolada via CSS Scoped', 'Cálculo de cobertura matemática e auditoria'],
   },
   {
     id: 'pitch-deck-library',
@@ -284,6 +299,7 @@ export const LABS_NAV_CONFIG = {
     { name: 'SLIDES', path: '/labs/slides', icon: Presentation },
   ] as NavLinkItem[],
   overflow: [
+    { name: 'SKILLS LAB', path: '/labs/skills', icon: Wand2 },
     { name: 'ECO HUB', path: '/eco', icon: Globe2, isSitemap: true, badge: 'SITEMAP' },
     { name: 'YOULEARN', path: '/eco/youlearn', icon: GraduationCap },
     { name: 'MENUAG', path: '/menuag', icon: UtensilsCrossed },
@@ -304,6 +320,7 @@ export const ECO_NAV_CONFIG = {
     { name: 'LABS HUB', path: '/labs', icon: LayoutGrid, isSitemap: true, badge: 'SITEMAP' },
   ] as NavLinkItem[],
   overflow: [
+    { name: 'SKILLS LAB', path: '/labs/skills', icon: Wand2 },
     { name: 'PITCH DECK LIB', path: '/labs/ag47-lib-pith-deck', icon: Layers },
     { name: 'APEX PREDICTOR', path: '/labs/apex', icon: TrendingUp },
     { name: 'ORACLE TRADER', path: '/labs/oracle-trader', icon: Brain },
