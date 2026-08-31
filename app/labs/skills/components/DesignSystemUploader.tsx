@@ -4,24 +4,28 @@ import React, { useRef, useState } from 'react';
 import { Upload, Download, Sparkles, FileText, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import { ValidationErrorItem, LabState } from '@/lib/design-system/types';
 
+export type PresetId = 'agmenu' | 'saas-dark' | 'fintech' | 'ecommerce';
+
 interface DesignSystemUploaderProps {
   onFileUpload: (content: string, filename: string) => void;
-  onLoadSample: () => void;
+  onLoadPreset: (presetId: PresetId) => void;
   onReset: () => void;
   state: LabState;
   errors: ValidationErrorItem[];
   warnings: ValidationErrorItem[];
   currentFileName?: string;
+  activePresetId?: PresetId | null;
 }
 
 export function DesignSystemUploader({
   onFileUpload,
-  onLoadSample,
+  onLoadPreset,
   onReset,
   state,
   errors,
   warnings,
   currentFileName,
+  activePresetId,
 }: DesignSystemUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -76,6 +80,37 @@ export function DesignSystemUploader({
     downloadAnchor.remove();
   };
 
+  const PRESETS: { id: PresetId; name: string; tag: string; color: string; desc: string }[] = [
+    {
+      id: 'agmenu',
+      name: 'AGMenu Clean',
+      tag: 'OLED & Lime',
+      color: '#D1FF00',
+      desc: 'Cardápios & Gastronomia',
+    },
+    {
+      id: 'saas-dark',
+      name: 'SaaS Dark',
+      tag: 'Obsidian & Indigo',
+      color: '#6366F1',
+      desc: 'B2B & Dashboards',
+    },
+    {
+      id: 'fintech',
+      name: 'Fintech Minimal',
+      tag: 'Precision Emerald',
+      color: '#10B981',
+      desc: 'Bancos & Tesouraria',
+    },
+    {
+      id: 'ecommerce',
+      name: 'E-Commerce Vibrant',
+      tag: 'Coral Sunset',
+      color: '#FF5941',
+      desc: 'Varejo & Moda',
+    },
+  ];
+
   return (
     <div className="w-full space-y-4">
       {/* Hidden File Input */}
@@ -96,11 +131,11 @@ export function DesignSystemUploader({
           isDragging
             ? 'border-emerald-400 bg-emerald-950/20 scale-[1.01]'
             : 'border-white/10 bg-zinc-950/80 hover:border-white/20'
-        } backdrop-blur-xl`}
+        } backdrop-blur-xl space-y-6`}
       >
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
           {/* Left Text */}
-          <div className="space-y-2 text-center md:text-left">
+          <div className="space-y-2 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-mono text-zinc-300">
               <FileText className="w-3.5 h-3.5 text-emerald-400" />
               <span>Design System Lab v1.0</span>
@@ -109,7 +144,7 @@ export function DesignSystemUploader({
               Como você quer começar?
             </h2>
             <p className="text-xs text-zinc-400 max-w-lg">
-              Envie um arquivo <code className="text-zinc-200">.md</code> estruturado ou baixe o modelo oficial para preencher com seu time ou agente de IA.
+              Envie um arquivo <code className="text-zinc-200">.md</code> estruturado, escolha um dos presets oficiais ou baixe o modelo oficial.
             </p>
           </div>
 
@@ -131,23 +166,61 @@ export function DesignSystemUploader({
               <span>Baixar Modelo .md</span>
             </button>
 
-            <button
-              onClick={onLoadSample}
-              className="px-4 py-2.5 text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-500/25 transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Carregar AGMenu Clean</span>
-            </button>
-
             {state !== 'EMPTY' && (
               <button
                 onClick={onReset}
-                className="p-2.5 text-xs text-zinc-400 hover:text-white bg-zinc-900 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
+                className="p-2.5 text-xs text-zinc-400 hover:text-white bg-zinc-900 border border-white/10 rounded-xl hover:bg-white/10 transition-all cursor-pointer"
                 title="Limpar e voltar ao estado neutro"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
             )}
+          </div>
+        </div>
+
+        {/* Preset Selector Bar */}
+        <div className="pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Presets Prontos para Teste Instantâneo:</span>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {PRESETS.map((preset) => {
+              const isActive = activePresetId === preset.id;
+              return (
+                <button
+                  key={preset.id}
+                  onClick={() => onLoadPreset(preset.id)}
+                  className={`group relative p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? 'bg-white/10 border-white/30 shadow-lg scale-[1.02]'
+                      : 'bg-zinc-900/60 border-white/5 hover:border-white/20 hover:bg-zinc-900'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-white group-hover:text-white transition-colors">
+                      {preset.name}
+                    </span>
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shadow-sm"
+                      style={{ backgroundColor: preset.color }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-zinc-400">{preset.desc}</span>
+                    <span
+                      className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-black/40 border border-white/5"
+                      style={{ color: preset.color }}
+                    >
+                      {preset.tag}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

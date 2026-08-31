@@ -13,7 +13,7 @@ import { parseDesignSystemMarkdown } from '@/lib/design-system/parser';
 import { normalizeDesignSystem } from '@/lib/design-system/normalizer';
 import { calculateCoverageAndAudit } from '@/lib/design-system/coverage';
 
-import { DesignSystemUploader } from './components/DesignSystemUploader';
+import { DesignSystemUploader, PresetId } from './components/DesignSystemUploader';
 import { IsolatedPreviewCanvas } from './components/IsolatedPreviewCanvas';
 import { FoundationsShowcase } from './components/showcase/FoundationsShowcase';
 import { TypographyShowcase } from './components/showcase/TypographyShowcase';
@@ -32,6 +32,7 @@ export function DesignSystemLabClient() {
   const [errors, setErrors] = useState<ValidationErrorItem[]>([]);
   const [warnings, setWarnings] = useState<ValidationErrorItem[]>([]);
   const [currentFileName, setCurrentFileName] = useState<string>('');
+  const [activePresetId, setActivePresetId] = useState<PresetId | null>(null);
 
   const [activeTab, setActiveTab] = useState<LabTabMode>('runtime');
   const [showcaseCategory, setShowcaseCategory] = useState<'all' | 'foundations' | 'typography' | 'components' | 'cards' | 'patterns'>('all');
@@ -74,17 +75,28 @@ export function DesignSystemLabClient() {
     }
   };
 
-  const handleLoadSample = async () => {
+  const PRESET_FILES: Record<PresetId, { file: string; name: string }> = {
+    agmenu: { file: '/examples/agmenu-clean-sample.md', name: 'agmenu-clean-sample.md' },
+    'saas-dark': { file: '/examples/saas-dark-sample.md', name: 'saas-dark-sample.md' },
+    fintech: { file: '/examples/fintech-minimal-sample.md', name: 'fintech-minimal-sample.md' },
+    ecommerce: { file: '/examples/ecommerce-vibrant-sample.md', name: 'ecommerce-vibrant-sample.md' },
+  };
+
+  const handleLoadPreset = async (presetId: PresetId) => {
+    const config = PRESET_FILES[presetId];
+    if (!config) return;
+
     try {
-      const res = await fetch('/examples/agmenu-clean-sample.md');
+      const res = await fetch(config.file);
       if (res.ok) {
         const content = await res.text();
-        handleProcessMarkdown(content, 'agmenu-clean-sample.md');
+        setActivePresetId(presetId);
+        handleProcessMarkdown(content, config.name);
       } else {
-        alert('Não foi possível carregar o exemplo padrão.');
+        alert(`Não foi possível carregar o preset ${config.name}.`);
       }
     } catch {
-      alert('Erro de conexão ao carregar exemplo.');
+      alert('Erro de conexão ao carregar o preset.');
     }
   };
 
@@ -95,6 +107,7 @@ export function DesignSystemLabClient() {
     setErrors([]);
     setWarnings([]);
     setCurrentFileName('');
+    setActivePresetId(null);
     setActiveTab('runtime');
   };
 
@@ -102,13 +115,17 @@ export function DesignSystemLabClient() {
     <div className="w-full space-y-8">
       {/* 1. Uploader & Entry Hero */}
       <DesignSystemUploader
-        onFileUpload={handleProcessMarkdown}
-        onLoadSample={handleLoadSample}
+        onFileUpload={(content, name) => {
+          setActivePresetId(null);
+          handleProcessMarkdown(content, name);
+        }}
+        onLoadPreset={handleLoadPreset}
         onReset={handleReset}
         state={state}
         errors={errors}
         warnings={warnings}
         currentFileName={currentFileName}
+        activePresetId={activePresetId}
       />
 
       {/* 2. Main Workbench Navigation (When Spec is Loaded) */}
@@ -210,7 +227,7 @@ export function DesignSystemLabClient() {
             </div>
             <div className="pt-2">
               <button
-                onClick={handleLoadSample}
+                onClick={() => handleLoadPreset('agmenu')}
                 className="px-4 py-2 text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-xl hover:text-white hover:bg-zinc-800 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-emerald-400" />

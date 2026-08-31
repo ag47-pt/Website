@@ -45,6 +45,30 @@ function runTests() {
   assert(normalizedSample.isValid, 'Normalized AGMenu sample is valid', JSON.stringify(normalizedSample.errors));
   assert(normalizedSample.normalized?.colors.primary.dark_value === '#D1FF00', 'AGMenu primary dark color parsed as #D1FF00 (Lime)');
 
+  // 2.1 Test Preset: SaaS Dark
+  const saasPath = path.join(process.cwd(), 'public', 'examples', 'saas-dark-sample.md');
+  assert(fs.existsSync(saasPath), 'SaaS Dark fixture exists on disk');
+  const saasContent = fs.readFileSync(saasPath, 'utf8');
+  const normalizedSaas = normalizeDesignSystem(parseDesignSystemMarkdown(saasContent));
+  assert(normalizedSaas.isValid, 'Normalized SaaS Dark sample is valid', JSON.stringify(normalizedSaas.errors));
+  assert(normalizedSaas.normalized?.colors.primary.dark_value === '#6366F1', 'SaaS Dark primary is #6366F1');
+
+  // 2.2 Test Preset: Fintech Minimal
+  const fintechPath = path.join(process.cwd(), 'public', 'examples', 'fintech-minimal-sample.md');
+  assert(fs.existsSync(fintechPath), 'Fintech Minimal fixture exists on disk');
+  const fintechContent = fs.readFileSync(fintechPath, 'utf8');
+  const normalizedFintech = normalizeDesignSystem(parseDesignSystemMarkdown(fintechContent));
+  assert(normalizedFintech.isValid, 'Normalized Fintech Minimal sample is valid', JSON.stringify(normalizedFintech.errors));
+  assert(normalizedFintech.normalized?.colors.primary.dark_value === '#10B981', 'Fintech Minimal primary is #10B981');
+
+  // 2.3 Test Preset: E-Commerce Vibrant
+  const ecomPath = path.join(process.cwd(), 'public', 'examples', 'ecommerce-vibrant-sample.md');
+  assert(fs.existsSync(ecomPath), 'E-Commerce Vibrant fixture exists on disk');
+  const ecomContent = fs.readFileSync(ecomPath, 'utf8');
+  const normalizedEcom = normalizeDesignSystem(parseDesignSystemMarkdown(ecomContent));
+  assert(normalizedEcom.isValid, 'Normalized E-Commerce Vibrant sample is valid', JSON.stringify(normalizedEcom.errors));
+  assert(normalizedEcom.normalized?.colors.primary.dark_value === '#FF5941', 'E-Commerce Vibrant primary is #FF5941');
+
   // 3. Test Coverage Calculation & Mathematical Precision
   if (normalizedSample.normalized) {
     const audit = calculateCoverageAndAudit(normalizedSample.normalized);
