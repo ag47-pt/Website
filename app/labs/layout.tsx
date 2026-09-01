@@ -49,6 +49,11 @@ export default function LabsLayout({
     }
   }, [moreOpen]);
 
+  // Fully isolate the Design System Live Runtime from AG47 navbar, footer, themes, and backgrounds
+  if (pathname?.startsWith('/labs/skills/design-system/runtime')) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans" style={{ '--primary-color': theme.colors.primary } as any}>
       <style>{`
