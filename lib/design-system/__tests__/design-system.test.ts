@@ -4,6 +4,7 @@ import { parseDesignSystemMarkdown } from '../parser';
 import { normalizeDesignSystem } from '../normalizer';
 import { calculateCoverageAndAudit } from '../coverage';
 import { generateCssTokens, generateTailwindConfig } from '../exporters';
+import { ARCHETYPE_SECTION_RECIPES } from '../runtime/section-recipes';
 
 function runTests() {
   console.log('🧪 Starting AG47 Labs Skills — Design System Lab Deterministic Test Suite...\n');
@@ -22,19 +23,53 @@ function runTests() {
     }
   }
 
-  // 1. Test Official Template
+  // 1. Test Official Neutral Unfilled Template
   const templatePath = path.join(process.cwd(), 'public', 'templates', 'design-system-template.md');
-  assert(fs.existsSync(templatePath), 'Official template exists on disk');
+  assert(fs.existsSync(templatePath), 'Official neutral template exists on disk');
 
   const templateContent = fs.readFileSync(templatePath, 'utf8');
   const parsedTemplate = parseDesignSystemMarkdown(templateContent);
-  assert(parsedTemplate.frontmatter.spec_version === '1.0', 'Parsed template frontmatter spec_version is 1.0');
-  assert(parsedTemplate.sections.length > 5, `Parsed template has ${parsedTemplate.sections.length} structured sections`);
+  assert(parsedTemplate.frontmatter.spec_version === '1.1', 'Parsed template frontmatter spec_version is 1.1');
+  assert(parsedTemplate.sections.length >= 8, `Parsed template has ${parsedTemplate.sections.length} structured sections`);
+
+  // Verify Zero Lima / AG47 / Pre-filled Brand Contamination in Download Template
+  assert(!templateContent.includes('#C2F500'), 'Template has ZERO Lima primary color (#C2F500)');
+  assert(!templateContent.includes('#A855F7'), 'Template has ZERO Lima secondary color (#A855F7)');
+  assert(!templateContent.includes('Space Grotesk'), 'Template has ZERO Lima font (Space Grotesk)');
+  assert(!templateContent.includes('Lima Voice Platform'), 'Template has ZERO Lima brand references');
+  assert(!templateContent.includes('AGMenu'), 'Template has ZERO AGMenu brand references');
+  assert(!templateContent.includes('#2563EB'), 'Template has ZERO hardcoded blue brand color (#2563EB)');
 
   const normalizedTemplate = normalizeDesignSystem(parsedTemplate);
-  assert(normalizedTemplate.isValid, 'Normalized official template is schema-valid', JSON.stringify(normalizedTemplate.errors));
-  assert(normalizedTemplate.normalized?.colors.primary.value === '#2563EB', 'Template primary color parsed correctly (#2563EB)');
-  assert(normalizedTemplate.normalized?.typography.display.size === '48px', 'Template typography display size parsed correctly (48px)');
+  assert(normalizedTemplate.isValid, 'Neutral unfilled template is schema-valid', JSON.stringify(normalizedTemplate.errors));
+  assert(normalizedTemplate.normalized?.colors.primary.status === 'NOT_DEFINED', 'Template primary color status is NOT_DEFINED');
+  assert(normalizedTemplate.normalized?.typography.display.status === 'NOT_DEFINED', 'Template typography display status is NOT_DEFINED');
+
+  // 1.1 Test Full External Project Flow:
+  // Download Model (unfilled template) -> Fill in external project -> Upload to Lab -> Parse/Normalize -> Runtime Visual
+  const filledExternalProjectMd = templateContent
+    .replace('name: ""', 'name: "Apex Cyber Security"')
+    .replace('description: ""', 'description: "Design System para plataforma de cibersegurança e SOC."')
+    .replace('archetype: ""', 'archetype: "fintech"')
+    .replace('density: ""', 'density: "compact"')
+    .replace('brand_name: ""', 'brand_name: "Apex Cyber"')
+    .replace('headline: ""', 'headline: "Proteção Zero Trust em Tempo Real"')
+    .replace('| `primary` | Primary Brand | | | Ações principais e botões CTA | `NOT_DEFINED` |', '| `primary` | Primary Brand | `#00FF66` | `#00FF66` | Ações principais e botões CTA | `DEFINED` |')
+    .replace('| `secondary` | Secondary | | | Ações secundárias e elementos de suporte | `NOT_DEFINED` |', '| `secondary` | Secondary | `#00E5FF` | `#00E5FF` | Ações secundárias | `DEFINED` |')
+    .replace('| `display` | Display Hero | | | | | | | `NOT_DEFINED` |', '| `display` | Display Hero | `Geist, sans-serif` | `44px` | `30px` | `800` | `1.1` | `-0.02em` | `DEFINED` |')
+    .replace('### Button Primary\n- **ID:** `button.primary`\n- **Category:** `button`\n- **Status:** `NOT_DEFINED`\n- **Radius:** \n- **Padding:** \n- **Font Token:** `button`\n- **States:\n  - `default`: bg=, text=, border=, shadow=', '### Button Primary\n- **ID:** `button.primary`\n- **Category:** `button`\n- **Status:** `DEFINED`\n- **Radius:** `6px`\n- **Padding:** `8px 16px`\n- **Font Token:** `button`\n- **States:**\n  - `default`: bg=`#00FF66`, text=`#000000`, border=`transparent`');
+
+  const parsedExternal = parseDesignSystemMarkdown(filledExternalProjectMd);
+  const normalizedExternal = normalizeDesignSystem(parsedExternal);
+  assert(normalizedExternal.isValid, 'Filled external project is 100% valid', JSON.stringify(normalizedExternal.errors));
+  assert(normalizedExternal.normalized?.meta.name === 'Apex Cyber Security', 'External project name parsed correctly');
+  assert(normalizedExternal.normalized?.colors.primary.value === '#00FF66', 'External project primary color parsed as #00FF66');
+  assert(normalizedExternal.normalized?.presentation.archetype === 'fintech', 'External project archetype parsed as fintech');
+  assert(normalizedExternal.normalized?.presentation.is_fallback === false, 'External project presentation was explicitly declared');
+
+  // Verify Runtime recipes generation for external project
+  const archetypeRecipe = ARCHETYPE_SECTION_RECIPES[normalizedExternal.normalized!.presentation.archetype];
+  assert(archetypeRecipe && archetypeRecipe.sections.length > 4, `Runtime section recipe generated for archetype (${archetypeRecipe?.sections.length} sections)`);
 
   // 2. Test Golden Sample (AGMenu Clean)
   const samplePath = path.join(process.cwd(), 'public', 'examples', 'agmenu-clean-sample.md');

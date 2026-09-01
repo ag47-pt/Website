@@ -41,26 +41,41 @@ export function parseYamlFrontmatter(markdown: string): { frontmatter: Record<st
   let currentParent: string | null = null;
 
   function parseVal(rawVal: string, key: string): any {
-    const isExplicitlyQuoted =
-      (rawVal.startsWith('"') && rawVal.endsWith('"')) ||
-      (rawVal.startsWith("'") && rawVal.endsWith("'"));
+    let val = rawVal.trim();
 
-    if (isExplicitlyQuoted) {
-      return rawVal.slice(1, -1);
+    // Strip trailing inline comments if not inside quotes
+    const isQuoted =
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"));
+    if (!isQuoted && val.includes('#')) {
+      val = val.split('#')[0].trim();
+    }
+
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      return val.slice(1, -1);
+    }
+    if (val === 'null' || val === '~' || val === 'unknown') {
+      return null;
+    }
+    if (val === '') {
+      return '';
     }
     if (key.includes('version') || key === 'spec_version') {
-      return rawVal;
+      return val;
     }
-    if (rawVal.toLowerCase() === 'true') {
+    if (val.toLowerCase() === 'true') {
       return true;
     }
-    if (rawVal.toLowerCase() === 'false') {
+    if (val.toLowerCase() === 'false') {
       return false;
     }
-    if (!isNaN(Number(rawVal)) && rawVal !== '') {
-      return Number(rawVal);
+    if (!isNaN(Number(val)) && val !== '') {
+      return Number(val);
     }
-    return rawVal;
+    return val;
   }
 
   for (const line of lines) {

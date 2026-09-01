@@ -48,6 +48,21 @@ export function normalizeDesignSystem(doc: RawParsedDesignSystem): ValidationRes
     });
   }
 
+  // Clean presentation and demo_content objects from empty string / null values
+  const cleanObjectKeys = (obj: any) => {
+    if (!obj || typeof obj !== 'object') return undefined;
+    const res: Record<string, any> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v !== undefined && v !== null && v !== '') {
+        res[k] = v;
+      }
+    }
+    return Object.keys(res).length > 0 ? res : undefined;
+  };
+
+  const cleanPresentation = cleanObjectKeys(frontmatter.presentation);
+  const cleanDemoContent = cleanObjectKeys(frontmatter.demo_content);
+
   const meta = {
     spec_version: (specVersion === '1.1' ? '1.1' : '1.0') as SpecVersion,
     name: String(frontmatter.name || 'Design System Sem Nome'),
@@ -56,8 +71,8 @@ export function normalizeDesignSystem(doc: RawParsedDesignSystem): ValidationRes
     description: String(frontmatter.description || ''),
     theme: String(frontmatter.theme || 'default'),
     supported_modes: (frontmatter.supported_modes || 'both') as any,
-    presentation: frontmatter.presentation as any,
-    demo_content: frontmatter.demo_content as any,
+    presentation: cleanPresentation as any,
+    demo_content: cleanDemoContent as any,
     author: frontmatter.author ? String(frontmatter.author) : undefined,
     last_updated: frontmatter.last_updated ? String(frontmatter.last_updated) : undefined,
   };
@@ -267,10 +282,17 @@ function normalizeColorPalette(sec: RawParsedSection | undefined, warnings: Vali
     if (!id) continue;
 
     const name = row['nome'] || row['token_name'] || row['name'] || rawId;
-    const value = row['valor_claro'] || row['light_value'] || row['value'] || row['light'] || '#000000';
-    const dark_value = row['valor_escuro'] || row['dark_value'] || row['dark'] || undefined;
-    const usage = row['uso_principal'] || row['uso'] || row['usage'] || '';
     const status = parseElementStatus(row['status']);
+    const rawValClaro = row['valor_claro'] || row['light_value'] || row['value'] || row['light'];
+    const rawValEscuro = row['valor_escuro'] || row['dark_value'] || row['dark'];
+    const defCol = defaultColors[id as keyof ColorPaletteSpec] as ColorToken | undefined;
+
+    const value = rawValClaro && rawValClaro.trim() !== ''
+      ? rawValClaro.trim()
+      : (status === 'NOT_DEFINED' ? 'transparent' : (defCol?.value || '#000000'));
+
+    const dark_value = rawValEscuro && rawValEscuro.trim() !== '' ? rawValEscuro.trim() : undefined;
+    const usage = row['uso_principal'] || row['uso'] || row['usage'] || '';
 
     const token: ColorToken = {
       name,
@@ -331,16 +353,23 @@ function normalizeTypographyScale(sec: RawParsedSection | undefined, warnings: V
     const id = normalizeKey(rawId);
     if (!id) continue;
 
+    const status = parseElementStatus(row['status']);
+    const rawSize = row['size'];
+    const defTypo = defaultTypography[id as keyof TypographyScaleSpec] as TypographyToken | undefined;
+    const size = rawSize && rawSize.trim() !== ''
+      ? rawSize.trim()
+      : (status === 'NOT_DEFINED' ? '0px' : (defTypo?.size || '16px'));
+
     const token: TypographyToken = {
       name: row['name'] || rawId,
       font_family: row['font_family'] || row['family'] || 'inherit',
-      size: row['size'] || '16px',
-      mobile_size: row['mobile_size'] || undefined,
-      weight: row['weight'] ? Number(row['weight']) || row['weight'] : 400,
-      line_height: row['line_height'] ? Number(row['line_height']) || row['line_height'] : 1.5,
-      tracking: row['tracking'] || undefined,
-      style: row['style'] || undefined,
-      status: parseElementStatus(row['status']),
+      size,
+      mobile_size: row['mobile_size'] && row['mobile_size'].trim() !== '' ? row['mobile_size'].trim() : undefined,
+      weight: row['weight'] && row['weight'].trim() !== '' ? (Number(row['weight']) || row['weight'].trim()) : 400,
+      line_height: row['line_height'] && row['line_height'].trim() !== '' ? (Number(row['line_height']) || row['line_height'].trim()) : 1.5,
+      tracking: row['tracking'] && row['tracking'].trim() !== '' ? row['tracking'].trim() : undefined,
+      style: row['style'] && row['style'].trim() !== '' ? row['style'].trim() : undefined,
+      status,
     };
 
     if (id in defaultTypography) {

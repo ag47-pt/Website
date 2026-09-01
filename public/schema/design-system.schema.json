@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AG47DesignSystemSpec",
-  "description": "Deterministic Design System Specification Contract v1.0 for AG47 Labs Skills",
+  "description": "Deterministic Design System Specification Contract v1.1 for AG47 Labs Skills",
   "type": "object",
   "required": ["meta", "colors", "typography"],
   "properties": {
@@ -9,13 +9,40 @@
       "type": "object",
       "required": ["spec_version", "name", "version", "platform", "supported_modes"],
       "properties": {
-        "spec_version": { "type": "string", "enum": ["1.0"] },
+        "spec_version": { "type": "string", "enum": ["1.0", "1.1"] },
         "name": { "type": "string" },
         "version": { "type": "string" },
         "platform": { "type": "string", "enum": ["web", "mobile", "universal"] },
         "description": { "type": "string" },
         "theme": { "type": "string" },
-        "supported_modes": { "type": "string", "enum": ["light", "dark", "both"] }
+        "supported_modes": { "type": "string", "enum": ["light", "dark", "both"] },
+        "presentation": {
+          "type": "object",
+          "properties": {
+            "archetype": { "type": "string", "enum": ["editorial", "saas", "commerce", "fintech", "restaurant", "service", "minimal", "generic"] },
+            "density": { "type": "string", "enum": ["compact", "balanced", "spacious"] },
+            "alignment": { "type": "string", "enum": ["symmetric", "asymmetric"] },
+            "hero_style": { "type": "string", "enum": ["centered", "split", "editorial", "visual"] },
+            "card_style": { "type": "string", "enum": ["flat", "bordered", "elevated", "image_led"] },
+            "section_flow": { "type": "string", "enum": ["linear", "alternating", "editorial", "modular"] },
+            "navigation_style": { "type": "string", "enum": ["minimal", "standard", "prominent"] },
+            "imagery_weight": { "type": "string", "enum": ["none", "low", "medium", "high"] },
+            "decorative_style": { "type": "string", "enum": ["none", "restrained", "expressive"] }
+          }
+        },
+        "demo_content": {
+          "type": "object",
+          "properties": {
+            "profile": { "type": "string" },
+            "brand_name": { "type": "string" },
+            "tagline": { "type": "string" },
+            "eyebrow": { "type": "string" },
+            "headline": { "type": "string" },
+            "description": { "type": "string" },
+            "cta_primary": { "type": "string" },
+            "cta_secondary": { "type": "string" }
+          }
+        }
       }
     },
     "identity": {
