@@ -1,6 +1,6 @@
 # Design System Lab — Runtime Visual Real
 
-## Prompt de implementação para Vision / Codex / Antigravity
+## Prompt de implementação Antigravity
 
 ### TAREFA: EVOLUIR O DESIGN SYSTEM LAB PARA UM RUNTIME VISUAL REAL
 
