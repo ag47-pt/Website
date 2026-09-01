@@ -2,67 +2,100 @@
 
 import React, { useState } from 'react';
 import { NormalizedDesignSystem } from '@/lib/design-system/types';
-import { Copy, Check, FileCode, CheckCircle2, XCircle } from 'lucide-react';
+import { generateCssTokens, generateTailwindConfig } from '@/lib/design-system/exporters';
+import { Copy, Check, FileCode, CheckCircle2, XCircle, Download, Code2, Palette } from 'lucide-react';
 
 interface SpecInspectorProps {
   spec: NormalizedDesignSystem;
 }
 
-export function SpecInspector({ spec }: SpecInspectorProps) {
-  const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'tokens' | 'identity' | 'raw'>('tokens');
+type SpecTab = 'tokens' | 'css' | 'tailwind' | 'identity' | 'raw';
 
-  const handleCopyJson = () => {
-    navigator.clipboard.writeText(JSON.stringify(spec, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+export function SpecInspector({ spec }: SpecInspectorProps) {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<SpecTab>('tokens');
+
+  const cssTokensCode = generateCssTokens(spec);
+  const tailwindConfigCode = generateTailwindConfig(spec);
+
+  const handleCopy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handleDownloadFile = (content: string, filename: string, mimeType: string = 'text/plain') => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', url);
+    downloadAnchor.setAttribute('download', filename);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div>
-          <h3 className="text-xl font-bold tracking-tight text-white">Especificação Normalizada</h3>
+          <h3 className="text-xl font-bold tracking-tight text-white">Especificação & Exportação de Código</h3>
           <p className="text-xs text-zinc-400">
-            Estrutura tipada resultante do parsing determinístico e validação de schema.
+            Exporte variáveis CSS prontas para colar, arquivo <code className="text-zinc-200">tailwind.config.ts</code> ou contrato JSON.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex bg-zinc-900 border border-white/10 rounded-xl p-1 text-xs">
+        {/* Tab Navigation */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap bg-zinc-900 border border-white/10 rounded-xl p-1 text-xs">
             <button
               onClick={() => setActiveTab('tokens')}
-              className={`px-3 py-1 font-semibold rounded-lg transition-all ${
-                activeTab === 'tokens' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'
+              className={`px-3 py-1.5 font-semibold rounded-lg transition-all cursor-pointer ${
+                activeTab === 'tokens' ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Tokens & Regras
+              Tokens & Resumo
             </button>
+
+            <button
+              onClick={() => setActiveTab('css')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 font-semibold rounded-lg transition-all cursor-pointer ${
+                activeTab === 'css' ? 'bg-indigo-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Palette className="w-3.5 h-3.5" />
+              <span>tokens.css</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('tailwind')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 font-semibold rounded-lg transition-all cursor-pointer ${
+                activeTab === 'tailwind' ? 'bg-cyan-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Code2 className="w-3.5 h-3.5" />
+              <span>tailwind.config.ts</span>
+            </button>
+
             <button
               onClick={() => setActiveTab('identity')}
-              className={`px-3 py-1 font-semibold rounded-lg transition-all ${
-                activeTab === 'identity' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'
+              className={`px-3 py-1.5 font-semibold rounded-lg transition-all cursor-pointer ${
+                activeTab === 'identity' ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'
               }`}
             >
               Identidade & DOs
             </button>
+
             <button
               onClick={() => setActiveTab('raw')}
-              className={`px-3 py-1 font-semibold rounded-lg transition-all ${
-                activeTab === 'raw' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'
+              className={`px-3 py-1.5 font-semibold rounded-lg transition-all cursor-pointer ${
+                activeTab === 'raw' ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'
               }`}
             >
               JSON Contrato
             </button>
           </div>
-
-          <button
-            onClick={handleCopyJson}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-900 border border-white/10 rounded-xl text-zinc-300 hover:text-white transition-all"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copiado' : 'Copiar'}</span>
-          </button>
         </div>
       </div>
 
@@ -111,6 +144,78 @@ export function SpecInspector({ spec }: SpecInspectorProps) {
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: CSS Tokens */}
+      {activeTab === 'css' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-zinc-950 border border-white/10 rounded-2xl">
+            <div>
+              <h4 className="text-sm font-bold text-white font-mono">tokens.css</h4>
+              <p className="text-xs text-zinc-400">
+                Variáveis CSS padronizadas para modo claro e escuro (compatível com Next.js, Vite, HTML e CSS puro).
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleCopy(cssTokensCode, 'css')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-900 border border-white/10 rounded-xl text-zinc-200 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+              >
+                {copiedKey === 'css' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedKey === 'css' ? 'Copiado!' : 'Copiar CSS'}</span>
+              </button>
+              <button
+                onClick={() => handleDownloadFile(cssTokensCode, 'tokens.css', 'text/css')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all cursor-pointer shadow-md"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Baixar tokens.css</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 bg-black/90 border border-white/10 rounded-2xl overflow-x-auto max-h-[500px]">
+            <pre className="text-[11px] font-mono text-zinc-300 leading-relaxed whitespace-pre">
+              {cssTokensCode}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Tailwind Config */}
+      {activeTab === 'tailwind' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-zinc-950 border border-white/10 rounded-2xl">
+            <div>
+              <h4 className="text-sm font-bold text-white font-mono">tailwind.config.ts</h4>
+              <p className="text-xs text-zinc-400">
+                Configuração pronta para estender o Tailwind CSS com tokens de cores, raios, espaçamentos e fontes.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleCopy(tailwindConfigCode, 'tailwind')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-900 border border-white/10 rounded-xl text-zinc-200 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+              >
+                {copiedKey === 'tailwind' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedKey === 'tailwind' ? 'Copiado!' : 'Copiar Config'}</span>
+              </button>
+              <button
+                onClick={() => handleDownloadFile(tailwindConfigCode, 'tailwind.config.ts', 'application/typescript')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl transition-all cursor-pointer shadow-md"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Baixar config.ts</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 bg-black/90 border border-white/10 rounded-2xl overflow-x-auto max-h-[500px]">
+            <pre className="text-[11px] font-mono text-zinc-300 leading-relaxed whitespace-pre">
+              {tailwindConfigCode}
+            </pre>
           </div>
         </div>
       )}
@@ -181,10 +286,28 @@ export function SpecInspector({ spec }: SpecInspectorProps) {
       )}
 
       {activeTab === 'raw' && (
-        <div className="p-4 bg-black border border-white/10 rounded-2xl overflow-x-auto">
-          <pre className="text-[11px] font-mono text-zinc-300 leading-relaxed">
-            {JSON.stringify(spec, null, 2)}
-          </pre>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-zinc-950 border border-white/10 rounded-2xl">
+            <div>
+              <h4 className="text-sm font-bold text-white font-mono">contract.json</h4>
+              <p className="text-xs text-zinc-400">
+                Estrutura de dados normalizada do Design System no formato Zod Contract v1.0.
+              </p>
+            </div>
+            <button
+              onClick={() => handleCopy(JSON.stringify(spec, null, 2), 'raw')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-900 border border-white/10 rounded-xl text-zinc-200 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+            >
+              {copiedKey === 'raw' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedKey === 'raw' ? 'Copiado!' : 'Copiar JSON'}</span>
+            </button>
+          </div>
+
+          <div className="p-4 bg-black border border-white/10 rounded-2xl overflow-x-auto max-h-[500px]">
+            <pre className="text-[11px] font-mono text-zinc-300 leading-relaxed">
+              {JSON.stringify(spec, null, 2)}
+            </pre>
+          </div>
         </div>
       )}
     </div>

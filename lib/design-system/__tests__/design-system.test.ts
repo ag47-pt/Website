@@ -3,6 +3,7 @@ import path from 'path';
 import { parseDesignSystemMarkdown } from '../parser';
 import { normalizeDesignSystem } from '../normalizer';
 import { calculateCoverageAndAudit } from '../coverage';
+import { generateCssTokens, generateTailwindConfig } from '../exporters';
 
 function runTests() {
   console.log('🧪 Starting AG47 Labs Skills — Design System Lab Deterministic Test Suite...\n');
@@ -132,6 +133,20 @@ platform: "web"
       founds !== undefined && founds.not_applicable >= 12,
       `NOT_APPLICABLE correctly deducted from denominator (not_applicable count: ${founds?.not_applicable})`
     );
+  }
+
+  // 6. Test Exporters (CSS Tokens and Tailwind Config)
+  if (normalizedSample.normalized) {
+    const cssOutput = generateCssTokens(normalizedSample.normalized);
+    assert(cssOutput.includes(':root {'), 'CSS tokens export includes :root');
+    assert(cssOutput.includes('--color-primary: #84CC16;'), 'CSS tokens export contains light primary');
+    assert(cssOutput.includes('--color-primary: #D1FF00;'), 'CSS tokens export contains dark primary');
+    assert(cssOutput.includes('--spacing-base: 4px;'), 'CSS tokens export contains spacing base');
+
+    const tailwindOutput = generateTailwindConfig(normalizedSample.normalized);
+    assert(tailwindOutput.includes('import type { Config }'), 'Tailwind config includes Config type import');
+    assert(tailwindOutput.includes("'primary': 'var(--color-primary)'"), 'Tailwind config maps primary color');
+    assert(tailwindOutput.includes('borderRadius: {'), 'Tailwind config extends borderRadius');
   }
 
   console.log(`\n🏁 Test Results: ${passed} passed, ${failed} failed.\n`);
