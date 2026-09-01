@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { Upload, Download, Sparkles, FileText, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import { ValidationErrorItem, LabState } from '@/lib/design-system/types';
 
-export type PresetId = 'agmenu' | 'saas-dark' | 'fintech' | 'ecommerce';
+export type PresetId = 'lima' | 'agmenu' | 'saas-dark' | 'fintech' | 'ecommerce';
 
 interface DesignSystemUploaderProps {
   onFileUpload: (content: string, filename: string) => void;
@@ -81,6 +81,13 @@ export function DesignSystemUploader({
   };
 
   const PRESETS: { id: PresetId; name: string; tag: string; color: string; desc: string }[] = [
+    {
+      id: 'lima',
+      name: 'Lima Design System',
+      tag: 'High Contrast & Energy',
+      color: '#C2F500',
+      desc: 'Benchmark Oficial v1.2',
+    },
     {
       id: 'agmenu',
       name: 'AGMenu Clean',

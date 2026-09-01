@@ -159,9 +159,54 @@ export const AccessibilitySpecSchema = z.object({
   status: ElementStatusSchema.default('DEFINED'),
 });
 
+export const ArchetypeSchema = z.enum([
+  'editorial',
+  'saas',
+  'commerce',
+  'fintech',
+  'restaurant',
+  'service',
+  'minimal',
+  'generic',
+]);
+
+export const PresentationSpecSchema = z.object({
+  archetype: ArchetypeSchema.default('saas'),
+  density: z.enum(['compact', 'balanced', 'spacious']).default('balanced'),
+  alignment: z.enum(['symmetric', 'asymmetric']).default('symmetric'),
+  hero_style: z.enum(['centered', 'split', 'editorial', 'visual']).default('split'),
+  card_style: z.enum(['flat', 'bordered', 'elevated', 'image_led']).default('bordered'),
+  section_flow: z.enum(['linear', 'alternating', 'editorial', 'modular']).default('alternating'),
+  navigation_style: z.enum(['minimal', 'standard', 'prominent']).default('standard'),
+  imagery_weight: z.enum(['none', 'low', 'medium', 'high']).default('medium'),
+  decorative_style: z.enum(['none', 'restrained', 'expressive']).default('restrained'),
+  is_fallback: z.boolean().optional(),
+});
+
+export const DemoContentSpecSchema = z.object({
+  profile: ArchetypeSchema.default('saas'),
+  brand_name: z.string().optional(),
+  tagline: z.string().optional(),
+  eyebrow: z.string().optional(),
+  headline: z.string().optional(),
+  description: z.string().optional(),
+  cta_primary: z.string().optional(),
+  cta_secondary: z.string().optional(),
+  features_highlight: z
+    .array(
+      z.object({
+        title: z.string(),
+        desc: z.string(),
+        tag: z.string().optional(),
+      })
+    )
+    .optional(),
+  is_fallback: z.boolean().optional(),
+});
+
 export const MetaSpecSchema = z.object({
-  spec_version: z.literal('1.0', {
-    message: 'Versão de especificação incompatível. A versão suportada no momento é 1.0.',
+  spec_version: z.enum(['1.0', '1.1'], {
+    message: 'Versão de especificação incompatível. As versões suportadas são 1.0 e 1.1.',
   }),
   name: z.string().min(1, 'Nome do Design System obrigatório'),
   version: z.string().min(1, 'Versão do Design System obrigatória (ex: 1.0.0)'),
@@ -169,6 +214,8 @@ export const MetaSpecSchema = z.object({
   description: z.string().default(''),
   theme: z.string().default('default'),
   supported_modes: z.enum(['light', 'dark', 'both']).default('both'),
+  presentation: PresentationSpecSchema.partial().optional(),
+  demo_content: DemoContentSpecSchema.partial().optional(),
   author: z.string().optional(),
   last_updated: z.string().optional(),
 });
@@ -219,6 +266,20 @@ export const TypographyScaleSpecSchema = z.object({
 export const NormalizedDesignSystemSchema = z.object({
   meta: MetaSpecSchema,
   identity: IdentitySpecSchema.default({ principles: [], brand_personality: [], visual_direction: '', dos: [], donts: [] }),
+  presentation: PresentationSpecSchema.default({
+    archetype: 'saas',
+    density: 'balanced',
+    alignment: 'symmetric',
+    hero_style: 'split',
+    card_style: 'bordered',
+    section_flow: 'alternating',
+    navigation_style: 'standard',
+    imagery_weight: 'medium',
+    decorative_style: 'restrained',
+  }),
+  demo_content: DemoContentSpecSchema.default({
+    profile: 'saas',
+  }),
   colors: ColorPaletteSpecSchema,
   typography: TypographyScaleSpecSchema,
   spacing: SpacingSpecSchema.default({

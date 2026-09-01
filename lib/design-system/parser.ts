@@ -21,8 +21,11 @@ export interface RawParsedDocument {
   rawMarkdown: string;
 }
 
+export type RawParsedDesignSystem = RawParsedDocument;
+
 /**
- * Safely parse YAML-like key-value frontmatter without eval or unsafe scripts
+ * Safely parse YAML-like key-value frontmatter with support for nested objects
+ * without eval or unsafe scripts.
  */
 export function parseYamlFrontmatter(markdown: string): { frontmatter: Record<string, any>; body: string } {
   const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -35,33 +38,56 @@ export function parseYamlFrontmatter(markdown: string): { frontmatter: Record<st
   const frontmatter: Record<string, any> = {};
 
   const lines = rawYaml.split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
+  let currentParent: string | null = null;
 
+  function parseVal(rawVal: string, key: string): any {
+    const isExplicitlyQuoted =
+      (rawVal.startsWith('"') && rawVal.endsWith('"')) ||
+      (rawVal.startsWith("'") && rawVal.endsWith("'"));
+
+    if (isExplicitlyQuoted) {
+      return rawVal.slice(1, -1);
+    }
+    if (key.includes('version') || key === 'spec_version') {
+      return rawVal;
+    }
+    if (rawVal.toLowerCase() === 'true') {
+      return true;
+    }
+    if (rawVal.toLowerCase() === 'false') {
+      return false;
+    }
+    if (!isNaN(Number(rawVal)) && rawVal !== '') {
+      return Number(rawVal);
+    }
+    return rawVal;
+  }
+
+  for (const line of lines) {
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+
+    const isIndented = line.startsWith('  ') || line.startsWith('\t');
+    const trimmed = line.trim();
     const colonIndex = trimmed.indexOf(':');
+
     if (colonIndex > 0) {
       const key = trimmed.slice(0, colonIndex).trim();
-      let rawVal = trimmed.slice(colonIndex + 1).trim();
+      const rawVal = trimmed.slice(colonIndex + 1).trim();
 
-      // Preserve strings if quoted or if key is a version/name/spec field
-      const isExplicitlyQuoted =
-        (rawVal.startsWith('"') && rawVal.endsWith('"')) ||
-        (rawVal.startsWith("'") && rawVal.endsWith("'"));
-
-      if (isExplicitlyQuoted) {
-        rawVal = rawVal.slice(1, -1);
-        frontmatter[key] = rawVal;
-      } else if (key.includes('version') || key === 'spec_version') {
-        frontmatter[key] = rawVal;
-      } else if (rawVal.toLowerCase() === 'true') {
-        frontmatter[key] = true;
-      } else if (rawVal.toLowerCase() === 'false') {
-        frontmatter[key] = false;
-      } else if (!isNaN(Number(rawVal)) && rawVal !== '') {
-        frontmatter[key] = Number(rawVal);
+      if (!isIndented) {
+        if (rawVal === '') {
+          // Parent key with nested children
+          currentParent = key;
+          frontmatter[currentParent] = {};
+        } else {
+          currentParent = null;
+          frontmatter[key] = parseVal(rawVal, key);
+        }
+      } else if (currentParent) {
+        // Child key inside currentParent object
+        frontmatter[currentParent][key] = parseVal(rawVal, key);
       } else {
-        frontmatter[key] = rawVal;
+        frontmatter[key] = parseVal(rawVal, key);
       }
     }
   }

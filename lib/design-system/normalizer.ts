@@ -1,5 +1,5 @@
 import {
-  RawParsedDocument,
+  RawParsedDesignSystem,
   RawParsedSection,
   parseElementStatus,
   normalizeKey,
@@ -21,38 +21,43 @@ import {
   MotionSpec,
   ComponentSpec,
   PatternSpec,
-  StateDefinition,
+  SpecVersion,
   ComponentStateMap,
+  StateDefinition,
 } from './types';
 import { NormalizedDesignSystemSchema } from './schema';
+import { resolvePresentationProfile, resolveDemoContent } from './presentation-resolver';
 
 /**
- * Normalizes raw parsed AST into strict NormalizedDesignSystem
+ * Deterministically transforms a raw parsed Markdown AST into a fully resolved,
+ * strictly typed NormalizedDesignSystem object.
  */
-export function normalizeDesignSystem(doc: RawParsedDocument): ValidationResult {
+export function normalizeDesignSystem(doc: RawParsedDesignSystem): ValidationResult {
   const errors: ValidationErrorItem[] = [];
   const warnings: ValidationErrorItem[] = [];
 
   const { frontmatter, sections, rawMarkdown } = doc;
 
   // 1. Meta Normalization & Version Verification
-  const specVersion = String(frontmatter.spec_version || '1.0');
-  if (specVersion !== '1.0') {
+  const specVersion = String(frontmatter.spec_version || '1.0') as SpecVersion;
+  if (specVersion !== '1.0' && specVersion !== '1.1') {
     errors.push({
       path: 'meta.spec_version',
-      message: `Versão "${specVersion}" incompatível. A versão de contrato suportada é "1.0".`,
+      message: `Versão "${specVersion}" incompatível. As versões de contrato suportadas são "1.0" e "1.1".`,
       severity: 'error',
     });
   }
 
   const meta = {
-    spec_version: '1.0' as const,
+    spec_version: (specVersion === '1.1' ? '1.1' : '1.0') as SpecVersion,
     name: String(frontmatter.name || 'Design System Sem Nome'),
     version: String(frontmatter.version || '1.0.0'),
     platform: (frontmatter.platform || 'web') as any,
     description: String(frontmatter.description || ''),
     theme: String(frontmatter.theme || 'default'),
     supported_modes: (frontmatter.supported_modes || 'both') as any,
+    presentation: frontmatter.presentation as any,
+    demo_content: frontmatter.demo_content as any,
     author: frontmatter.author ? String(frontmatter.author) : undefined,
     last_updated: frontmatter.last_updated ? String(frontmatter.last_updated) : undefined,
   };
@@ -67,7 +72,7 @@ export function normalizeDesignSystem(doc: RawParsedDocument): ValidationResult 
 
   // Helper to find section by title keywords
   const findSection = (keywords: string[]): RawParsedSection | undefined => {
-    return sections.find((s) => {
+    return sections.find((s: RawParsedSection) => {
       const lower = s.title.toLowerCase();
       return keywords.some((k) => lower.includes(k));
     });
@@ -139,9 +144,15 @@ export function normalizeDesignSystem(doc: RawParsedDocument): ValidationResult 
     status: 'DEFINED' as const,
   };
 
+  // 11. Presentation & Demo Content Resolution
+  const presentation = resolvePresentationProfile(meta);
+  const demo_content = resolveDemoContent(meta, presentation);
+
   const normalizedCandidate: NormalizedDesignSystem = {
     meta,
     identity,
+    presentation,
+    demo_content,
     colors,
     typography,
     spacing,
@@ -243,14 +254,22 @@ function normalizeColorPalette(sec: RawParsedSection | undefined, warnings: Vali
   const customTokens: Record<string, ColorToken> = {};
 
   for (const row of table.rows) {
-    const rawId = row['token_id'] || row['id'] || row['token'] || row['name'] || '';
+    const rawId =
+      row['token_key'] ||
+      row['token_id'] ||
+      row['id'] ||
+      row['token'] ||
+      row['key'] ||
+      row['token_name'] ||
+      row['name'] ||
+      '';
     const id = normalizeKey(rawId);
     if (!id) continue;
 
-    const name = row['token_name'] || row['name'] || rawId;
-    const value = row['light_value'] || row['value'] || row['light'] || '#000000';
-    const dark_value = row['dark_value'] || row['dark'] || undefined;
-    const usage = row['usage'] || row['uso'] || '';
+    const name = row['nome'] || row['token_name'] || row['name'] || rawId;
+    const value = row['valor_claro'] || row['light_value'] || row['value'] || row['light'] || '#000000';
+    const dark_value = row['valor_escuro'] || row['dark_value'] || row['dark'] || undefined;
+    const usage = row['uso_principal'] || row['uso'] || row['usage'] || '';
     const status = parseElementStatus(row['status']);
 
     const token: ColorToken = {

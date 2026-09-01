@@ -4,7 +4,7 @@
  * normalization, mathematical coverage calculation, and isolated showcase rendering.
  */
 
-export type SpecVersion = '1.0';
+export type SpecVersion = '1.0' | '1.1';
 
 export type ElementStatus = 'DEFINED' | 'NOT_DEFINED' | 'NOT_APPLICABLE' | 'INHERITED';
 
@@ -14,9 +14,45 @@ export type PlatformTarget = 'web' | 'mobile' | 'universal';
 
 export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 
-export type LabTabMode = 'runtime' | 'spec' | 'audit';
+export type LabTabMode = 'preview' | 'components' | 'spec' | 'audit' | 'runtime';
 
 export type LabState = 'EMPTY' | 'PARSING' | 'INVALID' | 'VALID_WITH_WARNINGS' | 'VALID' | 'RENDERED';
+
+export type Archetype = 'editorial' | 'saas' | 'commerce' | 'fintech' | 'restaurant' | 'service' | 'minimal' | 'generic';
+export type Density = 'compact' | 'balanced' | 'spacious';
+export type Alignment = 'symmetric' | 'asymmetric';
+export type HeroStyle = 'centered' | 'split' | 'editorial' | 'visual';
+export type CardStyle = 'flat' | 'bordered' | 'elevated' | 'image_led';
+export type SectionFlow = 'linear' | 'alternating' | 'editorial' | 'modular';
+export type NavigationStyle = 'minimal' | 'standard' | 'prominent';
+export type ImageryWeight = 'none' | 'low' | 'medium' | 'high';
+export type DecorativeStyle = 'none' | 'restrained' | 'expressive';
+
+export interface PresentationSpec {
+  archetype: Archetype;
+  density: Density;
+  alignment: Alignment;
+  hero_style: HeroStyle;
+  card_style: CardStyle;
+  section_flow: SectionFlow;
+  navigation_style: NavigationStyle;
+  imagery_weight: ImageryWeight;
+  decorative_style: DecorativeStyle;
+  is_fallback?: boolean;
+}
+
+export interface DemoContentSpec {
+  profile: Archetype;
+  brand_name?: string;
+  tagline?: string;
+  eyebrow?: string;
+  headline?: string;
+  description?: string;
+  cta_primary?: string;
+  cta_secondary?: string;
+  features_highlight?: { title: string; desc: string; tag?: string }[];
+  is_fallback?: boolean;
+}
 
 export interface MetaSpec {
   spec_version: SpecVersion;
@@ -26,6 +62,8 @@ export interface MetaSpec {
   description: string;
   theme: string;
   supported_modes: SupportedThemeMode;
+  presentation?: Partial<PresentationSpec>;
+  demo_content?: Partial<DemoContentSpec>;
   author?: string;
   last_updated?: string;
 }
@@ -239,6 +277,8 @@ export interface AccessibilitySpec {
 export interface NormalizedDesignSystem {
   meta: MetaSpec;
   identity: IdentitySpec;
+  presentation: PresentationSpec;
+  demo_content: DemoContentSpec;
   colors: ColorPaletteSpec;
   typography: TypographyScaleSpec;
   spacing: SpacingSpec;

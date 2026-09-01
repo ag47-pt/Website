@@ -70,7 +70,27 @@ function runTests() {
   assert(normalizedEcom.isValid, 'Normalized E-Commerce Vibrant sample is valid', JSON.stringify(normalizedEcom.errors));
   assert(normalizedEcom.normalized?.colors.primary.dark_value === '#FF5941', 'E-Commerce Vibrant primary is #FF5941');
 
-  // 3. Test Coverage Calculation & Mathematical Precision
+  // 2.4 Test Benchmark Fixture: Lima Design System (v1.2 / spec 1.1)
+  const limaPath = path.join(process.cwd(), 'public', 'examples', 'lima-design-system-sample.md');
+  assert(fs.existsSync(limaPath), 'Lima Design System benchmark fixture exists on disk');
+  const limaContent = fs.readFileSync(limaPath, 'utf8');
+  const parsedLima = parseDesignSystemMarkdown(limaContent);
+  assert(parsedLima.frontmatter.spec_version === '1.1', 'Lima sample spec_version is 1.1');
+  const normalizedLima = normalizeDesignSystem(parsedLima);
+  assert(normalizedLima.isValid, 'Normalized Lima sample is valid', JSON.stringify(normalizedLima.errors));
+  assert(normalizedLima.normalized?.colors.primary.value === '#C2F500', 'Lima primary color is #C2F500 (Lime)');
+  assert(normalizedLima.normalized?.colors.secondary.dark_value === '#A855F7', 'Lima secondary dark color is #A855F7 (Purple)');
+  assert(normalizedLima.normalized?.presentation.archetype === 'saas', 'Lima presentation archetype is saas');
+  assert(normalizedLima.normalized?.demo_content.brand_name === 'Lima Voice Platform', 'Lima demo brand name resolved correctly');
+
+  // 3. Test Presentation Profile & Demo Content Resolution for v1.0 Specs
+  if (normalizedSample.normalized) {
+    assert(normalizedSample.normalized.presentation.archetype === 'restaurant', 'AGMenu v1.0 correctly inferred as restaurant archetype');
+    assert(normalizedSample.normalized.presentation.is_fallback === true, 'AGMenu presentation marked as deterministic fallback');
+    assert(normalizedSample.normalized.demo_content.profile === 'restaurant', 'AGMenu demo_content mapped to restaurant profile');
+  }
+
+  // 4. Test Coverage Calculation & Mathematical Precision
   if (normalizedSample.normalized) {
     const audit = calculateCoverageAndAudit(normalizedSample.normalized);
     assert(audit.coverage.overallPercentage >= 80, `AGMenu overall coverage is ${audit.coverage.overallPercentage}% (>= 80%)`);
@@ -80,7 +100,7 @@ function runTests() {
     assert(foundCategory !== undefined && foundCategory.percentage > 90, 'Foundations category coverage is > 90%');
   }
 
-  // 4. Test Incompatible Spec Version Error
+  // 5. Test Incompatible Spec Version Error
   const invalidVersionMd = `---
 spec_version: "3.5"
 name: "Future DS"
@@ -97,7 +117,7 @@ platform: "web"
     'Path-addressed error generated for spec_version'
   );
 
-  // 5. Test NOT_APPLICABLE denominator reduction
+  // 6. Test NOT_APPLICABLE denominator reduction
   const notApplicableMd = `---
 spec_version: "1.0"
 name: "Minimalist CLI"
@@ -128,14 +148,13 @@ platform: "web"
   if (normalizedNa.normalized) {
     const auditNa = calculateCoverageAndAudit(normalizedNa.normalized);
     const founds = auditNa.coverage.categories.find((c) => c.category === 'Foundations');
-    // total 16 items in foundations (13 colors + 3 tokens), 12 not applicable -> effective total = 4. 2 defined -> 50%
     assert(
       founds !== undefined && founds.not_applicable >= 12,
       `NOT_APPLICABLE correctly deducted from denominator (not_applicable count: ${founds?.not_applicable})`
     );
   }
 
-  // 6. Test Exporters (CSS Tokens and Tailwind Config)
+  // 7. Test Exporters (CSS Tokens and Tailwind Config)
   if (normalizedSample.normalized) {
     const cssOutput = generateCssTokens(normalizedSample.normalized);
     assert(cssOutput.includes(':root {'), 'CSS tokens export includes :root');

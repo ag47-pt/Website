@@ -15,6 +15,7 @@ import { calculateCoverageAndAudit } from '@/lib/design-system/coverage';
 
 import { DesignSystemUploader, PresetId } from './components/DesignSystemUploader';
 import { IsolatedPreviewCanvas } from './components/IsolatedPreviewCanvas';
+import { DesignSystemRuntime } from './components/runtime/DesignSystemRuntime';
 import { FoundationsShowcase } from './components/showcase/FoundationsShowcase';
 import { TypographyShowcase } from './components/showcase/TypographyShowcase';
 import { ComponentShowcase } from './components/showcase/ComponentShowcase';
@@ -23,7 +24,20 @@ import { PatternsShowcase } from './components/showcase/PatternsShowcase';
 import { AuditPanel } from './components/audit/AuditPanel';
 import { SpecInspector } from './components/spec/SpecInspector';
 
-import { Layers, FileCode2, ShieldAlert, Sparkles, Box } from 'lucide-react';
+import {
+  Layers,
+  FileCode2,
+  ShieldAlert,
+  Sparkles,
+  Box,
+  Eye,
+  ExternalLink,
+  Smartphone,
+  Tablet,
+  Monitor,
+  Sun,
+  Moon,
+} from 'lucide-react';
 
 export function DesignSystemLabClient() {
   const [state, setState] = useState<LabState>('EMPTY');
@@ -32,10 +46,13 @@ export function DesignSystemLabClient() {
   const [errors, setErrors] = useState<ValidationErrorItem[]>([]);
   const [warnings, setWarnings] = useState<ValidationErrorItem[]>([]);
   const [currentFileName, setCurrentFileName] = useState<string>('');
+  const [rawMarkdown, setRawMarkdown] = useState<string>('');
   const [activePresetId, setActivePresetId] = useState<PresetId | null>(null);
 
-  const [activeTab, setActiveTab] = useState<LabTabMode>('runtime');
-  const [showcaseCategory, setShowcaseCategory] = useState<'all' | 'foundations' | 'typography' | 'components' | 'cards' | 'patterns'>('all');
+  const [activeTab, setActiveTab] = useState<LabTabMode>('preview');
+  const [componentCategory, setComponentCategory] = useState<
+    'all' | 'foundations' | 'typography' | 'components' | 'cards' | 'patterns'
+  >('all');
   const [viewport, setViewport] = useState<ViewportMode>('desktop');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
 
@@ -43,6 +60,7 @@ export function DesignSystemLabClient() {
     setState('PARSING');
     setErrors([]);
     setWarnings([]);
+    setRawMarkdown(markdown);
 
     try {
       const parsedAst = parseDesignSystemMarkdown(markdown);
@@ -62,6 +80,11 @@ export function DesignSystemLabClient() {
         setCurrentFileName(filename);
         setWarnings(validation.warnings);
         setState(validation.warnings.length > 0 ? 'VALID_WITH_WARNINGS' : 'RENDERED');
+
+        // Store custom markdown in session storage for Open Live standalone route
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('ag47_ds_custom_markdown', markdown);
+        }
       }
     } catch (err: any) {
       setState('INVALID');
@@ -76,6 +99,7 @@ export function DesignSystemLabClient() {
   };
 
   const PRESET_FILES: Record<PresetId, { file: string; name: string }> = {
+    lima: { file: '/examples/lima-design-system-sample.md', name: 'lima-design-system-sample.md' },
     agmenu: { file: '/examples/agmenu-clean-sample.md', name: 'agmenu-clean-sample.md' },
     'saas-dark': { file: '/examples/saas-dark-sample.md', name: 'saas-dark-sample.md' },
     fintech: { file: '/examples/fintech-minimal-sample.md', name: 'fintech-minimal-sample.md' },
@@ -107,8 +131,16 @@ export function DesignSystemLabClient() {
     setErrors([]);
     setWarnings([]);
     setCurrentFileName('');
+    setRawMarkdown('');
     setActivePresetId(null);
-    setActiveTab('runtime');
+    setActiveTab('preview');
+  };
+
+  // Open Live URL
+  const getOpenLiveUrl = () => {
+    const preset = activePresetId || 'custom';
+    const mode = isDarkMode ? 'dark' : 'light';
+    return `/labs/skills/design-system/runtime?preset=${preset}&mode=${mode}`;
   };
 
   return (
@@ -131,21 +163,36 @@ export function DesignSystemLabClient() {
       {/* 2. Main Workbench Navigation (When Spec is Loaded) */}
       {spec && (
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
-          {/* Main Lab Modes */}
+          {/* Main 4 Lab Modes */}
           <div className="flex items-center gap-2">
             <div className="inline-flex p-1 bg-zinc-950 border border-white/10 rounded-2xl gap-1">
+              {/* TAB 1: PREVIEW (Live Website Real) */}
               <button
-                onClick={() => setActiveTab('runtime')}
+                onClick={() => setActiveTab('preview')}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-                  activeTab === 'runtime'
+                  activeTab === 'preview'
+                    ? 'bg-lime-400 text-black shadow-md'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Eye className="w-4 h-4" />
+                <span>Live Website</span>
+              </button>
+
+              {/* TAB 2: COMPONENTS (Technical Workbench) */}
+              <button
+                onClick={() => setActiveTab('components')}
+                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                  activeTab === 'components'
                     ? 'bg-white text-black shadow-md'
                     : 'text-zinc-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <Box className="w-4 h-4" />
-                <span>Runtime Mode</span>
+                <span>Componentes</span>
               </button>
 
+              {/* TAB 3: SPEC (Specification & Exporters) */}
               <button
                 onClick={() => setActiveTab('spec')}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
@@ -155,9 +202,10 @@ export function DesignSystemLabClient() {
                 }`}
               >
                 <FileCode2 className="w-4 h-4" />
-                <span>Spec Mode</span>
+                <span>Spec & Exporters</span>
               </button>
 
+              {/* TAB 4: AUDIT (Coverage & Health Check) */}
               <button
                 onClick={() => setActiveTab('audit')}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
@@ -167,7 +215,7 @@ export function DesignSystemLabClient() {
                 }`}
               >
                 <ShieldAlert className="w-4 h-4" />
-                <span>Audit Mode</span>
+                <span>Auditoria</span>
                 {audit && (
                   <span className="text-[10px] font-mono font-black px-1.5 py-0.2 bg-black/20 rounded">
                     {audit.coverage.overallPercentage}%
@@ -177,22 +225,38 @@ export function DesignSystemLabClient() {
             </div>
           </div>
 
-          {/* Subcategory Filters (Runtime Mode Only) */}
-          {activeTab === 'runtime' && (
+          {/* Action: Open Live Button (When in Preview) */}
+          {activeTab === 'preview' && (
+            <div className="flex items-center gap-3">
+              <a
+                href={getOpenLiveUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold bg-zinc-900 border border-white/20 text-white rounded-xl hover:bg-zinc-800 transition-all shadow-md cursor-pointer"
+                title="Abrir o website em tela cheia isolado do AG47"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-lime-400" />
+                <span>Open Live (Nova Aba)</span>
+              </a>
+            </div>
+          )}
+
+          {/* Subcategory Filters (Components Mode Only) */}
+          {activeTab === 'components' && (
             <div className="flex items-center gap-1.5 overflow-x-auto py-1 text-xs">
               {[
                 { id: 'all', label: 'Tudo' },
                 { id: 'foundations', label: 'Foundations' },
                 { id: 'typography', label: 'Tipografia' },
-                { id: 'components', label: 'Componentes' },
+                { id: 'components', label: 'Botões & Inputs' },
                 { id: 'cards', label: 'Cards' },
                 { id: 'patterns', label: 'Padrões' },
               ].map((sub) => (
                 <button
                   key={sub.id}
-                  onClick={() => setShowcaseCategory(sub.id as any)}
+                  onClick={() => setComponentCategory(sub.id as any)}
                   className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                    showcaseCategory === sub.id
+                    componentCategory === sub.id
                       ? 'bg-zinc-800 text-white font-bold border border-white/20'
                       : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
                   }`}
@@ -205,7 +269,7 @@ export function DesignSystemLabClient() {
         </div>
       )}
 
-      {/* 3. Isolated Preview Canvas / Neutral State */}
+      {/* 3. Main Workspace Container */}
       <IsolatedPreviewCanvas
         spec={spec}
         viewport={viewport}
@@ -227,45 +291,56 @@ export function DesignSystemLabClient() {
             </div>
             <div className="pt-2">
               <button
-                onClick={() => handleLoadPreset('agmenu')}
+                onClick={() => handleLoadPreset('lima')}
                 className="px-4 py-2 text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-xl hover:text-white hover:bg-zinc-800 transition-all flex items-center gap-2 cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Carregar exemplo AGMenu Clean para testar</span>
+                <Sparkles className="w-3.5 h-3.5 text-lime-400" />
+                <span>Carregar Lima Design System (v1.2)</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* State: RUNTIME MODE */}
-        {spec && activeTab === 'runtime' && (
-          <div className="space-y-14">
-            {(showcaseCategory === 'all' || showcaseCategory === 'foundations') && (
+        {/* State 1: LIVE WEBSITE PREVIEW */}
+        {spec && (activeTab === 'preview' || activeTab === 'runtime') && (
+          <div className="w-full overflow-x-hidden">
+            <DesignSystemRuntime
+              spec={spec}
+              themeMode={isDarkMode ? 'dark' : 'light'}
+              viewportMode={viewport}
+            />
+          </div>
+        )}
+
+        {/* State 2: TECHNICAL COMPONENTS WORKBENCH */}
+        {spec && activeTab === 'components' && (
+          <div className="space-y-14 p-4 md:p-8">
+            {(componentCategory === 'all' || componentCategory === 'foundations') && (
               <FoundationsShowcase spec={spec} isDarkMode={isDarkMode} />
             )}
 
-            {(showcaseCategory === 'all' || showcaseCategory === 'typography') && (
+            {(componentCategory === 'all' || componentCategory === 'typography') && (
               <TypographyShowcase spec={spec} />
             )}
 
-            {(showcaseCategory === 'all' || showcaseCategory === 'components') && (
+            {(componentCategory === 'all' || componentCategory === 'components') && (
               <ComponentShowcase spec={spec} />
             )}
 
-            {(showcaseCategory === 'all' || showcaseCategory === 'cards') && (
+            {(componentCategory === 'all' || componentCategory === 'cards') && (
               <CardsShowcase spec={spec} />
             )}
 
-            {(showcaseCategory === 'all' || showcaseCategory === 'patterns') && (
+            {(componentCategory === 'all' || componentCategory === 'patterns') && (
               <PatternsShowcase spec={spec} />
             )}
           </div>
         )}
 
-        {/* State: SPEC MODE */}
+        {/* State 3: SPEC & EXPORTERS */}
         {spec && activeTab === 'spec' && <SpecInspector spec={spec} />}
 
-        {/* State: AUDIT MODE */}
+        {/* State 4: AUDIT MODE */}
         {spec && activeTab === 'audit' && audit && <AuditPanel audit={audit} />}
       </IsolatedPreviewCanvas>
     </div>
