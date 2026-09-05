@@ -23,6 +23,9 @@ import { ScrollManager } from './3d/ScrollManager'
 import { Typewriter } from './ui/Typewriter'
 import { useTheme } from '@/context/ThemeContext'
 
+const HORIZONTAL_GESTURE_THRESHOLD = 12
+const HORIZONTAL_SCROLL_MULTIPLIER = 1.25
+
 export default function Basic3DScene() {
    const { theme } = useTheme();
    const scrollOffsetRaw = usePageScroll()
@@ -52,6 +55,67 @@ export default function Basic3DScene() {
    const cardRef3 = useRef<HTMLDivElement>(null)
    const cardRef4 = useRef<HTMLDivElement>(null)
    const indicatorRef = useRef<HTMLDivElement>(null)
+   const introGestureRef = useRef<{
+      pointerId: number
+      startX: number
+      startY: number
+      lastX: number
+      direction: 'pending' | 'horizontal' | 'vertical'
+   } | null>(null)
+   const ignoreIntroClickRef = useRef(false)
+
+   const handleIntroPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return
+
+      ignoreIntroClickRef.current = false
+      introGestureRef.current = {
+         pointerId: event.pointerId,
+         startX: event.clientX,
+         startY: event.clientY,
+         lastX: event.clientX,
+         direction: 'pending'
+      }
+   }
+
+   const handleIntroPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+      const gesture = introGestureRef.current
+      if (!gesture || gesture.pointerId !== event.pointerId) return
+
+      if (gesture.direction === 'pending') {
+         const distanceX = event.clientX - gesture.startX
+         const distanceY = event.clientY - gesture.startY
+
+         if (
+            Math.abs(distanceX) < HORIZONTAL_GESTURE_THRESHOLD &&
+            Math.abs(distanceY) < HORIZONTAL_GESTURE_THRESHOLD
+         ) {
+            return
+         }
+
+         if (Math.abs(distanceY) >= Math.abs(distanceX)) {
+            gesture.direction = 'vertical'
+            return
+         }
+
+         gesture.direction = 'horizontal'
+         ignoreIntroClickRef.current = true
+         event.currentTarget.setPointerCapture(event.pointerId)
+      }
+
+      if (gesture.direction !== 'horizontal') return
+
+      const distanceX = event.clientX - gesture.lastX
+      if (distanceX !== 0) {
+         window.scrollBy(0, -distanceX * HORIZONTAL_SCROLL_MULTIPLIER)
+         gesture.lastX = event.clientX
+      }
+   }
+
+   const clearIntroGesture = (event: React.PointerEvent<HTMLDivElement>) => {
+      if (introGestureRef.current?.pointerId === event.pointerId) {
+         introGestureRef.current = null
+      }
+   }
 
    return (
       <div className="relative bg-black min-h-screen overflow-x-hidden">
@@ -129,7 +193,17 @@ export default function Basic3DScene() {
             <div
                ref={introRef}
                className="absolute inset-0 flex items-center justify-center cursor-pointer pointer-events-auto"
+               style={{ touchAction: 'pan-y' }}
+               onPointerDown={handleIntroPointerDown}
+               onPointerMove={handleIntroPointerMove}
+               onPointerUp={clearIntroGesture}
+               onPointerCancel={clearIntroGesture}
                onClick={() => {
+                  if (ignoreIntroClickRef.current) {
+                     ignoreIntroClickRef.current = false
+                     return
+                  }
+
                   if (typeof window !== 'undefined') {
                      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
                      window.scrollTo({ top: scrollHeight * 0.25, behavior: 'smooth' });
@@ -147,7 +221,7 @@ export default function Basic3DScene() {
             </div>
 
             <div ref={indicatorRef} className="absolute top-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40 pointer-events-none">
-               <span className="text-[9px] uppercase tracking-[0.4em] font-bold mb-1">Iniciar viagem astral</span>
+               <span className="text-[9px] uppercase tracking-[0.4em] font-bold mb-1">Arraste para explorar</span>
                <div className="w-5 h-8 border-2 border-white/20 rounded-full flex justify-center p-1">
                   <div className="w-1 h-1.5 bg-white/40 rounded-full animate-bounce" />
                </div>
