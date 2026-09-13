@@ -46,6 +46,12 @@ service cloud.firestore {
       allow write: if signedIn();
     }
 
+    // Private Invitation events
+    match /private_invitations/{eventId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
     // User profile
     match /users/{userId} {
       allow read, update: if isSelf(userId) || isAdmin();

@@ -1,0 +1,267 @@
+[
+  {
+    "id": "date_1789263543207",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "quinta",
+      "time": "fim_tarde_noite",
+      "environment": "mar",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "😍Aceito. Deixo contigo.",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:39:03",
+    "createdAtIso": "2026-09-13T01:39:03.207Z"
+  },
+  {
+    "id": "date_1789263534414",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "quinta",
+      "time": "fim_tarde_noite",
+      "environment": "mar",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "😍Aceito. Deixo contigo.",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:38:54",
+    "createdAtIso": "2026-09-13T01:38:54.413Z"
+  },
+  {
+    "id": "date_1789263521733",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "quinta",
+      "time": "fim_tarde_noite",
+      "environment": "mar",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "😍Aceito. Deixo contigo.",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:38:41",
+    "createdAtIso": "2026-09-13T01:38:41.733Z"
+  },
+  {
+    "id": "date_1789263484082",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {},
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:38:04",
+    "createdAtIso": "2026-09-13T01:38:04.082Z"
+  },
+  {
+    "id": "date_1789262999817",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "outra_semana",
+      "time": "noite",
+      "environment": "cidade",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "😍Aceito. Deixo contigo.",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:29:59",
+    "createdAtIso": "2026-09-13T01:29:59.817Z"
+  },
+  {
+    "id": "date_1789262826412",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {
+      "day": "quinta",
+      "time": "almoco_tarde",
+      "environment": "mar",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:27:06",
+    "createdAtIso": "2026-09-13T01:27:06.412Z"
+  },
+  {
+    "id": "date_1789262455999",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "quinta",
+      "time": "almoco_tarde",
+      "environment": "mar",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "Aceito. Deixa contigo.",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:20:55",
+    "createdAtIso": "2026-09-13T01:20:55.999Z"
+  },
+  {
+    "id": "date_1789262403371",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {},
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:20:03",
+    "createdAtIso": "2026-09-13T01:20:03.371Z"
+  },
+  {
+    "id": "date_1789262393332",
+    "slug": "date",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {},
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:19:53",
+    "createdAtIso": "2026-09-13T01:19:53.332Z"
+  },
+  {
+    "id": "laura_1789262137516",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {
+      "day": "outra_semana",
+      "time": "noite",
+      "environment": "cidade",
+      "control": "pistas",
+      "vibe": "ambos"
+    },
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:15:37",
+    "createdAtIso": "2026-09-13T01:15:37.516Z"
+  },
+  {
+    "id": "laura_1789261985094",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {
+      "day": "outra_semana",
+      "time": "noite",
+      "environment": "cidade",
+      "control": "pistas",
+      "vibe": "ambos"
+    },
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:13:05",
+    "createdAtIso": "2026-09-13T01:13:05.094Z"
+  },
+  {
+    "id": "laura_1789261920798",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "outra_semana",
+      "time": "noite",
+      "environment": "cidade",
+      "control": "pistas",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "Aceito. Deixa contigo.",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:12:00",
+    "createdAtIso": "2026-09-13T01:12:00.798Z"
+  },
+  {
+    "id": "laura_1789261765907",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "outra_semana",
+      "time": "noite",
+      "environment": "cidade",
+      "control": "pistas",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "Aceito. Deixa contigo.",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:09:25",
+    "createdAtIso": "2026-09-13T01:09:25.907Z"
+  },
+  {
+    "id": "laura_1789261538011",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {
+      "day": "quinta",
+      "time": "fim_tarde_noite",
+      "environment": "mar",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:05:38",
+    "createdAtIso": "2026-09-13T01:05:38.011Z"
+  },
+  {
+    "id": "laura_1789261381622",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {
+      "day": "quinta",
+      "time": "noite",
+      "environment": "mar",
+      "control": "pistas",
+      "vibe": "ambos"
+    },
+    "ctaChosen": null,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "createdAtLisbon": "13/09/2026, 02:03:01",
+    "createdAtIso": "2026-09-13T01:03:01.622Z"
+  },
+  {
+    "id": "laura_1789261065134",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "completed",
+    "responses": {
+      "day": "quinta",
+      "time": "fim_tarde_noite",
+      "environment": "mar",
+      "control": "surpresa",
+      "vibe": "ambos"
+    },
+    "ctaChosen": "Aceito. Deixa contigo.",
+    "userAgent": "node",
+    "createdAtLisbon": "13/09/2026, 01:57:45",
+    "createdAtIso": "2026-09-13T00:57:45.134Z"
+  },
+  {
+    "id": "laura_1789260861813",
+    "slug": "laura",
+    "recipient": "Laura",
+    "eventType": "started",
+    "responses": {},
+    "ctaChosen": null,
+    "userAgent": "node",
+    "createdAtLisbon": "13/09/2026, 01:54:21",
+    "createdAtIso": "2026-09-13T00:54:21.813Z"
+  }
+]
