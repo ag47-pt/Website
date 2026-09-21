@@ -1,3 +1,5 @@
+import { catalogServices } from '../data/services'
+
 /**
  * Base de conhecimento completa da Agência 47.
  * Importada pelo agente como contexto estático.
@@ -32,44 +34,13 @@ export const KNOWLEDGE_BASE = `
 
 ## Serviços Detalhados
 
-### 1. Websites & Landing Pages
-- **Tag**: Desenvolvimento Elite
-- **Diferencial**: Sem WordPress — usamos Next.js (mais rápido, mais seguro, melhor SEO)
-- **Entrega média**: 7 dias úteis (landing page) / 2-3 semanas (site completo)
-- **O que inclui**: Design 100% exclusivo, Copywriting, SEO técnico, Analytics & Tracking, Mobile-first, 30 dias de suporte, domínio/código/hosting pertencem ao cliente
-- **Resultados típicos**: +180% leads, score PageSpeed 98+
-- **FAQ**:
-  - Usam WordPress? Não. Usamos Next.js.
-  - O site fica meu? Sim, 100%.
-  - Posso atualizar depois? Sim, entregamos com CMS simples ou guia.
-  - Quanto tempo demora? 7 dias úteis (landing page), 2-3 semanas (site completo)
+${catalogServices.map((service) => `### ${service.cardTitle}
+${service.metaDescription}
+URL: https://ag47.pt/servicos/${service.slug}
+${service.offers.filter((offer) => offer.active).map((offer) => `- ${offer.title}: ${offer.priceLabel}; prazo indicativo: ${offer.deliveryLabel}. ${offer.outcome}`).join('\n')}
+${service.faqs.map((faq) => `- ${faq.q} ${faq.a}`).join('\n')}`).join('\n\n')}
 
-### 2. SaaS, Micro-SaaS & WebApps
-- **Tag**: Desenvolvimento As a Service
-- **Diferencial**: MVP em 4 semanas, sem lock-in com a agência
-- **Stack**: Next.js, TypeScript, Prisma, PostgreSQL/Supabase, Stripe, Vercel
-- **O que inclui**: Discovery e mapeamento, arquitetura escalável, MVP ágil, Auth/Billing/Analytics integrados, código limpo e documentado, contrato mensal de crescimento
-- **Resultados típicos**: +240% ROI no 1º ano, 99.9% uptime
-- **FAQ**:
-  - Que tipo de SaaS? B2B, B2C, marketplaces, ferramentas internas.
-  - Integram com ferramentas externas? Sim. Zapier, webhooks, APIs REST/GraphQL.
-  - E após lançamento? Iteração mensal por contrato recorrente.
-
-### 3. Social Media & Conteúdo
-- **Tag**: Presença Digital
-- **Redes**: Instagram, LinkedIn, TikTok, Facebook
-- **O que inclui**: Estratégia de conteúdo, copy que converte, design visual premium, Reels/TikToks com guião e edição, gestão de comunidade, relatórios mensais
-- **Cadência**: 3 a 7 publicações semanais (depende do plano)
-- **Resultados típicos**: crescimento 3× em 90 dias, +65% alcance orgânico
-- **FAQ**:
-  - Preciso aprovar o conteúdo? Sim, 3 dias de antecedência.
-  - Fazem vídeos? Sim, Reels e TikToks com guião, edição e legendas.
-
-### 4. Tráfego Pago & Conversão
-- **Tag**: Performance Total
-- **Plataformas**: Meta Ads (Facebook/Instagram), Google Ads
-- **O que inclui**: Auditoria de conta gratuita, targeting cirúrgico, testes A/B, otimização semanal, relatórios de ROI
-- **Diferencial**: Focamos em conversão, não em cliques. Otimização semanal (não mensal como a maioria)
+Preços iniciais e prazos indicativos. Confirmar âmbito, IVA, licenças e condições na proposta. Não apresentar médias, garantias ou resultados quantitativos sem evidência documentada.
 
 ---
 

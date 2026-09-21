@@ -1,6 +1,6 @@
 import { ServiceLP } from './services'
 
-export interface RestaurantLP extends Omit<ServiceLP, 'slug'> {
+export interface RestaurantLP extends Omit<ServiceLP, 'slug' | 'catalogOrder' | 'offers' | 'featured'> {
   slug: string
   address: string
   cuisine: string

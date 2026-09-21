@@ -1,3 +1,5 @@
+import { servicesBySlug } from './services'
+
 /**
  * Dados Canónicos e Tipados do Universo 2D — Agência 47 (ag47.pt)
  * Padrão EvoPro / Alt-Radar Architecture
@@ -81,19 +83,14 @@ export const UNIVERSO_2D_DATA = {
     mantra: '"Transformamos negócios complexos em ecossistemas digitais de alta conversão, ultra-rápidos e movidos a IA."',
     version: 'v2026.4.7',
     status: 'SYSTEMS_OPERATIONAL',
-    edgeNodes: '310+ Global Edge Locales',
-    uptime: '99.98%',
+    edgeNodes: 'Infraestrutura por projeto',
+    uptime: 'A definir por projeto',
     domain: 'ag47.pt',
     email: 'contacto@ag47.pt',
     whatsapp: 'https://wa.me/351912345678',
   },
 
-  heroMetrics: [
-    { value: '98+', label: 'PageSpeed Score Médio', detail: 'Core Web Vitals perfeitos em mobile e desktop' },
-    { value: '7 Dias', label: 'Tempo Médio de Entrega', detail: 'Do briefing aprovado ao deploy em produção' },
-    { value: '+180%', label: 'Aumento Médio de Leads', detail: 'Taxa de conversão em Landing Pages de Alta Performance' },
-    { value: '0', label: 'Templates Lentos / WordPress', detail: '100% código artesanal em Next.js 15 e TypeScript' },
-  ],
+  heroMetrics: servicesBySlug['websites-landing-pages'].results.map((result) => ({ ...result, detail: result.desc ?? '' })),
 
   about: {
     title: 'Quem Somos',
@@ -103,7 +100,7 @@ export const UNIVERSO_2D_DATA = {
       {
         icon: 'Zap',
         title: 'Velocidade Obsessiva',
-        description: 'Páginas que carregam em menos de 800ms. A cada 100ms a mais de espera, você perde 7% de conversão. Nós eliminamos todo atrito.',
+        description: 'Desempenho avaliado nas páginas do projeto, com otimização de imagens, código e carregamento.',
       },
       {
         icon: 'Cpu',
@@ -154,7 +151,7 @@ export const UNIVERSO_2D_DATA = {
     },
     {
       metric: 'SEO & Core Web Vitals',
-      ag47Way: 'Score 98-100/100, Schema Markup e JSON-LD nativos',
+      ag47Way: 'SEO técnico, Schema Markup e JSON-LD',
       ag47Highlight: true,
       traditionalWay: 'Score 30-60/100, travamentos de render e CLS alto',
       impact: 'Rankings orgânicos superiores no Google com menor CPC',
@@ -184,11 +181,7 @@ export const UNIVERSO_2D_DATA = {
         'Design responsivo mobile-first com micro-interações fluidas',
         'Integração total com CRM, WhatsApp e Webhooks',
       ],
-      metrics: [
-        { label: 'PageSpeed Médio', value: '99/100' },
-        { label: 'Tempo LCP', value: '< 0.7s' },
-        { label: 'Lift de Conversão', value: '+180%' },
-      ],
+      metrics: servicesBySlug['websites-landing-pages'].results.slice(0, 3),
       iconName: 'Globe',
       accentColor: '#10b981',
       linkHref: '/servicos/websites-landing-pages',
@@ -209,11 +202,7 @@ export const UNIVERSO_2D_DATA = {
         'Banco de dados em tempo real com regras de segurança estritas',
         'APIs REST e Webhooks para automações externas',
       ],
-      metrics: [
-        { label: 'Uptime Garantido', value: '99.98%' },
-        { label: 'Latência de Banco', value: '< 25ms' },
-        { label: 'Escala Concorrente', value: '50k+ req/s' },
-      ],
+      metrics: servicesBySlug['saas-webapps'].results.slice(0, 3),
       iconName: 'Layers',
       accentColor: '#06b6d4',
       linkHref: '/servicos/saas-webapps',
@@ -234,11 +223,7 @@ export const UNIVERSO_2D_DATA = {
         'Calendário editorial orientado aos lançamentos da empresa',
         'Direção de arte com estética moderna Dark Mode / High-Tech',
       ],
-      metrics: [
-        { label: 'Alcance Orgânico', value: '4.2x' },
-        { label: 'Taxa de Retenção', value: '78%' },
-        { label: 'Engajamento Médio', value: '+240%' },
-      ],
+      metrics: servicesBySlug['social-media-conteudo'].results.slice(0, 3),
       iconName: 'Sparkles',
       accentColor: '#D1FF00',
       linkHref: '/servicos/social-media-conteudo',
@@ -259,11 +244,7 @@ export const UNIVERSO_2D_DATA = {
         'Relatórios executivos semanais sem vaidade (foco em ROI e CAC)',
         'Otimização contínua de páginas de destino vinculadas aos anúncios',
       ],
-      metrics: [
-        { label: 'ROAS Médio', value: '4.8x' },
-        { label: 'Redução de CAC', value: '-35%' },
-        { label: 'Precisão Tracking', value: '99.4%' },
-      ],
+      metrics: servicesBySlug['trafego-pago-conversao'].results.slice(0, 3),
       iconName: 'TrendingUp',
       accentColor: '#f59e0b',
       linkHref: '/servicos/trafego-pago-conversao',
@@ -284,11 +265,7 @@ export const UNIVERSO_2D_DATA = {
         'Agentes conversacionais inteligentes integrados ao WhatsApp e Web',
         'Workflows autônomos conectados a APIs e bancos de dados corporativos',
       ],
-      metrics: [
-        { label: 'Horas Economizadas', value: '120h+/mês' },
-        { label: 'Tempo Resposta IA', value: '< 600ms' },
-        { label: 'Acurácia de RAG', value: '99.2%' },
-      ],
+      metrics: servicesBySlug['ia-automacao'].results.slice(0, 3),
       iconName: 'Brain',
       accentColor: '#10b981',
       linkHref: '/eco',
@@ -428,7 +405,7 @@ export const UNIVERSO_2D_DATA = {
         'SEO Técnico com Schema Markup & OpenGraph',
         'Setup de Google Analytics 4 e Meta Pixel / CAPI',
         'Hospedagem de ultra-alta velocidade no Edge',
-        'Entrega garantida em 7 dias úteis',
+        'Entrega em prazo acordado no diagnóstico',
         '30 dias de suporte e ajustes pós-lançamento',
       ],
       deliverables: ['Código-fonte completo', 'Deploy em produção', 'Domínio conectado', 'Documentação básica'],
@@ -523,9 +500,9 @@ export const UNIVERSO_2D_DATA = {
         '----------------------------------------------------------------',
         '📍 Organização: Agência 47 (ag47.pt) — Elite Software & AI Studio',
         '🚀 Missão: Construir tecnologia sem fricção que multiplica receita.',
-        '🌐 Infra: Cloudflare Edge (310+ nós) + Google Cloud Engine',
+        '🌐 Infra: Infraestrutura definida por projeto',
         '🛡️ Segurança: TypeScript Estrito + Regras de Proteção Ativas',
-        '✨ Status: 100% OPERATIONAL | Latência Média Global: 22ms',
+        '✨ Status: Estado e latência sujeitos a medição',
       ],
     },
     {
@@ -534,10 +511,10 @@ export const UNIVERSO_2D_DATA = {
       description: 'Lista a suite completa de serviços e prazos de entrega',
       outputLines: [
         '📦 [CATÁLOGO DE SERVIÇOS AG47]',
-        '  1. Websites & Landing Pages   -> Next.js 15 | LCP < 0.7s | 7 dias',
+        '  1. Websites & Landing Pages   -> Next.js 15 | SEO técnico | prazo acordado',
         '  2. SaaS & Web Applications    -> Fullstack + Auth + Stripe | 15-30 dias',
         '  3. Social Media & Branding    -> Editorial Dark Mode + Retenção | Recorrência',
-        '  4. Tráfego Pago (+EV)         -> CAPI + GTM Server-side + ROAS 4.8x',
+        '  4. Tráfego Pago (+EV)         -> CAPI + GTM Server-side + ROAS com tracking de receita',
         '  5. Agentes de IA Autônomos    -> LLMs + RAG + YouLearn + Apex | 10-20 dias',
         '💡 Digite "ag47 quote" para simular o investimento ideal.',
       ],
@@ -576,12 +553,12 @@ export const UNIVERSO_2D_DATA = {
       description: 'Executa diagnóstico rápido de performance e baselines',
       outputLines: [
         '🔍 [DIAGNÓSTICO TÉCNICO AG47 SPEED & COMPLIANCE]',
-        '  [+] Core Web Vitals LCP     : 0.62s (PASSED - Ultra Fast)',
-        '  [+] Cumulative Layout Shift : 0.000 (PASSED - Zero Shift)',
-        '  [+] First Input Delay       : 8ms   (PASSED - Instant)',
+        '  [+] Core Web Vitals LCP     : requer medição',
+        '  [+] Cumulative Layout Shift : requer medição',
+        '  [+] Interatividade          : requer medição',
         '  [+] Security Headers        : HSTS, CSP, XSS-Protect (PASSED)',
         '  [+] Single Scrollbar Engine : Engaged (0 Nested Conflicts)',
-        '🏆 Resultado Geral: 100/100 EXCELLENCE SCORE',
+        '🏆 Resultado Geral: validar com auditoria do projeto',
       ],
     },
   ] as TerminalCommandItem[],
@@ -597,7 +574,7 @@ export const UNIVERSO_2D_DATA = {
     },
     {
       q: 'Por que a Agência 47 não usa WordPress ou Elementor?',
-      a: 'O WordPress tradicional com plugins lentos gera páginas pesadas com mais de 3 segundos de carregamento, alto risco de segurança e pontuações baixas no Google. Nós construímos tudo em Next.js 15 e TypeScript, garantindo velocidade instantânea (<800ms) e conversão máxima.',
+      a: 'O WordPress tradicional com plugins lentos gera páginas pesadas com mais de 3 segundos de carregamento, alto risco de segurança e pontuações baixas no Google. Nós construímos tudo em Next.js 15 e TypeScript, com desempenho e conversões sujeitos a medição.',
     },
     {
       q: 'Como funciona o suporte após o lançamento do projeto?',
@@ -605,7 +582,7 @@ export const UNIVERSO_2D_DATA = {
     },
     {
       q: 'Como posso agendar uma reunião ou solicitar um orçamento?',
-      a: 'Basta clicar no botão de WhatsApp ou "Solicitar Briefing" em qualquer parte da página. Você será atendido diretamente por um engenheiro/estrategista em menos de 1 hora.',
+      a: 'Basta clicar no botão de WhatsApp ou "Solicitar Briefing" em qualquer parte da página. A equipa dará seguimento ao teu pedido.',
     },
   ],
 };

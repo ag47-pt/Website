@@ -59,8 +59,8 @@ Usa também:
 - chamadas de ação
 
 Exemplo:
-- *+180% leads*
-- *Entrega em 7 dias*
+- *Tracking configurável*
+- *Prazo acordado no diagnóstico*
 - *Sem WordPress*
 - *Código 100% teu*
 

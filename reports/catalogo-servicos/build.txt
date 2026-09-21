@@ -1,0 +1,107 @@
+
+> teste-scroll-3d@0.1.0 build
+> next build
+
+▲ Next.js 16.3.1 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 38ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.9s
+  Running TypeScript ...
+  Finished TypeScript in 7.9s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/77) ...
+  Generating static pages using 11 workers (19/77)
+  Generating static pages using 11 workers (38/77)
+  Generating static pages using 11 workers (57/77)
+✓ Generating static pages using 11 workers (77/77) in 1948ms
+  Finalizing page optimization ...
+
+Route (app)                                       Revalidate  Expire
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /admin/dashboard
+├ ○ /admin/labs
+├ ○ /admin/leads
+├ ○ /admin/settings
+├ ○ /admin/slides
+├ ƒ /api/agent/chat
+├ ƒ /api/agent/crypto/cycle
+├ ƒ /api/agent/crypto/signals
+├ ƒ /api/download-agent-dir
+├ ƒ /api/download-skill
+├ ƒ /api/eco/alt-radar/[...path]
+├ ƒ /api/eco/youlearn/entries
+├ ƒ /api/eco/youlearn/ingest
+├ ƒ /api/eco/youlearn/logs
+├ ƒ /api/invitations/track
+├ ƒ /api/nexus/agents
+├ ƒ /api/nexus/agents/[id]
+├ ƒ /api/oracle
+├ ○ /apple-icon.png
+├ ○ /date
+├ ○ /eco
+├ ○ /eco/alt-radar
+├ ○ /eco/evopro                                           5m      1y
+├ ○ /eco/youlearn
+├   /eco/youlearn/learn/[slug]
+│ ├ ● /eco/youlearn/learn/how-transformers-work
+│ ├ ● /eco/youlearn/learn/systems-thinking
+│ ├ ● /eco/youlearn/learn/production-agentic-rag
+│ └ ● [+4 more paths]
+├ ○ /icon.svg
+├ ○ /labs
+├ ○ /labs/ag47-lib-pith-deck
+├ ○ /labs/apex
+├ ○ /labs/apex/power-law
+├ ○ /labs/dev
+├ ƒ /labs/dev/sandbox/[slug]
+├ ○ /labs/gemini-glow
+├ ○ /labs/ia
+├ ○ /labs/ia/agent
+├ ○ /labs/ia/agent/skills
+├ ○ /labs/ia/agent/skills/ex
+├ ○ /labs/liveskills
+├   /labs/liveskills/[slug]
+│ └ ● /labs/liveskills/yer
+├ ○ /labs/oracle-trader
+├ ○ /labs/pitch-deck
+├ ○ /labs/skills
+├ ○ /labs/skills/design-system
+├ ○ /labs/skills/design-system/runtime
+├ ○ /labs/slides
+├ ƒ /labs/slides/[slug]
+├ ○ /laura
+├ ○ /manifest.webmanifest
+├ ○ /menuag
+├ ƒ /menuag/[slug]
+├ ○ /menuag/merchant
+├ ○ /menuag/planos
+├ ○ /nexus
+├ ○ /nexus/agentes
+├ ƒ /nexus/agentes/[slug]
+├ ○ /nexus/agentes/novo
+├ ○ /nexus/conectores
+├ ○ /nexus/configuracoes
+├ ○ /nexus/dashboard
+├ ○ /nexus/mcps
+├ ○ /nexus/memoria
+├ ○ /nexus/monitoramento
+├ ○ /rest
+├ ○ /robots.txt
+├ ○ /servicos
+├   /servicos/[slug]
+│ ├ ● /servicos/websites-landing-pages
+│ ├ ● /servicos/saas-webapps
+│ ├ ● /servicos/social-media-conteudo
+│ └ ● [+4 more paths]
+├ ○ /servicos/planos
+├ ○ /sitemap.xml
+└ ○ /universo-2d
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand

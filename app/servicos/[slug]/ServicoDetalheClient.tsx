@@ -3,10 +3,10 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import Link from 'next/link'
+import { AttributionLink as Link, ServiceContactLink } from '@/components/ServiceContactLink'
+import { ServiceOffers } from '@/components/ServiceOffers'
 import { motion, Variants, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { ScrollProgressBar } from '@/components/ui/ScrollProgressBar'
-import { CountUp } from '@/components/ui/CountUp'
 import { services } from '@/data/services'
 import { usePageScroll } from '@/hooks/usePageScroll'
 import { useTheme, ThemeProvider } from '@/context/ThemeContext'
@@ -153,7 +153,7 @@ function ServicoDetalheContent({
           service={service} 
           theme={theme} 
           onStartClick={() => {
-            const element = document.getElementById('proxima-sessao');
+            const element = document.getElementById(service.featured ? 'ofertas' : 'contacto');
             if (element) {
               const offset = 100; // Offset para compensar o navbar sticky
               const elementPosition = element.getBoundingClientRect().top + window.scrollY;
@@ -164,6 +164,7 @@ function ServicoDetalheContent({
             }
           }}
         />
+        <ServiceOffers service={service} />
         <ResultsBar service={service} theme={theme} />
         <ValueProps service={service} theme={theme} fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
         <ProcessSection service={service} theme={theme} fadeInUp={fadeInUp} staggerContainer={staggerContainer} />
@@ -224,7 +225,7 @@ function HeroSection({
       </motion.div>
 
       <div className="relative z-10 max-w-5xl mx-auto text-center">
-        <div className="bg-black/30 backdrop-blur-xl rounded-[3rem] p-12 md:p-20 border border-white/5 shadow-2xl">
+        <div className={`bg-black/30 backdrop-blur-xl rounded-[3rem] ${service.featured ? 'p-12' : 'p-6 sm:p-12 break-words'} md:p-20 border border-white/5 shadow-2xl`}>
           <motion.p 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -259,7 +260,7 @@ function HeroSection({
               style={{ backgroundColor: theme.colors.primary }}
               className="inline-flex items-center gap-3 text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all duration-300 cursor-pointer"
             >
-              Começar Agora
+              {service.featured ? 'Começar Agora' : service.heroCta}
               <span className="text-xl">→</span>
             </button>
           </motion.div>
@@ -330,9 +331,9 @@ function ResultsBar({ service, theme }: { service: any, theme: any }) {
             className="text-center group cursor-pointer relative"
             onClick={() => setActiveLegend(activeLegend === i ? null : i)}
           >
-            <div className="text-4xl md:text-5xl font-black tracking-tighter mb-1 flex items-baseline justify-center gap-0.5">
+            <div className="text-3xl md:text-4xl font-black tracking-tighter mb-1 flex items-baseline justify-center gap-0.5">
               <span style={{ color: theme.colors.highlight }}>
-                <CountUp value={String(r.value)} duration={2.5} />
+                {r.value}
               </span>
               <span style={{ color: theme.colors.primary }} className="text-xl">{r.suffix}</span>
             </div>
@@ -610,20 +611,20 @@ function CtaSection({ service, theme }: { service: any, theme: any }) {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-14"
+          className={`bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[2.5rem] ${service.featured ? 'p-14' : 'p-6 sm:p-14 break-words'}`}
         >
           <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight mb-6 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
             {renderHighlightedTitle(service.ctaTitle, theme)}
           </h2>
           <p className="text-white/50 text-lg mb-10 leading-relaxed">{service.ctaBody}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="mailto:contacto@ag47.pt"
+            <ServiceContactLink
+              service={service.cardTitle}
               style={{ backgroundColor: theme.colors.primary }}
               className="inline-flex items-center justify-center gap-2 text-black font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all duration-300"
             >
               Falar connosco →
-            </a>
+            </ServiceContactLink>
             <Link
               href="/servicos#grid-servicos"
               className="inline-flex items-center justify-center gap-2 bg-white/10 text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full hover:bg-white/20 transition-all duration-300 border border-white/20"

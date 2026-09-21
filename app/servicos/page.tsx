@@ -1,15 +1,16 @@
 import { Metadata } from 'next'
+import { servicesItemList } from '@/data/services'
 import ServicosClient from './ServicosClient'
 
 export const metadata: Metadata = {
-  title: 'Serviços | Agência 47 — Websites, SaaS, Social Media e Tráfego Pago',
+  title: 'Serviços Digitais, IA & Automação | Agência 47',
   description:
-    'Websites, SaaS, Social Media e Tráfego Pago. Vê todos os serviços da Agência 47 e escolhe o que vai catapultar o teu negócio.',
+    'Websites, SaaS, conteúdo, tráfego pago, IA e automação, soluções para restaurantes e digitalização de negócios. Explora as ofertas da Agência 47.',
   alternates: { canonical: '/servicos' },
   openGraph: {
-    title: 'Serviços | Agência 47 — Websites, SaaS, Social Media e Tráfego Pago',
+    title: 'Serviços Digitais, IA & Automação | Agência 47',
     description:
-      'Descobre todos os serviços digitais da Agência 47: websites de conversão, SaaS, gestão de redes sociais e tráfego pago em Portugal.',
+      'Explora websites, SaaS, conteúdo, tráfego pago, IA, restauração e digitalização de negócios em Portugal.',
     url: 'https://ag47.pt/servicos',
     siteName: 'Agência 47',
     locale: 'pt_PT',
@@ -25,47 +26,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Serviços | Agência 47 — Websites, SaaS & Marketing Digital',
+    title: 'Serviços Digitais, IA & Automação | Agência 47',
     description:
-      'Websites, SaaS, Social Media e Tráfego Pago. Catapulta o teu negócio com a Agência 47.',
+      'Websites, SaaS, conteúdo, tráfego pago, IA, restauração e digitalização. Descobre a solução para o teu negócio.',
   },
 }
 
 export default function ServicosPage() {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: 'Serviços de Marketing Digital e Desenvolvimento — Agência 47',
-    description:
-      'Lista completa de serviços da Agência 47, incluindo Websites, SaaS, Social Media e Tráfego Pago.',
-    numberOfItems: 4,
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Websites de Alta Performance',
-        url: 'https://ag47.pt/servicos/websites',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Desenvolvimento SaaS',
-        url: 'https://ag47.pt/servicos/saas',
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: 'Gestão de Social Media',
-        url: 'https://ag47.pt/servicos/social-media',
-      },
-      {
-        '@type': 'ListItem',
-        position: 4,
-        name: 'Tráfego Pago (Ads)',
-        url: 'https://ag47.pt/servicos/trafego-pago',
-      },
-    ],
-  }
+  const jsonLd = servicesItemList
 
   return (
     <>

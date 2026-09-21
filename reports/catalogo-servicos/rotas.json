@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/servicos",
+    "status": 200,
+    "seo": true
+  },
+  {
+    "path": "/servicos/websites-landing-pages",
+    "status": 200,
+    "seo": true
+  },
+  {
+    "path": "/servicos/saas-webapps",
+    "status": 200,
+    "seo": true
+  },
+  {
+    "path": "/servicos/social-media-conteudo",
+    "status": 200,
+    "seo": true
+  },
+  {
+    "path": "/servicos/trafego-pago-conversao",
+    "status": 200,
+    "seo": true
+  },
+  {
+    "path": "/servicos/ia-automacao",
+    "status": 200,
+    "seo": true
+  },
+  {
+    "path": "/servicos/solucoes-restaurantes",
+    "status": 200,
+    "seo": true
+  },
+  {
+    "path": "/servicos/digitalizacao-negocios",
+    "status": 200,
+    "seo": true
+  }
+]

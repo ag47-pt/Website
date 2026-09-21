@@ -131,7 +131,7 @@ export function Universo2DFooter() {
                     className="w-3.5 h-3.5 transition-colors duration-500" 
                     style={{ color: theme.colors.primary }}
                   />
-                  <span>SLA 99.9% Uptime</span>
+                  <span>SLA definido por projeto</span>
                 </div>
                 <p className="text-[10px] text-zinc-500 font-light">
                   Arquitetura distribuída em Edge com redundância multi-região no Google Cloud.

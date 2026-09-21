@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
+import { servicesBySlug } from '@/data/services';
 import { UNIVERSO_2D_DATA } from '@/data/universo-2d';
 import { 
   Sparkles, 
@@ -23,32 +24,10 @@ export function SocialProofSection() {
     setOpenFaq(openFaq === idx ? null : idx);
   };
 
-  const results = [
-    {
-      metric: '+180%',
-      title: 'Aumento em Conversão de Leads',
-      description: 'Média de ganho reportada por clientes após migração de páginas antigas para as LPs em Next.js da Agência 47.',
-      icon: <TrendingUp className="w-5 h-5 transition-colors duration-500" style={{ color: theme.colors.primary }} />,
-    },
-    {
-      metric: '0.62s',
-      title: 'Largest Contentful Paint (LCP)',
-      description: 'Carregamento instantâneo em redes móveis 4G/5G com zero sensação de lentidão ou congelamento de tela.',
-      icon: <Zap className="w-5 h-5 text-cyan-400" />,
-    },
-    {
-      metric: '7 Dias',
-      title: 'Sprint de Entrega Garantida',
-      description: 'Processo ágil sem reuniões desnecessárias. Do conceito ao deploy com domínio apontado e analytics funcionando.',
-      icon: <Clock className="w-5 h-5 text-emerald-400" />,
-    },
-    {
-      metric: '100%',
-      title: 'Código Proprietário',
-      description: 'Zero dependência de templates pesados ou plugins vulneráveis de terceiros. Seu ativo digital seguro.',
-      icon: <ShieldCheck className="w-5 h-5 text-teal-300" />,
-    },
-  ];
+  const results = servicesBySlug['websites-landing-pages'].results.map((result) => ({
+    metric: result.value, title: result.label, description: result.desc,
+    icon: <CheckCircle2 className="w-5 h-5" style={{ color: theme.colors.primary }} />,
+  }));
 
   return (
     <>
@@ -66,13 +45,13 @@ export function SocialProofSection() {
               }}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>08. RESULTADOS & ENGENHARIA COMPROVADA</span>
+              <span>08. PROCESSO & ENTREGÁVEIS</span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight mb-4 uppercase">
-              Métricas Reais que Movem o Ponteiro do Seu Negócio
+              Objetivos claros para o teu projeto
             </h2>
             <p className="text-sm sm:text-base text-zinc-400 font-mono">
-              Não entregamos promessas vagas. Entregamos infraestrutura técnica de alto nível com impacto direto nas suas vendas.
+              Definimos o âmbito, validamos a implementação e acompanhamos os dados disponíveis.
             </p>
           </div>
 
