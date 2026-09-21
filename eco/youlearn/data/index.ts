@@ -1,3 +1,4 @@
+import { funilVendasWhatsappJoaoMarcusAula2 } from './funil-vendas-whatsapp-joao-marcus-aula-2';
 import { teoriaSintergicaJacoboGrinberg } from './teoria-sintergica-jacobo-grinberg';
 import { jacoboGrinbergTeoriaSintergica } from './jacobo-grinberg-teoria-sintergica';
 import { introToLargeLanguageModels } from './intro-to-large-language-models';
@@ -16,6 +17,7 @@ export const DEMO_KNOWLEDGE_OBJECTS: KnowledgeObject[] = [
   introToLargeLanguageModels,
   jacoboGrinbergTeoriaSintergica,
   teoriaSintergicaJacoboGrinberg,
+  funilVendasWhatsappJoaoMarcusAula2,
 ];
 
 export const DEMO_LIBRARY_ENTRIES: LibraryEntry[] = DEMO_KNOWLEDGE_OBJECTS.map(deriveLibraryEntry);

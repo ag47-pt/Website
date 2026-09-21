@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
+<title>Primeira compra → relação com o cliente</title>
+<rect width="1600" height="900" fill="#101218"/>
+<text x="85" y="105" font-family="Arial" font-size="48" fill="#d1ff00">Primeira compra → relação com o cliente</text>
+<text x="85" y="160" font-family="Arial" font-size="25" fill="#cbd5e1">O CRM organiza o estágio e o histórico de cada pessoa.</text>
+<rect x="85" y="220" width="680" height="200" rx="20" fill="#1c2230" stroke="#546174"/>
+<text x="115" y="268" font-family="Arial" font-size="30" fill="#d1ff00">1. Front end</text>
+<text x="115" y="318" font-family="Arial" font-size="25" fill="#f1f5f9">Conversa e oferta para a primeira venda.</text>
+<text x="115" y="356" font-family="Arial" font-size="25" fill="#f1f5f9">Observe onde a pessoa deixa de avançar.</text>
+<rect x="835" y="220" width="680" height="200" rx="20" fill="#1c2230" stroke="#546174"/>
+<text x="865" y="268" font-family="Arial" font-size="30" fill="#d1ff00">2. Sem compra</text>
+<text x="865" y="318" font-family="Arial" font-size="25" fill="#f1f5f9">Avalie a necessidade de retomar contato.</text>
+<text x="865" y="356" font-family="Arial" font-size="25" fill="#f1f5f9">Cada retomada tem um objetivo próprio.</text>
+<rect x="85" y="465" width="680" height="200" rx="20" fill="#1c2230" stroke="#546174"/>
+<text x="115" y="513" font-family="Arial" font-size="30" fill="#d1ff00">3. Após a compra</text>
+<text x="115" y="563" font-family="Arial" font-size="25" fill="#f1f5f9">Back end: novas ofertas ao cliente.</text>
+<text x="115" y="601" font-family="Arial" font-size="25" fill="#f1f5f9">Complemento, recompra ou outro plano.</text>
+<rect x="835" y="465" width="680" height="200" rx="20" fill="#1c2230" stroke="#546174"/>
+<text x="865" y="513" font-family="Arial" font-size="30" fill="#d1ff00">4. CRM e melhoria</text>
+<text x="865" y="563" font-family="Arial" font-size="25" fill="#f1f5f9">Separe leads, compradores e interesses.</text>
+<text x="865" y="601" font-family="Arial" font-size="25" fill="#f1f5f9">Organize ações e revise o percurso.</text>
+<text x="85" y="790" font-family="Arial" font-size="24" fill="#cbd5e1">Referências: 42:17, 57:24, 1:00:24 e 1:12:30 • Não representa resultado garantido.</text>
+<text x="85" y="840" font-family="Arial" font-size="20" fill="#94a3b8">Síntese editorial • João Marcus / Aula 2 • Não é um frame do vídeo</text></svg>
